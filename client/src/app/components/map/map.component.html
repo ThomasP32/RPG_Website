@@ -1,1 +1,7 @@
-<p>map works!</p>
+<div class="map-container">
+    <button class="map-button" (click)="sizeConversion('small')">Small (10x10)</button>
+    <button class="map-button" (click)="sizeConversion('medium')">Medium (15x15)</button>
+    <button class="map-button" (click)="sizeConversion('large')">Large (20x20)</button>
+</div>
+
+<div id="map"></div>
