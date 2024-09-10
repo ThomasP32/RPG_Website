@@ -15,3 +15,11 @@
         background-color: red;
     }
 }
+.map-cell {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #000;
+    text-align: center;
+    line-height: 20px;
+}

@@ -2,7 +2,7 @@ import { NgForOf } from '@angular/common';
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'game-creation',
+    selector: 'map',
     standalone: true,
     imports: [NgForOf],
     templateUrl: './map.component.html',
