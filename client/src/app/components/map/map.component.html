@@ -3,9 +3,10 @@
     <button class="map-button" (click)="sizeConversion('medium')">Medium (15x15)</button>
     <button class="map-button" (click)="sizeConversion('large')">Large (20x20)</button>
 </div>
-
-<div *ngFor="let row of map">
-    <div *ngFor="let cell of row" class="map-cell">
-        {{ cell }}
+<div class="map-container">
+    <div *ngFor="let row of map" class="map-row">
+        <div *ngFor="let cell of row" class="map-cell">
+            {{ cell }}
+        </div>
     </div>
 </div>

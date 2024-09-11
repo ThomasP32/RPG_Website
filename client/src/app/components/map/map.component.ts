@@ -18,9 +18,9 @@ export class MapComponent {
     createMap() {
         this.map = [];
         for (let i = 0; i < this.mapSize; i++) {
-            const row: number[] = [];
+            const row: any[] = [];
             for (let j = 0; j < this.mapSize; j++) {
-                row.push(0);
+                row.push(null);
             }
             this.map.push(row);
         }
@@ -33,14 +33,17 @@ export class MapComponent {
             case 'small':
                 this.mapSize = 10;
                 this.nbItems = 2;
+                this.nbPlayers = 1 | 2;
                 break;
             case 'medium':
                 this.mapSize = 15;
                 this.nbItems = 4;
+                this.nbPlayers = 2 | 3 | 4;
                 break;
             case 'large':
                 this.mapSize = 20;
                 this.nbItems = 6;
+                this.nbPlayers = 2 | 3 | 4 | 5 | 6;
                 break;
             default:
                 console.error('Invalid size value:', size);
