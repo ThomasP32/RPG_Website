@@ -1,12 +1,25 @@
-<div>
-    <button class="map-button" (click)="sizeConversion('small')">Small (10x10)</button>
-    <button class="map-button" (click)="sizeConversion('medium')">Medium (15x15)</button>
-    <button class="map-button" (click)="sizeConversion('large')">Large (20x20)</button>
+<div class="game-choices-container">
+    <modes-choice></modes-choice>
+    <button class="map-button" (click)="sizeConversion('small')">Petit (10x10)</button>
+    <button class="map-button" (click)="sizeConversion('medium')">Moyenne (15x15)</button>
+    <button class="map-button" (click)="sizeConversion('large')">Grande (20x20)</button>
 </div>
+<div class="nb-players-display">
+    <div *ngIf="mapSize == 10">1 à 2 joueurs</div>
+    <div *ngIf="mapSize == 15">2 à 4 joueurs</div>
+    <div *ngIf="mapSize == 20">2 à 6 joueurs</div>
+</div>
+<to-edit-view></to-edit-view>
 <div class="map-container">
-    <div *ngFor="let row of map" class="map-row">
-        <div *ngFor="let cell of row" class="map-cell">
-            {{ cell }}
+    <div *ngFor="let Row of Map" class="map-row">
+        <div
+            *ngFor="let cell of Row"
+            class="map-cell normal-state"
+            (mouseenter)="cell.isHovered = true"
+            (mouseleave)="cell.isHovered = false"
+            [ngClass]="{ 'hover-state': cell.isHovered }"
+        >
+            {{ cell.value }}
         </div>
     </div>
 </div>

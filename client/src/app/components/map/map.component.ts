@@ -1,32 +1,37 @@
-import { NgForOf } from '@angular/common';
+import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
+import { ModesComponent } from '../modes/modes.component';
+import { ToEditViewComponent } from '../to-edit-view/to-edit-view.component';
 
 @Component({
     selector: 'map',
     standalone: true,
-    imports: [NgForOf],
+    imports: [NgForOf, NgClass, NgIf, ModesComponent, ToEditViewComponent],
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss'],
 })
 export class MapComponent {
-    map: number[][] = [];
+    /*TODO : Creer des interfaces ou services et mettre la logique dedans*/
+    Map: { value: any; isHovered: boolean }[][] = [];
     size: 'small' | 'medium' | 'large';
     mapSize: number;
     nbPlayers: number;
     nbItems: number;
+    isHovered = false;
 
+    /*TODO : changer any pour le type approprié (type créé par nous, probabl grass ou porte, mur etc)*/
     createMap() {
-        this.map = [];
+        this.Map = [];
         for (let i = 0; i < this.mapSize; i++) {
-            const row: any[] = [];
+            const ROW: { value: any; isHovered: boolean }[] = [];
             for (let j = 0; j < this.mapSize; j++) {
-                row.push(null);
+                ROW.push({ value: null, isHovered: false });
             }
-            this.map.push(row);
+            this.Map.push(ROW);
         }
-        console.log('Map:', this.map);
+        console.log('Map:', this.Map);
     }
-
+    /*TODO: Pas de chiffres magiques!!! Creer une inteface*/
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         console.log('Button clicked, Size :', size);
         switch (size) {

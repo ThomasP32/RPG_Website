@@ -19,6 +19,7 @@ const routes: Routes = [
     { path: 'home', component: MainPageComponent },
     { path: 'game', component: GamePageComponent },
     { path: 'map-creation', component: MapComponent },
+    { path: 'edit-view', component: MapComponent /*TODO:METTRE LE COMPONENT DE EDIT VIEW*/ },
     { path: 'material', component: MaterialPageComponent },
     { path: '**', redirectTo: '/home' },
 ];
