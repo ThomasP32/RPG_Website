@@ -62,15 +62,15 @@ export class MapAreaComponent {
   getTileImage(tileValue: string): string {
     switch (tileValue) {
       case 'grass':
-        return "../../../../assets/tiles/dustland.png";
+        return "../../../../assets/tiles/wood.png";
       case 'wall':
-        return "../../../../assets/tiles/granite cliff.png";
+        return "../../../../assets/tiles/wall.png";
       case 'ice':
-        return "../../../../assets/tiles/ice.png";
+        return "../../../../assets/tiles/iceacid.png";
       case 'water':
-        return "../../../../assets/tiles/ocean.png"; 
+        return "../../../../assets/tiles/acid.png"; 
       default:
-        return "../../../../assets/tiles/dustland.png";
+        return "../../../../assets/tiles/wood.png";
     }
    
   }
