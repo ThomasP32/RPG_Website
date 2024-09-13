@@ -1,12 +1,11 @@
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { ModesComponent } from '../modes/modes.component';
-import { ToEditViewComponent } from '../to-edit-view/to-edit-view.component';
 
 @Component({
     selector: 'map',
     standalone: true,
-    imports: [NgForOf, NgClass, NgIf, ModesComponent, ToEditViewComponent],
+    imports: [NgForOf, NgClass, NgIf, ModesComponent],
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss'],
 })
@@ -15,9 +14,9 @@ export class MapComponent {
     Map: { value: any; isHovered: boolean }[][] = [];
     size: 'small' | 'medium' | 'large';
     mapSize: number;
-    nbPlayers: number;
     nbItems: number;
     isHovered = false;
+    selectedMode: string;
 
     /*TODO : changer any pour le type approprié (type créé par nous, probabl grass ou porte, mur etc)*/
     createMap() {
@@ -29,7 +28,6 @@ export class MapComponent {
             }
             this.Map.push(ROW);
         }
-        console.log('Map:', this.Map);
     }
     /*TODO: Pas de chiffres magiques!!! Creer une inteface*/
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
@@ -38,22 +36,39 @@ export class MapComponent {
             case 'small':
                 this.mapSize = 10;
                 this.nbItems = 2;
-                this.nbPlayers = 1 | 2;
                 break;
             case 'medium':
                 this.mapSize = 15;
                 this.nbItems = 4;
-                this.nbPlayers = 2 | 3 | 4;
                 break;
             case 'large':
                 this.mapSize = 20;
                 this.nbItems = 6;
-                this.nbPlayers = 2 | 3 | 4 | 5 | 6;
                 break;
             default:
                 console.error('Invalid size value:', size);
                 break;
         }
         this.createMap();
+    }
+    redirectToEditView() {
+        console.log('button clicked');
+        const params = new URLSearchParams();
+        params.set('mapSize', this.mapSize.toString());
+        params.set('mode', this.selectedMode);
+
+        window.location.href = `/game-creation/size=${this.mapSize}/mode=${this.selectedMode}`;
+    }
+
+    // getUrlParams() {
+    //     const params = new URLSearchParams(window.location.search);
+    //     const mapSize = params.get('mapSize');
+    //     const mode = params.get('mode');
+    //     console.log('Retrieved URL params:', { mapSize, mode });
+    // }
+
+    onModeSelected($event: string) {
+        this.selectedMode = $event;
+        console.log('Mode selected:', $event);
     }
 }

@@ -20,10 +20,9 @@ const routes: Routes = [
     { path: 'home', component: MainPageComponent },
     { path: 'game', component: GamePageComponent },
     { path: 'map-creation', component: MapComponent },
-    { path: 'game-creation', component: GameCreationPageComponent},
-    { path: 'edit-view', component: MapComponent /*TODO:METTRE LE COMPONENT DE EDIT VIEW*/ },
+    { path: 'game-creation/:mapSize/:mode', component: GameCreationPageComponent },
     { path: 'material', component: MaterialPageComponent },
-    { path: '**', redirectTo: '/home' },
+    { path: '**', redirectTo: '/game-creation' },
 ];
 
 bootstrapApplication(AppComponent, {

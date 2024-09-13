@@ -1,5 +1,5 @@
 <div class="game-choices-container">
-    <modes-choice></modes-choice>
+    <modes-choice (modeSelected)="onModeSelected($event)"></modes-choice>
     <button class="map-button" (click)="sizeConversion('small')">Petit (10x10)</button>
     <button class="map-button" (click)="sizeConversion('medium')">Moyenne (15x15)</button>
     <button class="map-button" (click)="sizeConversion('large')">Grande (20x20)</button>
@@ -9,7 +9,7 @@
     <div *ngIf="mapSize == 15">2 à 4 joueurs</div>
     <div *ngIf="mapSize == 20">2 à 6 joueurs</div>
 </div>
-<to-edit-view></to-edit-view>
+<button class="to-edit-button" (click)="redirectToEditView()">Aller créer mon jeu!</button>
 <div class="map-container">
     <div *ngFor="let Row of Map" class="map-row">
         <div

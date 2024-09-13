@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
     selector: 'modes-choice',
@@ -8,9 +8,11 @@ import { Component } from '@angular/core';
     styleUrl: './modes.component.scss',
 })
 export class ModesComponent {
-    mode: string;
+    @Output() selectedMode: string;
+    @Output() modeSelected = new EventEmitter<string>();
 
     selectMode(mode: string): void {
-        this.mode = mode;
+        this.selectedMode = mode;
+        this.modeSelected.emit(mode);
     }
 }
