@@ -1,0 +1,47 @@
+<div class="toolbar">
+    <div class="tile-section">
+        <h3>Tiles</h3>
+        <div class="tile-grid">
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'grass'}" (click)="selectTile('grass')">
+                <img src="../../../../assets/tiles/dustland.png" alt="Grass">
+                <span>Grass</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'wall'}" (click)="selectTile('wall')">
+                <img src="../../../../assets/tiles/granite cliff.png" alt="Wall">
+                <span>Wall</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'ice'}" (click)="selectTile('ice')">
+                <img src="../../../../assets/tiles/ice.png" alt="Ice">
+                <span>Ice</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'water'}" (click)="selectTile('water')">
+                <img src="../../../../assets/tiles/ocean.png" alt="Water">
+                <span>Water</span>
+            </div>
+        </div>
+    </div>
+    <div class="item-section">
+        <h3>Items</h3>
+        <div class="item-grid">
+        <div class="tile"  (click)="selectItem('armor')">
+            <img src="../../../../assets/items/armor.png" alt="armor">
+        </div>
+        <div class="tile"  (click)="selectItem('bread')">
+            <img src="../../../../assets/items/bread.png" alt="bread">
+        </div>
+        <div class="tile"  (click)="selectItem('potion')">
+            <img src="../../../../assets/items/potion.png" alt="potion">
+        </div>
+        <div class="tile"  (click)="selectItem('weapon')">
+            <img src="../../../../assets/items/weapon.png" alt="weapon">
+        </div>
+        <div class="tile"  (click)="selectItem('key')">
+            <img src="../../../../assets/items/key.png" alt="key">
+        </div>
+        <div class="tile"  (click)="selectItem('trap')">
+            <img src="../../../../assets/items/trap.png" alt="trap">
+        </div>
+    </div>
+    </div>
+
+</div>

@@ -1,0 +1,16 @@
+<div class="map-container">
+    <div class="map">
+      <div *ngFor="let Row of Map; let rowIndex = index" class="map-row">
+        <div
+          *ngFor="let cell of Row; let colIndex = index"
+          class="map-cell"
+          (mousedown)="startPlacingTile(rowIndex, colIndex)"
+          (mouseup)="stopPlacingTile()"
+          (mousemove)="placeTileOnMove(rowIndex, colIndex)"
+          (mouseleave)="stopPlacingTile()"
+        >
+          <img *ngIf="cell.value" [src]="getTileImage(cell.value)" alt="Tile" draggable="false" />
+        </div>
+      </div>
+    </div>
+  </div>
