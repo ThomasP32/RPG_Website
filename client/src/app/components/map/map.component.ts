@@ -18,11 +18,10 @@ export class MapComponent {
     isHovered = false;
     selectedMode: string;
 
-    /*TODO : changer any pour le type approprié (type créé par nous, probabl grass ou porte, mur etc)*/
     createMap() {
         this.Map = [];
         for (let i = 0; i < this.mapSize; i++) {
-            const ROW: { value: any; isHovered: boolean }[] = [];
+            const ROW: { value: null; isHovered: boolean }[] = [];
             for (let j = 0; j < this.mapSize; j++) {
                 ROW.push({ value: null, isHovered: false });
             }
@@ -57,15 +56,8 @@ export class MapComponent {
         params.set('mapSize', this.mapSize.toString());
         params.set('mode', this.selectedMode);
 
-        window.location.href = `/game-creation/size=${this.mapSize}/mode=${this.selectedMode}`;
+        window.location.href = `/game-creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
     }
-
-    // getUrlParams() {
-    //     const params = new URLSearchParams(window.location.search);
-    //     const mapSize = params.get('mapSize');
-    //     const mode = params.get('mode');
-    //     console.log('Retrieved URL params:', { mapSize, mode });
-    // }
 
     onModeSelected($event: string) {
         this.selectedMode = $event;

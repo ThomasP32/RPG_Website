@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
-    selector: 'modes-choice',
+    selector: 'app-modes-choice',
     standalone: true,
     imports: [],
     templateUrl: './modes.component.html',
