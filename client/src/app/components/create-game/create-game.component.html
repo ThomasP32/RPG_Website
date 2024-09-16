@@ -1,0 +1,20 @@
+<div class="create-game-view">
+    <h2>Create a New Game:</h2>
+    <strong>List of available Games</strong>
+
+    <ul class="game-list">
+        <li *ngFor="let game of availableGames">
+            <button [class.selected]="game === selectedGame" type="button" (click)="viewGameDetails(game)">
+                <span class="game-name">{{ game.name }}</span>
+            </button>
+        </li>
+    </ul>
+</div>
+<br />
+<!-- <div *ngIf="selectedGame">
+    <div>Map Size: {{ selectedGame.mapSize }}</div>
+    //<div>Game Mode: {{ selectedGame.gameMode }}</div>
+    <div>Last Modified: {{ selectedGame.lastModified }}</div>
+    <br />
+    <div>Map preview: {{ selectedGame.mapPreview }}</div>
+</div> -->

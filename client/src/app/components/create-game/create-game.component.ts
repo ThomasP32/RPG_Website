@@ -1,24 +1,18 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Coordinate } from '@app/interfaces/coordinate';
+import { DoorTile } from '@app/interfaces/door-tile';
 import { GameService } from '@app/services/game.service';
-import { Game } from 'src/app/interfaces/vec2';
+import { Game } from 'src/app/interfaces/game';
 
 @Component({
     selector: 'app-create-game',
     standalone: true,
-    template: `<div class="create-game-view">
-        <h2>Create a New Game</h2>
-
-        <div class="game-list">
-            <div *ngFor="let game of availableGames" class="game-item" (click)="selectGame(game)">
-                <h3>{{ game.name }}</h3>
-                <p>Map Size: {{ game.mapSize }}</p>
-                <p>Mode: {{ game.mode }}</p>
-            </div>
-        </div>
-    </div>`,
     templateUrl: './create-game.component.html',
     styleUrls: ['./create-game.component.scss'],
+    imports: [FormsModule, CommonModule],
 })
 export class CreateGameComponent {
     availableGames: Game[] = [];
@@ -35,12 +29,33 @@ export class CreateGameComponent {
         });
     }
 
+    selectedGame?: Game;
+    viewGameDetails(game: Game) {
+        this.selectedGame = game;
+    }
+
     // redirects organizer to character creation form if available
     // if not available, error message
-    selectGame(game: { id: number; name: string; isVisible: boolean }) {
-        this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
+    selectGame(game: {
+        _id: string;
+        name: string;
+        mapSize: Coordinate;
+        startTiles: Coordinate[];
+        attributeItem1: Coordinate;
+        attributeItem2: Coordinate;
+        conditionItem1: Coordinate;
+        conditionItem2: Coordinate;
+        functionItem1: Coordinate;
+        functionItem2: Coordinate;
+        waterTiles: Coordinate[];
+        iceTiles: Coordinate[];
+        wallTiles: Coordinate[];
+        doorTiles: DoorTile[];
+        isVisible: boolean;
+    }) {
+        this.gameService.checkGameAvailability(game._id).subscribe((isAvailable) => {
             if (isAvailable) {
-                this.router.navigate(['/create-character', game.id]);
+                this.router.navigate(['/create-character', game._id]);
             } else {
                 this.errorMessage = 'The selected game is unavailable. Please choose another game.';
             }
