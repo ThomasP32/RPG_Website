@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { CommunicationService } from '@app/services/communication.game.service';
 import { Game } from '@common/game.type';
 
@@ -10,18 +10,13 @@ import { Game } from '@common/game.type';
     styleUrls: ['./material-page.component.scss'],
     imports: [],
 })
-export class MaterialPageGameComponent implements OnInit {
-    constructor(readonly communicationService: CommunicationService) {}
-
-    getGamesFromServer(): void {
-        this.communicationService.basicGet().subscribe({
-            next: (games: Game[]) => {
-                this.communicationService.games.next(games);
-            },
-        });
+export class MaterialPageGameComponent implements OnInit{
+    games: Game[] = [];
+    constructor(readonly communicationService: CommunicationService) {
+        this.communicationService.games$.subscribe(((games) => this.games = games));
     }
 
     ngOnInit(): void {
-        this.getGamesFromServer();
+        this.communicationService.getGamesFromServer();
     }
 }

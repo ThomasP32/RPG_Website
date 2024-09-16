@@ -12,7 +12,7 @@ import { Game } from '@common/game.type';
 })
 export class MainPageComponent {
     gamePrototype: Game = {
-        name: 'hel',
+        name: 'pat',
         isVisible: true,
         mapSize: { x: 20, y: 20 }, // Taille de la carte
         startTiles: [
@@ -57,20 +57,5 @@ export class MainPageComponent {
         ],
     };
 
-    constructor(private readonly communicationService: CommunicationService) {}
-
-    sendGameToServer(game: Game): void {
-        // Important de ne pas oublier "subscribe" ou l'appel ne sera jamais lancé puisque personne l'observe
-        this.communicationService.basicPost(game).subscribe({
-            next: (response) => {
-                console.log(`Le serveur a reçu le jeu : ${response.status} : ${response.statusText}`);
-                this.communicationService.games.next([...this.communicationService.games.getValue(), game]);
-            },
-            error: (error) => {
-                console.log(error.error);
-            },
-        });
-    }
-
-
+    constructor(readonly communicationService: CommunicationService) {}
 }
