@@ -1,0 +1,8 @@
+<div>
+    @for(game of this.communicationService.games.getValue(); track game._id) {
+        @if(game.isVisible) {
+            <li>{{ game.name }}</li>
+        }
+    }
+    <p> fin </p>
+</div>
