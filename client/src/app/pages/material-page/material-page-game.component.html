@@ -1,8 +1,8 @@
 <div>
-    @for(game of this.communicationService.games.getValue(); track game._id) {
-        @if(game.isVisible) {
-            <li>{{ game.name }}</li>
-        }
-    }
-    <p> fin </p>
+    <section>
+        @for ( game of this.games ; track game._id ) {
+        <li>{{ game.name }}</li>
+        } 
+    </section>
+    <p>fin</p>
 </div>
