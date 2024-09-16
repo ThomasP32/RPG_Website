@@ -1,1 +1,82 @@
-<p>create-character works!</p>
+<div class="container">
+    <div class="form-box">
+        <h2>Character Form:</h2>
+
+        <section>
+            <label for="characterName">Enter your character's name: </label>
+            <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" required />
+            <br />
+            <br />
+            <div class="character-selection">
+                <label>Select your character's avatar: </label>
+                <div class="characters-container">
+                    <div *ngFor="let character of characters" class="character">
+                        <input
+                            type="radio"
+                            [(ngModel)]="selectedCharacter"
+                            name="selectedCharacter"
+                            [value]="character.name"
+                            id="{{ character.name }}"
+                        />
+                        <label for="{{ character.name }}">
+                            <img [src]="character.image" />
+                            <div class="character-name">{{ character.name }}</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <br />
+
+            <section class="attributes-section">
+                <strong>Character's attributes: </strong>
+                <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
+                    <strong>Life</strong>: {{ life }} points
+                </div>
+
+                <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
+                    <strong>Speed</strong>: {{ speed }} points
+                </div>
+
+                <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
+                    <strong>Attack</strong>: {{ attackBonus }} points
+                </div>
+
+                <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
+                    <strong>Defense</strong>: {{ defenseBonus }} points
+                </div>
+            </section>
+
+            <div class="bonus-selection">
+                <label>Add a +2 bonus to the attribute of your choice: </label>
+                <br />
+                <div class="bonus-buttons">
+                    <input type="radio" id="life" [(ngModel)]="lifeOrSpeedBonus" name="lifeOrSpeedBonus" value="life" (change)="addBonus()" hidden />
+                    <label for="life" class="btn">Life</label>
+
+                    <input
+                        type="radio"
+                        id="speed"
+                        [(ngModel)]="lifeOrSpeedBonus"
+                        name="lifeOrSpeedBonus"
+                        value="speed"
+                        (change)="addBonus()"
+                        hidden
+                    />
+                    <label for="speed" class="btn">Speed</label>
+                </div>
+                <br />
+
+                <label>Assign a 4-sided die (D4) to the attribute of your choice:</label>
+                <div class="bonus-buttons">
+                    <br />
+                    <input type="radio" [(ngModel)]="diceAssignment" name="diceAssignment" value="attack" (change)="assignDice()" />
+                    <label for="attack" class="btn">Attack</label>
+                    <input type="radio" [(ngModel)]="diceAssignment" name="diceAssignment" value="defense" (change)="assignDice()" />
+                    <label for="defense" class="btn">Defense</label>
+                </div>
+            </div>
+
+            <button (click)="onSubmit()">Save</button>
+        </section>
+    </div>
+</div>

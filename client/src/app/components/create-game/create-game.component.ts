@@ -7,8 +7,6 @@ import { Game } from 'src/app/interfaces/vec2';
     selector: 'app-create-game',
     standalone: true,
     template: `<div class="create-game-view">
-        <h2>Create a New Game</h2>
-
         <div class="game-list">
             <div *ngFor="let game of availableGames" class="game-item" (click)="selectGame(game)">
                 <h3>{{ game.name }}</h3>
@@ -28,15 +26,12 @@ export class CreateGameComponent {
     private readonly gameService: GameService = inject(GameService);
     private readonly router: Router;
 
-    // display the list of available games
     loadAvailableGames() {
         this.gameService.getVisibleGames().subscribe((games) => {
             this.availableGames = games;
         });
     }
 
-    // redirects organizer to character creation form if available
-    // if not available, error message
     selectGame(game: { id: number; name: string; isVisible: boolean }) {
         this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
             if (isAvailable) {
