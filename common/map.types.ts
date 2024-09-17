@@ -3,8 +3,15 @@ export interface Coordinate {
     y: number;
 }
 
-export type TileCategory = 'water' | 'ice' | 'wall';
-export type ItemCategory = 'sword'
+export enum TileCategory {
+    Water = 'water', 
+    Ice = 'ice', 
+    Wall = 'wall' 
+}
+
+export enum ItemCategory {
+    Sword = 'sword'
+}
 
 export interface Tile {
     coordinate: Coordinate;
