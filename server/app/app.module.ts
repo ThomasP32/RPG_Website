@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-    //decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
+    // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
     imports: [
         ConfigModule.forRoot({ isGlobal: true }), // charge les configs comme .env disponible partout dans appmodule
         MongooseModule.forRootAsync({

@@ -13,7 +13,7 @@ import { Map } from '@common/map.types';
 export class MaterialPageMapsComponent implements OnInit{
     maps: Map[] = [];
     constructor(readonly communicationService: CommunicationService) {
-        this.communicationService.maps$.subscribe(((maps) => this.maps = maps));
+        this.communicationService.maps$.subscribe((maps) => (this.maps = maps));
     }
 
     ngOnInit(): void {

@@ -18,12 +18,12 @@ export class Coordinate implements CoordinateType {
     y: number;
 }
 
-export const CoordinateSchema = SchemaFactory.createForClass(Coordinate);
+export const coordinateSchema = SchemaFactory.createForClass(Coordinate);
 
 @Schema({ _id: false })
 class DoorTile implements DoorTileType {
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: CoordinateSchema, required: true, _id: false })
+    @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
 
     @ApiProperty({ default: false })
@@ -36,7 +36,7 @@ export const doorTileSchema = SchemaFactory.createForClass(DoorTile);
 @Schema({ _id: false })
 class Tile implements TileType {
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: CoordinateSchema, required: true, _id: false })
+    @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
 
     @ApiProperty()
@@ -45,22 +45,22 @@ class Tile implements TileType {
 
 }
 
-export const TileSchema = SchemaFactory.createForClass(Tile);
+export const tileSchema = SchemaFactory.createForClass(Tile);
 
 @Schema({ _id: false })
 class StartTile implements StartTileType {
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: CoordinateSchema, required: true, _id: false })
+    @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
 
 }
 
-export const StartTileSchema = SchemaFactory.createForClass(StartTile);
+export const startTileSchema = SchemaFactory.createForClass(StartTile);
 
 @Schema({ _id: false })
 class Item implements ItemType {
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: CoordinateSchema, required: true, _id: false })
+    @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
 
     @ApiProperty()
@@ -70,7 +70,7 @@ class Item implements ItemType {
     // Attributs supplémentaires seront ajouté ici 
 }
 
-export const ItemTileSchema = SchemaFactory.createForClass(Item);
+export const itemTileSchema = SchemaFactory.createForClass(Item);
 
 
 @Schema()
@@ -84,19 +84,19 @@ export class Map implements MapType {
     isVisible: boolean;
 
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: CoordinateSchema, required: true })
+    @Prop({ type: coordinateSchema, required: true })
     mapSize: Coordinate;
 
     @ApiProperty({ type: [Coordinate] })
-    @Prop({ type: [StartTileSchema], required: true })
+    @Prop({ type: [startTileSchema], required: true })
     startTiles: StartTile[];
 
     @ApiProperty({ type: Coordinate })
-    @Prop({ type: [ItemTileSchema], required: true })
+    @Prop({ type: [itemTileSchema], required: true })
     items: Item[];
 
     @ApiProperty({ type: [Coordinate] })
-    @Prop({ type: [TileSchema], required: true })
+    @Prop({ type: [tileSchema], required: true })
     tiles: Tile[];
 
     @ApiProperty({ type: [DoorTile] })
