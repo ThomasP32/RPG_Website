@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsString, Validate, ValidateNested, IsIn } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsString, Validate, ValidateNested} from 'class-validator';
 import { IsOutOfMap } from './map.dto.constraints';
 import { TileCategory, ItemCategory } from '@common/map.types';
 
