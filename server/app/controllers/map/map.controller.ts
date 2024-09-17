@@ -1,27 +1,27 @@
-import { Game } from '@app/model/database/game';
-import { CreateGameDto } from '@app/model/dto/game/create-game.dto';
-import { GameService } from '@app/services/game/game.service';
+import { Map } from '@app/model/database/map';
+import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
+import { MapService } from '@app/services/map/map.service';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-@ApiTags('Game') // to attach a controller to a specific tag
-@Controller('game') // marque la classe comme un contrôleur pour les routes qui commence avec game donc reponde au requete http faites vers l'url /game
-export class GameController {
-    constructor(private readonly gamesService: GameService) {} // créé une instance de la classe avec un service de cours
+@ApiTags('Map') // to attach a controller to a specific tag
+@Controller('map') // marque la classe comme un contrôleur pour les routes qui commence avec map donc reponde au requete http faites vers l'url /map
+export class MapController {
+    constructor(private readonly mapService: MapService) {} // créé une instance de la classe avec un service de cours
 
     @ApiOkResponse({
-        description: 'Returns all games',
-        type: Game,
+        description: 'Returns all maps',
+        type: Map,
         isArray: true,
     })
     @ApiNotFoundResponse({
         description: 'Return NOT_FOUND http status when request fails',
     })
     @Get('/')
-    async allGames(@Res() response: Response) {
+    async allMaps(@Res() response: Response) {
         try {
-            const allCourses = await this.gamesService.getAllGames();
+            const allCourses = await this.mapService.getAllMaps();
             response.status(HttpStatus.OK).json(allCourses);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error);
@@ -29,16 +29,16 @@ export class GameController {
     }
 
     @ApiOkResponse({
-        description: 'Get game by name',
-        type: Game,
+        description: 'Get map by name',
+        type: Map,
     })
     @ApiNotFoundResponse({
         description: 'Return NOT_FOUND http status when request fails',
     })
-    @Get('/:gameName')
-    async subjectCode(@Param('gameName') subjectCode: string, @Res() response: Response) {
+    @Get('/:mapName')
+    async subjectCode(@Param('mapName') subjectCode: string, @Res() response: Response) {
         try {
-            const course = await this.gamesService.getGame(subjectCode);
+            const course = await this.mapService.getMap(subjectCode);
             response.status(HttpStatus.OK).json(course);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
@@ -46,16 +46,16 @@ export class GameController {
     }
 
     @ApiCreatedResponse({
-        description: 'Add new game',
+        description: 'Add new map',
     })
     @ApiNotFoundResponse({
         description: 'Return NOT_FOUND http status when request fails',
     })
     @Post('/')
-    async addGame(@Body() gameDto: CreateGameDto, @Res() response: Response) {
+    async addM(@Body() mapDto: CreateMapDto, @Res() response: Response) {
         try {
-            await this.gamesService.addGame(gameDto);
-            console.log('Requête POST reçue avec les données :', gameDto);
+            await this.mapService.addMap(mapDto);
+            console.log('Requête POST reçue avec les données :', mapDto);
             response.status(HttpStatus.CREATED).send();
         } catch (error) {
             response.status(HttpStatus.BAD_REQUEST).send(error);
@@ -64,7 +64,7 @@ export class GameController {
 
     // @ApiOkResponse({
     //     description: 'Modify a course',
-    //     type: Game,
+    //     type: Map,
     // })
     // @ApiNotFoundResponse({
     //     description: 'Return NOT_FOUND http status when request fails',
@@ -86,9 +86,9 @@ export class GameController {
         description: 'Return NOT_FOUND http status when request fails',
     })
     @Delete('/:subjectCode')
-    async deleteCourse(@Param('subjectCode') gameName: string, @Res() response: Response) {
+    async deleteCourse(@Param('subjectCode') mapName: string, @Res() response: Response) {
         try {
-            await this.gamesService.deleteGame(gameName);
+            await this.mapService.deleteMap(mapName);
             response.status(HttpStatus.OK).send();
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
