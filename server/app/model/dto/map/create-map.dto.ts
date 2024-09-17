@@ -39,7 +39,6 @@ export class TileDto {
     coordinate: CoordinateDto;
 
     @ApiProperty()
-    @IsIn(['water', 'ice', 'wall'])
     category: TileCategory;
 }
 
@@ -50,7 +49,6 @@ export class ItemDto {
     coordinate: CoordinateDto;
 
     @ApiProperty()
-    @IsIn(['sword'])
     category: ItemCategory;
 }
 

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommunicationService } from '@app/services/communication.map.service';
-import { Map } from '@common/map.types';
+import { ItemCategory, Map, TileCategory } from '@common/map.types';
 
 @Component({
     selector: 'app-main-page',
@@ -12,7 +12,7 @@ import { Map } from '@common/map.types';
 })
 export class MainPageComponent {
     mapPrototype: Map = {
-        name: "Test",
+        name: "Enum version",
         isVisible: false,
         mapSize: {
           x: 10,
@@ -32,7 +32,7 @@ export class MainPageComponent {
               x: 1,
               y: 3
             },
-            category: 'sword'
+            category: ItemCategory.Sword
           }
         ],
         doorTiles: [
@@ -50,14 +50,14 @@ export class MainPageComponent {
               x: 3,
               y: 4
             },
-            category: 'water'
+            category: TileCategory.Wall
           },
           {
             coordinate: {
               x: 7,
               y: 2
             },
-            category: 'ice'
+            category: TileCategory.Water
           }
         ]
       };

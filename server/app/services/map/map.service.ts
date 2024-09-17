@@ -27,8 +27,8 @@ export class MapService {
                 isVisible: false,
                 mapSize: { x: 10, y: 10 },
                 startTiles: [{ coordinate: { x: 5, y: 1 } }],
-                items: [{ coordinate: { x: 1, y: 3 }, category: 'sword' }],
-                tiles: [{ coordinate: { x: 3, y: 4 }, category: 'wall' }],
+                items: [{ coordinate: { x: 1, y: 3 }, category: ItemCategory.Sword }],
+                tiles: [{ coordinate: { x: 3, y: 4 }, category: TileCategory.Ice }],
                 doorTiles: [{ coordinate: { x: 1, y: 2 }, isOpened: true }],
             },
         ];

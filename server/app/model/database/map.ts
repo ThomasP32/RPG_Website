@@ -40,7 +40,7 @@ class Tile implements TileType {
     coordinate: Coordinate;
 
     @ApiProperty()
-    @Prop({ type: String, enum: ['water', 'ice', 'wall'], required: true })
+    @Prop({ type: String, enum: TileCategory, required: true })
     category: TileCategory;
 
 }
@@ -64,7 +64,7 @@ class Item implements ItemType {
     coordinate: Coordinate;
 
     @ApiProperty()
-    @Prop({ type: String, enum: ['sword'], required: true })
+    @Prop({ type: String, enum: ItemCategory, required: true })
     category: ItemCategory;
 
     // Attributs supplémentaires seront ajouté ici 
