@@ -2,8 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Coordinate } from '@app/interfaces/coordinate';
-import { DoorTile } from '@app/interfaces/door-tile';
 import { GameService } from '@app/services/game.service';
 import { Game } from 'src/app/interfaces/game';
 
@@ -36,26 +34,10 @@ export class CreateGameComponent {
 
     // redirects organizer to character creation form if available
     // if not available, error message
-    selectGame(game: {
-        _id: string;
-        name: string;
-        mapSize: Coordinate;
-        startTiles: Coordinate[];
-        attributeItem1: Coordinate;
-        attributeItem2: Coordinate;
-        conditionItem1: Coordinate;
-        conditionItem2: Coordinate;
-        functionItem1: Coordinate;
-        functionItem2: Coordinate;
-        waterTiles: Coordinate[];
-        iceTiles: Coordinate[];
-        wallTiles: Coordinate[];
-        doorTiles: DoorTile[];
-        isVisible: boolean;
-    }) {
-        this.gameService.checkGameAvailability(game._id).subscribe((isAvailable) => {
+    selectGame(game: { id: string; name: string; mapSize: number; gameMode: string; mapPreview: string; lastModified: string }) {
+        this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
             if (isAvailable) {
-                this.router.navigate(['/create-character', game._id]);
+                this.router.navigate(['/create-character', game.id]);
             } else {
                 this.errorMessage = 'The selected game is unavailable. Please choose another game.';
             }
