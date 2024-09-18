@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -29,7 +28,7 @@ export class MapAreaComponent {
 
     ngOnInit() {
         this.getUrlParams();
-        this.urlConverter(this.mapSize, this.mode);
+        this.urlConverter(this.mapSize);
         this.createMap(this.convertedMapSize, this.mode);
         this.setCellSize();
     }
@@ -104,18 +103,16 @@ export class MapAreaComponent {
                 return '../../../../assets/tiles/spfloor.jpg';
         }
     }
-
+    //TODO: PUT it in a service, same as in toolbar.component.ts
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
-            this.mode = this.route.snapshot.params['mode'];
-            console.log('Retrieved URL params:', { mapSize: this.mapSize, mode: this.mode });
         });
     }
 
-    urlConverter(mapSize: string, mode: string) {
-        this.convertedMapSize = Number(mapSize.split('=')[1]);
-        this.convertedMode = mode.split('=')[1];
-        this.convertedCellSize = (600 / Number(mapSize.split('=')[1]));
+    urlConverter(size: string) {
+        console.log('URL params:', size);
+        this.convertedMapSize = Number(size.split('=')[1]);
+        console.log('Converted map size:', this.convertedMapSize);
     }
 }

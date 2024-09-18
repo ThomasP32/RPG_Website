@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ModesComponent } from './modes.component';
 
 describe('ModesComponent', () => {
@@ -20,8 +19,13 @@ describe('ModesComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should select mode', () => {
-        component.selectMode('mode');
-        expect(component.mode).toBe('mode');
+    it('should emit the selected mode', () => {
+        const mode = 'testMode';
+        spyOn(component.modeSelected, 'emit');
+
+        component.selectMode(mode);
+
+        expect(component.selectedMode).toBe(mode);
+        expect(component.modeSelected.emit).toHaveBeenCalledWith(mode);
     });
 });
