@@ -21,6 +21,7 @@ const routes: Routes = [
     { path: '**', redirectTo: '/home' },
 ];
 
+
 bootstrapApplication(AppComponent, {
     providers: [provideHttpClient(), provideRouter(routes), provideAnimations()],
 })
