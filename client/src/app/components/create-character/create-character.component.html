@@ -31,32 +31,25 @@
             <br />
 
             <div class="dice-assignment">
-                <div *ngIf="rollingD4">
-                    <p>Assign a 4-sided die (D4) to the attribute of your choice:</p>
-                    <div class="dice-buttons">
-                        <input type="radio" id="attack" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="attack" hidden />
-                        <label for="attack" class="btn">Attack</label>
+                <p>Assign a 4-sided die (D4) to the attribute of your choice:</p>
+                <div class="dice-buttons">
+                    <input type="radio" id="attack" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="attack" hidden />
+                    <label for="attack" class="btn">Attack</label>
 
-                        <input type="radio" id="defense" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="defense" hidden />
-                        <label for="defense" class="btn">Defense</label>
-                    </div>
+                    <input type="radio" id="defense" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="defense" hidden />
+                    <label for="defense" class="btn">Defense</label>
                 </div>
+            </div>
 
-                <div *ngIf="rollingDiceFor && !diceRolled">
-                    <p>Rolling a D4 for {{ rollingDiceFor }}:</p>
-                    <button (click)="assignD4()">Roll 4-Sided Die</button>
-                </div>
-
-                <div *ngIf="!rollingD4 && diceRolled">
-                    <p>Now rolling a D6 for {{ rollingDiceFor === 'attack' ? 'Defense' : 'Attack' }}:</p>
-                    <button (click)="assignD6()">Roll 6-Sided Die</button>
-                </div>
-
-                <div *ngIf="!rollingD4 && diceRolled">
-                    <h4>Results:</h4>
-                    <p>Attack: {{ attack }}</p>
-                    <p>Defense: {{ defense }}</p>
-                </div>
+            <div *ngIf="rollingDiceFor && !diceRolled">
+                <p>Roll the 4-sided die (D4) for {{ rollingDiceFor }}:</p>
+                <button (click)="assignD4()">Roll D4</button>
+                <p>Result: {{ diceRollD4 }}</p>
+            </div>
+            <div *ngIf="!rollingDiceFor && diceRolled">
+                <p>Roll the 6-sided die (D6) for {{ rollingDiceFor === 'attack' ? 'Defense' : 'Attack' }}:</p>
+                <button (click)="assignD6()">Roll D6</button>
+                <p>Result: {{ diceRollD6 }}</p>
             </div>
         </div>
         <button (click)="onSubmit()">Save</button>
@@ -65,10 +58,13 @@
         <section class="attributes-section">
             <br />
             <strong> Selected avatar: </strong>
-            <div *ngIf="selectedCharacter">
-                <section *ngFor="let character of characters">
-                    <img *ngIf="character.name === selectedCharacter" [src]="character.image" class="selected-avatar" alt="Selected Avatar" />
-                </section>
+            <div class="avatar-container">
+                <div *ngIf="selectedCharacter">
+                    <section *ngFor="let character of characters">
+                        <img *ngIf="character.name === selectedCharacter" [src]="character.image" class="selected-avatar" alt="Selected Avatar" />
+                    </section>
+                </div>
+                <div *ngIf="!selectedCharacter" class="avatar-placeholder"></div>
             </div>
             <br />
             <strong>Avatar's attributes: </strong>

@@ -25,11 +25,11 @@ export class CreateCharacterComponent {
     attack = this.defaultPoints;
     defense = this.defaultPoints;
 
-    diceRollAttack = 0;
-    diceRollDefense = 0;
+    diceRollD4 = 0;
+    diceRollD6 = 0;
     diceRolled: boolean = false;
     rollingDiceFor: string = '';
-    rollingD4: boolean = true;
+    rolledD4: boolean = false;
 
     characters: Character[] = [];
 
@@ -64,27 +64,24 @@ export class CreateCharacterComponent {
 
     assignD4() {
         const rollResult = this.rollDice(4);
+        this.diceRollD4 = rollResult;
         if (this.rollingDiceFor === 'attack') {
-            this.diceRollAttack = rollResult;
-            this.attack = this.defaultPoints + this.diceRollAttack;
+            this.attack = this.defaultPoints + this.diceRollD4;
         } else if (this.rollingDiceFor === 'defense') {
-            this.diceRollDefense = rollResult;
-            this.defense = this.defaultPoints + this.diceRollDefense;
+            this.defense = this.defaultPoints + this.diceRollD4;
         }
-        this.rollingD4 = false;
-        this.diceRolled = true;
+        this.diceRolled = false;
+        this.rolledD4 = true;
     }
 
     assignD6() {
         const rollResult = this.rollDice(6);
+        this.diceRollD4 = rollResult;
         if (this.rollingDiceFor === 'attack') {
-            this.diceRollDefense = rollResult;
-            this.defense = this.defaultPoints + this.diceRollDefense;
+            this.defense = this.defaultPoints + this.diceRollD6;
         } else if (this.rollingDiceFor === 'defense') {
-            this.diceRollAttack = rollResult;
-            this.attack = this.defaultPoints + this.diceRollAttack;
+            this.attack = this.defaultPoints + this.diceRollD6;
         }
-        this.diceRolled = true;
     }
 
     onSubmit() {

@@ -20,10 +20,29 @@ h2 {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
     justify-content: center;
-    padding-left: 20px;
     border-left: 1px solid #ccc;
+    padding: 20px;
+}
+
+.avatar-container {
+    margin-bottom: 10px;
+}
+
+.avatar-placeholder {
+    width: 160px;
+    height: 160px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    display: block;
+}
+
+.attribute {
+    text-align: left;
+    margin-bottom: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
 }
 
 .selected-avatar {
