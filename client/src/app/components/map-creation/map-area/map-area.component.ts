@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -17,14 +17,21 @@ export class MapAreaComponent {
     mapSize: string;
     mode: string;
     convertedMapSize: number;
+    convertedCellSize : number;
     convertedMode: string;
 
-    constructor(private route: ActivatedRoute) {}
+    constructor(
+        private route: ActivatedRoute,
+        private renderer: Renderer2, 
+        private cdRef: ChangeDetectorRef
+    ) {}
+
 
     ngOnInit() {
         this.getUrlParams();
         this.urlConverter(this.mapSize, this.mode);
         this.createMap(this.convertedMapSize, this.mode);
+        this.setCellSize();
     }
 
     createMap(mapSize: number, mode: string) {
@@ -39,6 +46,13 @@ export class MapAreaComponent {
         }
     }
 
+    setCellSize() {
+      const root = document.querySelector(':root') as HTMLElement;
+      this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
+      console.log("cellsize =",this.convertedCellSize);
+      this.cdRef.detectChanges(); 
+    }
+
     selectTile(tile: string) {
         this.selectedTile = tile;
         console.log('Selected tile:', tile);
@@ -46,37 +60,48 @@ export class MapAreaComponent {
 
     startPlacingTile(rowIndex: number, colIndex: number) {
         this.isPlacing = true;
+        console.log('Start placing tile at:', { rowIndex, colIndex });
         this.placeTile(rowIndex, colIndex);
-    }
-
-    stopPlacingTile() {
+      }
+    
+      stopPlacingTile() {
         this.isPlacing = false;
-    }
-
-    placeTileOnMove(rowIndex: number, colIndex: number) {
+        console.log('Stopped placing tile');
+      }
+    
+      @HostListener('document:mouseup', ['$event'])
+      onMouseUp(event: MouseEvent) {
+        this.stopPlacingTile();
+        console.log('Mouse up event detected, stopping placing');
+      }
+    
+      placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isPlacing) {
-            this.placeTile(rowIndex, colIndex);
+          console.log('Mouse move detected, placing tile at:', { rowIndex, colIndex });
+          this.placeTile(rowIndex, colIndex);
         }
-    }
-
-    placeTile(rowIndex: number, colIndex: number) {
+      }
+    
+      placeTile(rowIndex: number, colIndex: number) {
         if (this.selectedTile && this.Map[rowIndex][colIndex].value !== this.selectedTile) {
-            this.Map[rowIndex][colIndex].value = this.selectedTile;
+          this.Map[rowIndex][colIndex].value = this.selectedTile;
+          console.log(`Placed tile "${this.selectedTile}" at position [${rowIndex}, ${colIndex}]`);
         }
-    }
+      }
+    
 
     getTileImage(tileValue: string): string {
         switch (tileValue) {
             case 'grass':
-                return '../../../../assets/tiles/wood.png';
+                return '../../../../assets/tiles/spfloor.jpg';
             case 'wall':
-                return '../../../../assets/tiles/wall.png';
+                return '../../../../assets/tiles/spwall.jpg';
             case 'ice':
-                return '../../../../assets/tiles/iceacid.png';
+                return '../../../../assets/tiles/spice.jpg';
             case 'water':
-                return '../../../../assets/tiles/acid.png';
+                return '../../../../assets/tiles/spacid.jpg';
             default:
-                return '../../../../assets/tiles/wood.png';
+                return '../../../../assets/tiles/spfloor.jpg';
         }
     }
 
@@ -91,5 +116,6 @@ export class MapAreaComponent {
     urlConverter(mapSize: string, mode: string) {
         this.convertedMapSize = Number(mapSize.split('=')[1]);
         this.convertedMode = mode.split('=')[1];
+        this.convertedCellSize = (600 / Number(mapSize.split('=')[1]));
     }
 }

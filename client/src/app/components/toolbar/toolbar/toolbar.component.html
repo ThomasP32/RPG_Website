@@ -3,41 +3,47 @@
         <h3>Tiles</h3>
         <div class="tile-grid">
             <div class="tile" [ngClass]="{'selected': selectedTile === 'grass'}" (click)="selectTile('grass')">
-                <img src="../../../../assets/tiles/wood.png" alt="wood">
+                <img src="../../../../assets/tiles/spfloor.jpg" alt="Floor">
             </div>
             <div class="tile" [ngClass]="{'selected': selectedTile === 'wall'}" (click)="selectTile('wall')">
-                <img src="../../../../assets/tiles/wall.png" alt="Wall">
+                <img src="../../../../assets/tiles/spwall.jpg" alt="Wall">
             </div>
             <div class="tile" [ngClass]="{'selected': selectedTile === 'ice'}" (click)="selectTile('ice')">
-                <img src="../../../../assets/tiles/iceacid.png" alt="Ice">
+                <img src="../../../../assets/tiles/spice.jpg" alt="Ice">
             </div>
             <div class="tile" [ngClass]="{'selected': selectedTile === 'water'}" (click)="selectTile('water')">
-                <img src="../../../../assets/tiles/acid.png" alt="Water">
+                <img src="../../../../assets/tiles/spacid.jpg" alt="Water">
             </div>
         </div>
     </div>
     <div class="item-section">
         <h3>Items</h3>
         <div class="item-grid">
-        <div class="tile"  (click)="selectItem('vest')">
+        <div class="item"  (click)="selectItem('vest')">
             <img src="../../../../assets/items/vest.png" alt="vest">
         </div>
-        <div class="tile"  (click)="selectItem('mask')">
+        <div class="item"  (click)="selectItem('mask')">
             <img src="../../../../assets/items/mask.png" alt="mask">
         </div>
-        <div class="tile"  (click)="selectItem('jar')">
+        <div class="item"  (click)="selectItem('jar')">
             <img src="../../../../assets/items/jar.png" alt="jar">
         </div>
-        <div class="tile"  (click)="selectItem('acidgun')">
+        <div class="item"  (click)="selectItem('acidgun')">
             <img src="../../../../assets/items/acidgun.png" alt="acidgun">
         </div>
-        <div class="tile"  (click)="selectItem('key')">
+        <div class="item"  (click)="selectItem('key')">
             <img src="../../../../assets/items/key.png" alt="key">
         </div>
-        <div class="tile"  (click)="selectItem('hat')">
+        <div class="item"  (click)="selectItem('hat')">
             <img src="../../../../assets/items/hat.png" alt="hat">
         </div>
     </div>
+
     </div>
+    <div class="starting-point-section">
+        <h3>Starting point</h3>
+        <div class="tile"  (click)="selectItem('vest')">
+            <img src="../../../../assets/startingpoint/startingpoint.png" alt="vest">
+        </div>
 
 </div>

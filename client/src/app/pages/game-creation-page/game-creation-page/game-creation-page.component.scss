@@ -1,7 +1,24 @@
+@font-face {
+  font-family: 'Timepiece';
+  src: url('../../../../assets/fonts/Timepiece-RpdEW.ttf') format('truetype'); /* Adjust the path if necessary */
+}
+
 .game-creation-page {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-  }
- 
+  background-color: #2c3e50;
+  color: #000000;
+  display: flex;
+  height: 100vh;
+}
+
+app-toolbar {
+  flex-shrink: 0;
+  font-family: 'Timepiece', sans-serif;
+}
+
+app-map-area {
+  flex-grow: 1; 
+  padding-left: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

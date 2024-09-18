@@ -1,19 +1,19 @@
 .map-container {
+    background-color: #8B4513;
+    border: 6px solid #8B4513;
+    padding: 5px;
+    box-shadow: 0 0 10px #B7410E;
+}
+.map {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
-}
-
-.map {
-    // display: grid;
-    // grid-template-columns: repeat(10, 50px);
-    // grid-template-rows: repeat(10, 50px);
-    // gap: 2px;
-    display: flex;
-    width: 50%;
-    height: 75%;
-    flex-direction: column;
+    width: 600px;
+    height: 600px;
+    box-sizing: border-box;
+    border: 2px solid #B87333;
+    // background-color: #3B3B3B; 
 }
 .map-row{
     display: flex;
@@ -21,21 +21,19 @@
 }
 
 .map-cell {
-    // width: 50px;
-    // height: 50px;
-    // background-color: #c5b783; 
-    // cursor: pointer;
     flex: 1;
-    border: 1px solid black;
     text-align: center;
-    line-height: calc(600px/var(--map-size));
-    height: calc(600px/var(--map-size));
+    line-height: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #B87333;
+    background-color: #3B3B3B;
 }
 
 .map-cell img {
     width: 100%;
     height: 100%;
-    border: 1px solid #000000; 
+    object-fit: cover;
+    display: block;
 }
 
 :host {
