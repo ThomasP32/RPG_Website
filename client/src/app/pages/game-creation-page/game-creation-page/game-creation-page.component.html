@@ -1,5 +1,16 @@
 <div class="game-creation-page">
-  
+  <!-- Toolbar on the left -->
+  <div class="left-area">
     <app-toolbar (tileSelected)="onTileSelected($event)"></app-toolbar>
+  </div>
+
+  <!-- Map in the middle -->
+  <div class="center-area">
     <app-map-area [selectedTile]="selectedTile"></app-map-area>
   </div>
+
+  <!-- Control bar on the right -->
+  <div class="right-area">
+    <app-map-control-bar></app-map-control-bar>
+  </div>
+</div>

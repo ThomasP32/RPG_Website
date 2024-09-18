@@ -1,0 +1,24 @@
+<div class="control-bar">
+  <!-- Map title and description -->
+  <div class="info-section">
+    <div>
+      <label for="map-title">Map title</label>
+      <span *ngIf="!isEditingTitle">{{ mapTitle }}</span>
+      <input *ngIf="isEditingTitle" [(ngModel)]="mapTitle" id="map-title" type="text">
+      <!-- <button (click)="toggleEditTitle()">{{ isEditingTitle ? 'Save' : 'Edit' }}</button> -->
+    </div>
+
+    <div>
+      <label for="map-description">Map description</label>
+      <span *ngIf="!isEditingDescription">{{ mapDescription }}</span>
+      <input *ngIf="isEditingDescription" [(ngModel)]="mapDescription" id="map-description" type="text">
+      <!-- <button (click)="toggleEditDescription()">{{ isEditingDescription ? 'Save' : 'Edit' }}</button> -->
+    </div>
+  </div>
+
+  <!-- Reset and Save buttons -->
+  <div class="button-section">
+    <button (click)="resetMap()">Reset</button>
+    <button (click)="createMap()">Save</button>
+  </div>
+</div>

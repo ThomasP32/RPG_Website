@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { MapAreaComponent } from '@app/components/map-creation/map-area/map-area.component';
-import { ToolbarComponent } from '@app/components/toolbar/toolbar/toolbar.component';
+import { MapAreaComponent } from '@app/components/map-area/map-area.component';
+import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
+import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
 
 @Component({
   selector: 'app-game-creation-page',
   standalone: true,
-  imports: [ToolbarComponent,MapAreaComponent],
+  imports: [MapControlBarComponent,ToolbarComponent,MapAreaComponent],
   templateUrl: './game-creation-page.component.html',
   styleUrl: './game-creation-page.component.scss'
 })

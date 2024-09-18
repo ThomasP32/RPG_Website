@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MapAreaComponent } from '@app/components/map-creation/map-area/map-area.component';
-import { ToolbarComponent } from '@app/components/toolbar/toolbar/toolbar.component';
+import { MapAreaComponent } from '@app/components/map-area/map-area.component';
+import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
 import { GameCreationPageComponent } from './game-creation-page.component';
 
 describe('GameCreationPageComponent', () => {

@@ -1,18 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MapControlBarComponent } from '../map-control-bar/map-control-bar.component';
+
 @Component({
     selector: 'app-map-area',
     standalone: true,
-    imports: [CommonModule],
+    imports: [MapControlBarComponent,CommonModule],
     templateUrl: './map-area.component.html',
     styleUrl: './map-area.component.scss',
 })
 export class MapAreaComponent {
-    @Input() selectedTile: string = 'grass';
+    @Input() selectedTile: string = 'floor';
     Map: { value: string | null; isHovered: boolean }[][] = [];
     isPlacing: boolean = false;
-    defaultTile = 'grass';
+    defaultTile = 'floor';
     mapSize: string;
     mode: string;
     convertedMapSize: number;
@@ -24,7 +26,7 @@ export class MapAreaComponent {
         private renderer: Renderer2, 
         private cdRef: ChangeDetectorRef
     ) {}
-
+    
 
     ngOnInit() {
         this.getUrlParams();
@@ -91,16 +93,16 @@ export class MapAreaComponent {
 
     getTileImage(tileValue: string): string {
         switch (tileValue) {
-            case 'grass':
-                return '../../../../assets/tiles/spfloor.jpg';
+            case 'door':
+                return '../../../../assets/tiles/door.png';
             case 'wall':
-                return '../../../../assets/tiles/spwall.jpg';
+                return '../../../../assets/tiles/wall.png';
             case 'ice':
-                return '../../../../assets/tiles/spice.jpg';
+                return '../../../../assets/tiles/ice.png';
             case 'water':
-                return '../../../../assets/tiles/spacid.jpg';
+                return '../../../../assets/tiles/water.png';
             default:
-                return '../../../../assets/tiles/spfloor.jpg';
+                return '../../../../assets/tiles/floor.png';
         }
     }
     //TODO: PUT it in a service, same as in toolbar.component.ts

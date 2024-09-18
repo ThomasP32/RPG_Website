@@ -19,12 +19,31 @@ export class ToolbarComponent {
     mode: string;
     convertedMode: string;
 
+    isTilesVisible: boolean = true;
+    isItemsVisible: boolean = true;
+    isFlagVisible: boolean = true;
+    isStartingPointVisible: boolean = true;
+
     constructor(private route: ActivatedRoute) {}
 
     ngOnInit() {
         this.getUrlParams();
         this.urlConverter(this.mode);
-        this.createToolbar(this.convertedMode);
+    }
+
+    toggleTiles() {
+        this.isTilesVisible = !this.isTilesVisible;
+    }
+
+    toggleItems() {
+        this.isItemsVisible = !this.isItemsVisible;
+    }
+
+    toggleFlag() {
+        this.isFlagVisible = !this.isFlagVisible;
+    }
+    toggleStartingPoint() {
+        this.isStartingPointVisible = !this.isStartingPointVisible;
     }
 
     selectTile(tile: string) {
@@ -45,24 +64,7 @@ export class ToolbarComponent {
     urlConverter(mode: string) {
         console.log('URL params:', mode);
         this.convertedMode = mode.split('=')[1];
+        this.mode = this.convertedMode; 
         console.log('Converted mode:', this.convertedMode);
-    }
-    createToolbar(mode: string) {
-        if (mode === 'CTF') {
-            // Add the flag item to the item grid
-            const itemGrid = document.querySelector('.item-grid');
-            if (itemGrid) {
-                const flagTile = document.createElement('div');
-                flagTile.classList.add('tile');
-                flagTile.addEventListener('click', () => this.selectItem('flag'));
-
-                const flagImage = document.createElement('img');
-                flagImage.src = '../../../../assets/items/flag.png'; // Assuming you have a flag image
-                flagImage.alt = 'flag';
-
-                flagTile.appendChild(flagImage);
-                itemGrid.appendChild(flagTile);
-            }
-        }
     }
 }
