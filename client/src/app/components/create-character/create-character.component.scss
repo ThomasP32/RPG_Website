@@ -1,39 +1,51 @@
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-    padding: 20px;
-}
-
 .form-box {
-    background-color: white;
+    display: flex;
+    min-height: 100vh;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+    background-color: #f0f0f0;
+    overflow: auto;
 }
 
 h2 {
-    text-align: center;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.left {
+    flex: 3;
+    min-width: 300px;
+}
+
+.right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-left: 20px;
+    border-left: 1px solid #ccc;
+}
+
+.selected-avatar {
+    width: 150px;
+    height: 150px;
+    margin: 20px 0;
+    border-radius: 0;
 }
 
 .characters-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    justify-items: center;
 }
 
-.character {
-    text-align: center;
-}
-
-label {
+.character img {
+    width: 70px;
+    height: 70px;
+    transition:
+        transform 0.2s ease-in-out,
+        border 0.2s ease-in-out;
     cursor: pointer;
 }
 
@@ -41,10 +53,6 @@ label {
     border-radius: 50%;
     width: 70px;
     height: 70px;
-    transition:
-        transform 0.2s ease-in-out,
-        border 0.2s ease-in-out;
-    cursor: pointer;
 }
 
 input[type='radio'] {
@@ -56,50 +64,13 @@ input[type='radio']:checked + label img {
     transform: scale(1.1);
 }
 
-.attributes-section {
-    line-height: 2;
-}
-
-.attribute {
-    border-radius: 5px;
-}
-
-.attribute[title] {
-    position: relative;
-    cursor: help;
-}
-
-.attribute[title]::after {
-    content: attr(title);
-    position: absolute;
-    left: 50%;
-    bottom: 125%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.9em;
-    opacity: 0;
-    visibility: hidden;
-    white-space: nowrap;
-    transition:
-        opacity 0.2s,
-        visibility 0.2s;
-}
-
-.attribute:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
-
-.bonus-selection,
-.dice-assignment {
+.bonus-selection {
     margin-top: 20px;
     text-align: left;
 }
 
-.bonus-buttons {
+.bonus-buttons,
+.dice-buttons {
     display: flex;
     gap: 10px;
     margin-top: 10px;
@@ -119,7 +90,7 @@ button {
     display: block;
     margin: 20px auto;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: gray;
     color: white;
     border: none;
     border-radius: 5px;

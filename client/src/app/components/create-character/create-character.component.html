@@ -1,82 +1,92 @@
-<div class="container">
-    <div class="form-box">
-        <h2>Character Form:</h2>
+<h2>Character Form:</h2>
+<div class="form-box">
+    <div class="left">
+        <label for="characterName">Enter your character's name: </label>
+        <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" required />
+        <br />
+        <br />
+        <div class="character-selection">
+            <label>Select your character's avatar: </label>
+            <div class="characters-container">
+                <div *ngFor="let character of characters" class="character">
+                    <input type="radio" [(ngModel)]="selectedCharacter" name="selectedCharacter" [value]="character.name" id="{{ character.name }}" />
+                    <label for="{{ character.name }}">
+                        <img [src]="character.image" />
+                        <div class="character-name">{{ character.name }}</div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="bonus-selection">
+            <label>Add a +2 bonus to the attribute of your choice: </label>
+            <br />
+            <div class="bonus-buttons">
+                <input type="radio" id="life" [(ngModel)]="lifeOrSpeedBonus" name="lifeOrSpeedBonus" value="life" (change)="addBonus()" hidden />
+                <label for="life" class="btn">Life</label>
 
-        <section>
-            <label for="characterName">Enter your character's name: </label>
-            <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" required />
+                <input type="radio" id="speed" [(ngModel)]="lifeOrSpeedBonus" name="lifeOrSpeedBonus" value="speed" (change)="addBonus()" hidden />
+                <label for="speed" class="btn">Speed</label>
+            </div>
             <br />
-            <br />
-            <div class="character-selection">
-                <label>Select your character's avatar: </label>
-                <div class="characters-container">
-                    <div *ngFor="let character of characters" class="character">
-                        <input
-                            type="radio"
-                            [(ngModel)]="selectedCharacter"
-                            name="selectedCharacter"
-                            [value]="character.name"
-                            id="{{ character.name }}"
-                        />
-                        <label for="{{ character.name }}">
-                            <img [src]="character.image" />
-                            <div class="character-name">{{ character.name }}</div>
-                        </label>
+
+            <div class="dice-assignment">
+                <div *ngIf="rollingD4">
+                    <p>Assign a 4-sided die (D4) to the attribute of your choice:</p>
+                    <div class="dice-buttons">
+                        <input type="radio" id="attack" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="attack" hidden />
+                        <label for="attack" class="btn">Attack</label>
+
+                        <input type="radio" id="defense" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="defense" hidden />
+                        <label for="defense" class="btn">Defense</label>
                     </div>
                 </div>
+
+                <div *ngIf="rollingDiceFor && !diceRolled">
+                    <p>Rolling a D4 for {{ rollingDiceFor }}:</p>
+                    <button (click)="assignD4()">Roll 4-Sided Die</button>
+                </div>
+
+                <div *ngIf="!rollingD4 && diceRolled">
+                    <p>Now rolling a D6 for {{ rollingDiceFor === 'attack' ? 'Defense' : 'Attack' }}:</p>
+                    <button (click)="assignD6()">Roll 6-Sided Die</button>
+                </div>
+
+                <div *ngIf="!rollingD4 && diceRolled">
+                    <h4>Results:</h4>
+                    <p>Attack: {{ attack }}</p>
+                    <p>Defense: {{ defense }}</p>
+                </div>
+            </div>
+        </div>
+        <button (click)="onSubmit()">Save</button>
+    </div>
+    <div class="right">
+        <section class="attributes-section">
+            <br />
+            <strong> Selected avatar: </strong>
+            <div *ngIf="selectedCharacter">
+                <section *ngFor="let character of characters">
+                    <img *ngIf="character.name === selectedCharacter" [src]="character.image" class="selected-avatar" alt="Selected Avatar" />
+                </section>
             </div>
             <br />
-
-            <section class="attributes-section">
-                <strong>Character's attributes: </strong>
-                <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
-                    <strong>Life</strong>: {{ life }} points
-                </div>
-
-                <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
-                    <strong>Speed</strong>: {{ speed }} points
-                </div>
-
-                <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
-                    <strong>Attack</strong>: {{ attackBonus }} points
-                </div>
-
-                <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
-                    <strong>Defense</strong>: {{ defenseBonus }} points
-                </div>
-            </section>
-
-            <div class="bonus-selection">
-                <label>Add a +2 bonus to the attribute of your choice: </label>
-                <br />
-                <div class="bonus-buttons">
-                    <input type="radio" id="life" [(ngModel)]="lifeOrSpeedBonus" name="lifeOrSpeedBonus" value="life" (change)="addBonus()" hidden />
-                    <label for="life" class="btn">Life</label>
-
-                    <input
-                        type="radio"
-                        id="speed"
-                        [(ngModel)]="lifeOrSpeedBonus"
-                        name="lifeOrSpeedBonus"
-                        value="speed"
-                        (change)="addBonus()"
-                        hidden
-                    />
-                    <label for="speed" class="btn">Speed</label>
-                </div>
-                <br />
-
-                <label>Assign a 4-sided die (D4) to the attribute of your choice:</label>
-                <div class="bonus-buttons">
-                    <br />
-                    <input type="radio" [(ngModel)]="diceAssignment" name="diceAssignment" value="attack" (change)="assignDice()" />
-                    <label for="attack" class="btn">Attack</label>
-                    <input type="radio" [(ngModel)]="diceAssignment" name="diceAssignment" value="defense" (change)="assignDice()" />
-                    <label for="defense" class="btn">Defense</label>
-                </div>
+            <strong>Avatar's attributes: </strong>
+            <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
+                <strong>Life</strong>: {{ life }} points
             </div>
 
-            <button (click)="onSubmit()">Save</button>
+            <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
+                <strong>Speed</strong>: {{ speed }} points
+            </div>
+
+            <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
+                <strong>Attack</strong>: {{ attack }} points
+            </div>
+
+            <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
+                <strong>Defense</strong>: {{ defense }} points
+            </div>
         </section>
     </div>
 </div>
