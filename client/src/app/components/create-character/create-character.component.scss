@@ -1,14 +1,29 @@
 .form-box {
     display: flex;
-    min-height: 100vh;
-    padding: 20px;
-    background-color: #f0f0f0;
+    background-color: #000836;
     overflow: auto;
+    width: 90%;
+    height: 80vh;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-h2 {
+p,
+div {
+    color: white;
+}
+
+h1 {
     text-align: left;
-    margin-bottom: 20px;
+    position: fixed;
+    left: 3.5%;
+    margin: 0;
+    margin-bottom: 60px;
 }
 
 .left {
@@ -21,19 +36,27 @@ h2 {
     display: flex;
     flex-direction: column;
     align-items: left;
-    justify-content: center;
+    justify-content: flex-start;
     border-left: 1px solid #ccc;
     padding: 20px;
 }
 
+.character-selection {
+    border: 2px solid white;
+    padding: 20px;
+    margin-top: 20px;
+    margin-right: 20px;
+    border-radius: 10px;
+}
+
 .avatar-container {
     margin-bottom: 10px;
+    margin-top: 20px;
 }
 
 .avatar-placeholder {
     width: 160px;
     height: 160px;
-    background-color: #f0f0f0;
     border: 1px solid #ddd;
     display: block;
 }
@@ -41,8 +64,16 @@ h2 {
 .attribute {
     text-align: left;
     margin-bottom: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
+    padding: 5px 0;
+}
+
+.attribute-container {
+    border: 2px solid white;
+    background-color: #333333;
+    padding: 20px;
+    margin-top: 20px;
+    margin-right: 20px;
+    border-radius: 10px;
 }
 
 .selected-avatar {
@@ -98,20 +129,20 @@ input[type='radio']:checked + label img {
 .btn {
     display: inline-block;
     padding: 10px 10px;
-    background-color: #f0f0f0;
+    background-color: #484848;
     border: 2px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
 }
 
-button {
+.save-button {
     display: block;
-    margin: 20px auto;
+    margin-left: 60%;
     padding: 10px 20px;
-    background-color: gray;
+    background-color: #484848;
     color: white;
-    border: none;
+    border: 2px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;

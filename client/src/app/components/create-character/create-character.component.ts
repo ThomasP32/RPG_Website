@@ -28,8 +28,8 @@ export class CreateCharacterComponent {
     diceRollD4 = 0;
     diceRollD6 = 0;
     diceRolled: boolean = false;
-    rollingDiceFor: string = '';
     rolledD4: boolean = false;
+    rollingDiceFor: string = '';
 
     characters: Character[] = [];
 
@@ -60,6 +60,9 @@ export class CreateCharacterComponent {
     rollFor(attribute: string) {
         this.rollingDiceFor = attribute;
         this.diceRolled = false;
+        this.rolledD4 = false;
+        this.diceRollD4 = 0;
+        this.diceRollD6 = 0;
     }
 
     assignD4() {
@@ -70,18 +73,18 @@ export class CreateCharacterComponent {
         } else if (this.rollingDiceFor === 'defense') {
             this.defense = this.defaultPoints + this.diceRollD4;
         }
-        this.diceRolled = false;
         this.rolledD4 = true;
     }
 
     assignD6() {
         const rollResult = this.rollDice(6);
-        this.diceRollD4 = rollResult;
+        this.diceRollD6 = rollResult;
         if (this.rollingDiceFor === 'attack') {
             this.defense = this.defaultPoints + this.diceRollD6;
         } else if (this.rollingDiceFor === 'defense') {
             this.attack = this.defaultPoints + this.diceRollD6;
         }
+        this.diceRolled = false;
     }
 
     onSubmit() {

@@ -1,12 +1,12 @@
-<h2>Character Form:</h2>
+<h1>Create your character:</h1>
 <div class="form-box">
     <div class="left">
         <label for="characterName">Enter your character's name: </label>
         <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" required />
         <br />
         <br />
+        <label>Select your character's avatar: </label>
         <div class="character-selection">
-            <label>Select your character's avatar: </label>
             <div class="characters-container">
                 <div *ngFor="let character of characters" class="character">
                     <input type="radio" [(ngModel)]="selectedCharacter" name="selectedCharacter" [value]="character.name" id="{{ character.name }}" />
@@ -43,16 +43,16 @@
 
             <div *ngIf="rollingDiceFor && !diceRolled">
                 <p>Roll the 4-sided die (D4) for {{ rollingDiceFor }}:</p>
-                <button (click)="assignD4()">Roll D4</button>
+                <button (click)="assignD4()" [disabled]="rolledD4">Roll D4</button>
                 <p>Result: {{ diceRollD4 }}</p>
             </div>
-            <div *ngIf="!rollingDiceFor && diceRolled">
-                <p>Roll the 6-sided die (D6) for {{ rollingDiceFor === 'attack' ? 'Defense' : 'Attack' }}:</p>
+            <div *ngIf="rolledD4 && !diceRolled">
+                <p>Roll the 6-sided die (D6) for {{ rollingDiceFor === 'attack' ? 'defense' : 'attack' }}:</p>
                 <button (click)="assignD6()">Roll D6</button>
                 <p>Result: {{ diceRollD6 }}</p>
             </div>
         </div>
-        <button (click)="onSubmit()">Save</button>
+        <button (click)="onSubmit()" class="save-button">Save character</button>
     </div>
     <div class="right">
         <section class="attributes-section">
@@ -68,21 +68,24 @@
             </div>
             <br />
             <strong>Avatar's attributes: </strong>
-            <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
-                <strong>Life</strong>: {{ life }} points
-            </div>
+            <div class="attribute-container">
+                <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
+                    <strong>Life</strong>: {{ life }} points
+                </div>
 
-            <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
-                <strong>Speed</strong>: {{ speed }} points
-            </div>
+                <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
+                    <strong>Speed</strong>: {{ speed }} points
+                </div>
 
-            <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
-                <strong>Attack</strong>: {{ attack }} points
-            </div>
+                <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
+                    <strong>Attack</strong>: {{ attack }} points
+                </div>
 
-            <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
-                <strong>Defense</strong>: {{ defense }} points
+                <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
+                    <strong>Defense</strong>: {{ defense }} points
+                </div>
             </div>
+            <p>For description of attributes, place cursor on each one.</p>
         </section>
     </div>
 </div>
