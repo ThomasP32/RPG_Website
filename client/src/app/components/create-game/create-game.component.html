@@ -1,20 +1,20 @@
 <div class="create-game-view">
-    <h2>Create a New Game:</h2>
-    <strong>List of available Games</strong>
+    <div class="titles">
+        <h2>Create a New Game!</h2>
+        <strong>List of available Games: </strong>
 
-    <ul class="game-list">
-        <li *ngFor="let game of availableGames">
-            <button [class.selected]="game === selectedGame" type="button" (click)="viewGameDetails(game)">
-                <span class="game-name">{{ game.name }}</span>
-            </button>
-        </li>
-    </ul>
+        <div class="game-list">
+            <div *ngFor="let game of availableGames" class="game-box" (click)="selectGame(game)">
+                <div class="image-container">
+                    <!-- <img [src]="game.mapPreview" alt="Game Map Preview" class="game-map-preview" /> -->
+                </div>
+                <div class="game-info">
+                    <h3>{{ game.name }}</h3>
+                    <p>Map Size: {{ game.mapSize }}</p>
+                    <p>Game Mode: {{ game.gameMode }}</p>
+                    <p>Last Modified: {{ game.lastModified }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<br />
-<!-- <div *ngIf="selectedGame">
-    <div>Map Size: {{ selectedGame.mapSize }}</div>
-    //<div>Game Mode: {{ selectedGame.gameMode }}</div>
-    <div>Last Modified: {{ selectedGame.lastModified }}</div>
-    <br />
-    <div>Map preview: {{ selectedGame.mapPreview }}</div>
-</div> -->

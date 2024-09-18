@@ -18,26 +18,41 @@ export class CreateGameComponent {
     game: Game;
 
     private readonly gameService: GameService = inject(GameService);
-    private readonly router: Router;
+    private readonly router: Router = inject(Router);
 
-    // display the list of available games
-    loadAvailableGames() {
-        this.gameService.getVisibleGames().subscribe((games) => {
+    // loadAvailableGames() {
+    //     this.gameService.getVisibleGames().subscribe((games) => {
+    //         this.availableGames = games;
+    //     });
+    // }
+
+    // display list of mockData games
+    loadMockAvailableGames() {
+        this.gameService.getMockVisibleGames().subscribe((games) => {
             this.availableGames = games;
         });
     }
-
-    selectedGame?: Game;
-    viewGameDetails(game: Game) {
-        this.selectedGame = game;
+    ngOnInit(): void {
+        this.loadMockAvailableGames();
     }
 
     // redirects organizer to character creation form if available
     // if not available, error message
-    selectGame(game: { id: string; name: string; mapSize: number; gameMode: string; mapPreview: string; lastModified: string }) {
-        this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
+    // selectGame(game: { id: string; name: string; mapSize: number; gameMode: string; mapPreview: string; lastModified: string }) {
+    //     this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
+    //         if (isAvailable) {
+    //             this.router.navigate(['/create-character', game.id]);
+    //         } else {
+    //             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
+    //         }
+    //     });
+    // }
+
+    // mockData implementation
+    selectGame(game: Game) {
+        this.gameService.checkMockGameAvailability(game.name).subscribe((isAvailable) => {
             if (isAvailable) {
-                this.router.navigate(['/create-character', game.id]);
+                this.router.navigate(['/waiting-room']);
             } else {
                 this.errorMessage = 'The selected game is unavailable. Please choose another game.';
             }
