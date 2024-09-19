@@ -57,7 +57,8 @@
     <div class="right">
         <section class="attributes-section">
             <br />
-            <strong> Selected avatar: </strong>
+            <strong>Selected character:</strong>
+            <p *ngIf="selectedCharacter">{{ selectedCharacter }}</p>
             <div class="avatar-container">
                 <div *ngIf="selectedCharacter">
                     <section *ngFor="let character of characters">

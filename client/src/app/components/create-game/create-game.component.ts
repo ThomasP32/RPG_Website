@@ -24,7 +24,7 @@ export class CreateGameComponent {
     game: Game;
 
     private readonly gameService: GameService = inject(GameService);
-    private readonly router: Router;
+    private readonly router: Router = inject(Router);
 
     loadAvailableGames() {
         this.gameService.getVisibleGames().subscribe((games) => {

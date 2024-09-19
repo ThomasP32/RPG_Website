@@ -34,7 +34,7 @@ export class CreateCharacterComponent {
     characters: Character[] = [];
 
     private readonly characterService: CharacterService = inject(CharacterService);
-    private readonly router: Router;
+    private readonly router: Router = inject(Router);
 
     constructor() {
         this.characterService.getCharacters().subscribe((characters) => {
@@ -88,6 +88,7 @@ export class CreateCharacterComponent {
     }
 
     onSubmit() {
+        console.log('Submitted');
         this.router.navigate(['/waiting-room']);
     }
 }
