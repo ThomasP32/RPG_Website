@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
 
+const four = 4;
+const six = 6;
+
 @Component({
     selector: 'app-create-character',
     standalone: true,
@@ -17,7 +20,7 @@ export class CreateCharacterComponent {
     selectedCharacter = '';
     lifeOrSpeedBonus = '';
 
-    defaultPoints = 4;
+    defaultPoints = four;
 
     life = this.defaultPoints;
     speed = this.defaultPoints;
@@ -43,8 +46,8 @@ export class CreateCharacterComponent {
     }
 
     addBonus() {
-        this.life = 4;
-        this.speed = 4;
+        this.life = four;
+        this.speed = four;
 
         if (this.lifeOrSpeedBonus === 'life') {
             this.life += 2;
@@ -66,7 +69,7 @@ export class CreateCharacterComponent {
     }
 
     assignD4() {
-        const rollResult = this.rollDice(4);
+        const rollResult = this.rollDice(four);
         this.diceRollD4 = rollResult;
         if (this.rollingDiceFor === 'attack') {
             this.attack = this.defaultPoints + this.diceRollD4;
@@ -77,7 +80,7 @@ export class CreateCharacterComponent {
     }
 
     assignD6() {
-        const rollResult = this.rollDice(6);
+        const rollResult = this.rollDice(six);
         this.diceRollD6 = rollResult;
         if (this.rollingDiceFor === 'attack') {
             this.defense = this.defaultPoints + this.diceRollD6;
@@ -88,7 +91,6 @@ export class CreateCharacterComponent {
     }
 
     onSubmit() {
-        console.log('Submitted');
         this.router.navigate(['/waiting-room']);
     }
 }

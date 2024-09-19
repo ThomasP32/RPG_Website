@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+
+const minCode = 1000;
+const maxCode = 9000;
 
 @Component({
     selector: 'app-waiting-room',
@@ -7,7 +10,7 @@ import { Component } from '@angular/core';
     templateUrl: './waiting-room.component.html',
     styleUrls: ['./waiting-room.component.scss'],
 })
-export class WaitingRoomComponent {
+export class WaitingRoomComponent implements OnInit {
     waitingRoomCode: number = 0;
 
     ngOnInit(): void {
@@ -15,6 +18,6 @@ export class WaitingRoomComponent {
     }
 
     generateRandomNumber(): void {
-        this.waitingRoomCode = Math.floor(1000 + Math.random() * 9000);
+        this.waitingRoomCode = Math.floor(minCode + Math.random() * maxCode);
     }
 }
