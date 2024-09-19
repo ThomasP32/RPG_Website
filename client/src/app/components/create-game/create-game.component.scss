@@ -1,4 +1,4 @@
-.create-game-view {
+.create-map-view {
     display: flex;
     height: 100vh;
 }
@@ -11,12 +11,12 @@
     overflow-y: auto;
 }
 
-.game-list {
+.map-list {
     display: flex;
     flex-direction: column;
 }
 
-.game-box {
+.map-box {
     display: flex;
     margin-bottom: 10px;
     border: 1px solid #ccc;

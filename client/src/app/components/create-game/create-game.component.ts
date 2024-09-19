@@ -13,23 +13,23 @@ import { Map } from 'src/app/interfaces/map';
     imports: [FormsModule, CommonModule],
 })
 export class CreateGameComponent {
-    availableGames: Map[] = [];
+    availableMaps: Map[] = [];
     errorMessage: string = '';
     map: Map;
 
     private readonly gameService: GameService = inject(GameService);
     private readonly router: Router = inject(Router);
 
-    loadAvailableGames() {
-        this.gameService.getVisibleGames().subscribe((games) => {
-            this.availableGames = games;
+    loadAvailableMaps() {
+        this.gameService.getVisibleMaps().subscribe((maps) => {
+            this.availableMaps = maps;
         });
     }
 
-    selectGame(game: { id: string; name: string; mapSize: number; gameMode: string; mapPreview: string; lastModified: string }) {
-        this.gameService.checkGameAvailability(game.id).subscribe((isAvailable) => {
+    selectMap(map: { id: string; name: string; description: string; mapSize: number; gameMode: string }) {
+        this.gameService.checkMapAvailability(map.id).subscribe((isAvailable) => {
             if (isAvailable) {
-                this.router.navigate(['/create-character', game.id]);
+                this.router.navigate(['/create-character', map.id]);
             } else {
                 this.errorMessage = 'The selected game is unavailable. Please choose another game.';
             }

@@ -12,12 +12,12 @@ export class GameService {
 
     constructor(private readonly http: HttpClient) {}
 
-    getVisibleGames(): Observable<Map[]> {
-        return this.http.get<Map[]>(`${this.baseUrl}`).pipe(catchError(this.handleError<Map[]>('getVisibleGames')));
+    getVisibleMaps(): Observable<Map[]> {
+        return this.http.get<Map[]>(`${this.baseUrl}`).pipe(catchError(this.handleError<Map[]>('getVisibleMaps')));
     }
 
-    checkGameAvailability(id: string): Observable<boolean> {
-        return this.http.get<boolean>(`${this.baseUrl}/${id}/isVisible`).pipe(catchError(this.handleError<boolean>('checkGameAvailability')));
+    checkMapAvailability(id: string): Observable<boolean> {
+        return this.http.get<boolean>(`${this.baseUrl}/${id}/isVisible`).pipe(catchError(this.handleError<boolean>('checkMapAvailability')));
     }
 
     private handleError<T>(request: string, result?: T): (error: Error) => Observable<T> {
