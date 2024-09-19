@@ -11,7 +11,7 @@ export class CharacterService {
             id: 1,
             name: 'Alistair Clockhaven',
             // eslint-disable-next-line max-len
-            image: 'https://cdn.discordapp.com/attachments/1285776237268041749/1286107687733690369/4.png?ex=66ecb49f&is=66eb631f&hm=19cfaca4529d2d5c2e30f1f507ebc18a6e827eb007e14b5da63ff296bd2398e7&',
+            image: 'clientsrcassetsAlistair_Clockhaven.png',
         },
         {
             id: 2,
