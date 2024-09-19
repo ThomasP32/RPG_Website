@@ -10,3 +10,27 @@ coverage/
 
 #Node Modules
 /node_modules
+
+dist/
+tmp/
+app/**/*.js
+app/**/*.js.map
+
+# dependencies
+bower_components/
+
+# IDEs and editors
+.idea/
+
+# misc
+.sass-cache/
+connect.lock/
+libpeerconnection.log/
+npm-debug.log
+testem.log
+typings/
+.angular/
+
+# e2e
+e2e/*.js
+e2e/*.map
