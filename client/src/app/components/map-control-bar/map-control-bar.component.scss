@@ -3,7 +3,7 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 20px;
-    height: 100%;
+    height: 100vh;
     color: #C0C0C0;
     font-family: 'Gomarice', sans-serif;
   }
@@ -11,22 +11,36 @@
   label {
     margin-right: 5px;
   }
-  
-  .info-section {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-  }
-  
   .info-section div {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
-  }
+}
+
+.info-section span, 
+.info-section input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.info-section button {
+    background-color: #2C3E50;
+    color: #C0C0C0;
+    padding: 5px 15px;
+    border: 1px solid black;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    font-family: 'Gomarice', sans-serif;
+    margin-left: 10px;
+}
   
   .button-section {
     display: flex;
     flex-direction: column;
     margin-top: auto;
+    margin-bottom: 40px;
   
     button {
       background-color: #2C3E50;

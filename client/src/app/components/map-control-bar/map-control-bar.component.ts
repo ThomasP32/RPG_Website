@@ -1,18 +1,21 @@
+import { CommonModule, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { MapService } from '@app/services/map.service';
 
 @Component({
   selector: 'app-map-control-bar',
   standalone: true,
   templateUrl: './map-control-bar.component.html',
   styleUrls: ['./map-control-bar.component.scss'],
-  imports: [FormsModule]
+  imports: [CommonModule, NgIf, FormsModule]
 })
 export class MapControlBarComponent implements OnInit {
 
-  mapTitle: string = 'Default Map Title'; // Titre par défaut
-  mapDescription: string = 'This is the default map description.'; // Description par défaut
+
+  mapTitle: string = 'Add a title'; // Titre par défaut
+  mapDescription: string = 'Add a map description'; // Description par défaut
 
   isEditingTitle: boolean = false;
   isEditingDescription: boolean = false;
@@ -21,7 +24,7 @@ export class MapControlBarComponent implements OnInit {
   gameMode: string = '';
   numberOfPlayers: number = 0;
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private route: ActivatedRoute, private mapService: MapService) { }
 
   ngOnInit(): void {
     this.getUrlParams();
@@ -37,8 +40,15 @@ export class MapControlBarComponent implements OnInit {
   }
 
   resetMap(): void {
-    this.mapTitle = 'Default Map Title';
-    this.mapDescription = 'This is the default map description.';
+    console.log("resetting the map");
+    console.log('MapControlBar: Triggering reset via service');
+    this.mapService.resetMap();
+    // if (this.mapAreaComponent) {
+    //   this.mapAreaComponent.resetMapToDefault();
+    // }
+    // else {
+    //   console.log("not working");
+    // }
   }
 
   createMap(): void {

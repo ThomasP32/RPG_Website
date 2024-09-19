@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
     standalone: true,
     imports: [NgClass, CommonModule],
     templateUrl: './toolbar.component.html',
-    styleUrl: './toolbar.component.scss',
+    styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent {
     @Input() selectedTile: string;

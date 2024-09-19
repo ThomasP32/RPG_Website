@@ -71,6 +71,7 @@ button:hover {
 
 .tile {
     display: flex;
+    position:relative;
     flex-direction: column;
     padding: 10px;
     border: 2px solid transparent;
@@ -100,6 +101,7 @@ button:hover {
     grid-gap: 10px;
 }
 .item {
+    position:relative;
     width: 80px; 
     height: 80px;
     border-radius: 50%; 
@@ -116,3 +118,42 @@ button:hover {
     }
 }
 
+.tooltip {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    width: 125px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    font-size: 0.9em;
+    font-family: 'Arial', sans-serif;
+}
+
+.tile:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+.item:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
