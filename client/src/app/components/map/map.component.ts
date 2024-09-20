@@ -3,6 +3,25 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModesComponent } from '../modes/modes.component';
 
+const SMALL_MAP_SIZE = 10;
+const MEDIUM_MAP_SIZE = 15;
+const LARGE_MAP_SIZE = 20;
+const SMALL_MAP_ITEMS = 2;
+const MEDIUM_MAP_ITEMS = 4;
+const LARGE_MAP_ITEMS = 6;
+
+export enum MapSize {
+    Small = SMALL_MAP_SIZE,
+    Medium = MEDIUM_MAP_SIZE,
+    Large = LARGE_MAP_SIZE,
+}
+
+export enum NbItems {
+    Small = SMALL_MAP_ITEMS,
+    Medium = MEDIUM_MAP_ITEMS,
+    Large = LARGE_MAP_ITEMS,
+}
+
 @Component({
     selector: 'app-mapChoices-component',
     standalone: true,
@@ -11,21 +30,11 @@ import { ModesComponent } from '../modes/modes.component';
     styleUrls: ['./map.component.scss'],
 })
 export class MapComponent {
-    /* TODO : Creer des interfaces ou services et mettre la logique dedans*/
     size: 'small' | 'medium' | 'large';
-    mapSize: number;
+    mapSize: MapSize;
+    mapSizeType: typeof MapSize = MapSize;
     mapName: string;
-    MAPSIZE: { SMALL: number; MEDIUM: number; LARGE: number } = {
-        SMALL: 10,
-        MEDIUM: 15,
-        LARGE: 20,
-    };
     nbItems: number;
-    NBITEMS: { SMALL: number; MEDIUM: number; LARGE: number } = {
-        SMALL: 2,
-        MEDIUM: 4,
-        LARGE: 6,
-    };
     isHovered = false;
     selectedMode: string;
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
@@ -35,22 +44,20 @@ export class MapComponent {
 
     // constructor(private http: HttpClient) {}
 
-    /* TODO: Creer une inteface*/
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         console.log('Button clicked, Size :', size);
         switch (size) {
             case 'small':
-                this.mapSize = this.MAPSIZE.SMALL;
-                this.nbItems = this.NBITEMS.SMALL;
+                this.mapSize = MapSize.Small;
+                this.nbItems = NbItems.Small;
                 break;
             case 'medium':
-                this.mapSize = this.MAPSIZE.MEDIUM;
-                this.nbItems = this.NBITEMS.MEDIUM;
+                this.mapSize = MapSize.Medium;
+                this.nbItems = NbItems.Medium;
                 break;
             case 'large':
-                this.mapSize = this.MAPSIZE.LARGE;
-                this.nbItems = this.NBITEMS.LARGE;
-
+                this.mapSize = MapSize.Large;
+                this.nbItems = NbItems.Large;
                 break;
             default:
                 console.error('Invalid size value:', size);

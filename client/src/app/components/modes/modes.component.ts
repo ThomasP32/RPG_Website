@@ -1,9 +1,10 @@
+import { NgClass } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
     selector: 'app-modes-choice',
     standalone: true,
-    imports: [],
+    imports: [NgClass],
     templateUrl: './modes.component.html',
     styleUrl: './modes.component.scss',
 })
