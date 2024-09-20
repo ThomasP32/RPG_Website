@@ -1,43 +1,37 @@
 <div class="adminPage-container">
     <h2 class="header-item">{{ title }}</h2>
 
-    <button class="button" (click)="navigateToMain()">Retour à l'accueil</button>
-    <button class="button">Créer un nouveau jeu</button>
+    <button class="button" (click)="navigateToMain()"> Return to main menu </button>
+    <button class="button"> start a new game</button>
 
-<!-- CHANGER LE *NGIF POUR @IF ET *NGFOR POUR @FOR-->
- 
     <div class="game-list">
-            @for(map of this.maps; track map.name) {
-                <div class="game-item">
-                    <h2 class="game-name">{{map.name}}</h2>
-                    <p>preview image</p>
-                    <div class="game-description"> 
-                        descirption to be added to server on hover
-                    </div>
-                    <div class="game-info">
-                        <p class="game-details">Taille : {{map.mapSize.x}} x {{map.mapSize.y}}</p>
-                        <!-- <p class="game-details">Mode : {{game.mode}}</p> -->
-                        <p class="game-details">Dernière modification : to be added to server</p> 
-                        <p class="game-details"> Visibility : 
-                            @if(map.isVisible) {
-                                <span> public </span>
-                            }
-                            @else {
-                                <span> privé </span>
-                            }
-                        </p>
-                    </div> 
-                </div>
-            } 
+        @for(map of this.maps; track map.name) {
+        <div class="game-item">
+            <h2 class="game-name">{{ map.name }}</h2>
+            <p>preview image</p>
+            <div class="game-description">descirption to be added to server on hover</div>
+            <div class="game-info">
+                <p class="game-details">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
+                <!-- <p class="game-details">Mode : {{game.mode}}</p> -->
+                <p class="game-details">Last modified : to be added to server</p>
+                <p class="game-details">
+                    Visibility : @if(map.isVisible) {
+                    <span> public </span>
+                    } @else {
+                    <span> private </span>
+                    }
+                </p>
+            </div>
+        </div>
+        }
 
-            <div class="game-actions">
-                <!-- <button class="button" (click)="editGame(game.id)">Modifier</button>
+        <div class="game-actions">
+            <!-- <button class="button" (click)="editGame(game.id)">Modifier</button>
                 <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
                 <button (click)="toggleVisibility(game.id)">
                     {{ game.visibility ? 'Masquer' : 'Afficher' }} 
                 </button> -->
-            </div>
         </div>
     </div>
+</div>
 <!-- </div> -->
-
