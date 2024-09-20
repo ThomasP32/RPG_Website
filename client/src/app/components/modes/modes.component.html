@@ -1,0 +1,5 @@
+<div class="mode-button-container">
+    <button class="mode-button" [ngClass]="{ selected: selectedMode === 'classic' }" (click)="selectMode('classic')">Classic</button>
+    <button class="mode-button" [ngClass]="{ selected: selectedMode === 'CTF' }" (click)="selectMode('CTF')">CTF</button>
+</div>
+<div class="mode-text">Selected mode : {{ selectedMode }}</div>

@@ -1,0 +1,65 @@
+@font-face {
+    font-family: 'Gomarice';
+    src: url('../../../assets/fonts/gomarice_no_continue.ttf') format('truetype');
+}
+
+.map-button {
+    background-color: #2c3e50;
+    color: #c0c0c0;
+    padding: 5px 15px;
+    border: 1px solid black;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 20px;
+    font-family: 'Gomarice', sans-serif;
+    &.selected {
+        color: white;
+    }
+}
+
+:host {
+    display: flex;
+    flex-direction: column;
+    background-color: #2c3e50;
+    align-items: center;
+    height: 100%;
+}
+
+.game-choice-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+.nb-players-display {
+    color: white;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.map-creation-box {
+    border: 2px solid white;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: 'Gomarice', sans-serif;
+    font-size: 20px;
+    background-color: #c0c0c0;
+}
+.to-edit-button {
+    background-color: white;
+    color: #2c3e50;
+    padding: 5px 15px;
+    border: 1px solid black;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 20px;
+    font-family: 'Gomarice', sans-serif;
+}

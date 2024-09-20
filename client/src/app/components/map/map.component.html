@@ -1,0 +1,25 @@
+<div class="map-creation-box">
+    <div class="game-choices-container">
+        <h2>Choose a mode</h2>
+        <app-modes-choice (modeSelected)="onModeSelected($event)"></app-modes-choice>
+        <h2>Choose a map size</h2>
+        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Small }" (click)="sizeConversion('small')">
+            Small map (10x10)
+        </button>
+        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Medium }" (click)="sizeConversion('medium')">
+            Medium map (15x15)
+        </button>
+        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Large }" (click)="sizeConversion('large')">
+            Large map (20x20)
+        </button>
+    </div>
+    <div class="nb-players-display">
+        <div *ngIf="mapSize == mapSizeType.Small">1 or 2 players</div>
+        <div *ngIf="mapSize == mapSizeType.Medium">2 to 4 players</div>
+        <div *ngIf="mapSize == mapSizeType.Large">2 to 6 players</div>
+    </div>
+    <!-- <input type="text" [(ngModel)]="mapName" (ngModelChange)="checkMapNameAvailability()" /> -->
+    <!-- <div *ngIf="showErrorMessage.nameError" class="error-message">Error : Map name already exists</div> -->
+    <button class="to-edit-button" (click)="redirectToEditView()">Game Creation</button>
+    <div *ngIf="showErrorMessage.entryError" class="error-message">Error : Choose a mode & map size</div>
+</div>

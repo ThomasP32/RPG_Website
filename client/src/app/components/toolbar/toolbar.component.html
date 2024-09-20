@@ -1,0 +1,95 @@
+<div class="toolbar">
+    <h2>Aether Adventures</h2>
+    <div class="toggle-section">
+        <h3>Tiles</h3>
+    <button (click)="toggleTiles()">
+        {{ isTilesVisible ? '-' : '+' }}
+    </button>
+    </div>
+    <div class="tile-section"  *ngIf="isTilesVisible">
+        <div class="tile-grid">
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'door'}" (click)="selectTile('door')">
+                <img src="../../../../assets/tiles/door_y.png" alt="Door">
+                 <span class="tooltip">This is a sturdy, closed door. Click to open or close it.</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'wall'}" (click)="selectTile('wall')">
+                <img src="../../../../assets/tiles/wall.png" alt="Wall">
+                 <span class="tooltip">A solid wall that blocks movement and vision. Cannot be passed through.</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'ice'}" (click)="selectTile('ice')">
+                <img src="../../../../assets/tiles/ice.png" alt="Ice">
+                 <span class="tooltip">Slippery ice. Players who step on this tile might slide uncontrollably.</span>
+            </div>
+            <div class="tile" [ngClass]="{'selected': selectedTile === 'water'}" (click)="selectTile('water')">
+                <img src="../../../../assets/tiles/water.png" alt="Water">
+                 <span class="tooltip">Deep water that slows movement and may restrict certain actions.</span>
+            </div>
+        </div>
+    </div>
+    <div class="toggle-section">
+        <h3>Items</h3>
+        <button (click)="toggleItems()">
+            {{ isItemsVisible ? '-' : '+' }}
+        </button> 
+    </div>
+    <div class="item-section" *ngIf="isItemsVisible">
+        <div class="item-grid">
+        <div class="item"  (click)="selectItem('vest')">
+            <img src="../../../../assets/items/vest.png" alt="vest">
+             <span class="tooltip">A protective vest that increases defense against attacks.</span>
+        </div>
+        <div class="item"  (click)="selectItem('mask')">
+            <img src="../../../../assets/items/mask.png" alt="mask">
+             <span class="tooltip">A mysterious mask that grants the wearer increased resistance to environmental hazards.</span>
+        </div>
+        <div class="item"  (click)="selectItem('jar')">
+            <img src="../../../../assets/items/jar.png" alt="jar">
+            <span class="tooltip">A mystical jar that can hold and release powerful substances.</span>
+        </div>
+        <div class="item"  (click)="selectItem('acidgun')">
+            <img src="../../../../assets/items/acidgun.png" alt="acidgun">
+            <span class="tooltip">A dangerous weapon that fires acidic projectiles, dealing damage over time.</span>
+        </div>
+        <div class="item"  (click)="selectItem('key')">
+            <img src="../../../../assets/items/key.png" alt="key">
+            <span class="tooltip">A key that unlocks certain doors or treasure chests in the game.</span>
+        </div>
+        <div class="item"  (click)="selectItem('hat')">
+            <img src="../../../../assets/items/hat.png" alt="hat">
+            <span class="tooltip">A stylish hat that provides minor buffs to agility and charm.</span>
+        </div>
+        <div class="item"  (click)="selectItem('random')">
+            <img src="../../../../assets/items/randomitem.png" alt="random">
+            <span class="tooltip">A mystery box containing a random item. Open it to reveal something unexpected!</span>
+        </div>
+    </div>
+
+    </div>
+   
+    <div class="toggle-section" >
+        <h3>Starting point</h3>
+        <button (click)="toggleStartingPoint()">
+            {{ isStartingPointVisible ? '-' : '+' }}
+        </button>
+    </div>
+        <div class="starting-point-section" *ngIf="isStartingPointVisible">
+                <div class="tile"  (click)="selectItem('starting-point')">
+                    <img src="../../../../assets/startingpoint/startingpoint.png" alt="starting-point">
+                    <span class="tooltip">This is a starting point where players begin the game.</span>
+                </div>
+
+    </div>
+
+        <div class="toggle-section" *ngIf="mode === 'CTF'">
+            <h3>Flag</h3>
+        <button (click)="toggleFlag()">
+            {{ isFlagVisible ? '-' : '+' }}
+        </button>
+        </div>
+        <div class="flag-section" *ngIf="isFlagVisible && mode ==='CTF'">
+            <div class="item" (click)="selectItem('flag')">
+                <img src="../../../../assets/items/flag.png" alt="flag">
+                <span class="tooltip">The flag in Capture the Flag mode. Secure it to win the game!</span>
+            </div>
+        </div>
+</div>
