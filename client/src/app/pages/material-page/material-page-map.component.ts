@@ -1,7 +1,6 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommunicationService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
-
 
 @Component({
     selector: 'app-material-page',
@@ -10,7 +9,7 @@ import { Map } from '@common/map.types';
     styleUrls: ['./material-page.component.scss'],
     imports: [],
 })
-export class MaterialPageMapsComponent implements OnInit{
+export class MaterialPageMapsComponent implements OnInit {
     maps: Map[] = [];
     constructor(readonly communicationService: CommunicationService) {
         this.communicationService.maps$.subscribe((maps) => (this.maps = maps));
