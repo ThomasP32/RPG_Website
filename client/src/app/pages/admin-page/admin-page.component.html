@@ -1,0 +1,36 @@
+<div class="adminPage-container">
+    <h2 class="header-item">{{ title }}</h2>
+
+    <button class="button" (click)="navigateToMain()">Retour à l'accueil</button>
+    <button class="button">Créer un nouveau jeu</button>
+
+<!-- CHANGER LE *NGIF POUR @IF ET *NGFOR POUR @FOR-->
+ 
+    <div class="game-list">
+        <div *ngFor="let game of games" class="game-item">
+            <!-- <div class="game-preview" (mouseenter)="showDescription(game)" (mouseleave)="hideDescription(game)"> -->
+                <img [src]="game.previewImage" alt="{{game.name}}" class="game-image"/>
+                <div class="game-description" **ngIf="game.showDescription"> {{game.description}}</div>
+            </div>
+
+            <div class="game-info">
+                <!-- <h2 class="game-name"> {{game.name}} </h2>
+                <p class="game-details">Taille : {{game.size}}</p>
+                <p class="game-details">Mode : {{game.mode}}</p>
+                <p class="game-details">Dernière modification : {{game.lastModified}}</p> -->
+                <p class="game-details">Visibilité : 
+                    <span *ngIf="game.visibility === 'public'">Public</span>
+                    <span *ngIf="game.visibility === 'private'">Privé</span>
+                </p>
+            </div> 
+            <div class="game-actions">
+                <!-- <button class="button" (click)="editGame(game.id)">Modifier</button>
+                <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
+                <button (click)="toggleVisibility(game.id)">
+                    {{ game.visibility ? 'Masquer' : 'Afficher' }} 
+                </button> -->
+            </div>
+        </div>
+    </div>
+<!-- </div> -->
+
