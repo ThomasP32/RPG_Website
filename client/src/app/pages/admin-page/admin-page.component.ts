@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { MapComponent } from '@app/components/map/map.component';
 import { CommunicationService } from '@app/services/communication.map.service';
-import { RouterLink, Router } from '@angular/router';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -18,10 +19,19 @@ export class AdminPageComponent implements OnInit {
         this.communicationService.maps$.subscribe((maps) => {this.maps = maps});
 
     }
+    
+    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
+
+    isMapVisible = false;
+
+    toggleMapVisibility(): void {
+        console.log("button clicked");
+        this.isMapVisible = !this.isMapVisible;
+    }
 
 
     ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
+        // this.communicationService.getMapsFromServer();
     }
 
     // loadGames(): void {
@@ -37,7 +47,7 @@ export class AdminPageComponent implements OnInit {
     // }
 
     navigateToMain(): void {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/main-menu']);
     }
 
     editGame(mapId : string): void {
