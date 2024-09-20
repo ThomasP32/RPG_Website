@@ -3,9 +3,9 @@ import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter } from '@angular/router';
-import { CreateCharacterComponent } from '@app/components/create-character/create-character.component';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
+import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { MaterialPageMapsComponent } from '@app/pages/material-page/material-page-map.component';
@@ -23,7 +23,7 @@ const routes: Routes = [
     { path: 'material', component: MaterialPageMapsComponent },
     { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
-    { path: 'character-form', component: CreateCharacterComponent },
+    { path: 'create-character', component: CharacterFormPageComponent },
     { path: '**', redirectTo: '/home' },
 ];
 
