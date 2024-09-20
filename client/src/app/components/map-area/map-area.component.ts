@@ -18,15 +18,14 @@ export class MapAreaComponent {
     mapSize: string;
     mode: string;
     convertedMapSize: number;
-    convertedCellSize : number;
+    convertedCellSize: number;
     convertedMode: string;
 
     constructor(
         private route: ActivatedRoute,
-        private renderer: Renderer2, 
-        private cdRef: ChangeDetectorRef
+        private renderer: Renderer2,
+        private cdRef: ChangeDetectorRef,
     ) {}
-    
 
     ngOnInit() {
         this.getUrlParams();
@@ -48,10 +47,10 @@ export class MapAreaComponent {
     }
 
     setCellSize() {
-      const root = document.querySelector(':root') as HTMLElement;
-      this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-      console.log("cellsize =",this.convertedCellSize);
-      this.cdRef.detectChanges(); 
+        const root = document.querySelector(':root') as HTMLElement;
+        this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
+        console.log('cellsize =', this.convertedCellSize);
+        this.cdRef.detectChanges();
     }
 
     selectTile(tile: string) {
@@ -68,15 +67,15 @@ export class MapAreaComponent {
             this.placeTile(rowIndex, colIndex, false);
         }
     }
-    
-      stopPlacingTile() {
+
+    stopPlacingTile() {
         this.isPlacing = false;
         this.isErasing = false;
         console.log('Stopped placing tile');
-      }
-    
-      @HostListener('document:mouseup', ['$event'])
-      onMouseUp(event: MouseEvent) {
+    }
+
+    @HostListener('document:mouseup', ['$event'])
+    onMouseUp(event: MouseEvent) {
         this.stopPlacingTile();
       }
     
@@ -86,16 +85,14 @@ export class MapAreaComponent {
         } else if (this.isErasing) {
             this.placeTile(rowIndex, colIndex, true);
         }
-      }
-    
-      placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
+    }
+
+    placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
         if (this.selectedTile === 'door') {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
-                console.log(
-                    `Toggled door state at position [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`
-                );
+                console.log(`Toggled door state at position [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
             } else {
                 this.Map[rowIndex][colIndex].value = 'door';
                 this.Map[rowIndex][colIndex].doorState = 'closed';
@@ -112,9 +109,9 @@ export class MapAreaComponent {
 
     resetMapToDefault() {
         for (let i = 0; i < this.Map.length; i++) {
-          for (let j = 0; j < this.Map[i].length; j++) {
-            this.Map[i][j].value = this.defaultTile;
-          }
+            for (let j = 0; j < this.Map[i].length; j++) {
+                this.Map[i][j].value = this.defaultTile;
+            }
         }
         console.log('Map has been reset to default');
       }
@@ -162,9 +159,7 @@ export class MapAreaComponent {
         switch (tileValue) {
             case 'door':
                 const doorState = this.Map[rowIndex][colIndex].doorState;
-                return doorState === 'open'
-                    ? '../../../../assets/tiles/door_x.png'
-                    : '../../../../assets/tiles/door_y.png';
+                return doorState === 'open' ? '../../../../assets/tiles/door_x.png' : '../../../../assets/tiles/door_y.png';
             case 'wall':
                 return '../../../../assets/tiles/wall.png';
             case 'ice':
@@ -184,7 +179,7 @@ export class MapAreaComponent {
 
     urlConverter(size: string) {
         console.log('URL params:', size);
-        this.convertedMapSize = Number(size.split('=')[1]);
+        this.convertedMapSize = parseInt(size.split('=')[1]);
         console.log('Converted map size:', this.convertedMapSize);
     }
 }
