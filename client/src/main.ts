@@ -4,7 +4,6 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter } from '@angular/router';
 import { AppComponent } from '@app/pages/app/app.component';
-import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page-map.component';
 import { MaterialPageMapsComponent } from '@app/pages/material-page/material-page-map.component';
