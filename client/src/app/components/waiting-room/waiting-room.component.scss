@@ -1,0 +1,24 @@
+.waiting-room-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.waiting-room-box {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.waiting-room-box h1 {
+    font-size: 48px;
+    margin: 0;
+}
+
+.waiting-room-box p {
+    font-size: 18px;
+    margin-bottom: 10px;
+}

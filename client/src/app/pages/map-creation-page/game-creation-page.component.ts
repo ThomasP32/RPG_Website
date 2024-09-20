@@ -19,10 +19,15 @@ export class GameCreationPageComponent implements OnInit{
   constructor(private mapService: MapService) {}
 
   ngOnInit(): void {
-    // Subscribe to resetMap$ observable from the service
     this.mapService.resetMap$.subscribe(() => {
       if (this.mapAreaComponent) {
-        console.log('GameCreationPage: Resetting map via service');
+        console.log( 'Resetting map via service');
+        this.mapAreaComponent.resetMapToDefault();
+      }
+    });
+    this.mapService.generateMap$.subscribe(() => {
+      if (this.mapAreaComponent) {
+        console.log( 'generating map via service');
         this.mapAreaComponent.resetMapToDefault();
       }
     });
