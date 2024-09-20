@@ -4,16 +4,18 @@
         <strong>List of available Maps: </strong>
 
         <div class="map-list">
-            <div *ngFor="let map of availableMaps" class="map-box" (click)="selectMap(map)">
-                <div class="image-container">
-                    <!-- <img [src]="game.mapPreview" alt="Game Map Preview" class="game-map-preview" /> -->
+            @for (map of availableMaps; track map._id) {
+                <div class="map-box" (click)="selectMap(map.name)">
+                    <div class="image-container">
+                        <!-- <img [src]="game.mapPreview" alt="Game Map Preview" class="game-map-preview" /> -->
+                    </div>
+                    <div class="game-info">
+                        <h3>{{ map.name }}</h3>
+                        <p>Map Size: {{ map.mapSize.x }}</p>
+                        <p>Game Mode: to be added in server</p>
+                    </div>
                 </div>
-                <div class="game-info">
-                    <h3>{{ map.name }}</h3>
-                    <p>Map Size: {{ map.mapSize }}</p>
-                    <p>Game Mode: {{ map.gameMode }}</p>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </div>
