@@ -1,10 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.service';
-import { Message } from '@common/message';
-import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-main-page',
@@ -14,38 +9,19 @@ import { map } from 'rxjs/operators';
     imports: [RouterLink],
 })
 export class MainPageComponent {
-    readonly title: string = 'LOG2990';
-    message: BehaviorSubject<string> = new BehaviorSubject<string>('');
+    readonly title: string = 'Clash of Tiles';
+    logoPath = 'assets/Logo_Clash_of_Tiles.png';
+    teamNumber = 'Équipe 109';
+    developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 
+        'Thomas Perron Duveau', 'Emelyn Victoria'];
 
-    constructor(private readonly communicationService: CommunicationService) {}
+    constructor(private router: Router) {}
 
-    sendTimeToServer(): void {
-        const newTimeMessage: Message = {
-            title: 'Hello from the client',
-            body: 'Time is : ' + new Date().toString(),
-        };
-        // Important de ne pas oublier "subscribe" ou l'appel ne sera jamais lancé puisque personne l'observe
-        this.communicationService.basicPost(newTimeMessage).subscribe({
-            next: (response) => {
-                const responseString = `Le serveur a reçu la requête a retourné un code ${response.status} : ${response.statusText}`;
-                this.message.next(responseString);
-            },
-            error: (err: HttpErrorResponse) => {
-                const responseString = `Le serveur ne répond pas et a retourné : ${err.message}`;
-                this.message.next(responseString);
-            },
-        });
+    navigateToCreateGame(): void {
+        this.router.navigate(['/create-game-page']);
     }
 
-    getMessagesFromServer(): void {
-        this.communicationService
-            .basicGet()
-            // Cette étape transforme l'objet Message en un seul string
-            .pipe(
-                map((message: Message) => {
-                    return `${message.title} ${message.body}`;
-                }),
-            )
-            .subscribe(this.message);
+    navigateToAdmin(): void {
+        this.router.navigate(['/admin-page']);
     }
 }
