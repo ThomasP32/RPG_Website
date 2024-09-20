@@ -1,43 +1,24 @@
+@font-face {
+    font-family: 'Gomarice';
+    src: url('../../../assets/fonts/gomarice_no_continue.ttf') format('truetype');
+}
+
 .map-button {
-    background-color: blue;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
+    background-color: #2c3e50;
+    color: #c0c0c0;
+    padding: 5px 15px;
+    border: 1px solid black;
     cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-    &:hover {
-        background-color: lightblue;
-    }
-}
-
-.map-container {
-    width: 50%;
-    height: 75%;
-    display: flex;
-    flex-direction: column;
-}
-
-.map-row {
-    display: flex;
-    flex: 1;
-}
-
-.map-cell {
-    flex: 1;
-    border: 1px solid #000;
+    margin-bottom: 10px;
     text-align: center;
-    line-height: calc(400px / var(--map-size));
-    height: calc(400px / var(--map-size));
+    font-size: 20px;
+    font-family: 'Gomarice', sans-serif;
 }
 
 :host {
     display: flex;
-    justify-content: space-evenly;
+    flex-direction: column;
+    background-color: #2c3e50;
     align-items: center;
     height: 100%;
 }
@@ -49,11 +30,33 @@
     align-items: center;
 }
 
-.normal-state {
-    background-color: lightgray;
+.error-message {
+    color: red;
+    margin-top: 10px;
 }
 
-.hover-state {
-    background-color: brown;
+.nb-players-display {
+    color: white;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.map-creation-box {
+    border: 2px solid white;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: 'Gomarice', sans-serif;
+    font-size: 20px;
+    background-color: #c0c0c0;
+}
+.to-edit-button {
+    background-color: white;
+    color: #2c3e50;
+    padding: 5px 15px;
+    border: 1px solid black;
     cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 20px;
+    font-family: 'Gomarice', sans-serif;
 }

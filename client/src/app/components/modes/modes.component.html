@@ -1,3 +1,5 @@
-<button class="mode-button" (click)="selectMode('classique')">Mode classique</button>
-<button class="mode-button" (click)="selectMode('CTF')">Mode CTF</button>
-<div>Mode sélectionné : {{ selectedMode }}</div>
+<div class="mode-button-container">
+    <button class="mode-button" (click)="selectMode('classic')">Classic</button>
+    <button class="mode-button" (click)="selectMode('CTF')">CTF</button>
+</div>
+<div class="mode-text">Selected mode : {{ selectedMode }}</div>

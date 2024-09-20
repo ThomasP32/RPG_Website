@@ -5,65 +5,65 @@ import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
 
 @Component({
-  selector: 'app-map-control-bar',
-  standalone: true,
-  templateUrl: './map-control-bar.component.html',
-  styleUrls: ['./map-control-bar.component.scss'],
-  imports: [CommonModule, NgIf, FormsModule]
+    selector: 'app-map-control-bar',
+    standalone: true,
+    templateUrl: './map-control-bar.component.html',
+    styleUrls: ['./map-control-bar.component.scss'],
+    imports: [CommonModule, NgIf, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
+    mapTitle: string = 'Add a title'; // Titre par défaut
+    mapDescription: string = 'Add a map description'; // Description par défaut
 
+    isEditingTitle: boolean = false;
+    isEditingDescription: boolean = false;
 
-  mapTitle: string = 'Add a title'; // Titre par défaut
-  mapDescription: string = 'Add a map description'; // Description par défaut
+    mode: string;
+    gameMode: string = '';
+    numberOfPlayers: number = 0;
 
-  isEditingTitle: boolean = false;
-  isEditingDescription: boolean = false;
+    constructor(
+        private route: ActivatedRoute,
+        private mapService: MapService,
+    ) {}
 
-  mode: string;
-  gameMode: string = '';
-  numberOfPlayers: number = 0;
+    ngOnInit(): void {
+        this.getUrlParams();
+        this.urlConverter(this.mode);
+    }
 
-  constructor(private route: ActivatedRoute, private mapService: MapService) { }
+    toggleEditTitle(): void {
+        this.isEditingTitle = !this.isEditingTitle;
+    }
 
-  ngOnInit(): void {
-    this.getUrlParams();
-    this.urlConverter(this.mode);
-  }
+    toggleEditDescription(): void {
+        this.isEditingDescription = !this.isEditingDescription;
+    }
 
-  toggleEditTitle(): void {
-    this.isEditingTitle = !this.isEditingTitle;
-  }
+    resetMap(): void {
+        console.log('resetting the map');
+        console.log('MapControlBar: Triggering reset via service');
+        this.mapService.resetMap();
+        // if (this.mapAreaComponent) {
+        //   this.mapAreaComponent.resetMapToDefault();
+        // }
+        // else {
+        //   console.log("not working");
+        // }
+    }
 
-  toggleEditDescription(): void {
-    this.isEditingDescription = !this.isEditingDescription;
-  }
+    createMap(): void {
+        alert(`Map Created: ${this.mapTitle} - ${this.mapDescription}`);
+    }
 
-  resetMap(): void {
-    console.log("resetting the map");
-    console.log('MapControlBar: Triggering reset via service');
-    this.mapService.resetMap();
-    // if (this.mapAreaComponent) {
-    //   this.mapAreaComponent.resetMapToDefault();
-    // }
-    // else {
-    //   console.log("not working");
-    // }
-  }
+    getUrlParams() {
+        this.route.queryParams.subscribe((params) => {
+            this.mode = this.route.snapshot.params['mode'];
+        });
+    }
 
-  createMap(): void {
-    alert(`Map Created: ${this.mapTitle} - ${this.mapDescription}`);
-  }
-
-  getUrlParams() {
-    this.route.queryParams.subscribe((params) => {
-        this.mode = this.route.snapshot.params['mode'];
-    });
+    urlConverter(mode: string) {
+        console.log('URL params:', mode);
+        this.gameMode = mode.split('=')[1];
+    }
 }
-
-  urlConverter(mode: string) {
-    console.log('URL params:', mode);
-    this.gameMode = mode.split('=')[1];
-}
-}
-

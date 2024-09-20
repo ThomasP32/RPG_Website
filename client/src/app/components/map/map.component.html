@@ -1,25 +1,19 @@
-<div class="game-choices-container">
-    <app-modes-choice (modeSelected)="onModeSelected($event)"></app-modes-choice>
-    <button class="map-button" (click)="sizeConversion('small')">Petit (10x10)</button>
-    <button class="map-button" (click)="sizeConversion('medium')">Moyenne (15x15)</button>
-    <button class="map-button" (click)="sizeConversion('large')">Grande (20x20)</button>
-</div>
-<div class="nb-players-display">
-    <div *ngIf="mapSize == 10">1 à 2 joueurs</div>
-    <div *ngIf="mapSize == 15">2 à 4 joueurs</div>
-    <div *ngIf="mapSize == 20">2 à 6 joueurs</div>
-</div>
-<button class="to-edit-button" (click)="redirectToEditView()">Aller créer mon jeu!</button>
-<div class="map-container">
-    <div *ngFor="let Row of Map" class="map-row">
-        <div
-            *ngFor="let cell of Row"
-            class="map-cell normal-state"
-            (mouseenter)="cell.isHovered = true"
-            (mouseleave)="cell.isHovered = false"
-            [ngClass]="{ 'hover-state': cell.isHovered }"
-        >
-            {{ cell.value }}
-        </div>
+<div class="map-creation-box">
+    <div class="game-choices-container">
+        <h2>Choose a mode</h2>
+        <app-modes-choice (modeSelected)="onModeSelected($event)"></app-modes-choice>
+        <h2>Choose a map size</h2>
+        <button class="map-button" (click)="sizeConversion('small')">Small map (10x10)</button>
+        <button class="map-button" (click)="sizeConversion('medium')">Medium map (15x15)</button>
+        <button class="map-button" (click)="sizeConversion('large')">Large map (20x20)</button>
     </div>
+    <div class="nb-players-display">
+        <div *ngIf="mapSize == this.MAPSIZE.SMALL">1 or 2 players</div>
+        <div *ngIf="mapSize == this.MAPSIZE.MEDIUM">2 to 4 players</div>
+        <div *ngIf="mapSize == this.MAPSIZE.LARGE">2 to 6 players</div>
+    </div>
+    <!-- <input type="text" [(ngModel)]="mapName" (ngModelChange)="checkMapNameAvailability()" /> -->
+    <!-- <div *ngIf="showErrorMessage.nameError" class="error-message">Error : Map name already exists</div> -->
+    <button class="to-edit-button" (click)="redirectToEditView()">Game Creation</button>
+    <div *ngIf="showErrorMessage.entryError" class="error-message">Error : Choose a mode & map size</div>
 </div>
