@@ -11,7 +11,7 @@ import { Map } from '@common/map.types';
     imports: [RouterLink],
 })
 export class AdminPageComponent implements OnInit {
-    readonly title: string = 'Administration des jeux';
+    readonly title: string = 'Maps Administration';
     maps: Map[] = [];
     
     constructor(private router: Router, private communicationService: CommunicationService) {
@@ -46,7 +46,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     deleteGame(): void {
-        if(confirm('Voulez-vous vraiment supprimer ce jeu ?')) {
+        if(confirm('Are you sure you want to delete this game ?')) {
             // this.gameService.deleteGame(game.id).subscribe(() => {
             //     this.loadGames();
             // });
