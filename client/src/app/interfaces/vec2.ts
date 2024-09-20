@@ -1,4 +1,5 @@
-export interface Vec2 {
-    x: number;
-    y: number;
+export interface Game {
+    id: number;
+    name: string;
+    isVisible: boolean;
 }

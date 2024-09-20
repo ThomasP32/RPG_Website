@@ -1,0 +1,35 @@
+.create-map-view {
+    display: flex;
+    height: 100vh;
+}
+
+.titles {
+    flex: 1;
+    padding: 20px;
+    border-right: 2px solid #ccc;
+    background-color: #f4f4f4;
+    overflow-y: auto;
+}
+
+.map-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.map-box {
+    display: flex;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    background-color: #808080;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.image-container {
+    flex: 1;
+    padding: 10px;
+}
+
+.game-info {
+    flex: 2;
+    padding: 10px;
+}
