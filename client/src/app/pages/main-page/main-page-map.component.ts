@@ -12,55 +12,55 @@ import { ItemCategory, Map, TileCategory } from '@common/map.types';
 })
 export class MainPageComponent {
     mapPrototype: Map = {
-        name: "Enum version",
+        name: 'Enum version',
         isVisible: false,
         mapSize: {
-          x: 10,
-          y: 10
+            x: 10,
+            y: 10,
         },
         startTiles: [
-          {
-            coordinate: {
-              x: 5,
-              y: 1
-            }
-          }
+            {
+                coordinate: {
+                    x: 5,
+                    y: 1,
+                },
+            },
         ],
         items: [
-          {
-            coordinate: {
-              x: 1,
-              y: 3
+            {
+                coordinate: {
+                    x: 1,
+                    y: 3,
+                },
+                category: ItemCategory.Sword,
             },
-            category: ItemCategory.Sword
-          }
         ],
         doorTiles: [
-          {
-            coordinate: {
-              x: 1,
-              y: 2
+            {
+                coordinate: {
+                    x: 1,
+                    y: 2,
+                },
+                isOpened: true,
             },
-            isOpened: true
-          }
         ],
         tiles: [
-          {
-            coordinate: {
-              x: 3,
-              y: 4
+            {
+                coordinate: {
+                    x: 3,
+                    y: 4,
+                },
+                category: TileCategory.Wall,
             },
-            category: TileCategory.Wall
-          },
-          {
-            coordinate: {
-              x: 7,
-              y: 2
+            {
+                coordinate: {
+                    x: 7,
+                    y: 2,
+                },
+                category: TileCategory.Water,
             },
-            category: TileCategory.Water
-          }
-        ]
-      };
+        ],
+    };
 
     constructor(readonly communicationService: CommunicationService) {}
 }
