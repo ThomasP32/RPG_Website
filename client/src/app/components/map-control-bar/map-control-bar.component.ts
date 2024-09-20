@@ -14,8 +14,8 @@ import { MapService } from '@app/services/map.service';
 export class MapControlBarComponent implements OnInit {
 
 
-  mapTitle: string = 'Add a title'; // Titre par défaut
-  mapDescription: string = 'Add a map description'; // Description par défaut
+  mapTitle: string = 'Add a title';
+  mapDescription: string = 'Add a map description';
 
   isEditingTitle: boolean = false;
   isEditingDescription: boolean = false;
@@ -43,17 +43,18 @@ export class MapControlBarComponent implements OnInit {
     console.log("resetting the map");
     console.log('MapControlBar: Triggering reset via service');
     this.mapService.resetMap();
-    // if (this.mapAreaComponent) {
-    //   this.mapAreaComponent.resetMapToDefault();
-    // }
-    // else {
-    //   console.log("not working");
-    // }
+
   }
 
   createMap(): void {
-    alert(`Map Created: ${this.mapTitle} - ${this.mapDescription}`);
-  }
+    const mapData = this.mapService.generateMapData();
+
+    this.mapService.saveMap(mapData);
+    console.log("map saving");
+    // .subscribe(response => {
+    //     console.log('Map saved successfully:', response);
+    // });
+}
 
   getUrlParams() {
     this.route.queryParams.subscribe((params) => {

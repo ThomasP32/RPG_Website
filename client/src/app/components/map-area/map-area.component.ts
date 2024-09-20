@@ -56,7 +56,7 @@ export class MapAreaComponent {
 
     selectTile(tile: string) {
         this.selectedTile = tile;
-        console.log('Selected tile:', tile);
+        // console.log('Selected tile:', tile);
     }
 
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
@@ -78,7 +78,6 @@ export class MapAreaComponent {
       @HostListener('document:mouseup', ['$event'])
       onMouseUp(event: MouseEvent) {
         this.stopPlacingTile();
-        // console.log('Mouse up event detected, stopping placing');
       }
     
       placeTileOnMove(rowIndex: number, colIndex: number) {
@@ -100,13 +99,13 @@ export class MapAreaComponent {
             } else {
                 this.Map[rowIndex][colIndex].value = 'door';
                 this.Map[rowIndex][colIndex].doorState = 'closed';
-                console.log(`Placed door (closed) at position [${rowIndex}, ${colIndex}]`);
+                // console.log(`Placed door (closed) at position [${rowIndex}, ${colIndex}]`);
             }
         } else {
             const tileToPlace = isErasing ? this.defaultTile : this.selectedTile;
             if (tileToPlace && this.Map[rowIndex][colIndex].value !== tileToPlace) {
                 this.Map[rowIndex][colIndex].value = tileToPlace;
-                console.log(`Placed tile "${tileToPlace}" at position [${rowIndex}, ${colIndex}]`);
+                // console.log(`Placed tile "${tileToPlace}" at position [${rowIndex}, ${colIndex}]`);
             }
         }
     }
@@ -120,6 +119,44 @@ export class MapAreaComponent {
         console.log('Map has been reset to default');
       }
     
+      generateMapData() {
+        const mapData = {
+            name: '', 
+            description: '', 
+            mode: this.mode, 
+            mapSize: {
+                x: this.convertedMapSize, 
+                y: this.convertedMapSize 
+            },
+            tiles: [] as { coordinate: { x: number; y: number }; category: string }[], 
+            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[], 
+            items: [] as any[], 
+            startTiles: [] as any[] 
+        };
+    
+        for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
+                const cell = this.Map[rowIndex][colIndex];
+                const coordinate = { x: rowIndex, y: colIndex };
+    
+                if (cell && cell.value) {
+                    if (cell.value === 'door') {
+                        mapData.doorTiles.push({
+                            coordinate,
+                            isOpened: cell.doorState === 'open'
+                        });
+                    } else if (['water', 'ice', 'wall', 'floor'].includes(cell.value)) {
+                        mapData.tiles.push({
+                            coordinate,
+                            category: cell.value
+                        });
+                    }
+                }
+            }
+        }
+    
+        return mapData;
+    }
 
     getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
         switch (tileValue) {
