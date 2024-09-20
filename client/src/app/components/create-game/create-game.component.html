@@ -1,7 +1,7 @@
 <div class="create-map-view">
     <div class="titles">
-        <h2>Create a New Map!</h2>
-        <strong>List of available Maps: </strong>
+        <h2>Choisis ta carte</h2>
+        <button (click)="playGame()"> Jouer </button>
 
         <div class="map-list">
             @for (map of availableMaps; track map._id) {

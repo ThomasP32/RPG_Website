@@ -50,6 +50,10 @@ export class CreateGameComponent implements OnInit {
         }
     }
 
+    playGame() {
+        this.router.navigate(['/create-character']);
+    }
+
     // display list of mockData games
     // loadMockAvailableGames() {
     //     this.communicationService.getMockVisibleGames().subscribe((games) => {

@@ -65,3 +65,15 @@
 .button:hover {
     background-color: #2c5049;
 }
+
+div[ngIf] {
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  div[ngIf].ng-enter {
+    opacity: 0;
+  }
+  
+  div[ngIf].ng-enter-active {
+    opacity: 1;
+  }
