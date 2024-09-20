@@ -44,7 +44,7 @@ export class CreateGameComponent implements OnInit {
 
     selectMap(mapName: string) {
         if(this.availableMaps.some((map) => map.name === mapName)) {
-            this.router.navigate(['/create-character', mapName])
+            this.router.navigate(['/create-character'])
         } else {
             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
         }
