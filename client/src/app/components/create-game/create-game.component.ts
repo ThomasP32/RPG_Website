@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { GameService } from '@app/services/game.service';
-import { Map } from 'src/app/interfaces/map';
+import { CommunicationService } from '@app/services/communication.map.service';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-create-game',
@@ -12,33 +12,47 @@ import { Map } from 'src/app/interfaces/map';
     styleUrls: ['./create-game.component.scss'],
     imports: [FormsModule, CommonModule],
 })
-export class CreateGameComponent {
+export class CreateGameComponent implements OnInit {
     availableMaps: Map[] = [];
     errorMessage: string = '';
     map: Map;
 
-    private readonly gameService: GameService = inject(GameService);
-    private readonly router: Router = inject(Router);
-
-    loadAvailableMaps() {
-        this.gameService.getVisibleMaps().subscribe((maps) => {
-            this.availableMaps = maps;
-        });
+    constructor(readonly communicationService: CommunicationService, private readonly router: Router) {
+        this.communicationService.maps$.subscribe((maps) => (this.availableMaps = maps.filter(map => map.isVisible)));
+        this.router = router;
     }
 
-    selectMap(map: { id: string; name: string; description: string; mapSize: number; gameMode: string }) {
-        this.gameService.checkMapAvailability(map.id).subscribe((isAvailable) => {
-            if (isAvailable) {
-                this.router.navigate(['/create-character', map.id]);
-            } else {
-                this.errorMessage = 'The selected game is unavailable. Please choose another game.';
-            }
-        });
+    ngOnInit(): void {
+        this.communicationService.getMapsFromServer();
+    }
+    // loadAvailableMaps() {
+    //     this.communicationService.getMapsFromServer()
+    //     .subscribe((maps) => {
+    //         this.availableMaps = maps;
+    //     });
+    // }
+
+    // selectMap(map: { id: string; name: string; description: string; mapSize: number; gameMode: string }) {
+    //     this.communicationService.checkMapAvailability(map.id).subscribe((isAvailable) => {
+    //         if (isAvailable) {
+    //             this.router.navigate(['/create-character', map.id]);
+    //         } else {
+    //             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
+    //         }
+    //     });
+    // }
+
+    selectMap(mapName: string) {
+        if(this.availableMaps.some((map) => map.name === mapName)) {
+            this.router.navigate(['/create-character', mapName])
+        } else {
+            this.errorMessage = 'The selected game is unavailable. Please choose another game.';
+        }
     }
 
     // display list of mockData games
     // loadMockAvailableGames() {
-    //     this.gameService.getMockVisibleGames().subscribe((games) => {
+    //     this.communicationService.getMockVisibleGames().subscribe((games) => {
     //         this.availableGames = games;
     //     });
     // }
@@ -48,7 +62,7 @@ export class CreateGameComponent {
 
     // mockData implementation
     // selectGame(game: Game) {
-    //     this.gameService.checkMockGameAvailability(game.name).subscribe((isAvailable) => {
+    //     this.communicationService.checkMockGameAvailability(game.name).subscribe((isAvailable) => {
     //         if (isAvailable) {
     //             this.router.navigate(['/waiting-room']);
     //         } else {
