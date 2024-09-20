@@ -23,6 +23,9 @@ export class ToolbarComponent {
     isItemsVisible: boolean = true;
     isFlagVisible: boolean = true;
     isStartingPointVisible: boolean = true;
+    startingPointCounter: number = 2;
+    flagCounter: number = 2;
+    randomItemCounter: number = 6;
 
     constructor(private route: ActivatedRoute) {}
 

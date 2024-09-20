@@ -62,10 +62,15 @@ export class MapAreaComponent {
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         if (isRightClick) {
             this.isErasing = true;
-            this.placeTile(rowIndex, colIndex, true);
+            if (this.Map[rowIndex][colIndex].value === 'door') {
+                this.Map[rowIndex][colIndex].value = this.defaultTile;
+                console.log(`Replaced door with floor at position [${rowIndex}, ${colIndex}]`);
+            } else {
+                this.placeTile(rowIndex, colIndex, true);
+            }
         } else {
             this.isPlacing = true;
-            this.placeTile(rowIndex, colIndex, false);
+            this.placeTile(rowIndex, colIndex, false); 
         }
     }
     
@@ -90,7 +95,7 @@ export class MapAreaComponent {
       }
     
       placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
-        if (this.selectedTile === 'door') {
+        if (this.selectedTile === 'door' && isErasing === false) {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
