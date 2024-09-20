@@ -2,10 +2,10 @@
     <h1 class="header-item">{{ title }}</h1>
     <img [src]="logoPath" alt="Logo Projet" class ="game-logo"/>
 
-        <div class="justified">
-            <button [disabled]="true">Joindre une partie</button>
-            <button class="button" (click)="navigateToCreateGame()">Créer une partie</button>
-            <button class="button" (click)="navigateToAdmin()">Administrer les jeux</button>
+        <div class="button-section">
+            <button class="disabled">Joindre une partie</button>
+            <button (click)="navigateToCreateGame()">Créer une partie</button>
+            <button (click)="navigateToAdmin()">Administrer les jeux</button>
         </div>
 
     <footer class="footer-item">
