@@ -1,6 +1,29 @@
-.container {
+.mainPage-container {
+    display : flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     min-height: 100vh;
+    padding: 10px;
     height: auto;
+    background-color: #ebd594;
+    font-family:sans-serif;
+}
+
+.header-item {
+    font-size: 2.5em;
+    color: #2d3e40;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.game-logo {
+    width: 200px;
+    height: auto;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    align-items: center;
+    display: block;
 }
 
 .justified {
@@ -12,13 +35,39 @@
 
 .button {
     margin-top: 10px;
+    margin-bottom: 10px;
     text-align: center;
+    color: white;
+    font-size: 1em;
+    padding: 20px 20px;
+    border: #2d3e40;
+    background-color: #195a61;
+    border-radius: 5px;
+    cursor : pointer;
 }
 
-.team-name {
+.button[disabled] {
+    background-color: #0d2e31;
+    margin-top: 30px;
+    text-align: center;
+    color: white;
+    font-size: 1em;
+    padding: 20px 20px;
+    border: #2d3e40;
+    border-radius: 5px;
+    cursor: not-allowed;
+}
+
+.button:hover {
+    background-color: #053a7b; 
+}
+
+.team-number {
     margin-top: 0.25em;
     margin-bottom: 0.25em;
-    color: green;
+    color: rgb(0, 0, 0);
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
 .header-item {
@@ -28,17 +77,9 @@
 
 .footer-item {
     text-align: center;
+    margin-top: 40px;
 }
 
-.footer-item p :nth-child(even) {
-    color: orange;
-}
-.footer-item p :nth-child(odd) {
-    color: blue;
-}
-
-.server-message {
-    justify-content: center;
-    width: 20%;
-    min-width: min-content;
+.footer-item p{
+    color: #002f4e;
 }
