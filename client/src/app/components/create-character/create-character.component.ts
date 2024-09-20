@@ -32,6 +32,7 @@ export class CreateCharacterComponent {
     diceRollD6 = 0;
     diceRolled: boolean = false;
     rolledD4: boolean = false;
+    rolledD6: boolean = false;
     rollingDiceFor: string = '';
 
     characters: Character[] = [];
@@ -64,6 +65,7 @@ export class CreateCharacterComponent {
         this.rollingDiceFor = attribute;
         this.diceRolled = false;
         this.rolledD4 = false;
+        this.rolledD6 = false;
         this.diceRollD4 = 0;
         this.diceRollD6 = 0;
     }
@@ -87,6 +89,7 @@ export class CreateCharacterComponent {
         } else if (this.rollingDiceFor === 'defense') {
             this.attack = this.defaultPoints + this.diceRollD6;
         }
+        this.rolledD6 = true;
         this.diceRolled = false;
     }
 

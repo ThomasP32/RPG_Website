@@ -1,13 +1,11 @@
-// @font-face {
-//     font-family: 'Timepiece';
-//     src: url(assets\Timepiece-3lKz.ttf) format('truetype');
-//     font-weight: normal;
-//     font-style: normal;
-// }
+@font-face {
+    font-family: 'Gomarice';
+    src: url('../../../assets/gomarice_no_continue.ttf') format('truetype');
+}
 
 .form-box {
     display: flex;
-    background-color: #000836;
+    background-color: #1c242c;
     overflow: auto;
     width: 90%;
     height: 80vh;
@@ -23,9 +21,12 @@
 p,
 div {
     color: white;
+    font-family: 'Gomarice', sans-serif;
+    letter-spacing: 1px;
 }
 
 h1 {
+    font-family: 'Gomarice', sans-serif;
     text-align: left;
     position: fixed;
     left: 3.5%;

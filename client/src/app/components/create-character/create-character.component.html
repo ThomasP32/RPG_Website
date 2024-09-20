@@ -48,7 +48,7 @@
             </div>
             <div *ngIf="rolledD4 && !diceRolled">
                 <p>Roll the 6-sided die (D6) for {{ rollingDiceFor === 'attack' ? 'defense' : 'attack' }}:</p>
-                <button (click)="assignD6()">Roll D6</button>
+                <button (click)="assignD6()" [disabled]="rolledD6">Roll D6</button>
                 <p>Result: {{ diceRollD6 }}</p>
             </div>
         </div>
@@ -57,7 +57,7 @@
     <div class="right">
         <section class="attributes-section">
             <br />
-            <strong>Selected character:</strong>
+            <strong>Selected avatar:</strong>
             <p *ngIf="selectedCharacter">{{ selectedCharacter }}</p>
             <div class="avatar-container">
                 <div *ngIf="selectedCharacter">
@@ -71,19 +71,20 @@
             <strong>Avatar's attributes: </strong>
             <div class="attribute-container">
                 <div class="attribute" title="Represents the character's life points. If it drops to zero, the character is defeated.">
-                    <strong>Life</strong>: {{ life }} points
+                    <span>Life</span>
+                    : {{ life }} points
                 </div>
 
                 <div class="attribute" title="Represents the character's speed, determining how fast they can move.">
-                    <strong>Speed</strong>: {{ speed }} points
+                    <span>Speed</span>: {{ speed }} points
                 </div>
 
                 <div class="attribute" title="Represents the character's attack power, determining the force of their attacks.">
-                    <strong>Attack</strong>: {{ attack }} points
+                    <span>Attack</span>: {{ attack }} points
                 </div>
 
                 <div class="attribute" title="Represents the character's defense power, determining how much damage they can resist.">
-                    <strong>Defense</strong>: {{ defense }} points
+                    <span>Defense</span>: {{ defense }} points
                 </div>
             </div>
             <p>For description of attributes, place cursor on each one.</p>
