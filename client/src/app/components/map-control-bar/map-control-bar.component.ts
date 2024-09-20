@@ -44,12 +44,7 @@ export class MapControlBarComponent implements OnInit {
         console.log('resetting the map');
         console.log('MapControlBar: Triggering reset via service');
         this.mapService.resetMap();
-        // if (this.mapAreaComponent) {
-        //   this.mapAreaComponent.resetMapToDefault();
-        // }
-        // else {
-        //   console.log("not working");
-        // }
+
     }
 
   createMap(): void {
@@ -61,9 +56,6 @@ export class MapControlBarComponent implements OnInit {
     //     console.log('Map saved successfully:', response);
     // });
 }
-    createMap(): void {
-        alert(`Map Created: ${this.mapTitle} - ${this.mapDescription}`);
-    }
 
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
