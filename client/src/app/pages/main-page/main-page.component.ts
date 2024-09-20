@@ -9,8 +9,8 @@ import { Router, RouterLink } from '@angular/router';
     imports: [RouterLink],
 })
 export class MainPageComponent {
-    readonly title: string = 'Clash of Tiles';
-    logoPath = 'assets/Logo_Clash_of_Tiles.png';
+    readonly title: string = 'Brassbound Realms';
+    logoPath = 'assets/gamelogo.png';
     teamNumber = 'Équipe 109';
     developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 
         'Thomas Perron Duveau', 'Emelyn Victoria'];
@@ -18,7 +18,7 @@ export class MainPageComponent {
     constructor(private router: Router) {}
 
     navigateToCreateGame(): void {
-        this.router.navigate(['/create-game-page']);
+        this.router.navigate(['/create-game']);
     }
 
     navigateToAdmin(): void {
