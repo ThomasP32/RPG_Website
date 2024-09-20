@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { CommunicationService } from '@app/services/communication.map.service';
+import { RouterLink, Router } from '@angular/router';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-admin-page',
@@ -10,33 +12,36 @@ import { RouterLink } from '@angular/router';
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Administration des jeux';
-    games: any[] = [];
+    maps: Map[] = [];
     
-    // constructor(private router: Router, private gameService: GameService) {}
+    constructor(private router: Router, private communicationService: CommunicationService) {
+        this.communicationService.maps$.subscribe((maps) => {this.maps = maps});
+
+    }
 
 
     ngOnInit(): void {
-        // this.loadGames();
+        this.communicationService.getMapsFromServer();
     }
 
-    loadGames(): void {
-        // this.gameService.getGames().subscribe((data : any[]) => {
-        //     this.games = data.map(game => {
-        //         return {
-        //             ...game,
-        //             showDescription: false,
-        //             visible: true
-        //         };
-        //     });
-        // });
-    }
+    // loadGames(): void {
+    //     // this.gameService.getGames().subscribe((data : any[]) => {
+    //     //     this.games = data.map(game => {
+    //     //         return {
+    //     //             ...game,
+    //     //             showDescription: false,
+    //     //             visible: true
+    //     //         };
+    //     //     });
+    //     // });
+    // }
 
     navigateToMain(): void {
-        // this.router.navigate(['/home']);
+        this.router.navigate(['/home']);
     }
 
-    editGame(): void {
-        // this.router.navigate(['/admin/edit-game', this.games.id]);
+    editGame(mapId : string): void {
+        this.router.navigate(['/admin/edit-map', mapId]);
             
     }
 
@@ -48,14 +53,14 @@ export class AdminPageComponent implements OnInit {
         }
     }
 
-    showDescription(): void {
-        // game.showDescription = true;
+    // showDescription(): void {
         
-    }
+        
+    // }
 
-    hideDescription(): void {
-        // game.showDescription = false
-    }
+    // hideDescription(): void {
+    //     // game.showDescription = false
+    // }
     
     toggleVisibility(): void {
         // const game = this.games.find(g => g.id === game.id);
