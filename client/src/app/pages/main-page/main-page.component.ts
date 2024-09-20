@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-main-page',
@@ -15,9 +15,13 @@ export class MainPageComponent {
     developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 
         'Thomas Perron Duveau', 'Emelyn Victoria'];
 
+    constructor(private router: Router) {}
+
     navigateToCreateGame(): void {
+        this.router.navigate(['/create-game']);
     }
 
     navigateToAdmin(): void {
+        this.router.navigate(['/admin-page']);
     }
 }
