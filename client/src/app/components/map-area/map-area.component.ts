@@ -18,15 +18,14 @@ export class MapAreaComponent {
     mapSize: string;
     mode: string;
     convertedMapSize: number;
-    convertedCellSize : number;
+    convertedCellSize: number;
     convertedMode: string;
 
     constructor(
         private route: ActivatedRoute,
-        private renderer: Renderer2, 
-        private cdRef: ChangeDetectorRef
+        private renderer: Renderer2,
+        private cdRef: ChangeDetectorRef,
     ) {}
-    
 
     ngOnInit() {
         this.getUrlParams();
@@ -48,15 +47,15 @@ export class MapAreaComponent {
     }
 
     setCellSize() {
-      const root = document.querySelector(':root') as HTMLElement;
-      this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-      console.log("cellsize =",this.convertedCellSize);
-      this.cdRef.detectChanges(); 
+        const root = document.querySelector(':root') as HTMLElement;
+        this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
+        console.log('cellsize =', this.convertedCellSize);
+        this.cdRef.detectChanges();
     }
 
     selectTile(tile: string) {
         this.selectedTile = tile;
-        console.log('Selected tile:', tile);
+        // console.log('Selected tile:', tile);
     }
 
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
@@ -73,17 +72,16 @@ export class MapAreaComponent {
             this.placeTile(rowIndex, colIndex, false); 
         }
     }
-    
-      stopPlacingTile() {
+
+    stopPlacingTile() {
         this.isPlacing = false;
         this.isErasing = false;
         console.log('Stopped placing tile');
-      }
-    
-      @HostListener('document:mouseup', ['$event'])
-      onMouseUp(event: MouseEvent) {
+    }
+
+    @HostListener('document:mouseup', ['$event'])
+    onMouseUp(event: MouseEvent) {
         this.stopPlacingTile();
-        // console.log('Mouse up event detected, stopping placing');
       }
     
       placeTileOnMove(rowIndex: number, colIndex: number) {
@@ -99,40 +97,74 @@ export class MapAreaComponent {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
-                console.log(
-                    `Toggled door state at position [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`
-                );
+                console.log(`Toggled door state at position [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
             } else {
                 this.Map[rowIndex][colIndex].value = 'door';
                 this.Map[rowIndex][colIndex].doorState = 'closed';
-                console.log(`Placed door (closed) at position [${rowIndex}, ${colIndex}]`);
+                // console.log(`Placed door (closed) at position [${rowIndex}, ${colIndex}]`);
             }
         } else {
             const tileToPlace = isErasing ? this.defaultTile : this.selectedTile;
             if (tileToPlace && this.Map[rowIndex][colIndex].value !== tileToPlace) {
                 this.Map[rowIndex][colIndex].value = tileToPlace;
-                console.log(`Placed tile "${tileToPlace}" at position [${rowIndex}, ${colIndex}]`);
+                // console.log(`Placed tile "${tileToPlace}" at position [${rowIndex}, ${colIndex}]`);
             }
         }
     }
 
     resetMapToDefault() {
         for (let i = 0; i < this.Map.length; i++) {
-          for (let j = 0; j < this.Map[i].length; j++) {
-            this.Map[i][j].value = this.defaultTile;
-          }
+            for (let j = 0; j < this.Map[i].length; j++) {
+                this.Map[i][j].value = this.defaultTile;
+            }
         }
         console.log('Map has been reset to default');
       }
     
+      generateMapData() {
+        const mapData = {
+            name: '', 
+            description: '', 
+            mode: this.mode, 
+            mapSize: {
+                x: this.convertedMapSize, 
+                y: this.convertedMapSize 
+            },
+            tiles: [] as { coordinate: { x: number; y: number }; category: string }[], 
+            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[], 
+            items: [] as any[], 
+            startTiles: [] as any[] 
+        };
+    
+        for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
+                const cell = this.Map[rowIndex][colIndex];
+                const coordinate = { x: rowIndex, y: colIndex };
+    
+                if (cell && cell.value) {
+                    if (cell.value === 'door') {
+                        mapData.doorTiles.push({
+                            coordinate,
+                            isOpened: cell.doorState === 'open'
+                        });
+                    } else if (['water', 'ice', 'wall', 'floor'].includes(cell.value)) {
+                        mapData.tiles.push({
+                            coordinate,
+                            category: cell.value
+                        });
+                    }
+                }
+            }
+        }
+    
+        return mapData;
+    }
 
     getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
         switch (tileValue) {
             case 'door':
                 const doorState = this.Map[rowIndex][colIndex].doorState;
-                return doorState === 'open'
-                    ? '../../../../assets/tiles/door_x.png'
-                    : '../../../../assets/tiles/door_y.png';
+                return doorState === 'open' ? '../../../../assets/tiles/door_x.png' : '../../../../assets/tiles/door_y.png';
             case 'wall':
                 return '../../../../assets/tiles/wall.png';
             case 'ice':
@@ -152,7 +184,7 @@ export class MapAreaComponent {
 
     urlConverter(size: string) {
         console.log('URL params:', size);
-        this.convertedMapSize = Number(size.split('=')[1]);
+        this.convertedMapSize = parseInt(size.split('=')[1]);
         console.log('Converted map size:', this.convertedMapSize);
     }
 }
