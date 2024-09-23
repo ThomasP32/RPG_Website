@@ -21,9 +21,11 @@
 }
 
 h2 {
-    letter-spacing: 1px;
+    font-size: 25px;
+    line-height: 1.2;
     margin-left: 10px;
-    color:#C0C0C0  ;
+    margin-bottom: 10px;
+    color:#C0C0C0;
     text-shadow:
     -1px -1px 0 #000,  
     1px -1px 0 #000,
@@ -32,12 +34,11 @@ h2 {
 }
 
 h3 {
-    letter-spacing: 1px;
     flex-grow: 1;
     // text-align: center;
     padding: 10px;
     margin: 0;
-    font-size: 18px;
+    font-size: 14px;
     background-color: #2C3E50;
     border: 3px solid #202020 ; 
     color: #C0C0C0 ;
@@ -52,7 +53,7 @@ h3 {
 button {
     background-color: #2C3E50;
     color: #C0C0C0;
-    font-size: 18px;
+    font-size: 14px;
     cursor: pointer;
     width: 10%; 
     aspect-ratio: 1 / 1;
@@ -137,7 +138,7 @@ button:hover {
     transition: opacity 0.3s;
     width: 125px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    font-size: 0.9em;
+    font-size: 0.8em;
     font-family: 'Arial', sans-serif;
 }
 
@@ -158,6 +159,11 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.8em;
+    font-size: 0.6em;
     border: 2px solid #7D7F7D ;
 }
+
+.tile.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }

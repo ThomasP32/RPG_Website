@@ -12,8 +12,8 @@ import { MapService } from '@app/services/map.service';
     imports: [CommonModule, NgIf, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
-    mapTitle: string = 'Add a title'; // Titre par défaut
-    mapDescription: string = 'Add a map description'; // Description par défaut
+    mapTitle: string = ''; // Titre par défaut
+    mapDescription: string = ''; // Description par défaut
 
     isEditingTitle: boolean = false;
     isEditingDescription: boolean = false;

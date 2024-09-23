@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+  }
+
 .adminPage-container {
     display: flex;
     flex-direction: column;
@@ -7,7 +12,7 @@
     padding: 10px;
     height: auto;
     background-color: #495c6b;
-    font-family: Gomarice;
+    font-family: 'Press Start 2P', sans-serif;
 }
 
 .header-item {

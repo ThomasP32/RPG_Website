@@ -1,6 +1,7 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MapService } from '@app/services/map.service';
 
 @Component({
     selector: 'app-toolbar',
@@ -23,15 +24,21 @@ export class ToolbarComponent {
     isItemsVisible: boolean = true;
     isFlagVisible: boolean = true;
     isStartingPointVisible: boolean = true;
-    startingPointCounter: number = 2;
+
+    startingPointCounter: number;
     flagCounter: number = 2;
     randomItemCounter: number = 6;
 
-    constructor(private route: ActivatedRoute) {}
+    constructor(private route: ActivatedRoute,
+        private mapService: MapService,
+    ) {}
 
     ngOnInit() {
         this.getUrlParams();
         this.urlConverter(this.mode);
+        this.mapService.startingPointCounter$.subscribe((counter) => {
+            this.startingPointCounter = counter;
+          });
     }
 
     toggleTiles() {
@@ -50,10 +57,39 @@ export class ToolbarComponent {
     }
 
     selectTile(tile: string) {
-        this.selectedTile = tile;
-        this.tileSelected.emit(tile);
-        console.log('Selected tile:', this.selectedTile);
+        if (this.selectedTile === tile) {
+            // If the tile is already selected, deselect it
+            this.selectedTile = 'empty'; 
+            this.tileSelected.emit(this.selectedTile);
+            console.log('Tile deselected, selectedTile is now empty');
+        } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
+            // this.selectedTile = tile;
+            // this.tileSelected.emit(tile);
+            console.log('Starting point selected, counter:', this.startingPointCounter);
+        } else {
+            this.selectedTile = tile;
+            this.tileSelected.emit(tile);
+            console.log('Selected tile:', this.selectedTile);
+        }
+    
+        if (this.startingPointCounter === 0) {
+            this.isStartingPointVisible = false;
+            console.log('No more starting points available');
+        }
     }
+
+    startDrag(event: DragEvent, itemType: string) {
+        if (itemType === 'starting-point' && this.startingPointCounter > 0) {
+          event.dataTransfer?.setData('item', itemType);
+          console.log('Dragging:', itemType);
+        }
+      }
+    
+      placeStartingPoint() {
+        if (this.startingPointCounter > 0) {
+          this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+        }
+      }
 
     selectItem(item: string) {
         this.itemSelected.emit(item);

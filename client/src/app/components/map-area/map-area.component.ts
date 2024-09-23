@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MapService } from '@app/services/map.service';
 
 @Component({
     selector: 'app-map-area',
@@ -10,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
     styleUrl: './map-area.component.scss',
 })
 export class MapAreaComponent {
-    @Input() selectedTile: string = 'floor';
+    @Input() selectedTile: string = '';
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed' }[][] = [];
     isPlacing: boolean = false;
     isErasing: boolean = false;
@@ -21,10 +22,15 @@ export class MapAreaComponent {
     convertedCellSize: number;
     convertedMode: string;
 
+    startingPointCounter: number;
+
+    
+
     constructor(
         private route: ActivatedRoute,
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
+        private mapService: MapService
     ) {}
 
     ngOnInit() {
@@ -32,6 +38,10 @@ export class MapAreaComponent {
         this.urlConverter(this.mapSize);
         this.createMap(this.convertedMapSize, this.mode);
         this.setCellSize();
+
+        this.mapService.startingPointCounter$.subscribe((counter) => {
+            this.startingPointCounter = counter;
+          });
     }
 
     createMap(mapSize: number, mode: string) {
@@ -58,59 +68,93 @@ export class MapAreaComponent {
         // console.log('Selected tile:', tile);
     }
 
+    // Handles left-click or right-click on the map
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         if (isRightClick) {
             this.isErasing = true;
-            if (this.Map[rowIndex][colIndex].value === 'door') {
-                this.Map[rowIndex][colIndex].value = this.defaultTile;
-                console.log(`Replaced door with floor at position [${rowIndex}, ${colIndex}]`);
-            } else {
-                this.placeTile(rowIndex, colIndex, true);
-            }
+            this.placeTile(rowIndex, colIndex, true); // Right-click to erase
         } else {
             this.isPlacing = true;
-            this.placeTile(rowIndex, colIndex, false); 
+            this.placeTile(rowIndex, colIndex, false); // Left-click to place
         }
     }
 
     stopPlacingTile() {
         this.isPlacing = false;
         this.isErasing = false;
-        console.log('Stopped placing tile');
     }
 
     @HostListener('document:mouseup', ['$event'])
     onMouseUp(event: MouseEvent) {
         this.stopPlacingTile();
-      }
-    
-      placeTileOnMove(rowIndex: number, colIndex: number) {
+    }
+
+    placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isPlacing) {
             this.placeTile(rowIndex, colIndex, false);
         } else if (this.isErasing) {
             this.placeTile(rowIndex, colIndex, true);
         }
-      }
-    
-      placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
-        if (this.selectedTile === 'door' && isErasing === false) {
+    }
+
+    placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
+        // Case 1: If no tile is selected
+        if (!this.selectedTile || this.selectedTile === 'empty') {
+            // If left-click on a door, toggle the door's state
+            if (!isErasing && this.Map[rowIndex][colIndex].value === 'door') {
+                const currentState = this.Map[rowIndex][colIndex].doorState;
+                this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
+                console.log(`Toggled door state at [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
+            }
+            // If right-click, place the default (floor) tile
+            else if (isErasing) {
+                this.Map[rowIndex][colIndex].value = this.defaultTile;
+                console.log(`Replaced with floor at [${rowIndex}, ${colIndex}]`);
+            }
+            return; // Exit early when no tile is selected
+        }
+
+        // Case 2: Handle door-specific logic when selectedTile is 'door'
+        if (this.selectedTile === 'door' && !isErasing) {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
-                console.log(`Toggled door state at position [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
+                console.log(`Toggled door state at [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
             } else {
                 this.Map[rowIndex][colIndex].value = 'door';
                 this.Map[rowIndex][colIndex].doorState = 'closed';
-                // console.log(`Placed door (closed) at position [${rowIndex}, ${colIndex}]`);
+                console.log(`Placed a closed door at [${rowIndex}, ${colIndex}]`);
             }
         } else {
+            // Case 3: Handle erasing or placing other tiles
             const tileToPlace = isErasing ? this.defaultTile : this.selectedTile;
-            if (tileToPlace && this.Map[rowIndex][colIndex].value !== tileToPlace) {
+
+            if (isErasing) {
+                // Erasing mode: replace the current tile with the default tile
+                this.Map[rowIndex][colIndex].value = this.defaultTile;
+                console.log(`Erased tile at [${rowIndex}, ${colIndex}], replaced with default "${this.defaultTile}"`);
+            } else if (this.Map[rowIndex][colIndex].value !== tileToPlace) {
+                // Place the selected tile (if different from the current one)
                 this.Map[rowIndex][colIndex].value = tileToPlace;
-                // console.log(`Placed tile "${tileToPlace}" at position [${rowIndex}, ${colIndex}]`);
+                console.log(`Placed tile "${tileToPlace}" at [${rowIndex}, ${colIndex}]`);
             }
         }
     }
+
+    allowDrop(event: DragEvent) {
+        event.preventDefault();
+      }
+      
+      onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
+        const itemType = event.dataTransfer?.getData('item');
+        
+        if (itemType === 'starting-point' && this.startingPointCounter > 0) {
+          this.Map[rowIndex][colIndex].value = 'starting-point';
+          this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+          this.selectedTile = 'empty';
+          console.log('Starting point placed at:', rowIndex, colIndex);
+        }
+      }
 
     resetMapToDefault() {
         for (let i = 0; i < this.Map.length; i++) {
@@ -168,9 +212,11 @@ export class MapAreaComponent {
             case 'wall':
                 return '../../../../assets/tiles/wall.png';
             case 'ice':
-                return '../../../../assets/tiles/ice.png';
+                return '../../../../assets/tiles/ice1.jpg';
             case 'water':
                 return '../../../../assets/tiles/water.png';
+            case 'starting-point':
+                return '../../../../assets/tiles/startingpoint.png';
             default:
                 return '../../../../assets/tiles/floor.png';
         }
