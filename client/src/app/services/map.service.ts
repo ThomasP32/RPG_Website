@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,13 @@ export class MapService {
   generateMap$ = this.resetMapSource.asObservable();
 
   // constructor(private http: HttpClient) {}
+
+  private startingPointCounterSource = new BehaviorSubject<number>(10);
+  startingPointCounter$ = this.startingPointCounterSource.asObservable();
+
+  updateStartingPointCounter(value: number) {
+    this.startingPointCounterSource.next(value);
+  }
 
   generateMapData(){
     this.generateMapSource.next();

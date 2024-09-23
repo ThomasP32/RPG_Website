@@ -6,6 +6,11 @@
   font-family: 'Gomarice';
   src: url('../../../assets/fonts/gomarice_no_continue.ttf') format('truetype');
 }
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
 .game-creation-page {
   display: flex;
   height: 100vh;
@@ -15,7 +20,7 @@
 .left-area {
   width: 420px; 
   background-color: #1D1D1D;
-  font-family: 'Gomarice', sans-serif;
+  font-family: 'Press Start 2P', sans-serif;
   height: 100%; 
 }
 
@@ -37,4 +42,5 @@
   border-left: 3px solid #202020;
   background-color: #1c242c;
   height: 100%;
+  font-family: 'Press Start 2P', sans-serif;
 }

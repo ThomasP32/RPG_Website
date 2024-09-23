@@ -8,7 +8,8 @@
         (mouseenter)="placeTileOnMove(rowIndex, colIndex)"
         (mouseup)="stopPlacingTile()"
         (contextmenu)="$event.preventDefault()"
-      >
+        (dragover)="allowDrop($event)"
+        (drop)="onDrop($event, rowIndex, colIndex)">
         <img *ngIf="cell.value" [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" draggable="false" />
       </div>
     </div>

@@ -9,7 +9,7 @@ import { Map } from '@common/map.types';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink],
+    imports: [RouterLink,MapComponent],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
@@ -24,27 +24,25 @@ export class AdminPageComponent implements OnInit {
 
     isMapVisible = false;
 
-    toggleMapVisibility(): void {
-        console.log("button clicked");
-        this.isMapVisible = !this.isMapVisible;
+    toggleGameCreationModalVisibility(): void {
+        this.isMapVisible = true;
     }
-
-
+    
     ngOnInit(): void {
-        // this.communicationService.getMapsFromServer();
+        this.communicationService.getMapsFromServer();
     }
 
-    // loadGames(): void {
-    //     // this.gameService.getGames().subscribe((data : any[]) => {
-    //     //     this.games = data.map(game => {
-    //     //         return {
-    //     //             ...game,
-    //     //             showDescription: false,
-    //     //             visible: true
-    //     //         };
-    //     //     });
-    //     // });
-    // }
+    loadGames(): void {
+        // this.gameService.getGames().subscribe((data : any[]) => {
+        //     this.games = data.map(game => {
+        //         return {
+        //             ...game,
+        //             showDescription: false,
+        //             visible: true
+        //         };
+        //     });
+        // });
+    }
 
     navigateToMain(): void {
         this.router.navigate(['/main-menu']);
