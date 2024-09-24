@@ -1,8 +1,8 @@
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { CoordinateDto, CreateMapDto } from './create-map.dto';
 
-@ValidatorConstraint({ name: 'IsOutOfMap', async: false })
-export class IsOutOfMap implements ValidatorConstraintInterface {
+@ValidatorConstraint({ name: 'IsInsideMap', async: false })
+export class IsInsideMap implements ValidatorConstraintInterface {
     validate(coordinate: CoordinateDto, args: ValidationArguments) {
         const map = args.object as CreateMapDto;
         const mapSize = map.mapSize;

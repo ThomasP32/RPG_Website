@@ -1,8 +1,8 @@
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsString, Validate, ValidateNested} from 'class-validator';
-import { IsOutOfMap } from './map.dto.constraints';
-import { TileCategory, ItemCategory } from '@common/map.types';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsString, Validate, ValidateNested, IsOptional, IsDate } from 'class-validator';
+import { IsInsideMap } from './map.dto.constraints';
 
 export class CoordinateDto {
     @ApiProperty()
@@ -57,6 +57,18 @@ export class CreateMapDto {
     @IsString()
     name: string;
 
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty({ type: String, enum: Mode })
+    @IsEnum(Mode)
+    mode: Mode;
+
+    @ApiProperty()
+    @IsString()
+    imagePreview: string;
+
     @ApiProperty({ default: false })
     @IsBoolean()
     isVisible: boolean;
@@ -69,30 +81,36 @@ export class CreateMapDto {
     @ApiProperty({ type: [StartTileDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
+    @Validate(IsInsideMap)
     @Type(() => StartTileDto)
     startTiles: StartTileDto[];
 
     @ApiProperty({ type: [ItemDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
+    @Validate(IsInsideMap)
     @Type(() => ItemDto)
     items: ItemDto[];
 
     @ApiProperty({ type: [TileDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
+    @Validate(IsInsideMap)
     @Type(() => TileDto)
     tiles: TileDto[];
 
     @ApiProperty({ type: [DoorTileDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
+    @Validate(IsInsideMap)
     @Type(() => DoorTileDto)
     doorTiles: DoorTileDto[];
+
+    @ApiProperty({ required: false }) 
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date) 
+    lastModified?: Date; 
 
     @ApiProperty()
     _id?: string;

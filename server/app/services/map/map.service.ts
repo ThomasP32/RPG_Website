@@ -1,7 +1,7 @@
 import { Map, MapDocument } from '@app/model/database/map';
-import { CreateMapDto} from '@app/model/dto/map/create-map.dto';
-import { ItemCategory, TileCategory} from '@common/map.types';
-import { Injectable, Logger} from '@nestjs/common';
+import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
+import { ItemCategory, TileCategory, Mode} from '@common/map.types';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -24,6 +24,9 @@ export class MapService {
         const maps: CreateMapDto[] = [
             {
                 name: 'Test de jeu',
+                description: 'un simple jeu', 
+                mode: Mode.Ctf, 
+                imagePreview: 'url dimage',
                 isVisible: false,
                 mapSize: { x: 10, y: 10 },
                 startTiles: [{ coordinate: { x: 5, y: 1 } }],
@@ -34,7 +37,6 @@ export class MapService {
         ];
         await this.mapModel.insertMany(maps);
         this.logger.log('THIS ADDS DATA TO THE DATABASE, DO NOT USE OTHERWISE');
-        
     }
     async getAllMaps(): Promise<Map[]> {
         return await this.mapModel.find({});
@@ -70,7 +72,7 @@ export class MapService {
         }
     }
 
-    // possibilité de créer un constraint avec class validator et de l'appliquer sur le dto pour eviter tout ca 
+    // possibilité de créer un constraint avec class validator et de l'appliquer sur le dto pour eviter tout ca
     // private isOutOfBounds2(coordinates: CoordinateDto[], mapSize: number) {
     //     for(const coordinate of coordinates) {
     //         if(this.isOutOfBounds(coordinate, mapSize)) {
@@ -87,11 +89,11 @@ export class MapService {
     // }
 
     // private verifyMapCoordinates(map : CreateMapDto) {
-    //     if (this.isOutOfBounds2(map.startTiles, map.mapSize.x) || 
+    //     if (this.isOutOfBounds2(map.startTiles, map.mapSize.x) ||
     //         this.isOutOfBounds2(map.wallTiles, map.mapSize.x) ||
-    //         this.isOutOfBounds2(map.iceTiles, map.mapSize.x) || 
-    //         this.isOutOfBounds2(map.waterTiles, map.mapSize.x) || 
-    //         this.isOutOfBounds2(map.doorTiles.map(doorTile => doorTile.coordinate), map.mapSize.x) ||  
+    //         this.isOutOfBounds2(map.iceTiles, map.mapSize.x) ||
+    //         this.isOutOfBounds2(map.waterTiles, map.mapSize.x) ||
+    //         this.isOutOfBounds2(map.doorTiles.map(doorTile => doorTile.coordinate), map.mapSize.x) ||
     //         this.isOutOfBounds(map.attributeItem1, map.mapSize.x) ||
     //         this.isOutOfBounds(map.attributeItem2, map.mapSize.x) ||
     //         this.isOutOfBounds(map.conditionItem1, map.mapSize.x) ||
@@ -104,12 +106,10 @@ export class MapService {
     //         return false
     // }
     // ----------------------->
-    async isUnique(mapName : string): Promise<boolean> {
-        if(await this.getMap(mapName)) {
+    async isUnique(mapName: string): Promise<boolean> {
+        if (await this.getMap(mapName)) {
             return false;
         }
         return true;
     }
-
-
 }

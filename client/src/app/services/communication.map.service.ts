@@ -21,7 +21,7 @@ export class CommunicationService {
         return this.http.get<Map[]>(`${this.baseUrl}/map`).pipe(catchError(this.handleError<Map[]>('basicGet')));
     }
 
-    // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue 
+    // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
     basicPost(map: Map): Observable<HttpResponse<string>> {
         return this.http.post(`${this.baseUrl}/map`, map, { observe: 'response', responseType: 'text' });
     }
