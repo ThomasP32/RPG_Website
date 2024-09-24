@@ -1,0 +1,17 @@
+<div class="map-container">
+  <div class="map">
+    <div *ngFor="let Row of Map; let rowIndex = index" class="map-row">
+      <div
+        *ngFor="let cell of Row; let colIndex = index"
+        class="map-cell"
+        (mousedown)="startPlacingTile(rowIndex, colIndex, $event.button === 2)"
+        (mouseenter)="placeTileOnMove(rowIndex, colIndex)"
+        (mouseup)="stopPlacingTile()"
+        (contextmenu)="$event.preventDefault()"
+        (dragover)="allowDrop($event)"
+        (drop)="onDrop($event, rowIndex, colIndex)">
+        <img *ngIf="cell.value" [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" draggable="false" />
+      </div>
+    </div>
+  </div>
+</div>
