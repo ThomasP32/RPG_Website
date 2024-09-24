@@ -1,35 +1,76 @@
-.create-map-view {
-    display: flex;
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+.create-game-component {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #111;
+    width: 100vh;
     height: 100vh;
-}
+    overflow: hidden;
 
-.titles {
-    flex: 1;
-    padding: 20px;
-    border-right: 2px solid #ccc;
-    background-color: #f4f4f4;
-    overflow-y: auto;
-}
+    .header {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
 
-.map-list {
-    display: flex;
-    flex-direction: column;
-}
+        .header-h2 {
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+        }
+    }
+    .map-view-selection {
+        color: white;
+        padding: 20px;
 
-.map-box {
-    display: flex;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    background-color: #808080;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-}
+        .map-cards {
+            display: flex;
+            justify-content: space-between;
 
-.image-container {
-    flex: 1;
-    padding: 10px;
-}
+            .map-card {
+                background-color: #1d1d1d;
+                border: 1px solid #333;
+                width: 30%;
+                padding: 15px;
+                text-align: center;
 
-.game-info {
-    flex: 2;
-    padding: 10px;
+                .map-img {
+                    width: 100%;
+                    height: 150px;
+                    object-fit: cover;
+                }
+
+                .map-details {
+                    margin-top: 10px;
+
+                    .name {
+                        color: #fff;
+                        margin-bottom: 5px;
+                    }
+
+                    .description {
+                        color: #ccc;
+                        margin-bottom: 15px;
+                    }
+                }
+            }
+        }
+    }
+
+    .next-button {
+        background-color: orange;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-family: 'Press Start 2P', cursive;
+
+        &:hover {
+            background-color: #ff6700;
+        }
+    }
 }
