@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommunicationService } from '@app/services/communication.map.service';
-import { RouterLink, Router } from '@angular/router';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -13,12 +13,15 @@ import { Map } from '@common/map.types';
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
-    
-    constructor(private router: Router, private communicationService: CommunicationService) {
-        this.communicationService.maps$.subscribe((maps) => {this.maps = maps});
 
+    constructor(
+        private router: Router,
+        private communicationService: CommunicationService,
+    ) {
+        this.communicationService.maps$.subscribe((maps) => {
+            this.maps = maps;
+        });
     }
-
 
     ngOnInit(): void {
         this.communicationService.getMapsFromServer();
@@ -40,13 +43,12 @@ export class AdminPageComponent implements OnInit {
         this.router.navigate(['/home']);
     }
 
-    editGame(mapId : string): void {
+    editGame(mapId: string): void {
         this.router.navigate(['/admin/edit-map', mapId]);
-            
     }
 
     deleteGame(): void {
-        if(confirm('Are you sure you want to delete this game ?')) {
+        if (confirm('Are you sure you want to delete this game ?')) {
             // this.gameService.deleteGame(game.id).subscribe(() => {
             //     this.loadGames();
             // });
@@ -54,14 +56,13 @@ export class AdminPageComponent implements OnInit {
     }
 
     // showDescription(): void {
-        
-        
+
     // }
 
     // hideDescription(): void {
     //     // game.showDescription = false
     // }
-    
+
     toggleVisibility(): void {
         // const game = this.games.find(g => g.id === game.id);
         // if (game) {
