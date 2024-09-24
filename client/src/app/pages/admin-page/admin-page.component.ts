@@ -9,17 +9,21 @@ import { Map } from '@common/map.types';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink,MapComponent],
+    imports: [RouterLink, MapComponent],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
-    
-    constructor(private router: Router, private communicationService: CommunicationService) {
-        this.communicationService.maps$.subscribe((maps) => {this.maps = maps});
 
+    constructor(
+        private router: Router,
+        private communicationService: CommunicationService,
+    ) {
+        this.communicationService.maps$.subscribe((maps) => {
+            this.maps = maps;
+        });
     }
-    
+
     @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
 
     isMapVisible = false;
@@ -27,7 +31,7 @@ export class AdminPageComponent implements OnInit {
     toggleGameCreationModalVisibility(): void {
         this.isMapVisible = true;
     }
-    
+
     ngOnInit(): void {
         this.communicationService.getMapsFromServer();
     }
@@ -48,13 +52,12 @@ export class AdminPageComponent implements OnInit {
         this.router.navigate(['/main-menu']);
     }
 
-    editGame(mapId : string): void {
+    editGame(mapId: string): void {
         this.router.navigate(['/admin/edit-map', mapId]);
-            
     }
 
     deleteGame(): void {
-        if(confirm('Are you sure you want to delete this game ?')) {
+        if (confirm('Are you sure you want to delete this game ?')) {
             // this.gameService.deleteGame(game.id).subscribe(() => {
             //     this.loadGames();
             // });
@@ -62,14 +65,13 @@ export class AdminPageComponent implements OnInit {
     }
 
     // showDescription(): void {
-        
-        
+
     // }
 
     // hideDescription(): void {
     //     // game.showDescription = false
     // }
-    
+
     toggleVisibility(): void {
         // const game = this.games.find(g => g.id === game.id);
         // if (game) {

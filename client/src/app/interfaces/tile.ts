@@ -1,4 +1,4 @@
 interface Tile {
-    type: 'grass' | 'water' | 'ice' | 'stone' | 'door';
+    type: 'floor' | 'water' | 'ice' | 'wall' | 'door';
     isHovered: boolean;
 }
