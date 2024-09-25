@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
 
@@ -15,6 +15,9 @@ const four = 4;
     imports: [FormsModule, CommonModule],
 })
 export class CreateCharacterComponent {
+    private mapId: string = '';
+    convertedId: string = '';
+
     characterName: string = '';
     selectedCharacter = '';
     lifeOrSpeedBonus = '';
@@ -33,8 +36,15 @@ export class CreateCharacterComponent {
 
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
+    private route: ActivatedRoute;
 
-    constructor() {
+    ngOnInit() {
+        this.getUrlParams();
+        this.urlConverter(this.mapId);
+        this.loadCharacters();
+    }
+
+    loadCharacters() {
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
         });
@@ -43,7 +53,6 @@ export class CreateCharacterComponent {
     addBonus() {
         this.life = four;
         this.speed = four;
-
         if (this.lifeOrSpeedBonus === 'life') {
             this.life += 2;
         } else if (this.lifeOrSpeedBonus === 'speed') {
@@ -61,6 +70,19 @@ export class CreateCharacterComponent {
         } else if (this.attackOrDefenseBonus === 'defense') {
             this.attackBonus = 'D4';
             this.defenseBonus = 'D6';
+        }
+    }
+
+    getUrlParams() {
+        this.route.queryParams.subscribe((params) => {
+            this.mapId = this.route.snapshot.params['id'];
+        });
+    }
+
+    urlConverter(mapId: string) {
+        if (mapId) {
+            console.log('URL params id :', mapId);
+            this.convertedId = mapId.split('=')[1];
         }
     }
 
