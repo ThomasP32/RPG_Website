@@ -4,13 +4,18 @@ export interface Coordinate {
 }
 
 export enum TileCategory {
-    Water = 'water', 
-    Ice = 'ice', 
-    Wall = 'wall' 
+    Water = 'water',
+    Ice = 'ice',
+    Wall = 'wall',
+}
+
+export enum Mode {
+    Ctf = 'ctf',
+    Normal = 'normal',
 }
 
 export enum ItemCategory {
-    Sword = 'sword'
+    Sword = 'sword',
 }
 
 export interface Tile {
@@ -31,16 +36,20 @@ export interface Item {
     coordinate: Coordinate;
     category: ItemCategory;
 
-    // les fonctionnalités supplémentaires des items seront ajoutée ici 
+    // les fonctionnalités supplémentaires des items seront ajoutée ici
 }
 
 export interface Map {
     _id?: string;
     name: string;
-    isVisible: boolean;
+    description: string;
+    imagePreview: string;
+    mode: Mode;
+    isVisible?: boolean;
     mapSize: Coordinate;
     startTiles: StartTile[];
     items: Item[];
     doorTiles: DoorTile[];
     tiles: Tile[];
+    lastModified?: Date;
 }
