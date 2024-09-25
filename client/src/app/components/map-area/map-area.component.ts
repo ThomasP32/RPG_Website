@@ -165,6 +165,7 @@ export class MapAreaComponent {
 
     public generateMapData(): Map {
         const mapData: Map = {
+            _id: '',
             name: 'Test-1234',
             isVisible: true,
             mapSize: {

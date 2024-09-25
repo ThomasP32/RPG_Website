@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
@@ -18,10 +18,7 @@ export class StartGamePageComponent {
     maps: Map[] = [];
     selectedMap: string = '';
 
-    constructor(
-        private router: Router,
-        private communicationMapService: CommunicationMapService,
-    ) {
+    constructor(private communicationMapService: CommunicationMapService) {
         this.communicationMapService.maps$.subscribe((maps) => {
             this.maps = maps;
         });
@@ -31,17 +28,16 @@ export class StartGamePageComponent {
         this.communicationMapService.getMapsFromServer();
     }
 
-    selectMap(mapName: string) {
-        console.log('selecting map', mapName);
-        this.selectedMap = mapName;
+    selectMap(mapId: string) {
+        console.log('selecting map', mapId);
+        this.selectedMap = mapId;
     }
 
-    next(mapName: string) {
-        console.log('going next', mapName);
-        if (this.availableMaps.some((map) => map.name === mapName)) {
-            this.selectedMap = mapName;
-            console.log('going next', mapName);
-            this.router.navigate(['/create-character']);
+    next(mapId: string) {
+        const params = new URLSearchParams();
+        if (this.selectedMap) {
+            params.set('id', this.selectedMap);
+            window.location.href = `/create-character/${params}`;
         } else {
             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
         }

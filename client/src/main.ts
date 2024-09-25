@@ -27,10 +27,11 @@ const routes: Routes = [
     { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
-    {path : 'waitin-groom', component : WaitingRoomComponent},
+    { path: 'create-character/:id', component: CharacterFormPageComponent },
+    { path: 'waiting-room', component: WaitingRoomComponent },
+    { path: 'waiting-room/:id', component: WaitingRoomComponent },
     { path: '**', redirectTo: '/mainmenu' },
 ];
-
 
 bootstrapApplication(AppComponent, {
     providers: [provideHttpClient(), provideRouter(routes), provideAnimations()],
