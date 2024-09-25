@@ -25,16 +25,15 @@ export class MapService {
         const maps: CreateMapDto[] = [
             {
                 name: 'Test de jeu',
-                description: 'un simple jeu', 
-                mode: Mode.Ctf, 
+                description: 'un simple jeu',
+                mode: Mode.Ctf,
                 imagePreview: 'url dimage',
                 isVisible: false,
                 mapSize: { x: 10, y: 10 },
                 startTiles: [{ coordinate: { x: 5, y: 1 } }],
                 items: [{ coordinate: { x: 1, y: 3 }, category: ItemCategory.Sword }],
                 tiles: [{ coordinate: { x: 3, y: 4 }, category: TileCategory.Ice }],
-                doorTiles: [{ coordinate: { x: 1, y: 2 }, isOpened: true }]
-
+                doorTiles: [{ coordinate: { x: 1, y: 2 }, isOpened: true }],
             },
         ];
         await this.mapModel.insertMany(maps);
@@ -45,7 +44,11 @@ export class MapService {
     }
     async getMapByName(mapName: string): Promise<Map> {
         try {
-            return await this.mapModel.findOne({ name: mapName });
+            const map = await this.mapModel.findOne({ name: mapName });
+            if (map) {
+                return map;
+            }
+            throw new Error(map.name);
         } catch (err) {
             return Promise.reject(`Failed to find map : ${err.message}`);
         }
@@ -190,7 +193,7 @@ export class MapService {
     // }
     // ----------------------->
     async isUnique(mapName: string): Promise<boolean> {
-        if (await this.getMapByName(mapName)) {
+        if (await this.mapModel.findOne({ name: mapName })) {
             return false;
         }
         return true;
