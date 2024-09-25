@@ -31,6 +31,9 @@ export class MapAreaComponent {
         private mapService: MapService,
     ) {}
 
+    mapTitle: string = '';
+    mapDescription: string;
+
     ngOnInit() {
         this.getUrlParams();
         this.urlConverter(this.mapSize);
@@ -39,6 +42,14 @@ export class MapAreaComponent {
 
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
+        });
+
+        this.mapService.mapTitle$.subscribe((title) => {
+            this.mapTitle = title;
+        });
+
+        this.mapService.mapDescription$.subscribe((description) => {
+            this.mapDescription = description;
         });
     }
 
@@ -96,23 +107,17 @@ export class MapAreaComponent {
     }
 
     placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
-        // Case 1: If no tile is selected
         if (!this.selectedTile || this.selectedTile === 'empty') {
-            // If left-click on a door, toggle the door's state
             if (!isErasing && this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
                 console.log(`Toggled door state at [${rowIndex}, ${colIndex}] to: ${this.Map[rowIndex][colIndex].doorState}`);
-            }
-            // If right-click, place the default (floor) tile
-            else if (isErasing) {
+            } else if (isErasing) {
                 this.Map[rowIndex][colIndex].value = this.defaultTile;
-                console.log(`Replaced with floor at [${rowIndex}, ${colIndex}]`);
             }
-            return; // Exit early when no tile is selected
+            return;
         }
 
-        // Case 2: Handle door-specific logic when selectedTile is 'door'
         if (this.selectedTile === 'door' && !isErasing) {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
@@ -124,17 +129,12 @@ export class MapAreaComponent {
                 console.log(`Placed a closed door at [${rowIndex}, ${colIndex}]`);
             }
         } else {
-            // Case 3: Handle erasing or placing other tiles
             const tileToPlace = isErasing ? this.defaultTile : this.selectedTile;
 
             if (isErasing) {
-                // Erasing mode: replace the current tile with the default tile
                 this.Map[rowIndex][colIndex].value = this.defaultTile;
-                console.log(`Erased tile at [${rowIndex}, ${colIndex}], replaced with default "${this.defaultTile}"`);
             } else if (this.Map[rowIndex][colIndex].value !== tileToPlace) {
-                // Place the selected tile (if different from the current one)
                 this.Map[rowIndex][colIndex].value = tileToPlace;
-                console.log(`Placed tile "${tileToPlace}" at [${rowIndex}, ${colIndex}]`);
             }
         }
     }
@@ -165,7 +165,8 @@ export class MapAreaComponent {
 
     public generateMapData(): Map {
         const mapData: Map = {
-            name: 'Test-1234',
+            name: this.mapTitle,
+            // description: this.mapDescription,
             isVisible: true,
             mapSize: {
                 x: this.convertedMapSize,
@@ -188,7 +189,7 @@ export class MapAreaComponent {
                             coordinate,
                             isOpened: cell.doorState === 'open',
                         });
-                    } else if (['water', 'ice', 'wall', 'floor'].includes(cell.value)) {
+                    } else if (['water', 'ice', 'wall'].includes(cell.value)) {
                         mapData.tiles.push({
                             coordinate,
                             category: cell.value as TileCategory,

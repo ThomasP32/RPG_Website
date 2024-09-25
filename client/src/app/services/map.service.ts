@@ -10,13 +10,27 @@ export class MapService {
     private resetMapSource = new Subject<void>();
     private generateMapSource = new Subject<void>();
 
+    private mapTitleSource = new BehaviorSubject<string>('');
+    private mapDescriptionSource = new BehaviorSubject<string>('');
+
+    private startingPointCounterSource = new BehaviorSubject<number>(10);
+
     resetMap$ = this.resetMapSource.asObservable();
     generateMap$ = this.generateMapSource.asObservable();
+    mapTitle$ = this.mapTitleSource.asObservable();
+    mapDescription$ = this.mapDescriptionSource.asObservable();
+    startingPointCounter$ = this.startingPointCounterSource.asObservable();
 
     constructor(private CommunicationMapService: CommunicationMapService) {}
 
-    private startingPointCounterSource = new BehaviorSubject<number>(10);
-    startingPointCounter$ = this.startingPointCounterSource.asObservable();
+    setMapTitle(title: string): void {
+        console.log(title);
+        this.mapTitleSource.next(title);
+    }
+
+    setMapDescription(description: string): void {
+        this.mapDescriptionSource.next(description);
+    }
 
     updateStartingPointCounter(value: number) {
         this.startingPointCounterSource.next(value);

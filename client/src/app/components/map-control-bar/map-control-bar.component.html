@@ -15,6 +15,7 @@
     </div>
 
     <div class="button-section">
+        <div *ngIf="showErrorMessage.entryError" class="error-message">Ajouter un nom à votre jeu</div>
         <button (click)="resetMap()">Reset</button>
         <button (click)="saveMap()">Save</button>
     </div>

@@ -22,6 +22,11 @@ export class MapControlBarComponent implements OnInit {
     gameMode: string = '';
     numberOfPlayers: number = 0;
 
+    showErrorMessage: { entryError: boolean; nameError: boolean } = {
+        entryError: false,
+        nameError: false,
+    };
+
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
@@ -58,7 +63,16 @@ export class MapControlBarComponent implements OnInit {
     }
 
     saveMap(): void {
-        console.log('saving the map');
-        this.mapService.generateMapData();
+        if (this.mapTitle !== '') {
+            console.log('saving the map', this.mapTitle);
+            this.mapService.setMapTitle(this.mapTitle);
+            this.mapService.setMapDescription(this.mapDescription);
+            this.mapService.generateMapData();
+            this.mapTitle = '';
+            this.mapDescription = '';
+        } else {
+            this.showErrorMessage.entryError = true;
+            return;
+        }
     }
 }
