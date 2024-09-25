@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -18,41 +18,32 @@ export class CreateGameComponent implements OnInit {
     map: Map;
     maps: Map[] = [];
 
-<<<<<<< HEAD
-    constructor(
-        readonly communicationService: CommunicationService,
-        private readonly router: Router,
-    ) {
-        this.communicationService.maps$.subscribe((maps) => (this.availableMaps = maps.filter((map) => map.isVisible)));
-        this.router = router;
-=======
-    // constructor(readonly communicationService: CommunicationService, private readonly router: Router) {
-    //     this.communicationService.maps$.subscribe((maps) => (this.availableMaps = maps.filter(map => map.isVisible)));
+    // constructor(readonly communicationMapService: CommunicationMapService, private readonly router: Router) {
+    //     this.communicationMapService.maps$.subscribe((maps) => (this.availableMaps = maps.filter(map => map.isVisible)));
     //     this.router = router;
     // }
 
     constructor(
         private router: Router,
-        private communicationService: CommunicationService,
+        private communicationMapService: CommunicationMapService,
     ) {
-        this.communicationService.maps$.subscribe((maps) => {
+        this.communicationMapService.maps$.subscribe((maps) => {
             this.maps = maps;
         });
->>>>>>> feature/map-edition
     }
 
     ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
+        this.communicationMapService.getMapsFromServer();
     }
 
     loadAvailableMaps() {
-        //     this.communicationService.getMapsFromServer()
+        //     this.communicationMapService.getMapsFromServer()
         //     .subscribe((maps) => {
         //         this.availableMaps = maps;
         //     });
         // }
         // selectMap(map: { id: string; name: string; description: string; mapSize: number; gameMode: string }) {
-        //     this.communicationService.checkMapAvailability(map.id).subscribe((isAvailable) => {
+        //     this.communicationMapService.checkMapAvailability(map.id).subscribe((isAvailable) => {
         //         if (isAvailable) {
         //             this.router.navigate(['/create-character', map.id]);
         //         } else {
@@ -62,17 +53,8 @@ export class CreateGameComponent implements OnInit {
     }
 
     selectMap(mapName: string) {
-<<<<<<< HEAD
-        const params = new URLSearchParams();
-        if (this.availableMaps.some((map) => map.name === mapName)) {
-            if (this.map._id != undefined) {
-                params.set('mapId', this.map._id);
-                window.location.href = `/character-creation/id=${this.map._id}`;
-            }
-=======
         if (this.availableMaps.some((map) => map.name === mapName)) {
             this.router.navigate(['/create-character']);
->>>>>>> feature/map-edition
         } else {
             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
         }
@@ -84,7 +66,7 @@ export class CreateGameComponent implements OnInit {
 
     // display list of mockData games
     //     loadMockAvailableGames() {
-    //         this.communicationService.getMockVisibleGames().subscribe((games) => {
+    //         this.communicationMapService.getMockVisibleGames().subscribe((games) => {
     //             this.availableGames = games;
     //      });
     //     }
@@ -94,7 +76,7 @@ export class CreateGameComponent implements OnInit {
 
     //     mockData implementation
     //     selectGame(game: Game) {
-    //         this.communicationService.checkMockGameAvailability(game.name).subscribe((isAvailable) => {
+    //         this.communicationMapService.checkMockGameAvailability(game.name).subscribe((isAvailable) => {
     //             if (isAvailable) {
     //                 this.router.navigate(['/waiting-room']);
     //             } else {
