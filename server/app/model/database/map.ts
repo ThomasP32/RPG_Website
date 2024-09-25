@@ -11,7 +11,7 @@ import {
 } from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import { Document, ObjectId, Types } from 'mongoose';
 
 export type MapDocument = Map & Document;
 
@@ -78,7 +78,7 @@ class Item implements ItemType {
 
 export const itemTileSchema = SchemaFactory.createForClass(Item);
 
-@Schema({timestamps: {createdAt: false, updatedAt: 'lastModified' } })
+@Schema({ timestamps: { createdAt: false, updatedAt: 'lastModified' } })
 export class Map implements MapType {
     @ApiProperty()
     @Prop({ type: String, required: true })
@@ -97,8 +97,8 @@ export class Map implements MapType {
     imagePreview: string;
 
     @ApiProperty()
-    @Prop({ type: Boolean, required: false, default: false })
-    isVisible: boolean;
+    @Prop({ type: Boolean, default: false })
+    isVisible?: boolean;
 
     @ApiProperty({ type: Coordinate })
     @Prop({ type: coordinateSchema, required: true })
@@ -125,7 +125,7 @@ export class Map implements MapType {
     lastModified?: Date;
 
     @ApiProperty()
-    _id?: string;
+    _id?: Types.ObjectId;
 }
 
 export const mapSchema = SchemaFactory.createForClass(Map);
