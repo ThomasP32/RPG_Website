@@ -12,8 +12,8 @@ import { MapService } from '@app/services/map.service';
     imports: [CommonModule, NgIf, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
-    mapTitle: string = ''; // Titre par défaut
-    mapDescription: string = ''; // Description par défaut
+    mapTitle: string = '';
+    mapDescription: string = '';
 
     isEditingTitle: boolean = false;
     isEditingDescription: boolean = false;
@@ -44,18 +44,7 @@ export class MapControlBarComponent implements OnInit {
         console.log('resetting the map');
         console.log('MapControlBar: Triggering reset via service');
         this.mapService.resetMap();
-
     }
-
-  createMap(): void {
-    const mapData = this.mapService.generateMapData();
-
-    this.mapService.saveMap(mapData);
-    console.log("map saving");
-    // .subscribe(response => {
-    //     console.log('Map saved successfully:', response);
-    // });
-}
 
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
@@ -66,5 +55,10 @@ export class MapControlBarComponent implements OnInit {
     urlConverter(mode: string) {
         console.log('URL params:', mode);
         this.gameMode = mode.split('=')[1];
+    }
+
+    saveMap(): void {
+        console.log('saving the map');
+        this.mapService.generateMapData();
     }
 }
