@@ -1,3 +1,5 @@
+import { ObjectId, Types } from "mongoose";
+
 export interface Coordinate {
     x: number;
     y: number;
@@ -7,6 +9,7 @@ export enum TileCategory {
     Water = 'water',
     Ice = 'ice',
     Wall = 'wall',
+    Ground = 'ground',
 }
 
 export enum ItemCategory {
@@ -15,7 +18,7 @@ export enum ItemCategory {
 
 export enum Mode {
     Normal = 'normal',
-    Ctf = 'ctf'
+    Ctf = 'ctf',
 }
 
 export interface Tile {
@@ -40,15 +43,16 @@ export interface Item {
 }
 
 export interface Map {
-    _id?: string;
+    _id?: Types.ObjectId;
     name: string;
     description: string;
     imagePreview: string;
-    mode : Mode;
-    isVisible: boolean;
+    mode: Mode;
+    isVisible?: boolean;
     mapSize: Coordinate;
     startTiles: StartTile[];
     items: Item[];
     doorTiles: DoorTile[];
     tiles: Tile[];
+    lastModified?: Date;
 }
