@@ -2,7 +2,7 @@
 <div class="form-box">
     <div class="left">
         <label for="characterName">Enter your character's name: </label>
-        <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" required />
+        <input id="characterName" [(ngModel)]="characterName" name="characterName" type="text" placeholder="Character Name" maxlength="25" required />
         <br />
         <br />
         <label>Select your character's avatar: </label>
@@ -28,28 +28,21 @@
                 <input type="radio" id="speed" [(ngModel)]="lifeOrSpeedBonus" name="lifeOrSpeedBonus" value="speed" (change)="addBonus()" hidden />
                 <label for="speed" class="btn">Speed</label>
             </div>
+            <p>Life: {{ life }} points</p>
+            <p>Speed: {{ speed }} points</p>
             <br />
 
             <div class="dice-assignment">
-                <p>Assign a 4-sided die (D4) to the attribute of your choice:</p>
+                <p>Assign a 6-sided die (D6) to the attribute of your choice:</p>
                 <div class="dice-buttons">
-                    <input type="radio" id="attack" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="attack" hidden />
+                    <input type="radio" [(ngModel)]="attackOrDefenseBonus" name="attackOrDefenseBonus" value="attack" (change)="assignDice()" />
                     <label for="attack" class="btn">Attack</label>
 
-                    <input type="radio" id="defense" [(ngModel)]="rollingDiceFor" name="diceAssignment" value="defense" hidden />
+                    <input type="radio" [(ngModel)]="attackOrDefenseBonus" name="attackOrDefenseBonus" value="defense" (change)="assignDice()" />
                     <label for="defense" class="btn">Defense</label>
                 </div>
-            </div>
-
-            <div *ngIf="rollingDiceFor && !diceRolled">
-                <p>Roll the 4-sided die (D4) for {{ rollingDiceFor }}:</p>
-                <button (click)="assignD4()" [disabled]="rolledD4">Roll D4</button>
-                <p>Result: {{ diceRollD4 }}</p>
-            </div>
-            <div *ngIf="rolledD4 && !diceRolled">
-                <p>Roll the 6-sided die (D6) for {{ rollingDiceFor === 'attack' ? 'defense' : 'attack' }}:</p>
-                <button (click)="assignD6()" [disabled]="rolledD6">Roll D6</button>
-                <p>Result: {{ diceRollD6 }}</p>
+                <p>Attack: {{ attack }} points + {{ attackBonus }}</p>
+                <p>Defense: {{ defense }} points + {{ defenseBonus }}</p>
             </div>
         </div>
         <button (click)="onSubmit()" class="save-button">Save character</button>
