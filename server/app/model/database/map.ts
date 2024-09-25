@@ -104,6 +104,13 @@ export class Map implements MapType {
     doorTiles: DoorTile[];
 
     @ApiProperty()
+<<<<<<< Updated upstream
+=======
+    @Prop({ type: Date })
+    lastModified?: Date;
+
+    @ApiProperty()
+>>>>>>> Stashed changes
     _id?: string;
 }
 
