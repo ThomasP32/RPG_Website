@@ -17,8 +17,11 @@ export class CreateGameComponent implements OnInit {
     errorMessage: string = '';
     map: Map;
 
-    constructor(readonly communicationService: CommunicationService, private readonly router: Router) {
-        this.communicationService.maps$.subscribe((maps) => (this.availableMaps = maps.filter(map => map.isVisible)));
+    constructor(
+        readonly communicationService: CommunicationService,
+        private readonly router: Router,
+    ) {
+        this.communicationService.maps$.subscribe((maps) => (this.availableMaps = maps.filter((map) => map.isVisible)));
         this.router = router;
     }
 
@@ -42,9 +45,13 @@ export class CreateGameComponent implements OnInit {
     //     });
     // }
 
-    selectMap(mapName: string) {
-        if(this.availableMaps.some((map) => map.name === mapName)) {
-            this.router.navigate(['/create-character', mapName])
+    selectMap(mapName: string, mapId: string) {
+        const params = new URLSearchParams();
+        if (this.availableMaps.some((map) => map.name === mapName)) {
+            if (this.map._id != undefined) {
+                params.set('mapId', this.map._id);
+                window.location.href = `/character-creation/id=${this.map._id}`;
+            }
         } else {
             this.errorMessage = 'The selected game is unavailable. Please choose another game.';
         }

@@ -5,16 +5,18 @@
 
         <div class="map-list">
             @for (map of availableMaps; track map._id) {
-                <div class="map-box" (click)="selectMap(map.name)">
-                    <div class="image-container">
-                        <!-- <img [src]="game.mapPreview" alt="Game Map Preview" class="game-map-preview" /> -->
-                    </div>
-                    <div class="game-info">
-                        <h3>{{ map.name }}</h3>
-                        <p>Map Size: {{ map.mapSize.x }}</p>
-                        <p>Game Mode: to be added in server</p>
-                    </div>
+            <div class="map-box" (click)="selectMap(map.name)">
+                <div class="image-container">
+                    <!-- <img [src]="game.mapPreview" alt="Game Map Preview" class="game-map-preview" /> -->
                 </div>
+                <div class="game-info">
+                    <h3>{{ map.name }}</h3>
+                    <p>Map Size: {{ map.mapSize.x }}</p>
+                    <!-- <p>Game Mode: {{map.mode}} </p> -->
+                    <!-- <p>Description: {{map.description}} </p> -->
+                    <!-- <p>Preview: {{map.imagePreview}} </p> -->
+                </div>
+            </div>
             }
         </div>
     </div>
