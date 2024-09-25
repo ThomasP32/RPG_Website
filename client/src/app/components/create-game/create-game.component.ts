@@ -45,7 +45,7 @@ export class CreateGameComponent implements OnInit {
     //     });
     // }
 
-    selectMap(mapName: string, mapId: string) {
+    selectMap(mapName: string) {
         const params = new URLSearchParams();
         if (this.availableMaps.some((map) => map.name === mapName)) {
             if (this.map._id != undefined) {
