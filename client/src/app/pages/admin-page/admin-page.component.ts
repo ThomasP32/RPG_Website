@@ -36,24 +36,17 @@ export class AdminPageComponent implements OnInit {
         this.communicationService.getMapsFromServer();
     }
 
-    loadGames(): void {
-        // this.gameService.getGames().subscribe((data : any[]) => {
-        //     this.games = data.map(game => {
-        //         return {
-        //             ...game,
-        //             showDescription: false,
-        //             visible: true
-        //         };
-        //     });
-        // });
-    }
-
     navigateToMain(): void {
-        this.router.navigate(['/main-menu']);
+        this.router.navigate(['/mainmenu']);
     }
 
-    editGame(mapId: string): void {
-        this.router.navigate(['/admin/edit-map', mapId]);
+    editGame(map: Map): void {
+        const params = new URLSearchParams();
+        if (map._id) {
+            params.set('id', map._id);
+        }
+
+        window.location.href = `/game-creation/${params}`;
     }
 
     deleteGame(): void {
