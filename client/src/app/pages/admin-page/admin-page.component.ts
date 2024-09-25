@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MapComponent } from '@app/components/map/map.component';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -17,7 +17,7 @@ export class AdminPageComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private communicationService: CommunicationService,
+        private communicationService: CommunicationMapService,
     ) {
         this.communicationService.maps$.subscribe((maps) => {
             this.maps = maps;
