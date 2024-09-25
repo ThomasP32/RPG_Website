@@ -24,13 +24,11 @@ export class MapAreaComponent {
 
     startingPointCounter: number;
 
-    
-
     constructor(
         private route: ActivatedRoute,
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
-        private mapService: MapService
+        private mapService: MapService,
     ) {}
 
     ngOnInit() {
@@ -41,7 +39,7 @@ export class MapAreaComponent {
 
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
-          });
+        });
     }
 
     createMap(mapSize: number, mode: string) {
@@ -143,18 +141,18 @@ export class MapAreaComponent {
 
     allowDrop(event: DragEvent) {
         event.preventDefault();
-      }
-      
-      onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
+    }
+
+    onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
         const itemType = event.dataTransfer?.getData('item');
-        
+
         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-          this.Map[rowIndex][colIndex].value = 'starting-point';
-          this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
-          this.selectedTile = 'empty';
-          console.log('Starting point placed at:', rowIndex, colIndex);
+            this.Map[rowIndex][colIndex].value = 'starting-point';
+            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+            this.selectedTile = 'empty';
+            console.log('Starting point placed at:', rowIndex, colIndex);
         }
-      }
+    }
 
     resetMapToDefault() {
         for (let i = 0; i < this.Map.length; i++) {
@@ -163,44 +161,44 @@ export class MapAreaComponent {
             }
         }
         console.log('Map has been reset to default');
-      }
-    
-      generateMapData() {
+    }
+
+    generateMapData() {
         const mapData = {
-            name: '', 
-            description: '', 
-            mode: this.mode, 
+            name: '',
+            description: '',
+            mode: this.mode,
             mapSize: {
-                x: this.convertedMapSize, 
-                y: this.convertedMapSize 
+                x: this.convertedMapSize,
+                y: this.convertedMapSize,
             },
-            tiles: [] as { coordinate: { x: number; y: number }; category: string }[], 
-            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[], 
-            items: [] as any[], 
-            startTiles: [] as any[] 
+            tiles: [] as { coordinate: { x: number; y: number }; category: string }[],
+            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
+            items: [] as any[],
+            startTiles: [] as any[],
         };
-    
+
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
             for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
                 const cell = this.Map[rowIndex][colIndex];
                 const coordinate = { x: rowIndex, y: colIndex };
-    
+
                 if (cell && cell.value) {
                     if (cell.value === 'door') {
                         mapData.doorTiles.push({
                             coordinate,
-                            isOpened: cell.doorState === 'open'
+                            isOpened: cell.doorState === 'open',
                         });
                     } else if (['water', 'ice', 'wall', 'floor'].includes(cell.value)) {
                         mapData.tiles.push({
                             coordinate,
-                            category: cell.value
+                            category: cell.value,
                         });
                     }
                 }
             }
         }
-    
+
         return mapData;
     }
 
@@ -229,8 +227,10 @@ export class MapAreaComponent {
     }
 
     urlConverter(size: string) {
-        console.log('URL params:', size);
-        this.convertedMapSize = parseInt(size.split('=')[1]);
-        console.log('Converted map size:', this.convertedMapSize);
+        if (size) {
+            console.log('URL params:', size);
+            this.convertedMapSize = parseInt(size.split('=')[1]);
+            console.log('Converted map size:', this.convertedMapSize);
+        }
     }
 }

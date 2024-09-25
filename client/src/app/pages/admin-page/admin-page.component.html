@@ -1,9 +1,10 @@
 <div class="adminPage-container">
     <h2 class="header-item">{{ title }}</h2>
 
-    <button class="button" (click)="navigateToMain()"> Retour au menu principal </button>
+    <button class="button" (click)="navigateToMain()">Retour au menu principal</button>
     <button class="button" (click)="toggleGameCreationModalVisibility()">Commencer une nouvelle partie</button>
-    @if(isMapVisible) {<div>
+    @if(isMapVisible) {
+    <div>
         <!-- <app-mapChoices-component></app-mapChoices-component> -->
     </div>
     }
@@ -25,16 +26,18 @@
                     <span> Privée </span>
                     }
                 </p>
+                <button class="edit-button" (click)="editGame(map)">Modifier</button>
+                <button class="map-delete">Supprimer</button>
             </div>
         </div>
         }
 
-         <!-- <div class="map-actions">
+        <!-- <div class="map-actions">
             <button class="button" (click)="editGame(game.id)">Modifier</button>
-                <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
-                <button (click)="toggleVisibility(game.id)">
-                     {{ map.visibility ? 'Cacher' : 'Afficher' }}  
-                </button>
+            <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
+            <button (click)="toggleVisibility(game.id)">
+                {{ map.isVisible ? 'Cacher' : 'Afficher' }}
+            </button>
         </div> -->
     </div>
 </div>

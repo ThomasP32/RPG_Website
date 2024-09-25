@@ -44,18 +44,17 @@ export class MapControlBarComponent implements OnInit {
         console.log('resetting the map');
         console.log('MapControlBar: Triggering reset via service');
         this.mapService.resetMap();
-
     }
 
-  createMap(): void {
-    const mapData = this.mapService.generateMapData();
+    createMap(): void {
+        const mapData = this.mapService.generateMapData();
 
-    this.mapService.saveMap(mapData);
-    console.log("map saving");
-    // .subscribe(response => {
-    //     console.log('Map saved successfully:', response);
-    // });
-}
+        this.mapService.saveMap(mapData);
+        console.log('map saving');
+        // .subscribe(response => {
+        //     console.log('Map saved successfully:', response);
+        // });
+    }
 
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
@@ -64,7 +63,9 @@ export class MapControlBarComponent implements OnInit {
     }
 
     urlConverter(mode: string) {
-        console.log('URL params:', mode);
-        this.gameMode = mode.split('=')[1];
+        if (mode) {
+            console.log('URL params mode :', mode);
+            this.gameMode = mode.split('=')[1];
+        }
     }
 }
