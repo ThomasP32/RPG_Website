@@ -1,2 +1,25 @@
-<app-create-game></app-create-game>
-<router-outlet></router-outlet>
+<!-- <app-create-game></app-create-game> -->
+<!-- <router-outlet></router-outlet> -->
+<div class="create-game-component">
+    <div class="header">
+        <h2>Choisis ta carte</h2>
+    </div>
+    <div class="map-view">
+        <div class="map-cards">
+            @for(map of this.maps; track map.name) {
+            <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
+                <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                <div class="map-details">
+                    <p class="description">description de la map</p>
+                    <p class="mode">Mode de jeu</p>
+                    <h2 class="name">{{ map.name }}</h2>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="next-button" (click)="next(selectedMap)">Suivant</button>
+    </div>
+</div>
