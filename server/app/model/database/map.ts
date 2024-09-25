@@ -1,6 +1,7 @@
 import { Coordinate as CoordinateType, DoorTile as DoorTileType, 
     Map as MapType, StartTile as StartTileType, Item as ItemType, 
-    TileCategory, Tile as TileType, ItemCategory } from '@common/map.types';
+    TileCategory, Tile as TileType, ItemCategory, 
+    Mode } from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
@@ -80,8 +81,20 @@ export class Map implements MapType {
     name: string;
 
     @ApiProperty()
+    @Prop({ type: String, required: true })
+    description: string;
+
+    @ApiProperty()
+    @Prop({ type: String, required: true })
+    imagePreview: string;
+
+    @ApiProperty()
+    @Prop({ type: String, enum: Mode, required: true })
+    mode: Mode;
+
+    @ApiProperty()
     @Prop({ type: Boolean, required: false, default: false })
-    isVisible: boolean;
+    isVisible?: boolean;
 
     @ApiProperty({ type: Coordinate })
     @Prop({ type: coordinateSchema, required: true })
@@ -104,13 +117,10 @@ export class Map implements MapType {
     doorTiles: DoorTile[];
 
     @ApiProperty()
-<<<<<<< Updated upstream
-=======
     @Prop({ type: Date })
     lastModified?: Date;
 
     @ApiProperty()
->>>>>>> Stashed changes
     _id?: string;
 }
 
