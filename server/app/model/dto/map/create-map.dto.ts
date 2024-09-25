@@ -1,16 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+<<<<<<< Updated upstream
 import { IsArray, IsBoolean, IsNumber, IsString, Validate, ValidateNested} from 'class-validator';
 import { IsOutOfMap } from './map.dto.constraints';
 import { TileCategory, ItemCategory } from '@common/map.types';
+=======
+import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+>>>>>>> Stashed changes
 
 export class CoordinateDto {
     @ApiProperty()
     @IsNumber()
+    @IsPositive()
     x: number;
 
     @ApiProperty()
     @IsNumber()
+    @IsPositive()
     y: number;
 }
 
@@ -68,8 +74,13 @@ export class CreateMapDto {
 
     @ApiProperty({ type: [StartTileDto] })
     @IsArray()
+<<<<<<< Updated upstream
     @ValidateNested({ each: true })
     @Validate(IsOutOfMap)
+=======
+    @ArrayNotEmpty()
+    @ValidateNested()
+>>>>>>> Stashed changes
     @Type(() => StartTileDto)
     startTiles: StartTileDto[];
 
@@ -95,5 +106,14 @@ export class CreateMapDto {
     doorTiles: DoorTileDto[];
 
     @ApiProperty()
+<<<<<<< Updated upstream
+=======
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    lastModified?: Date;
+
+    @ApiProperty()
+>>>>>>> Stashed changes
     _id?: string;
 }
