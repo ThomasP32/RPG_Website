@@ -1,6 +1,13 @@
-import { Coordinate as CoordinateType, DoorTile as DoorTileType, 
-    Map as MapType, StartTile as StartTileType, Item as ItemType, 
-    TileCategory, Tile as TileType, ItemCategory } from '@common/map.types';
+import {
+    Coordinate as CoordinateType,
+    DoorTile as DoorTileType,
+    ItemCategory,
+    Item as ItemType,
+    Map as MapType,
+    StartTile as StartTileType,
+    TileCategory,
+    Tile as TileType,
+} from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
@@ -42,7 +49,6 @@ class Tile implements TileType {
     @ApiProperty()
     @Prop({ type: String, enum: TileCategory, required: true })
     category: TileCategory;
-
 }
 
 export const tileSchema = SchemaFactory.createForClass(Tile);
@@ -52,7 +58,6 @@ class StartTile implements StartTileType {
     @ApiProperty({ type: Coordinate })
     @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
-
 }
 
 export const startTileSchema = SchemaFactory.createForClass(StartTile);
@@ -67,11 +72,10 @@ class Item implements ItemType {
     @Prop({ type: String, enum: ItemCategory, required: true })
     category: ItemCategory;
 
-    // Attributs supplémentaires seront ajouté ici 
+    // Attributs supplémentaires seront ajouté ici
 }
 
 export const itemTileSchema = SchemaFactory.createForClass(Item);
-
 
 @Schema()
 export class Map implements MapType {

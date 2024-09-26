@@ -35,7 +35,7 @@ export interface Item {
 }
 
 export interface Map {
-    _id: string;
+    _id?: string;
     name: string;
     isVisible: boolean;
     mapSize: Coordinate;

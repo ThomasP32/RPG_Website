@@ -14,7 +14,7 @@ import { Map } from '@common/map.types';
 export class StartGamePageComponent {
     map: Map;
     maps: Map[] = [];
-    selectedMap: string = '';
+    selectedMap: string | undefined = undefined;
     showErrorMessage: { selectionError: boolean; userError: boolean } = {
         selectionError: false,
         userError: false,
@@ -30,11 +30,11 @@ export class StartGamePageComponent {
         this.communicationMapService.getMapsFromServer();
     }
 
-    selectMap(mapId: string) {
+    selectMap(mapId: string | undefined) {
         this.selectedMap = mapId;
     }
 
-    next(mapId: string) {
+    next(mapId: string | undefined) {
         if (this.selectedMap) {
             const chosenMap = this.maps.find((map) => map._id === this.selectedMap);
             if (chosenMap && chosenMap.isVisible) {
