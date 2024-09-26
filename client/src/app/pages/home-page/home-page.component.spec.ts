@@ -64,6 +64,19 @@ describe('HomePageComponent', () => {
         expect(joinGameButton.disabled).toBeTrue();
     });
 
+
+    it('should navigate to the create game view when navigateToCreateGame is called', () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+        component.navigateToCreateGame();
+        expect(routerSpy).toHaveBeenCalledWith(['/create-game']);
+    });
+    
+    it('should navigate to the admin page view when navigateToAdmin is called', () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+        component.navigateToAdmin();
+        expect(routerSpy).toHaveBeenCalledWith(['/admin-page']);
+    });
+
     it('should navigate to the game creation view when "Créer une partie" is clicked', () => {
         spyOn(component, 'navigateToCreateGame');
         const createGameButton = fixture.debugElement.nativeElement.querySelectorAll('.button')[0];
@@ -77,5 +90,4 @@ describe('HomePageComponent', () => {
         adminButton.click();
         expect(component.navigateToAdmin).toHaveBeenCalled();
     });
-
 });
