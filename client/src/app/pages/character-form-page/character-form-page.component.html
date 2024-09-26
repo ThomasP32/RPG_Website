@@ -1,12 +1,12 @@
 <div class="character-page-container">
     <div class="character-selection-container">
         <div class="player-stats">
-            <h2>Nom du personnage</h2>
+            <h2>{{ characterName }}</h2>
             <div class="stats">
                 <div class="stat">
                     <label>Vie : {{ selectedCharacter.stats.hp }} PV</label>
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.hp / 4) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.hp / 6) * 100"></div>
                     </div>
                 </div>
                 <div class="stat">
@@ -27,13 +27,14 @@
                     <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.defense / 6) * 100"></div>
                 </div>
             </div>
+            <h4>Choisis ton bonus</h4>
         </div>
         <div class="character-display">
             <button class="arrow-button left-arrow" (click)="previousCharacter()">&#9664;</button>
             <div class="selected-character">
-                <h1>CHOISISSEZ UN PERSONNAGE</h1>
+                <h1>CHOISISSEZ TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
-                <h4>Charactère selectionné</h4>
+                <h4>Avatar selectionné :</h4>
                 <h3>{{ selectedCharacter.name }}</h3>
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
             </div>
@@ -41,7 +42,12 @@
         </div>
 
         <div class="character-list">
-            <div class="character-box" *ngFor="let character of characters" (click)="selectCharacter(character)">
+            <div
+                class="character-box"
+                *ngFor="let character of characters"
+                (click)="selectCharacter(character)"
+                [ngClass]="{ 'selected-character': character === selectedCharacter }"
+            >
                 <img [src]="character.preview" alt="{{ character.name }}" />
             </div>
         </div>

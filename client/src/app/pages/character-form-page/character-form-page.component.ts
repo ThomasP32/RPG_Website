@@ -13,7 +13,7 @@ import { CharacterService } from '@app/services/character.service';
     styleUrls: ['./character-form-page.component.scss'],
 })
 export class CharacterFormPageComponent {
-    characterName: string = '';
+    characterName: string = 'Nom du personnage';
     lifeOrSpeedBonus = '';
     attackOrDefenseBonus = '';
     attackBonus = '';
@@ -24,10 +24,10 @@ export class CharacterFormPageComponent {
 
     // defaultPoints = four;
 
-    // life = this.defaultPoints;
-    // speed = this.defaultPoints;
-    // attack = this.defaultPoints;
-    // defense = this.defaultPoints;
+    life: number;
+    speed: number;
+    attack: number;
+    defense: number;
 
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
