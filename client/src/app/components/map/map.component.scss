@@ -51,6 +51,7 @@
     font-family: 'Gomarice', sans-serif;
     font-size: 20px;
     background-color: #c0c0c0;
+    position: relative;
 }
 .to-edit-button {
     background-color: white;
@@ -62,4 +63,14 @@
     text-align: center;
     font-size: 20px;
     font-family: 'Gomarice', sans-serif;
+}
+.close-button{
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 24px;
+    font-family: 'Gomarice', sans-serif;
+    color: #2c3e50;
+    font-weight: bold;
 }

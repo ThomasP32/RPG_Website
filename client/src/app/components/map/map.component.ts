@@ -1,5 +1,5 @@
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModesComponent } from '../modes/modes.component';
 
@@ -36,6 +36,7 @@ export class MapComponent {
     mapName: string;
     nbItems: number;
     isHovered = false;
+    @Output() close = new EventEmitter<void>();
     selectedMode: string;
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
         entryError: false,
@@ -78,6 +79,9 @@ export class MapComponent {
         this.selectedMode = $event;
     }
 
+    closeComponent(){
+        this.close.emit();
+    }
     // checkMapNameAvailability() {
     //     this.http.get(`/api/check-map-name?name=${this.mapName}`).subscribe((response: unknown) => {
     //         this.showErrorMessage.nameError = response.isTaken;
