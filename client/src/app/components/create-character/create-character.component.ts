@@ -15,7 +15,7 @@ const four = 4;
     imports: [FormsModule, CommonModule],
 })
 export class CreateCharacterComponent {
-    private mapId: string = '';
+    mapId: string = '';
     convertedId: string = '';
 
     characterName: string = '';
