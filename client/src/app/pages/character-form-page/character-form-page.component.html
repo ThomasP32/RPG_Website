@@ -1,4 +1,49 @@
-<div class="container">
-    <app-create-character id="create-character"></app-create-character>
+<div class="character-page-container">
+    <div class="character-selection-container">
+        <div class="player-stats">
+            <h2>Nom du personnage</h2>
+            <div class="stats">
+                <div class="stat">
+                    <label>Vie : {{ selectedCharacter.stats.hp }} PV</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.hp / 4) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label>Rapidité : {{ selectedCharacter.stats.speed }} PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.speed / 6) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label>Attaque : {{ selectedCharacter.stats.attack }} PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.attack / 6) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat"></div>
+                <label>Défense : {{ selectedCharacter.stats.defense }} PTS</label>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(selectedCharacter.stats.defense / 6) * 100"></div>
+                </div>
+            </div>
+        </div>
+        <div class="character-display">
+            <button class="arrow-button left-arrow" (click)="previousCharacter()">&#9664;</button>
+            <div class="selected-character">
+                <h1>CHOISISSEZ UN PERSONNAGE</h1>
+                <img [src]="selectedCharacter.image" alt="Selected Character" />
+                <h4>Charactère selectionné</h4>
+                <h3>{{ selectedCharacter.name }}</h3>
+                <button class="start-button" (click)="onSubmit()">Créer une partie</button>
+            </div>
+            <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
+        </div>
+
+        <div class="character-list">
+            <div class="character-box" *ngFor="let character of characters" (click)="selectCharacter(character)">
+                <img [src]="character.preview" alt="{{ character.name }}" />
+            </div>
+        </div>
+    </div>
 </div>
-<router-outlet></router-outlet>
