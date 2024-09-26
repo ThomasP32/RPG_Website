@@ -37,7 +37,7 @@ export class StartGamePageComponent {
     }
 
     next(mapName: string) {
-        console.log('going next', mapName);
+        this.router.navigate(['/create-character']);
         if (this.availableMaps.some((map) => map.name === mapName)) {
             this.selectedMap = mapName;
             console.log('going next', mapName);

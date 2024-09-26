@@ -1,0 +1,141 @@
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+.character-page-container {
+    height: 100vh;
+    width: 100%;
+    background-color: #2b2f38;
+    font-family: 'Press Start 2P', sans-serif;
+}
+.character-selection-container {
+    background-color: #2b2f38;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100vh;
+}
+
+.player-stats {
+    background-color: #3b3f46;
+    border: 2px solid #1e2329;
+    padding: 20px;
+    margin-left: 20px;
+}
+
+.character-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.character-display img {
+    width: 30vw;
+    max-width: 300px;
+    height: auto;
+}
+
+label {
+    color: #ffff;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+    font-size: 1rem;
+    padding: 3px;
+}
+h1 {
+    color: #ffff;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+h2 {
+    color: #c0c0c0;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+
+h3 {
+    color: #f39c12;
+    text-shadow: 1px 1px 2px #000;
+    font-size: 1.4rem;
+}
+
+.stat-bar {
+    background-color: #1a1d23;
+    border: 2px solid #b5651d;
+    height: 15px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.stats {
+    height: 30vh;
+}
+.stat-bar-fill {
+    background-color: #f39c12;
+    height: 100%;
+}
+
+.selected-character {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-character button {
+    margin-top: 10px;
+}
+.arrow-button {
+    background-color: #1e2329;
+    color: #f39c12;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.arrow-button:hover {
+    background-color: #f39c12;
+    color: #1e2329;
+}
+.start-button {
+    background-color: #1a1d23;
+    border: 3px solid #b5651d;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+}
+
+.start-button:hover {
+    background-color: #f39c12;
+    border: 3px solid #b5651d;
+}
+
+.character-list {
+    display: grid;
+    padding: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-right: 20px;
+}
+
+.character-box {
+    background-color: #3b3f46;
+    // padding: 10px;
+    border: 2px solid #b5651d;
+    text-align: center;
+    cursor: pointer;
+}
+.character-box img {
+    width: 10vw;
+    aspect-ratio: 1 / 1;
+    max-width: 140px;
+    height: auto;
+}
+
+.character-box:hover {
+    background-color: #f39c12;
+}
