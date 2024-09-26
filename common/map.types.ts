@@ -40,7 +40,7 @@ export interface Item {
 }
 
 export interface Map {
-    _id?: string;
+    _id?: Object;
     name: string;
     description: string;
     imagePreview: string;
