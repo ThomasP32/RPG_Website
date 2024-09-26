@@ -2,6 +2,7 @@ import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CoordinateDto {
     @ApiProperty()
@@ -110,5 +111,5 @@ export class CreateMapDto {
     lastModified?: Date;
 
     @ApiProperty()
-    _id?: string;
+    _id?: Types.ObjectId;
 }

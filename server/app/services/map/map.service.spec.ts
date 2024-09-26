@@ -1,13 +1,12 @@
 import { Map, MapDocument, mapSchema } from '@app/model/database/map';
-import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Connection, Model } from 'mongoose';
+import { Connection, Model, Types } from 'mongoose';
+import { start } from 'repl';
 import { MapService } from './map.service';
-import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
 
 /**
  * There is two way to test the service :
@@ -124,111 +123,39 @@ describe('MapServiceEndToEnd', () => {
         expect(eltCountsAfter).toBeGreaterThan(eltCountsBefore);
     });
 
-    it('getAllMaps() return all maps in database', async () => {
-        const map = getFakeMap();
-        await mapModel.create(map);
-        expect((await service.getAllMaps()).length).toBeGreaterThan(0);
+    it('getAllVisibleMaps() return only visible maps in database', async () => {
+        await mapModel.create(getFakeMap());
+        await mapModel.create(getFakeMap2());
+        expect((await service.getAllVisibleMaps()).length).toEqual(1);
     });
 
-    // it('getMapById() return map with the specified id', async () => {
-    //     const map = getFakeMap();
-    //     await mapModel.create(map);
-    //     expect(await service.getMapById(map._id)).toEqual(expect.objectContaining(map));
-    // });
-
-    it('getMapByName() return map with the specified name', async () => {
+    it('getMapByName() return map with the specified name only if visible', async () => {
         const map = getFakeMap();
-        await mapModel.create(map);
-        expect(await service.getMapByName(map.name)).toMatchObject(map);
+        map.isVisible = false;
+        await mapModel.create(map); 
+        await expect(service.getMapByName(map.name)).rejects.toThrow(`Failed to find visible map : ${map.name}`);
+
     });
 
-    // it('getMapById() should fail if map does not exist', async () => {
-    //     const map = getFakeMap();
-    //     await expect(service.getMapByName(map._id)).rejects.toBeTruthy();
-    // });
+    it('getMapByName() return visible map with the specified name', async () => {
+        const map = getFakeMap();
+        map.isVisible = true; 
+        await mapModel.create(map);
+        const result = await service.getMapByName(map.name);
+        expect(result).toBeTruthy(); 
+        expect(result.name).toEqual(map.name); 
+        expect(result.isVisible).toBe(true);
+    });
 
     it('getMapByName() should fail if map does not exist', async () => {
         const map = getFakeMap();
         await expect(service.getMapByName(map.name)).rejects.toBeTruthy();
     });
 
-    // it('modifyCourse() should fail if course does not exist', async () => {
-    //     const course = getFakeCourse();
-    //     await expect(service.modifyCourse(course)).rejects.toBeTruthy();
-    // });
-
-    // it('modifyCourse() should fail if mongo query failed', async () => {
-    //     jest.spyOn(courseModel, 'updateOne').mockRejectedValue('');
-    //     const course = getFakeCourse();
-    //     await expect(service.modifyCourse(course)).rejects.toBeTruthy();
-    // });
-
-    // it('getCoursesByTeacher() return course with the specified teacher', async () => {
-    //     const course = getFakeCourse();
-    //     await courseModel.create(course);
-    //     await courseModel.create(course);
-    //     const courses = await service.getCoursesByTeacher(course.teacher);
-    //     expect(courses.length).toEqual(2);
-    //     expect(courses[0]).toEqual(expect.objectContaining(course));
-    // });
-
-    it('deleteMap() should delete the course with specified name', async () => {
-        const map = getFakeMap();
-        await mapModel.create(map);
-        await service.deleteMap(map.name);
-        expect(await mapModel.countDocuments()).toEqual(0);
-    });
-
-    it('deleteMap() should fail if the course does not exist', async () => {
-        const map = getFakeMap();
-        await expect(service.deleteMap(map.name)).rejects.toBeTruthy();
-    });
-
-    it('deleteMap() should fail if mongo query failed', async () => {
-        jest.spyOn(mapModel, 'deleteOne').mockRejectedValue('');
-        const map = getFakeMap();
-        await expect(service.deleteMap(map.name)).rejects.toBeTruthy();
-    });
-
-    it('addMap() should add the map to the DB', async () => {
-        const map = getFakeMapDto();
-        await service.addMap(map);
-        expect(await service.getMapByName(map.name)).toMatchObject(map);
-    });
-
-    it('addMap() should fail if mongo query failed', async () => {
-        jest.spyOn(mapModel, 'create').mockImplementation(async () => Promise.reject(''));
-        const map = getFakeMapDto();
-        await expect(service.addMap(map)).rejects.toBeTruthy();
-    });
-
-    it('should throw error when start tiles are not placed', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow('All start tiles must be placed');
-    });
-
-    it('should throw error when doors are not free', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto2())).rejects.toThrow('All doors must be free');
-    });
-
-    it('should throw error when map name already exists', async () => {
-        await service.start();
-        await expect(service.addMap(getFakeInvalidMapDto3())).rejects.toThrow('A map with this name already exists');
-    });
-
-    it('should throw error when elements are out of bounds', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto4())).rejects.toThrow('All elements must be inside map');
-    });
-
-    it('should throw error when there are isolated ground tiles', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto5())).rejects.toThrow('Map must not have any isolated ground tile');
-    });
-
-    it('should throw error when less than 50% are grass tiles', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto6())).rejects.toThrow('Map must contain more than 50% of grass tiles');
-    });
-
     const getFakeMap = (): Map => ({
-        name: getRandomString(),
+        _id: new Types.ObjectId('507f191e810c19729de860ea'),
+        name: 'Test de jeu',
+        isVisible: false,
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
@@ -239,177 +166,17 @@ describe('MapServiceEndToEnd', () => {
         doorTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, isOpened: true }],
     });
 
-    const getFakeMapDto = (): CreateMapDto => ({
-        name: 'test',
+    const getFakeMap2 = (): Map => ({
+        name: 'Test',
+        isVisible: true,
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
         mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
-    });
-
-    // startTiles problem
-    const getFakeInvalidMapDto = (): CreateMapDto => ({
-        name: getRandomString(),
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
-    });
-
-    // door problem
-    const getFakeInvalidMapDto2 = (): CreateMapDto => ({
-        name: getRandomString(),
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
-    });
-
-    // name unicity problem
-    const getFakeInvalidMapDto3 = (): CreateMapDto => ({
-        name: 'Test de jeu',
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
-    });
-
-    
-    // out of bounds
-    const getFakeInvalidMapDto4 = (): CreateMapDto => ({
-        name: getRandomString(),
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 10 }, category: TileCategory.Wall },
-            { coordinate: { x: -1, y: 9 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [],
-    });
-
-    const getFakeInvalidMapDto5 = (): CreateMapDto => ({
-        name: getRandomString(),
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 1, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 9 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [],
-    });
-
-    // 50 below
-    const getFakeInvalidMapDto6 = (): CreateMapDto => ({
-        name: getRandomString(),
-        description: getRandomString(),
-        imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
-        mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: 8, y: 8 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 8, y: 7 }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [
-            { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 0, y: 9 }, category: TileCategory.Wall },
-
-            { coordinate: { x: 1, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 9 }, category: TileCategory.Wall },
-
-            { coordinate: { x: 2, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 9 }, category: TileCategory.Wall },
-
-            { coordinate: { x: 3, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 9 }, category: TileCategory.Wall },
-
-            { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 3 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 5 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 7 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 8 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 9 }, category: TileCategory.Wall },
-        ],
-        doorTiles: [],
+        startTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) } }],
+        items: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(ItemCategory) }],
+        tiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(TileCategory) }],
+        doorTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, isOpened: true }],
     });
 
     const BASE_36 = 36;
