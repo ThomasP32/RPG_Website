@@ -1,21 +1,24 @@
 .toolbar {
-    width: 400px; 
-    height: 100vh; 
-    background-color: #1c242c   ; 
-    border-right: 2px solid #202020 ; 
+    width: 400px;
+    height: 100vh;
+    background-color: #1c242c;
+    border-right: 2px solid #202020;
     padding: 10px;
-  }
+}
 
-.tile-section, .item-section, .starting-point-section, .flag-section{
-    border: 3px solid #202020 ;
+.tile-section,
+.item-section,
+.starting-point-section,
+.flag-section {
+    border: 3px solid #202020;
     padding: 10px;
     margin-bottom: 15px;
-    background-color: #3B3B3B;;
+    background-color: #3b3b3b;
 }
 
 .toggle-section {
     display: flex;
-    align-items: center; 
+    align-items: center;
     justify-content: space-between;
     width: 100%;
 }
@@ -25,40 +28,37 @@ h2 {
     line-height: 1.2;
     margin-left: 10px;
     margin-bottom: 10px;
-    color:#C0C0C0;
+    color: #c0c0c0;
     text-shadow:
-    -1px -1px 0 #000,  
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
 }
 
 h3 {
     flex-grow: 1;
-    // text-align: center;
     padding: 10px;
     margin: 0;
     font-size: 14px;
-    background-color: #2C3E50;
-    border: 3px solid #202020 ; 
-    color: #C0C0C0 ;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: #c0c0c0;
     text-shadow:
-    -1px -1px 0 #000,  
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
-    
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
 }
 
 button {
-    background-color: #2C3E50;
-    color: #C0C0C0;
+    background-color: #2c3e50;
+    color: #c0c0c0;
     font-size: 14px;
     cursor: pointer;
-    width: 10%; 
+    width: 10%;
     aspect-ratio: 1 / 1;
-    background-color: #2C3E50;
-    border: 3px solid #202020 ; 
+    border: 3px solid #202020;
     padding: 10px;
 }
 
@@ -79,24 +79,24 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    // background-color: #2C3E50;
     cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
+    transition:
+        background-color 0.3s,
+        border-color 0.3s;
 }
 
-
 .tile.selected img {
-    outline: 3px solid #B85C38; 
-    box-shadow: 0 0 15px #B85C38; 
+    outline: 3px solid #b85c38;
+    box-shadow: 0 0 15px #b85c38;
     outline-offset: -3px;
 }
 
 .tile img {
     width: 64px;
     height: 64px;
-    border: 3px solid #7D7F7D;
-    background-color: #2C3E50;
-    box-shadow: 0 0 5px #B85C38;
+    border: 3px solid #7d7f7d;
+    background-color: #2c3e50;
+    box-shadow: 0 0 5px #b85c38;
 }
 
 .item-grid {
@@ -105,30 +105,31 @@ button:hover {
     grid-gap: 10px;
 }
 .item {
-    position:relative;
-    width: 64px; 
+    position: relative;
+    width: 64px;
     height: 64px;
-    border-radius: 50%; 
-    border: 3px solid #7D7F7D; 
-    display: flex; 
+    border-radius: 50%;
+    border: 3px solid #7d7f7d;
+    display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #2C3E50; 
-    box-shadow: 0 0 5px #B85C38; 
-    margin: 10px; 
+    background-color: #2c3e50;
+    box-shadow: 0 0 5px #b85c38;
+    margin: 10px;
     img {
-        width: 60%; 
+        width: 60%;
         height: 60%;
     }
 }
 
 .description {
     visibility: hidden;
-    background-color: #333;
+    background-color: #3b3b3b;
+    border: 2px solid #202020;
     color: #fff;
     text-align: center;
     padding: 5px 10px;
-    border-radius: 6px;
+    // border-radius: 6px;
     position: absolute;
     z-index: 1;
     top: 100%;
@@ -142,7 +143,8 @@ button:hover {
     font-family: 'Arial', sans-serif;
 }
 
-.tile:hover .description, .item:hover .description {
+.tile:hover .description,
+.item:hover .description {
     visibility: visible;
     opacity: 1;
 }
@@ -151,8 +153,8 @@ button:hover {
     position: absolute;
     top: -5px;
     right: -5px;
-    background-color: #2C3E50;
-    color: #C0C0C0;
+    background-color: #2c3e50;
+    color: #c0c0c0;
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -160,10 +162,10 @@ button:hover {
     justify-content: center;
     align-items: center;
     font-size: 0.6em;
-    border: 2px solid #7D7F7D ;
+    border: 2px solid #7d7f7d;
 }
 
 .tile.disabled {
     opacity: 0.5;
     pointer-events: none;
-  }
+}
