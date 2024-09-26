@@ -5,13 +5,13 @@ import { CommunicationMapService } from '@app/services/communication.map.service
 import { Map } from '@common/map.types';
 
 @Component({
-    selector: 'start-game-page',
+    selector: 'game-choice-page',
     standalone: true,
-    templateUrl: './start-game-page.component.html',
-    styleUrls: ['./start-game-page.component.scss'],
+    templateUrl: './game-choice-page.component.html',
+    styleUrls: ['./game-choice-page.component.scss'],
     imports: [CommonModule, RouterLink],
 })
-export class StartGamePageComponent {
+export class GameChoicePageComponent {
     map: Map;
     maps: Map[] = [];
     selectedMap: string | undefined = undefined;
