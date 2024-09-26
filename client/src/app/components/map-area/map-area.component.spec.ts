@@ -36,7 +36,7 @@ describe('MapAreaComponent', () => {
 
     it('should create a map on init', fakeAsync(() => {
         const mockActivatedRoute = TestBed.inject(ActivatedRoute);
-        (mockActivatedRoute.snapshot.params as any)['size'] = 'size=5';
+        mockActivatedRoute.snapshot.params['size'] = 'size=5';
         component.ngOnInit();
         tick();
 
@@ -149,6 +149,6 @@ describe('MapAreaComponent', () => {
         component.createMap(3, 'edit');
         component.Map[1][1].value = 'wall';
         component.resetMapToDefault();
-        expect(component.Map[1][1].value).toBe(component.defaultTile); 
+        expect(component.Map[1][1].value).toBe(component.defaultTile);
     });
 });

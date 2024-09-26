@@ -41,12 +41,9 @@ export class AdminPageComponent implements OnInit {
     }
 
     editGame(map: Map): void {
-        const params = new URLSearchParams();
         if (map._id) {
-            params.set('id', map._id);
+            window.location.href = `/game-creation/${map._id}`;
         }
-
-        window.location.href = `/game-creation/${params}`;
     }
 
     deleteGame(): void {

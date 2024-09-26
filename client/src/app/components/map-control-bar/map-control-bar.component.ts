@@ -1,8 +1,9 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-map-control-bar',
@@ -21,6 +22,8 @@ export class MapControlBarComponent implements OnInit {
     mode: string;
     gameMode: string = '';
     numberOfPlayers: number = 0;
+
+    @Input() map!: Map;
 
     constructor(
         private route: ActivatedRoute,
@@ -64,8 +67,12 @@ export class MapControlBarComponent implements OnInit {
 
     urlConverter(mode: string) {
         if (mode) {
-            console.log('URL params mode :', mode);
             this.gameMode = mode.split('=')[1];
         }
     }
+    //TODO: GET MAP
+    initializeMap(map: Map) {
+        this.mapTitle = map.name;
+        // this.mapDescription = map.description;
+      }
 }

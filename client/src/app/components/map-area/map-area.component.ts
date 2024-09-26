@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
+import { DoorTile, Item, Map, StartTile, Tile } from '@common/map.types';
 
 @Component({
     selector: 'app-map-area',
@@ -10,8 +11,9 @@ import { MapService } from '@app/services/map.service';
     templateUrl: './map-area.component.html',
     styleUrl: './map-area.component.scss',
 })
-export class MapAreaComponent {
+export class MapAreaComponent implements OnInit {
     @Input() selectedTile: string = '';
+    @Input() map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed' }[][] = [];
     isPlacing: boolean = false;
     isErasing: boolean = false;
@@ -174,8 +176,8 @@ export class MapAreaComponent {
             },
             tiles: [] as { coordinate: { x: number; y: number }; category: string }[],
             doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
-            items: [] as any[],
-            startTiles: [] as any[],
+            items: [] as unknown[],
+            startTiles: [] as unknown[],
         };
 
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
@@ -219,7 +221,7 @@ export class MapAreaComponent {
                 return '../../../../assets/tiles/floor.png';
         }
     }
-    //TODO: PUT it in a service, same as in toolbar.component.ts
+    // TODO: PUT it in a service, same as in toolbar.component.ts
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
@@ -232,5 +234,19 @@ export class MapAreaComponent {
             this.convertedMapSize = parseInt(size.split('=')[1]);
             console.log('Converted map size:', this.convertedMapSize);
         }
+    }
+
+    //TODO: GET MAP
+    tiles: Tile[] = [];
+    doorTiles: DoorTile[] = [];
+    items: Item[] = [];
+    startTiles: StartTile[] = [];
+    initializeMap(map: Map) {
+        // this.mode: map.mode,
+        this.convertedMapSize = map.mapSize.x;
+        this.tiles = map.tiles;
+        this.doorTiles = map.doorTiles;
+        this.items = map.items;
+        this.startTiles = map.startTiles;
     }
 }

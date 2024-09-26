@@ -14,9 +14,9 @@
         </button>
     </div>
     <div class="nb-players-display">
-        <div *ngIf="mapSize == mapSizeType.Small">1 or 2 players</div>
-        <div *ngIf="mapSize == mapSizeType.Medium">2 to 4 players</div>
-        <div *ngIf="mapSize == mapSizeType.Large">2 to 6 players</div>
+        <div *ngIf="mapSize === mapSizeType.Small">1 or 2 players</div>
+        <div *ngIf="mapSize === mapSizeType.Medium">2 to 4 players</div>
+        <div *ngIf="mapSize === mapSizeType.Large">2 to 6 players</div>
     </div>
     <!-- <input type="text" [(ngModel)]="mapName" (ngModelChange)="checkMapNameAvailability()" /> -->
     <!-- <div *ngIf="showErrorMessage.nameError" class="error-message">Error : Map name already exists</div> -->
