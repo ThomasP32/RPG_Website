@@ -12,11 +12,13 @@ import { Map } from '@common/map.types';
     imports: [CommonModule, RouterLink],
 })
 export class StartGamePageComponent {
-    availableMaps: Map[] = [];
-    errorMessage: string = '';
     map: Map;
     maps: Map[] = [];
     selectedMap: string = '';
+    showErrorMessage: { selectionError: boolean; userError: boolean } = {
+        selectionError: false,
+        userError: false,
+    };
 
     constructor(private communicationMapService: CommunicationMapService) {
         this.communicationMapService.maps$.subscribe((maps) => {
@@ -29,17 +31,21 @@ export class StartGamePageComponent {
     }
 
     selectMap(mapId: string) {
-        console.log('selecting map', mapId);
         this.selectedMap = mapId;
     }
 
     next(mapId: string) {
-        const params = new URLSearchParams();
         if (this.selectedMap) {
-            params.set('id', this.selectedMap);
-            window.location.href = `/create-character/${params}`;
+            const chosenMap = this.maps.find((map) => map._id === this.selectedMap);
+            if (chosenMap && chosenMap.isVisible) {
+                const params = new URLSearchParams();
+                params.set('id', this.selectedMap);
+                window.location.href = `/create-character/${params}`;
+            } else {
+                this.showErrorMessage.selectionError = true;
+            }
         } else {
-            this.errorMessage = 'The selected game is unavailable. Please choose another game.';
+            this.showErrorMessage.userError = true;
         }
     }
 }

@@ -10,6 +10,9 @@
             <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map._id)">
                 <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
                 <div class="map-details">
+                    <!-- <p class="description">Description: {{map.description}} </p> -->
+                    <!-- <p class="mode">Game Mode: {{map.mode}} </p> -->
+                    <!-- <p class="preview">Preview: {{map.imagePreview}} </p> -->
                     <p class="description">description de la map</p>
                     <p class="mode">Mode de jeu</p>
                     <h2 class="name">{{ map.name }}</h2>
@@ -21,5 +24,10 @@
 
     <div class="footer">
         <button class="next-button" (click)="next(selectedMap)">Suivant</button>
+        @if (showErrorMessage.selectionError) {
+        <div class="error-message">Error : The selected game is no longer available. Please select a new game.</div>
+        } @if (showErrorMessage.userError) {
+        <div class="error-message">Error : No game was selected. Please select a game.</div>
+        }
     </div>
 </div>
