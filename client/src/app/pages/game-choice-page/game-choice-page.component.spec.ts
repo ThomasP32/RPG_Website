@@ -3,15 +3,15 @@ import { Routes, provideRouter } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 import { of } from 'rxjs';
-import { StartGamePageComponent } from './start-game-page.component';
+import { GameChoicePageComponent } from './game-choice-page.component';
 
 import SpyObj = jasmine.SpyObj;
 
 const routes: Routes = [];
 
-describe('StartGamePageComponent', () => {
-    let component: StartGamePageComponent;
-    let fixture: ComponentFixture<StartGamePageComponent>;
+describe('GameChoicePageComponent', () => {
+    let component: GameChoicePageComponent;
+    let fixture: ComponentFixture<GameChoicePageComponent>;
     let communicationMapServiceSpy: SpyObj<CommunicationMapService>;
     let mockMaps: Map[];
 
@@ -26,7 +26,7 @@ describe('StartGamePageComponent', () => {
         communicationMapServiceSpy.maps$ = of(mockMaps);
 
         await TestBed.configureTestingModule({
-            imports: [StartGamePageComponent],
+            imports: [GameChoicePageComponent],
             providers: [
                 {
                     provide: CommunicationMapService,
@@ -38,7 +38,7 @@ describe('StartGamePageComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(StartGamePageComponent);
+        fixture = TestBed.createComponent(GameChoicePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
