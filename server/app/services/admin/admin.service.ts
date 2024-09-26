@@ -2,7 +2,7 @@ import { MapDocument } from '@app/model/database/map';
 import { CoordinateDto, CreateMapDto, DoorTileDto, ItemDto, StartTileDto, TileDto } from '@app/model/dto/map/create-map.dto';
 import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
 import { Coordinate, Map, TileCategory } from '@common/map.types';
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -36,16 +36,19 @@ export class AdminService {
         }
     }
 
-    async deleteMap(mapName: string): Promise<void> {
+    async deleteMap(mapId: string): Promise<void> {
         try {
+            const objectId = new Types.ObjectId(mapId);
             const res = await this.mapModel.deleteOne({
-                name: mapName,
+                _id: objectId,
             });
             if (res.deletedCount === 0) {
-                return Promise.reject('Could not find course');
+                throw new NotFoundException('Could not find map to delete');
             }
         } catch (err) {
-            return Promise.reject(`Failed to delete course: ${err}`);
+            if (err.message !== 'Could not find map to delete') {
+                throw new BadRequestException('Failed to delete map');
+            }
         }
     }
 
@@ -279,4 +282,5 @@ export class AdminService {
             throw new ForbiddenException('All start tiles must be placed');
         }
     }
+
 }

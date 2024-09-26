@@ -2,7 +2,7 @@ import { Map } from '@app/model/database/map';
 import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
 import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
 import { AdminService } from '@app/services/admin/admin.service';
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -58,61 +58,10 @@ export class AdminController {
             await this.adminService.addMap(mapDto);
             response.status(HttpStatus.CREATED).send();
         } catch (error) {
-            if (error.message === 'A map with this name already exists') {
-                return response.status(HttpStatus.CONFLICT).json({
-                    status: HttpStatus.CONFLICT,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'A map with this name already exists',
-                    },
-                });
-            } else if (error.message === 'All elements must be inside map') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All elements must be inside map',
-                    },
-                });
-            } else if (error.message === 'Map must contain more than 50% of ground tiles') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'Map must contain more than 50% of ground tiles',
-                        solution: 'Try reducing number of special tiles',
-                    },
-                });
-            } else if (error.message === 'Map must not have any isolated ground tile') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'Map must not have any isolated ground tile',
-                        solution: 'Try changing wall placement or adding doors',
-                    },
-                });
-            } else if (error.message === 'All doors must be free') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All doors must be surrounded by walls and the pathways must be clear',
-                        solution: 'Surround doors with walls or clear pathways',
-                    },
-                });
-            } else if (error.message === 'All start tiles must be placed') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All start tiles must be placed',
-                    },
-                });
-            } else {
-                console.log(error);
-                response.status(HttpStatus.NOT_FOUND).send(error);
-            }
+            return response.status(error.status || HttpStatus.BAD_REQUEST).json({
+                status: error.status || HttpStatus.BAD_REQUEST,
+                message: error.message || 'Failed to add map',
+            });
         }
     }
 
@@ -129,61 +78,10 @@ export class AdminController {
             const updatedMap = await this.adminService.modifyMap(mapId, mapDto);
             response.status(HttpStatus.OK).json(updatedMap);
         } catch (error) {
-            if (error.message === 'A map with this name already exists') {
-                return response.status(HttpStatus.CONFLICT).json({
-                    status: HttpStatus.CONFLICT,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'A map with this name already exists',
-                    },
-                });
-            } else if (error.message === 'All elements must be inside map') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All elements must be inside map',
-                    },
-                });
-            } else if (error.message === 'Map must contain more than 50% of ground tiles') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'Map must contain more than 50% of ground tiles',
-                        solution: 'Try reducing number of special tiles',
-                    },
-                });
-            } else if (error.message === 'Map must not have any isolated ground tile') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'Map must not have any isolated ground tile',
-                        solution: 'Try changing wall placement or adding doors',
-                    },
-                });
-            } else if (error.message === 'All doors must be free') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All doors must be surrounded by walls and the pathways must be clear',
-                        solution: 'Surround doors with walls or clear pathways',
-                    },
-                });
-            } else if (error.message === 'All start tiles must be placed') {
-                return response.status(HttpStatus.FORBIDDEN).json({
-                    status: HttpStatus.FORBIDDEN,
-                    message: 'Map creation failed',
-                    details: {
-                        reason: 'All start tiles must be placed',
-                    },
-                });
-            } else {
-                console.log(error);
-                response.status(HttpStatus.NOT_FOUND).send(error);
-            }
+            return response.status(error.status || HttpStatus.BAD_REQUEST).json({
+                status: error.status || HttpStatus.BAD_REQUEST,
+                message: error.message || 'Failed to add map',
+            });
         }
     }
 
@@ -200,8 +98,24 @@ export class AdminController {
             const map = await this.adminService.visibilityToggle(mapId);
             response.status(HttpStatus.OK).json(map);
         } catch (error) {
-            console.log(error);
             response.status(HttpStatus.NOT_FOUND).send(error);
+        }
+    }
+
+    
+    @ApiOkResponse({
+        description: 'Delete a course',
+    })
+    @ApiNotFoundResponse({
+        description: 'Return NOT_FOUND http status when request fails',
+    })
+    @Delete('/:mapName')
+    async deleteCourse(@Param('mapName') mapName: string, @Res() response: Response) {
+        try {
+            await this.adminService.deleteMap(mapName);
+            response.status(HttpStatus.OK).send();
+        } catch (error) {
+            response.status(HttpStatus.NOT_FOUND).send(error.message);
         }
     }
 }
