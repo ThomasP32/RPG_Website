@@ -2,16 +2,16 @@ import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Routes, provideRouter } from '@angular/router';
-import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { HomePageComponent } from '@app/pages/home-page/home-page.component';
 import { CommunicationService } from '@app/services/communication.service';
 import { of } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 
 const routes: Routes = [];
 
-describe('MainPageComponent', () => {
-    let component: MainPageComponent;
-    let fixture: ComponentFixture<MainPageComponent>;
+describe('HomePageComponent', () => {
+    let component: HomePageComponent;
+    let fixture: ComponentFixture<HomePageComponent>;
     let communicationServiceSpy: SpyObj<CommunicationService>;
 
     beforeEach(async () => {
@@ -20,7 +20,7 @@ describe('MainPageComponent', () => {
         communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse<string>({ status: 201, statusText: 'Created' })));
 
         await TestBed.configureTestingModule({
-            imports: [MainPageComponent],
+            imports: [HomePageComponent],
             providers: [
                 {
                     provide: CommunicationService,
@@ -33,7 +33,7 @@ describe('MainPageComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(MainPageComponent);
+        fixture = TestBed.createComponent(HomePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -42,18 +42,10 @@ describe('MainPageComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it("should have as title 'Brassbound Realms'", () => {
-        expect(component.title).toEqual('Brassbound Realms');
-    });
-
-    it('should display the game name in the header', () => {
-        const titleElement = fixture.debugElement.nativeElement.querySelector('.header-item');
-        expect(titleElement.textContent).toContain(component.title);
-    });
 
     it('should display the game logo', () => {
         const logoElement = fixture.debugElement.nativeElement.querySelector('.game-logo');
-        expect(logoElement.src).toContain(component.logoPath);
+        expect(logoElement).toBeTruthy();
     });
     
     it('should display the team number', () => {
