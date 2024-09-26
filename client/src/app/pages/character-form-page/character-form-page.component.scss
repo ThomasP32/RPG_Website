@@ -6,11 +6,11 @@
 .character-page-container {
     height: 100vh;
     width: 100%;
-    background-color: #2b2f38;
+    background-color: #1c242c;
     font-family: 'Press Start 2P', sans-serif;
 }
 .character-selection-container {
-    background-color: #2b2f38;
+    background-color: #1c242c;
     color: #f0f0f0;
     display: flex;
     justify-content: space-between;
@@ -20,9 +20,11 @@
 
 .player-stats {
     background-color: #3b3f46;
-    border: 2px solid #1e2329;
+    border: 2px solid #202020;
     padding: 20px;
     margin-left: 20px;
+    margin-right: 20px;
+    height: 50vh;
 }
 
 .character-display {
@@ -32,9 +34,21 @@
     position: relative;
 }
 
+.character-display:hover img {
+    transform: rotateY(360deg);
+}
+
+.selected-character {
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+.selected-character img {
+    transition: transform 0.5s ease;
+}
+
 .character-display img {
     width: 30vw;
-    max-width: 300px;
+    // max-width: 300px;
     height: auto;
 }
 
@@ -64,13 +78,9 @@ h3 {
 
 .stat-bar {
     background-color: #1a1d23;
-    border: 2px solid #b5651d;
+    border: 2px solid #b85c38;
     height: 15px;
-    border-radius: 3px;
     overflow: hidden;
-}
-.stats {
-    height: 30vh;
 }
 .stat-bar-fill {
     background-color: #f39c12;
@@ -88,30 +98,34 @@ h3 {
     margin-top: 10px;
 }
 .arrow-button {
-    background-color: #1e2329;
-    color: #f39c12;
+    background-color: #1c242c;
+    color: white;
+    border: 2px solid #1c242c;
+    text-shadow: 1px 1px 2px #000;
     padding: 5px 10px;
     cursor: pointer;
+    transition: color 0.3s;
+    font-size: 30px;
 }
 
 .arrow-button:hover {
-    background-color: #f39c12;
-    color: #1e2329;
+    color: #f39c12;
 }
 .start-button {
-    background-color: #1a1d23;
-    border: 3px solid #b5651d;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
     color: white;
     padding: 10px 20px;
     cursor: pointer;
     font-weight: bold;
     font-size: 12px;
     font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.4s;
 }
 
 .start-button:hover {
-    background-color: #f39c12;
-    border: 3px solid #b5651d;
+    background-color: #3b3f46;
+    border: 3px solid #202020;
 }
 
 .character-list {
@@ -124,11 +138,14 @@ h3 {
 
 .character-box {
     background-color: #3b3f46;
-    // padding: 10px;
     border: 2px solid #b5651d;
     text-align: center;
     cursor: pointer;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
+
 .character-box img {
     width: 10vw;
     aspect-ratio: 1 / 1;
@@ -137,5 +154,13 @@ h3 {
 }
 
 .character-box:hover {
+    border: 2px solid #f39c12;
+    box-shadow: 0px 0px 20px 5px rgba(243, 156, 18, 0.6);
+    transform: scale(1.1);
+}
+
+.character-box.selected-character {
     background-color: #f39c12;
+    border: 2px solid #f39c12;
+    box-shadow: 0px 0px 20px 5px #f39c12;
 }
