@@ -32,6 +32,10 @@ export class AdminPageComponent implements OnInit {
         this.isMapVisible = true;
     }
 
+    onCloseModal(): void {
+        this.isMapVisible = false;
+    }
+
     ngOnInit(): void {
         this.communicationService.getMapsFromServer();
     }

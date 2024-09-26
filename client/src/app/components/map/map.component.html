@@ -1,4 +1,6 @@
 <div class="map-creation-box">
+    <!-- TODO: X ---) icon -->
+    <div class="close-button" (click)="closeComponent()">X</div>  
     <div class="game-choices-container">
         <h2>Choose a mode</h2>
         <app-modes-choice (modeSelected)="onModeSelected($event)"></app-modes-choice>
