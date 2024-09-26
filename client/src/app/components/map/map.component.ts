@@ -23,9 +23,9 @@ export enum NbItems {
 }
 
 @Component({
-    selector: 'app-mapChoices-component',
+    selector: 'app-map-choices-component',
     standalone: true,
-    imports: [NgForOf, NgClass, NgIf, ModesComponent, FormsModule],
+    imports: [NgForOf, NgClass, NgIf, FormsModule, ModesComponent],
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss'],
 })
@@ -45,7 +45,6 @@ export class MapComponent {
     // constructor(private http: HttpClient) {}
 
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
-        console.log('Button clicked, Size :', size);
         switch (size) {
             case 'small':
                 this.mapSize = MapSize.Small;
@@ -58,9 +57,6 @@ export class MapComponent {
             case 'large':
                 this.mapSize = MapSize.Large;
                 this.nbItems = NbItems.Large;
-                break;
-            default:
-                console.error('Invalid size value:', size);
                 break;
         }
     }
@@ -86,5 +82,5 @@ export class MapComponent {
     //     this.http.get(`/api/check-map-name?name=${this.mapName}`).subscribe((response: unknown) => {
     //         this.showErrorMessage.nameError = response.isTaken;
     //     });
-    //}
+    // }
 }

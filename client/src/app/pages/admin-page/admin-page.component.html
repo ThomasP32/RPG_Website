@@ -5,7 +5,7 @@
     <button class="button" (click)="toggleGameCreationModalVisibility()">Commencer une nouvelle partie</button>
     @if(isMapVisible) {
     <div>
-        <!-- <app-mapChoices-component></app-mapChoices-component> -->
+        <app-map-choices-component></app-map-choices-component>
     </div>
     }
 
@@ -27,14 +27,13 @@
                     }
                 </p>
                 <button class="edit-button" (click)="editGame(map)">Modifier</button>
-                <button class="map-delete">Supprimer</button>
+                <button class="map-delete" (click)="deleteGame()">Supprimer</button>
             </div>
         </div>
         }
 
         <!-- <div class="map-actions">
-            <button class="button" (click)="editGame(game.id)">Modifier</button>
-            <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
+            
             <button (click)="toggleVisibility(game.id)">
                 {{ map.isVisible ? 'Cacher' : 'Afficher' }}
             </button>
