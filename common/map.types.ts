@@ -7,6 +7,14 @@ export enum TileCategory {
     Water = 'water',
     Ice = 'ice',
     Wall = 'wall',
+<<<<<<< HEAD
+=======
+}
+
+export enum Mode {
+    Ctf = 'ctf',
+    Normal = 'normal',
+>>>>>>> dev
 }
 
 export enum ItemCategory {
@@ -35,12 +43,16 @@ export interface Item {
 }
 
 export interface Map {
-    _id?: string;
+    _id?: Object;
     name: string;
-    isVisible: boolean;
+    description: string;
+    imagePreview: string;
+    mode: Mode;
+    isVisible?: boolean;
     mapSize: Coordinate;
     startTiles: StartTile[];
     items: Item[];
     doorTiles: DoorTile[];
     tiles: Tile[];
+    lastModified?: Date;
 }

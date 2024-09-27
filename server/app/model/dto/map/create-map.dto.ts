@@ -1,8 +1,8 @@
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsString, Validate, ValidateNested} from 'class-validator';
-import { IsOutOfMap } from './map.dto.constraints';
-import { TileCategory, ItemCategory } from '@common/map.types';
+import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CoordinateDto {
     @ApiProperty()
@@ -57,9 +57,22 @@ export class CreateMapDto {
     @IsString()
     name: string;
 
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    imagePreview: string;
+
+    @ApiProperty()
+    @IsEnum(Mode)
+    mode: Mode;
+
     @ApiProperty({ default: false })
+    @IsOptional()
     @IsBoolean()
-    isVisible: boolean;
+    isVisible?: boolean;
 
     @ApiProperty({ type: CoordinateDto })
     @ValidateNested()
@@ -68,32 +81,35 @@ export class CreateMapDto {
 
     @ApiProperty({ type: [StartTileDto] })
     @IsArray()
-    @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
+    @ArrayNotEmpty()
+    @ValidateNested()
     @Type(() => StartTileDto)
     startTiles: StartTileDto[];
 
     @ApiProperty({ type: [ItemDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
     @Type(() => ItemDto)
     items: ItemDto[];
 
     @ApiProperty({ type: [TileDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
     @Type(() => TileDto)
     tiles: TileDto[];
 
     @ApiProperty({ type: [DoorTileDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Validate(IsOutOfMap)
     @Type(() => DoorTileDto)
     doorTiles: DoorTileDto[];
 
     @ApiProperty()
-    _id?: string;
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    lastModified?: Date;
+
+    @ApiProperty()
+    _id?: Types.ObjectId;
 }

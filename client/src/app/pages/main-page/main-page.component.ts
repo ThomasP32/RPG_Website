@@ -10,8 +10,12 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class MainPageComponent {
     teamNumber = 'Équipe 109';
+<<<<<<< HEAD
     developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 
         'Thomas Perron Duveau', 'Emlyn Murphy'];
+=======
+    developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 'Thomas Perron Duveau', 'Emelyn Victoria'];
+>>>>>>> dev
 
     constructor(private router: Router) {}
 

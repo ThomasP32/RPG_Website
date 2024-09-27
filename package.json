@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
     "mongodb": "^6.9.0"
+=======
+  "devDependencies": {
+    "jest": "^29.7.0"
+>>>>>>> dev
   }
 }
