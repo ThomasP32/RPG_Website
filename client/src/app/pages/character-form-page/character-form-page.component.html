@@ -27,7 +27,7 @@
                     <div class="stat">
                         <label class="stat-label" title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
                         <div class="stat-bar">
-                            <div class="stat-bar-fill" [style.width.%]="(life / 6) * 100"></div>
+                            <div class="stat-bar-fill" [style.width.%]="(life / 10) * 100"></div>
                         </div>
                     </div>
                     <div class="stat">
@@ -35,7 +35,7 @@
                             >Rapidité : {{ speed }} PTS</label
                         >
                         <div class="stat-bar">
-                            <div class="stat-bar-fill" [style.width.%]="(speed / 6) * 100"></div>
+                            <div class="stat-bar-fill" [style.width.%]="(speed / 10) * 100"></div>
                         </div>
                     </div>
                     <div class="stat">
@@ -43,16 +43,83 @@
                             >Attaque : {{ attack }} PTS</label
                         >
                         <div class="stat-bar">
-                            <div class="stat-bar-fill" [style.width.%]="(attack / 6) * 100"></div>
+                            <div class="stat-bar-fill" [style.width.%]="(attack / 10) * 100"></div>
                         </div>
                     </div>
                     <div class="stat"></div>
                     <label class="stat-label" title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ defense }} PTS</label>
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(defense / 6) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(defense / 10) * 100"></div>
                     </div>
                 </div>
-                <h4>Choisis ton bonus</h4>
+                <div class="bonus-text">
+                    <label>Ajoutes un bonus +2: </label>
+                </div>
+                <div class="bonus-buttons-container">
+                    <div class="bonus-button">
+                        <input
+                            type="radio"
+                            id="life"
+                            [(ngModel)]="lifeOrSpeedBonus"
+                            name="lifeOrSpeedBonus"
+                            value="life"
+                            (change)="addBonus()"
+                            hidden
+                        />
+                        <label for="life">Vie</label>
+                    </div>
+                    <div class="bonus-button">
+                        <input
+                            type="radio"
+                            id="speed"
+                            [(ngModel)]="lifeOrSpeedBonus"
+                            name="lifeOrSpeedBonus"
+                            value="speed"
+                            (change)="addBonus()"
+                            hidden
+                        />
+                        <label for="speed">Rapidité</label>
+                    </div>
+                </div>
+                <label>Attribues un dé à 6 faces: </label>
+                <div class="dice-buttons-container">
+                    <div class="dice-and-buttons-wrapper">
+                        <div class="dice-button">
+                            <input
+                                type="radio"
+                                id="attack"
+                                [(ngModel)]="attackOrDefenseBonus"
+                                name="attackOrDefenseBonus"
+                                value="attack"
+                                (change)="assignDice()"
+                                hidden
+                            />
+                            <label for="attack"> Attaque </label>
+                        </div>
+                        <div class="dice-icon">
+                            @if(attackBonus === 'D4') {
+                            <i class="fas fa-dice-four"></i>} @if(attackBonus === 'D6') { <i class="fas fa-dice-six"></i>}
+                        </div>
+                    </div>
+                    <div class="dice-and-buttons-wrapper">
+                        <div class="dice-button">
+                            <input
+                                type="radio"
+                                id="defense"
+                                [(ngModel)]="attackOrDefenseBonus"
+                                name="attackOrDefenseBonus"
+                                value="defense"
+                                (change)="assignDice()"
+                                hidden
+                            />
+                            <label for="defense">Defense </label>
+                        </div>
+                        <div class="dice-icon">
+                            @if(defenseBonus === 'D4') {
+                            <i class="fas fa-dice-four"></i>} @if(defenseBonus === 'D6') { <i class="fas fa-dice-six"></i>}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="hover-explanation">
