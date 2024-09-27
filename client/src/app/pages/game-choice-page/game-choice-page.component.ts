@@ -24,7 +24,7 @@ export class GameChoicePageComponent {
 
     constructor(private communicationMapService: CommunicationMapService) {
         this.communicationMapService.maps$.subscribe((maps) => {
-            this.maps = maps;
+            this.maps = maps.filter((map) => map.isVisible);
         });
     }
 
