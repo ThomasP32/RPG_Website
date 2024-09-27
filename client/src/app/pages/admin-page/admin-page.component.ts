@@ -57,7 +57,9 @@ export class AdminPageComponent implements OnInit {
         }
     }
 
+   
     async deleteGame(id: string): Promise<void> {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette carte?')) {
           try {
             await firstValueFrom(this.communicationMapService.basicDelete(`admin/${id}`));
             console.log('Game deleted successfully');
@@ -65,15 +67,17 @@ export class AdminPageComponent implements OnInit {
           } catch (error) {
             console.error('Error deleting game:', error);
           }
+        }
       }
+      
     
-    // showDescription(): void {
+    showDescription(): void {
 
-    // }
+    }
 
-    // hideDescription(): void {
-    //     // game.showDescription = false
-    // }
+    hideDescription(): void {
+        // game.showDescription = false
+    }
 
     updateDisplay(): void {
         this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
