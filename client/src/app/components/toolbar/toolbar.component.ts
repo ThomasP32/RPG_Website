@@ -30,6 +30,8 @@ export class ToolbarComponent {
     randomItemCounter: number;
     itemsCounter: number;
 
+    itemsUsable: boolean = false;
+
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,

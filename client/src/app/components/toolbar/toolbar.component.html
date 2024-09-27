@@ -1,111 +1,115 @@
 <div class="toolbar">
     <h2>Steam & Steel BattleGrounds</h2>
-    <div class="toggle-section">
-        <h3>Tuiles</h3>
-        <button (click)="toggleTiles()">
-            {{ isTilesVisible ? '-' : '+' }}
-        </button>
-    </div>
-    <div class="tile-section" *ngIf="isTilesVisible">
-        <div class="tile-grid">
-            <div class="tile" [ngClass]="{ selected: selectedTile === 'door' }" (click)="selectTile('door')">
-                <img src="../../../../assets/tiles/door_y.png" alt="Door" />
-                <span class="description" draggable="false">Ceci est une porte solide, fermée. Cliquez pour l'ouvrir ou la fermer.</span>
-            </div>
-            <div class="tile" [ngClass]="{ selected: selectedTile === 'wall' }" (click)="selectTile('wall')">
-                <img src="../../../../assets/tiles/wall.png" alt="Wall" />
-                <span class="description" draggable="false"
-                    >Un mur solide qui bloque les mouvements et la vision. Impossible de passer à travers.</span
-                >
-            </div>
-            <div class="tile" [ngClass]="{ selected: selectedTile === 'ice' }" (click)="selectTile('ice')">
-                <img src="../../../../assets/tiles/ice1.jpg" alt="Ice" />
-                <span class="description" draggable="false"
-                    >Glace glissante. Les joueurs qui marchent dessus peuvent glisser de manière incontrôlée.</span
-                >
-            </div>
-            <div class="tile" [ngClass]="{ selected: selectedTile === 'water' }" (click)="selectTile('water')">
-                <img src="../../../../assets/tiles/water.png" alt="Water" />
-                <span class="description" draggable="false">Eau profonde qui ralentit les mouvements et peut restreindre certaines actions.</span>
+    <div class="scrollable-sections">
+        <div class="toggle-section">
+            <h3>Tuiles</h3>
+            <button (click)="toggleTiles()">
+                {{ isTilesVisible ? '-' : '+' }}
+            </button>
+        </div>
+        <div class="tile-section" *ngIf="isTilesVisible">
+            <div class="tile-grid">
+                <div class="tile" [ngClass]="{ selected: selectedTile === 'door' }" (click)="selectTile('door')">
+                    <img src="../../../../assets/tiles/door_y.png" alt="Door" />
+                    <span class="description" draggable="false">Ceci est une porte solide, fermée. Cliquez pour l'ouvrir ou la fermer.</span>
+                </div>
+                <div class="tile" [ngClass]="{ selected: selectedTile === 'wall' }" (click)="selectTile('wall')">
+                    <img src="../../../../assets/tiles/wall.png" alt="Wall" />
+                    <span class="description" draggable="false"
+                        >Un mur solide qui bloque les mouvements et la vision. Impossible de passer à travers.</span
+                    >
+                </div>
+                <div class="tile" [ngClass]="{ selected: selectedTile === 'ice' }" (click)="selectTile('ice')">
+                    <img src="../../../../assets/tiles/ice1.jpg" alt="Ice" />
+                    <span class="description" draggable="false"
+                        >Glace glissante. Les joueurs qui marchent dessus peuvent glisser de manière incontrôlée.</span
+                    >
+                </div>
+                <div class="tile" [ngClass]="{ selected: selectedTile === 'water' }" (click)="selectTile('water')">
+                    <img src="../../../../assets/tiles/water.png" alt="Water" />
+                    <span class="description" draggable="false">Eau profonde qui ralentit les mouvements et peut restreindre certaines actions.</span>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="toggle-section">
-        <h3>Objets</h3>
-        <button (click)="toggleItems()">
-            {{ isItemsVisible ? '-' : '+' }}
-        </button>
-    </div>
-    <div class="item-section" *ngIf="isItemsVisible">
-        <div class="item-grid">
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'vest')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/vest.png" alt="Vest" />
-                <span class="description" draggable="false">Un gilet de protection qui augmente la défense contre les attaques.</span>
-            </div>
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'mask')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/mask.png" alt="Mask" />
-                <span class="description">Un masque mystérieux qui confère à son porteur une résistance accrue aux dangers environnementaux.</span>
-            </div>
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'jar')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/jar.png" alt="Jar" />
-                <span class="description" draggable="false">Un pot mystique capable de contenir et de libérer des substances puissantes.</span>
-            </div>
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'acidgun')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/acidgun.png" alt="Acid gun" />
-                <span class="description" draggable="false"
-                    >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span
+        <div class="toggle-section">
+            <h3>Objets</h3>
+            <button (click)="toggleItems()">
+                {{ isItemsVisible ? '-' : '+' }}
+            </button>
+        </div>
+        <div class="item-section" *ngIf="isItemsVisible">
+            <div class="item-grid">
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'vest')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/vest.png" alt="Vest" />
+                    <span class="description" draggable="false">Un gilet de protection qui augmente la défense contre les attaques.</span>
+                </div>
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'mask')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/mask.png" alt="Mask" />
+                    <span class="description"
+                        >Un masque mystérieux qui confère à son porteur une résistance accrue aux dangers environnementaux.</span
+                    >
+                </div>
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'jar')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/jar.png" alt="Jar" />
+                    <span class="description" draggable="false">Un pot mystique capable de contenir et de libérer des substances puissantes.</span>
+                </div>
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'acidgun')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/acidgun.png" alt="Acid gun" />
+                    <span class="description" draggable="false"
+                        >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span
+                    >
+                </div>
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'key')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/keysilver.png" alt="Key" />
+                    <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
+                </div>
+                <div class="item" draggable="true" (dragstart)="startDrag($event, 'hat')" [class.disabled]="itemsUsable === false">
+                    <img src="../../../../assets/items/hat.png" alt="Hat" />
+                    <span class="description" draggable="false">Un chapeau élégant qui offre de légers bonus à l'agilité et au charme.</span>
+                </div>
+                <div
+                    class="item"
+                    draggable="randomItemCounter > 0"
+                    (dragstart)="startDrag($event, 'random')"
+                    [class.disabled]="randomItemCounter === 0 || itemsUsable === false"
                 >
+                    <img src="../../../../assets/items/randomchest.png" alt="Random item" />
+                    <span class="description">Une boîte mystère contenant un objet aléatoire. Ouvrez-la pour découvrir une surprise !</span>
+                    <span class="counter" draggable="false">{{ randomItemCounter }}</span>
+                </div>
             </div>
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'key')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/keysilver.png" alt="Key" />
-                <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
-            </div>
-            <div class="item" draggable="true" (dragstart)="startDrag($event, 'hat')" [class.disabled]="itemsCounter === 0">
-                <img src="../../../../assets/items/hat.png" alt="Hat" />
-                <span class="description" draggable="false">Un chapeau élégant qui offre de légers bonus à l'agilité et au charme.</span>
-            </div>
+        </div>
+        <div class="toggle-section">
+            <h3>Point de départ</h3>
+            <button (click)="toggleStartingPoint()">
+                {{ isStartingPointVisible ? '-' : '+' }}
+            </button>
+        </div>
+        <div class="starting-point-section" *ngIf="isStartingPointVisible">
             <div
-                class="item"
-                draggable="randomItemCounter > 0"
-                (dragstart)="startDrag($event, 'random')"
-                [class.disabled]="randomItemCounter === 0 || itemsCounter === 0"
+                class="tile"
+                [draggable]="startingPointCounter > 0"
+                (dragstart)="startDrag($event, 'starting-point')"
+                [class.disabled]="startingPointCounter === 0"
             >
-                <img src="../../../../assets/items/randomchest.png" alt="Random item" />
-                <span class="description">Une boîte mystère contenant un objet aléatoire. Ouvrez-la pour découvrir une surprise !</span>
-                <span class="counter" draggable="false">{{ randomItemCounter }}</span>
+                <img src="../../../../assets/tiles/startingpoint.png" alt="point de départ" />
+                <span class="description">Ceci est un point de départ où les joueurs commencent la partie.</span>
+                <span class="counter" draggable="false">{{ startingPointCounter }}</span>
             </div>
         </div>
-    </div>
-    <div class="toggle-section">
-        <h3>Point de départ</h3>
-        <button (click)="toggleStartingPoint()">
-            {{ isStartingPointVisible ? '-' : '+' }}
-        </button>
-    </div>
-    <div class="starting-point-section" *ngIf="isStartingPointVisible">
-        <div
-            class="tile"
-            [draggable]="startingPointCounter > 0"
-            (dragstart)="startDrag($event, 'starting-point')"
-            [class.disabled]="startingPointCounter === 0"
-        >
-            <img src="../../../../assets/tiles/startingpoint.png" alt="point de départ" />
-            <span class="description">Ceci est un point de départ où les joueurs commencent la partie.</span>
-            <span class="counter" draggable="false">{{ startingPointCounter }}</span>
-        </div>
-    </div>
 
-    <div class="toggle-section" *ngIf="mode === 'CTF'">
-        <h3>Drapeau</h3>
-        <button (click)="toggleFlag()">
-            {{ isFlagVisible ? '-' : '+' }}
-        </button>
-    </div>
-    <div class="flag-section" *ngIf="isFlagVisible && mode === 'CTF'">
-        <div class="item" (click)="selectItem('flag')" [class.disabled]="flagCounter === 0">
-            <img src="../../../../assets/items/flag.png" alt="drapeau" />
-            <span class="description">Le drapeau en mode Capture du Drapeau. Capturez-le pour gagner la partie !</span>
-            <span class="counter">{{ flagCounter }}</span>
+        <div class="toggle-section" *ngIf="mode === 'CTF'">
+            <h3>Drapeau</h3>
+            <button (click)="toggleFlag()">
+                {{ isFlagVisible ? '-' : '+' }}
+            </button>
+        </div>
+        <div class="flag-section" *ngIf="isFlagVisible && mode === 'CTF'">
+            <div class="item" (click)="selectItem('flag')" [class.disabled]="flagCounter === 0">
+                <img src="../../../../assets/items/flag.png" alt="drapeau" />
+                <span class="description">Le drapeau en mode Capture du Drapeau. Capturez-le pour gagner la partie !</span>
+                <span class="counter">{{ flagCounter }}</span>
+            </div>
         </div>
     </div>
 </div>
