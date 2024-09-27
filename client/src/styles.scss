@@ -68,6 +68,7 @@ $indigo-pink-theme: mat.m2-define-light-theme(
     @include material-page.theme($purple-green-theme);
 }
 
+@import '~@fortawesome/fontawesome-free/css/all.css';
 /* You can add global styles to this file, and also import other style files */
 
 html,
