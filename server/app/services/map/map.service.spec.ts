@@ -1,11 +1,10 @@
-import { Map, MapDocument, mapSchema } from '@app/model/database/map';
+import { Map, MapDocument, mapSchema } from '@app/model/schemas/map';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Connection, Model, Types } from 'mongoose';
-import { start } from 'repl';
 import { MapService } from './map.service';
 
 /**
@@ -132,18 +131,17 @@ describe('MapServiceEndToEnd', () => {
     it('getMapByName() return map with the specified name only if visible', async () => {
         const map = getFakeMap();
         map.isVisible = false;
-        await mapModel.create(map); 
+        await mapModel.create(map);
         await expect(service.getMapByName(map.name)).rejects.toThrow(`Failed to find visible map : ${map.name}`);
-
     });
 
     it('getMapByName() return visible map with the specified name', async () => {
         const map = getFakeMap();
-        map.isVisible = true; 
+        map.isVisible = true;
         await mapModel.create(map);
         const result = await service.getMapByName(map.name);
-        expect(result).toBeTruthy(); 
-        expect(result.name).toEqual(map.name); 
+        expect(result).toBeTruthy();
+        expect(result.name).toEqual(map.name);
         expect(result.isVisible).toBe(true);
     });
 

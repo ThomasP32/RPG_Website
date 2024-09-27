@@ -1,5 +1,5 @@
 import { MapController } from '@app/controllers/map/map.controller';
-import { Map, mapSchema } from '@app/model/database/map';
+import { Map, mapSchema } from '@app/model/schemas/map';
 import { MapService } from '@app/services/map/map.service';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';

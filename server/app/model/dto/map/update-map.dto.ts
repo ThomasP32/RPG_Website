@@ -1,7 +1,7 @@
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Mode } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { DoorTileDto, ItemDto, StartTileDto, TileDto } from './create-map.dto';
 
 export class UpdateMapDto {

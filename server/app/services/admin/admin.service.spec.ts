@@ -1,5 +1,5 @@
-import { Map, MapDocument, mapSchema } from '@app/model/database/map';
 import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
+import { Map, MapDocument, mapSchema } from '@app/model/schemas/map';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
