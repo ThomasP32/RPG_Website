@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
@@ -11,7 +11,7 @@ import { Map } from '@common/map.types';
     styleUrls: ['./game-choice-page.component.scss'],
     imports: [CommonModule, RouterLink],
 })
-export class GameChoicePageComponent {
+export class GameChoicePageComponent implements OnInit {
     map: Map;
     maps: Map[] = [];
     selectedMap: string | undefined = undefined;

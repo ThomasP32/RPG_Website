@@ -16,6 +16,6 @@ export class WaitingRoomPageComponent implements OnInit {
     }
 
     generateRandomNumber(): void {
-        this.waitingRoomCode = Math.floor(minCode + Math.random() * maxCode);
+        this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1));
     }
 }

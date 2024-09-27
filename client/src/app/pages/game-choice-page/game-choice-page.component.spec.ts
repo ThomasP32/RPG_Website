@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Routes, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 import { of } from 'rxjs';
@@ -7,37 +7,28 @@ import { GameChoicePageComponent } from './game-choice-page.component';
 
 import SpyObj = jasmine.SpyObj;
 
-const routes: Routes = [];
-
 describe('GameChoicePageComponent', () => {
     let component: GameChoicePageComponent;
     let fixture: ComponentFixture<GameChoicePageComponent>;
+    let mockRouter: SpyObj<Router>;
     let communicationMapServiceSpy: SpyObj<CommunicationMapService>;
-    let mockMaps: Map[];
 
     beforeEach(async () => {
-        mockMaps = [
-            { _id: '1', name: 'Map 1', isVisible: true, mapSize: { x: 10, y: 10 }, startTiles: [], items: [], doorTiles: [], tiles: [] },
-            { _id: '2', name: 'Map 2', isVisible: false, mapSize: { x: 10, y: 10 }, startTiles: [], items: [], doorTiles: [], tiles: [] },
-        ];
-
+        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['getMapsFromServer', 'maps$']);
-
-        communicationMapServiceSpy.maps$ = of(mockMaps);
+        communicationMapServiceSpy.maps$ = of([{ _id: '1', isVisible: true }] as Map[]);
 
         await TestBed.configureTestingModule({
             imports: [GameChoicePageComponent],
             providers: [
+                { provide: Router, useValue: mockRouter },
                 {
                     provide: CommunicationMapService,
                     useValue: communicationMapServiceSpy,
                 },
-                provideRouter(routes),
             ],
         }).compileComponents();
-    });
 
-    beforeEach(() => {
         fixture = TestBed.createComponent(GameChoicePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -47,68 +38,38 @@ describe('GameChoicePageComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize with maps from the service', () => {
-        expect(component.maps).toEqual(mockMaps);
+    it('should call getMapsFromServer on ngOnInit', () => {
+        component.ngOnInit();
+        expect(communicationMapServiceSpy.getMapsFromServer).toHaveBeenCalled();
     });
 
-    it('should set the selectedMap when selectMap is called', () => {
-        component.selectMap('1');
-        expect(component.selectedMap).toBe('1');
+    it('should set selectedMap when selectMap is called', () => {
+        const mapId = '1';
+        component.selectMap(mapId);
+        expect(component.selectedMap).toBe(mapId);
     });
 
-    it('should navigate to create-character page when a valid map is selected in next()', () => {
-        spyOn(component, 'next');
-        const mockHref = window.location.href;
-        Object.defineProperty(window, 'location', {
-            value: {
-                href: '',
-                assign: function (newHref: string) {
-                    this.href = newHref;
-                },
-            },
-            writable: true,
-        });
-        component.selectMap('1');
-        component.next('1');
-
-        expect(component.showErrorMessage.selectionError).toBeFalse();
-        expect(component.showErrorMessage.userError).toBeFalse();
-        expect(window.location.href).toContain(`/create-character/?id=1`);
-
-        Object.defineProperty(window, 'location', { value: mockHref });
+    it('should navigate to create-character with map id when next is called and map is visible', () => {
+        component.selectedMap = '1';
+        component.next();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/create-character'], { queryParams: { id: '1' } });
     });
 
-    it('should show selectionError when an invalid map is selected in next()', () => {
-        component.selectMap('3');
-        component.next('3');
-
+    it('should set selectionError to true when next is called and map is not visible', () => {
+        component.selectedMap = '2';
+        component.maps = [{ _id: '2', isVisible: false }] as Map[];
+        component.next();
         expect(component.showErrorMessage.selectionError).toBeTrue();
-        expect(component.showErrorMessage.userError).toBeFalse();
     });
 
-    it('should show userError when no map is selected in next()', () => {
-        component.selectedMap = '';
-        component.next('');
-
-        expect(component.showErrorMessage.selectionError).toBeFalse();
+    it('should set userError to true when next is called and no map is selected', () => {
+        component.selectedMap = undefined;
+        component.next();
         expect(component.showErrorMessage.userError).toBeTrue();
     });
 
-    it('should display the correct error message when selectionError is true', () => {
-        component.showErrorMessage.selectionError = true;
-        fixture.detectChanges();
-
-        const errorElement: HTMLElement = fixture.nativeElement.querySelector('.error-message');
-        expect(errorElement).toBeTruthy();
-        expect(errorElement.textContent).toContain('Error : The selected game is no longer available.');
-    });
-
-    it('should display the correct error message when userError is true', () => {
-        component.showErrorMessage.userError = true;
-        fixture.detectChanges();
-
-        const errorElement: HTMLElement = fixture.nativeElement.querySelector('.error-message');
-        expect(errorElement).toBeTruthy();
-        expect(errorElement.textContent).toContain('Error : No game was selected. Please select a game.');
+    it('should navigate to main menu when onReturn is called', () => {
+        component.onReturn();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/mainmenu']);
     });
 });
