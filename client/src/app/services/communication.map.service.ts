@@ -8,11 +8,10 @@ import { environment } from 'src/environments/environment';
     providedIn: 'root',
 })
 export class CommunicationMapService {
-    private readonly baseUrl: string = environment.serverUrl;
-
     private maps: BehaviorSubject<Map[]> = new BehaviorSubject<Map[]>([]);
-
     maps$ = this.maps.asObservable();
+
+    private readonly baseUrl: string = environment.serverUrl;
 
     constructor(private readonly http: HttpClient) {}
 
@@ -55,7 +54,6 @@ export class CommunicationMapService {
 
     setMaps(updatedMaps: Map[]) {
         this.maps.next(updatedMaps);
-        console.log('liste mise à jour');
     }
 
     // en appelant la fonction tu tabonne a lobservable et tu prends son emission et tu la mets à setMaps
