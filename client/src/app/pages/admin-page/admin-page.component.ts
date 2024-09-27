@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink],
+    imports: [RouterLink, MapComponent],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
@@ -24,7 +24,6 @@ export class AdminPageComponent implements OnInit {
         private communicationMapService: CommunicationMapService,
     ) {}
 
-    
     ngOnInit(): void {
         this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
     }
