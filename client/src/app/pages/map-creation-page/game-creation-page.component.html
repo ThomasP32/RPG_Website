@@ -1,4 +1,5 @@
 <div class="game-creation-page">
+  @if (map || isCreationPage) {
   <!-- Toolbar on the left -->
   <div class="left-area">
     <app-toolbar (tileSelected)="onTileSelected($event)"></app-toolbar>
@@ -11,6 +12,7 @@
 
   <!-- Control bar on the right -->
   <div class="right-area">
-    <app-map-control-bar></app-map-control-bar>
+    <app-map-control-bar ></app-map-control-bar>
   </div>
+  }
 </div>

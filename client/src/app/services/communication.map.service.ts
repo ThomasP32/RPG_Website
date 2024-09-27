@@ -11,7 +11,12 @@ export class CommunicationMapService {
     private maps: BehaviorSubject<Map[]> = new BehaviorSubject<Map[]>([]);
     maps$ = this.maps.asObservable();
 
+export class CommunicationMapService {
     private readonly baseUrl: string = environment.serverUrl;
+
+    private maps: BehaviorSubject<Map[]> = new BehaviorSubject<Map[]>([]);
+
+    maps$ = this.maps.asObservable();
 
     constructor(private readonly http: HttpClient) {}
 

@@ -1,0 +1,29 @@
+import { Injectable } from '@angular/core';
+import { Map } from '@common/map.types';
+import { firstValueFrom } from 'rxjs';
+import { CommunicationMapService } from './communication.map.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MapGetService {
+
+  map!: Map;
+
+  constructor(
+    private communicationMapService: CommunicationMapService
+  ) { }
+
+
+  async getMap(id: string): Promise<void> {
+    this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
+  }
+
+
+  
+
+
+
+
+
+}
