@@ -1,5 +1,5 @@
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
 
@@ -10,7 +10,7 @@ import { MapService } from '@app/services/map.service';
     templateUrl: './toolbar.component.html',
     styleUrls: ['./toolbar.component.scss'],
 })
-export class ToolbarComponent {
+export class ToolbarComponent implements OnInit {
     @Input() selectedTile: string;
 
     @Output() tileSelected = new EventEmitter<string>();
@@ -29,7 +29,8 @@ export class ToolbarComponent {
     flagCounter: number = 2;
     randomItemCounter: number = 6;
 
-    constructor(private route: ActivatedRoute,
+    constructor(
+        private route: ActivatedRoute,
         private mapService: MapService,
     ) {}
 
@@ -38,7 +39,7 @@ export class ToolbarComponent {
         this.urlConverter(this.mode);
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
-          });
+        });
     }
 
     toggleTiles() {
@@ -59,7 +60,7 @@ export class ToolbarComponent {
     selectTile(tile: string) {
         if (this.selectedTile === tile) {
             // If the tile is already selected, deselect it
-            this.selectedTile = 'empty'; 
+            this.selectedTile = 'empty';
             this.tileSelected.emit(this.selectedTile);
             console.log('Tile deselected, selectedTile is now empty');
         } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
@@ -71,7 +72,7 @@ export class ToolbarComponent {
             this.tileSelected.emit(tile);
             console.log('Selected tile:', this.selectedTile);
         }
-    
+
         if (this.startingPointCounter === 0) {
             this.isStartingPointVisible = false;
             console.log('No more starting points available');
@@ -80,16 +81,16 @@ export class ToolbarComponent {
 
     startDrag(event: DragEvent, itemType: string) {
         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-          event.dataTransfer?.setData('item', itemType);
-          console.log('Dragging:', itemType);
+            event.dataTransfer?.setData('item', itemType);
+            console.log('Dragging:', itemType);
         }
-      }
-    
-      placeStartingPoint() {
+    }
+
+    placeStartingPoint() {
         if (this.startingPointCounter > 0) {
-          this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
         }
-      }
+    }
 
     selectItem(item: string) {
         this.itemSelected.emit(item);
@@ -103,7 +104,7 @@ export class ToolbarComponent {
     urlConverter(mode: string) {
         console.log('URL params:', mode);
         this.convertedMode = mode.split('=')[1];
-        this.mode = this.convertedMode; 
+        this.mode = this.convertedMode;
         console.log('Converted mode:', this.convertedMode);
     }
 }

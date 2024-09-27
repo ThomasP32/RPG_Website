@@ -21,8 +21,7 @@ export class GameChoicePageComponent implements OnInit {
 
     private readonly router: Router = inject(Router);
 
-    constructor(private communicationMapService: CommunicationMapService) {
-    }
+    constructor(private communicationMapService: CommunicationMapService) {}
 
     ngOnInit(): void {
         this.communicationMapService.basicGet<Map[]>('map').subscribe((maps) => (this.maps = maps));
