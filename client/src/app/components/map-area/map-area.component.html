@@ -13,7 +13,14 @@
             >
                 <img *ngIf="cell.value" [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" draggable="false " class="grid-tile" />
 
-                <img *ngIf="cell.item" [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
+                <img
+                    *ngIf="cell.item"
+                    [src]="getItemImage(cell.item)"
+                    draggable="true"
+                    alt="Item"
+                    class="grid-item"
+                    (dragstart)="startDrag($event, rowIndex, colIndex)"
+                />
             </div>
         </div>
     </div>

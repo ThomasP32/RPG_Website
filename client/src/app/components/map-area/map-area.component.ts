@@ -77,6 +77,10 @@ export class MapAreaComponent {
         }
     }
 
+    isTileDraggable(rowIndex: number, colIndex: number): boolean {
+        return this.Map[rowIndex][colIndex].item === 'starting-point';
+    }
+
     setCellSize() {
         const root = document.querySelector(':root') as HTMLElement;
         this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
@@ -153,8 +157,15 @@ export class MapAreaComponent {
             }
             return;
         }
-
-        if (this.selectedTile === 'door' && !isErasing) {
+        if (this.Map[rowIndex][colIndex].item === 'starting-point') {
+            if (this.selectedTile === 'wall' || this.selectedTile === 'door') {
+                console.log('passing a starting-point');
+                this.Map[rowIndex][colIndex].item = undefined;
+                this.Map[rowIndex][colIndex].value = this.selectedTile;
+            } else {
+                this.Map[rowIndex][colIndex].value = this.selectedTile;
+            }
+        } else if (this.selectedTile === 'door' && !isErasing) {
             if (this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
@@ -174,15 +185,40 @@ export class MapAreaComponent {
             }
         }
     }
+    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
+
+    startDrag(event: DragEvent, rowIndex: number, colIndex: number) {
+        if (this.isTileDraggable(rowIndex, colIndex)) {
+            this.currentDraggedItem = { rowIndex, colIndex };
+            event.dataTransfer?.setData('item', 'starting-point');
+            console.log(`Dragging starting point from: [${rowIndex}, ${colIndex}]`);
+        } else {
+            event.preventDefault();
+        }
+    }
 
     allowDrop(event: DragEvent) {
         event.preventDefault();
+        console.log('Allowing drop');
     }
 
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
+        event.preventDefault();
         const itemType = event.dataTransfer?.getData('item');
+        if (itemType === 'starting-point' && this.currentDraggedItem) {
+            const { rowIndex: prevRow, colIndex: prevCol } = this.currentDraggedItem;
+            this.Map[prevRow][prevCol].item = undefined;
+            console.log(`Starting point removed from previous location: [${prevRow}, ${prevCol}]`);
 
-        if (itemType) {
+            if (this.Map[rowIndex][colIndex].value === 'floor') {
+                this.Map[rowIndex][colIndex].item = 'starting-point';
+                console.log(`Starting point placed at new location: [${rowIndex}, ${colIndex}]`);
+            } else {
+                console.log('Cannot place starting point on non-floor tiles');
+            }
+
+            this.currentDraggedItem = null;
+        } else if (itemType) {
             if (
                 this.Map[rowIndex][colIndex].value === 'wall' ||
                 this.Map[rowIndex][colIndex].value === 'water' ||
