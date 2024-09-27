@@ -63,6 +63,8 @@ export class CharacterFormPageComponent {
     }
 
     addBonus() {
+        this.life = defaultHp;
+        this.speed = defaultSpeed;
         if (this.lifeOrSpeedBonus === 'life') {
             this.life += 2;
         } else if (this.lifeOrSpeedBonus === 'speed') {
