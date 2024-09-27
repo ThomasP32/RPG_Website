@@ -1,6 +1,7 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
 
@@ -14,8 +15,6 @@ import { Map } from '@common/map.types';
 export class ToolbarComponent implements OnInit {
     @Input() selectedTile: string;
 
-    @Input() map! : Map;
-
     @Output() tileSelected = new EventEmitter<string>();
 
     @Output() itemSelected = new EventEmitter<string>();
@@ -23,7 +22,8 @@ export class ToolbarComponent implements OnInit {
     mode: string;
     convertedMode: string;
     mapId: string;
-    name: string; //TODO: a enlever
+
+    map!: Map;
 
     isTilesVisible: boolean = true;
     isItemsVisible: boolean = true;
@@ -37,11 +37,17 @@ export class ToolbarComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
+        private mapGetService: MapGetService
     ) {}
 
-    ngOnInit() {
-        this.getUrlParams();
-        this.urlConverterMode();
+    async ngOnInit() {
+        if (this.route.snapshot.params['mode']){
+            this.getUrlParams();
+            this.urlConverterMode();
+        }else {
+            this.map = this.mapGetService.map;
+            this.mode = this.map.mode;
+        }
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
         });
@@ -107,9 +113,4 @@ export class ToolbarComponent implements OnInit {
         this.mode = this.convertedMode;
     }
 
-    //TODO: GET MAP
-    initializeMap(map: Map) {
-        this.name = map.name; //TODO: a enlever
-        // this.convertedMode = map.mode;
-      }
 }

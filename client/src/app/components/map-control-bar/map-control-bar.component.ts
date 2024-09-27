@@ -2,6 +2,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
 
@@ -28,13 +29,19 @@ export class MapControlBarComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
+        private mapGetService: MapGetService
     ) {}
 
     ngOnInit(): void {
-        this.getUrlParams();
-        this.urlConverter(this.mode);
+        if(this.route.snapshot.params['mode']){
+            this.getUrlParams();
+            this.urlConverter(this.mode);
+        }else {
+            this.map = this.mapGetService.map;
+            this.mapTitle = this.map.name;
+            this.mapDescription = this.map.description;
+        }
     }
-
     toggleEditTitle(): void {
         this.isEditingTitle = !this.isEditingTitle;
     }
@@ -54,9 +61,7 @@ export class MapControlBarComponent implements OnInit {
 
         this.mapService.saveMap(mapData);
         console.log('map saving');
-        // .subscribe(response => {
-        //     console.log('Map saved successfully:', response);
-        // });
+
     }
 
     getUrlParams() {
@@ -70,9 +75,5 @@ export class MapControlBarComponent implements OnInit {
             this.gameMode = mode.split('=')[1];
         }
     }
-    //TODO: GET MAP
-    initializeMap(map: Map) {
-        this.mapTitle = map.name;
-        // this.mapDescription = map.description;
-      }
+
 }
