@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -25,16 +25,19 @@ export class CreateGameComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private communicationService: CommunicationService,
-    ) {
-        this.communicationService.maps$.subscribe((maps) => {
-            this.maps = maps;
-        });
-    }
+        private communicationMapService: CommunicationMapService,
+    ) {}
 
     ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
-    }
+        this.communicationMapService.basicGet<Map[]>('admin').subscribe({
+          next: (maps) => {
+            this.maps = maps; 
+          },
+          error: (error) => {
+            console.error('Error fetching maps:', error);
+          }
+        });
+      }
 
     loadAvailableMaps() {
         //     this.communicationService.getMapsFromServer()

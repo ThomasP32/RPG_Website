@@ -43,8 +43,6 @@ export class MapComponent {
         nameError: false,
     };
 
-    // constructor(private http: HttpClient) {}
-
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         switch (size) {
             case 'small':
@@ -72,7 +70,7 @@ export class MapComponent {
             this.showErrorMessage.entryError = true;
             return;
         }
-        window.location.href = `/game-creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
+        window.location.href = `/creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
     }
 
     onModeSelected($event: string) {

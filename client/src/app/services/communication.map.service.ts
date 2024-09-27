@@ -1,13 +1,18 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { Map } from '@common/map.types';
+import { BehaviorSubject, catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
     providedIn: 'root',
 })
-export class CommunicationService {
+export class CommunicationMapService {
     private readonly baseUrl: string = environment.serverUrl;
+
+    private maps: BehaviorSubject<Map[]> = new BehaviorSubject<Map[]>([]);
+
+    maps$ = this.maps.asObservable();
 
     constructor(private readonly http: HttpClient) {}
 
