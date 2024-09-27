@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Map } from '@common/map.types';
 import { catchError, Observable, of } from 'rxjs';
-import { Map } from 'src/app/interfaces/map';
 import { environment } from 'src/environments/environment';
 
 @Injectable({

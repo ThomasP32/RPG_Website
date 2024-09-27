@@ -8,27 +8,29 @@ import { CommunicationMapService } from './communication.map.service';
 })
 export class MapService {
     private resetMapSource = new Subject<void>();
+    resetMap$ = this.resetMapSource.asObservable();
+
     private generateMapSource = new Subject<void>();
+    generateMap$ = this.generateMapSource.asObservable();
 
     private mapTitleSource = new BehaviorSubject<string>('');
+    mapTitle$ = this.mapTitleSource.asObservable();
+
     private mapDescriptionSource = new BehaviorSubject<string>('');
+    mapDescription$ = this.mapDescriptionSource.asObservable();
 
     private startingPointCounterSource = new Subject<number>();
-    private randomItemtCounterSource = new Subject<number>();
-    private itemsCounterSource = new Subject<number>();
-
-    resetMap$ = this.resetMapSource.asObservable();
-    generateMap$ = this.generateMapSource.asObservable();
-    mapTitle$ = this.mapTitleSource.asObservable();
-    mapDescription$ = this.mapDescriptionSource.asObservable();
     startingPointCounter$ = this.startingPointCounterSource.asObservable();
+
+    private randomItemtCounterSource = new Subject<number>();
     randomItemCounter$ = this.randomItemtCounterSource.asObservable();
+
+    private itemsCounterSource = new Subject<number>();
     itemsCounter$ = this.randomItemtCounterSource.asObservable();
 
     constructor(private CommunicationMapService: CommunicationMapService) {}
 
     setMapTitle(title: string): void {
-        console.log(title);
         this.mapTitleSource.next(title);
     }
 
