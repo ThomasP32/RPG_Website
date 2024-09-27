@@ -1,12 +1,16 @@
 <div class="adminPage-container">
-    <h2 class="header">{{ title }}</h2>
+    <div class="header">
+        <div class="header-buttons">
+            <button class="return-button" (click)="navigateToMain()"> Retour </button>
+        </div>
+        <h2>{{ title }}</h2>
 
-    <button class="button" (click)="navigateToMain()"> Retour au menu principal </button>
-    <button class="button" >Créer un nouveau jeu</button>
+        <div class="header-buttons">
+            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()"> Nouveau jeu </button>
+        </div>
 
-    @if(isMapVisible) {<div>
-        <!-- <app-mapChoices-component></app-mapChoices-component> -->
-    <h2 class="header-item">{{ title }}</h2>
+    </div>
+
       @if(isMapVisible) {
     <div>
         <app-map-choices-component (close)="onCloseModal()" ></app-map-choices-component>
@@ -14,28 +18,40 @@
     }
 
     <div class="map-view">
-        <div class="map-cards">
-            @for(map of this.maps; track map.name) {
-                <!-- <div class="map-card" (mouseover)="showDescription(map)" (mouseleave)="hideDescription(map)"></div> -->
-                <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
-                <div class="map-details">
-                    <h2 class="name">{{ map.name }}</h2>
-                    <p class="mode">Mode de jeu: À FAIRE </p>
-                    <p class="size">Taille: À FAIRE</p>
-                    <p class="lastModified">Dernière modification: À FAIRE</p>
-                    <!-- <p class="visibility">Visibilité: 
-                        <button (click)="toggleVisibility(map)">
-                            {{ map.visibility ? 'Cacher' : 'Afficher' }}
-                        </button>
-                    </p> -->    
-                </div>
-                <div class="map-actions">
-                    <button class="button" >Modifier</button>
-                    <button class="button" >Supprimer</button>
-                </div>
-                <!-- <div class="description" *ngIf="map.showDescription">{{ map.description }}</div> -->
-            }
-        </div>
+        <div class="scrollable-container">
+            <div class="map-cards">
+                @for(map of this.maps; track map.name) { 
+                     <div class="map-card" (mouseover)="showDescription()" (mouseleave)="hideDescription()">
+                        <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                        <div class="map-details">
+                            <div class="map-details">
+                              <h2 class="name">{{ map.name }}</h2>
+                                <p class="mode">Mode de jeu: À FAIRE </p>
+                                <p class="size">Taille: À FAIRE</p>
+                                <p class="lastModified">Dernière modification: À FAIRE</p>
+                                <p class="visibility">Visibilité: 
+                                    <!-- <button (click)="toggleVisibility(map)">
+                                        {{ map.visibility ? 'Cacher' : 'Afficher' }}
+                                    </button> -->
+                                </p>    
+                            </div>
+                            <div class="map-actions">
+                            <button class="edit-button" (click)="editGame(map)">Modifier</button>
+                            <button class="map-delete" (click)="deleteTriggered = true">Supprimer</button>
+                            @if(deleteTriggered === true) {
+                                <div class="delete-confirmation">
+                                    <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
+                                    <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
+                                    <button class="delete-confirmation-button" (click)="deleteTriggered = false">Non</button>
+                                </div>
+                            }
+                            </div>
+                            
+                        </div>
+                     </div>
+                }
+            </div>
+        </div>  
     </div>
 </div>
 
