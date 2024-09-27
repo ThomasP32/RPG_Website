@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { DoorTile, Item, Map, StartTile, Tile } from '@common/map.types';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-map-area',
@@ -31,20 +32,31 @@ export class MapAreaComponent implements OnInit {
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
         private mapService: MapService,
+        private mapGetService: MapGetService,
+        private router: Router
     ) {}
 
     ngOnInit() {
-        this.getUrlParams();
-        this.urlConverter(this.mapSize);
-        this.createMap(this.convertedMapSize, this.mode);
-        this.setCellSize();
+        this.initMap();
+        }
 
+    initMap() {
+        console.log(this.router.url);
+        if(this.router.url.includes('creation')){
+            this.getUrlParams();
+            this.urlConverter(this.mapSize);
+            this.createMap(this.convertedMapSize);
+            this.setCellSize();
+        }else if(this.router.url.includes('edition')){
+            this.map = this.mapGetService.map;
+            this.loadMap(this.map);
+        }
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
         });
     }
 
-    createMap(mapSize: number, mode: string) {
+    createMap(mapSize: number) {
         this.Map = [];
 
         for (let i = 0; i < mapSize; i++) {
@@ -220,7 +232,7 @@ export class MapAreaComponent implements OnInit {
                 return '../../../../assets/tiles/floor.png';
         }
     }
-    // TODO: PUT it in a service, same as in toolbar.component.ts
+
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
@@ -235,17 +247,27 @@ export class MapAreaComponent implements OnInit {
         }
     }
 
-    //TODO: GET MAP
-    tiles: Tile[] = [];
-    doorTiles: DoorTile[] = [];
-    items: Item[] = [];
-    startTiles: StartTile[] = [];
-    initializeMap(map: Map) {
-        // this.mode: map.mode,
-        this.convertedMapSize = map.mapSize.x;
-        this.tiles = map.tiles;
-        this.doorTiles = map.doorTiles;
-        this.items = map.items;
-        this.startTiles = map.startTiles;
+    loadMap(map: Map) {
+        console.log('Loading map:', map);
+        this.createMap(map.mapSize.x);
+    
+        map.tiles.forEach((tile) => {
+            this.Map[tile.coordinate.x][tile.coordinate.y].value = tile.category;
+        });
+
+        map.doorTiles.forEach((door) => {
+            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
+            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
+        });
+
+        map.startTiles.forEach((start) => {
+            this.Map[start.coordinate.x][start.coordinate.y].value = 'starting-point';
+        }); 
+
+        map.items.forEach((item) => {
+            this.Map[item.coordinate.x][item.coordinate.y].value = 'item';
+        });
+
     }
+    
 }

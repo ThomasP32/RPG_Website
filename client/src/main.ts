@@ -28,7 +28,7 @@ const routes: Routes = [
     { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
-    { path: 'waitin-groom', component: WaitingRoomComponent },
+    { path: 'waiting-room', component: WaitingRoomComponent },
     { path: '**', redirectTo: '/mainmenu' },
 ];
 
