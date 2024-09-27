@@ -22,25 +22,19 @@ export class GameChoicePageComponent implements OnInit {
     private readonly router: Router = inject(Router);
 
     constructor(private communicationMapService: CommunicationMapService) {
-        this.communicationMapService.maps$.subscribe((maps) => {
-            this.maps = maps.filter((map) => map.isVisible);
-        });
     }
 
     ngOnInit(): void {
-        this.communicationMapService.getMapsFromServer();
+        this.communicationMapService.basicGet<Map[]>('map').subscribe((maps) => (this.maps = maps));
     }
 
-    selectMap(mapId: string | undefined) {
-        this.selectedMap = mapId;
+    selectMap(mapName: string) {
+        this.selectedMap = mapName;
     }
 
     next() {
         if (this.selectedMap) {
-            this.router.navigate(['/create-character'], { queryParams: { id: this.selectedMap } });
-            this.communicationMapService.maps$.subscribe((maps) => {
-                this.maps = maps.filter((map) => map.isVisible);
-            });
+            this.router.navigate(['/create-character'], { queryParams: { name: this.selectedMap } });
         } else {
             this.showErrorMessage.userError = true;
         }

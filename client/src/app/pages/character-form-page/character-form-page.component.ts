@@ -6,6 +6,7 @@ import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
+import { firstValueFrom } from 'rxjs';
 
 const defaultHp = 4;
 const defaultSpeed = 4;
@@ -35,7 +36,7 @@ export class CharacterFormPageComponent {
     attack = defaultAttack;
     defense = defaultDefense;
 
-    mapId: string | null = null;
+    mapName: string | null = null;
     maps: Map[] = [];
     map: Map;
     showErrorMessage: { selectionError: boolean } = {
@@ -56,7 +57,7 @@ export class CharacterFormPageComponent {
         });
 
         this.route.queryParams.subscribe((params) => {
-            this.mapId = params['id'];
+            this.mapName = params['name'];
         });
     }
 
@@ -105,22 +106,16 @@ export class CharacterFormPageComponent {
         }
     }
 
-    onSubmit() {
-        this.communicationMapService.getMapsFromServer();
-        this.communicationMapService.maps$.subscribe((maps) => {
-            this.maps = maps.filter((map) => map.isVisible || map._id === this.mapId);
-
-            const chosenMap = this.maps.find((map) => map._id === this.mapId);
-            if (chosenMap) {
-                if (chosenMap.isVisible) {
-                    this.router.navigate(['/waiting-room'], { queryParams: { id: this.mapId } });
-                } else {
-                    this.showErrorMessage.selectionError = true;
-                }
-            } else {
+    async onSubmit() {
+            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`))
+            if(!chosenMap) {
                 this.showErrorMessage.selectionError = true;
-            }
-        });
+                setTimeout(() => {
+                    this.router.navigate(['/create-game']); 
+                  }, 5000);
+            } else {
+            this.router.navigate(['/waiting-room'], { queryParams: { name: chosenMap.name } });console.log(chosenMap);
+        }
     }
 
     onReturn() {
