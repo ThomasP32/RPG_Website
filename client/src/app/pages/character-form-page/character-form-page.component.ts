@@ -28,8 +28,6 @@ export class CharacterFormPageComponent {
     selectedCharacter: Character;
     characters: Character[] = [];
 
-    // defaultPoints = four;
-
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;

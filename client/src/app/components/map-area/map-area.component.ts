@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, Renderer2, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
 import { Map, TileCategory } from '@common/map.types';
@@ -10,7 +10,7 @@ import { Map, TileCategory } from '@common/map.types';
     templateUrl: './map-area.component.html',
     styleUrl: './map-area.component.scss',
 })
-export class MapAreaComponent {
+export class MapAreaComponent implements OnInit {
     @Input() selectedTile: string = '';
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed' }[][] = [];
     isPlacing: boolean = false;
@@ -163,7 +163,7 @@ export class MapAreaComponent {
         console.log('Map has been reset to default');
     }
 
-    public generateMapData(): Map {
+    generateMapData(): Map {
         const mapData: Map = {
             _id: '',
             name: 'Test-1234',
@@ -174,8 +174,8 @@ export class MapAreaComponent {
             },
             tiles: [] as { coordinate: { x: number; y: number }; category: TileCategory }[],
             doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
-            items: [] as any[],
-            startTiles: [] as any[],
+            items: [] as unknown[],
+            startTiles: [] as unknown[],
         };
 
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
@@ -219,7 +219,7 @@ export class MapAreaComponent {
                 return '../../../../assets/tiles/floor.png';
         }
     }
-    //TODO: PUT it in a service, same as in toolbar.component.ts
+    // TODO: PUT it in a service, same as in toolbar.component.ts
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
