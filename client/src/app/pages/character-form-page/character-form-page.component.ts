@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
 
@@ -35,8 +35,11 @@ export class CharacterFormPageComponent {
     attack = defaultAttack;
     defense = defaultDefense;
 
+    mapId: string | null = null;
+
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
+    private readonly route: ActivatedRoute = inject(ActivatedRoute);
 
     private currentIndex: number = 0;
 
@@ -45,6 +48,10 @@ export class CharacterFormPageComponent {
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
             this.selectedCharacter = this.characters[0]; // Initialize with the first character
+        });
+
+        this.route.queryParams.subscribe((params) => {
+            this.mapId = params['id'];
         });
     }
 
@@ -91,7 +98,7 @@ export class CharacterFormPageComponent {
     }
 
     onSubmit() {
-        this.router.navigate(['/waiting-room']);
+        this.router.navigate(['/waiting-room'], { queryParams: { id: this.mapId } });
     }
 
     onReturn() {
