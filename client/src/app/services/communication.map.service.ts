@@ -1,12 +1,13 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Map } from '@common/map.types';
 import { catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
     providedIn: 'root',
 })
-export class CommunicationService {
+export class CommunicationMapService {
     private readonly baseUrl: string = environment.serverUrl;
 
     constructor(private readonly http: HttpClient) {}
@@ -17,7 +18,7 @@ export class CommunicationService {
     }
 
     // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
-    basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
+    basicPost(url: string, data: Map): Observable<HttpResponse<string>> {
         return this.http.post(`${this.baseUrl}/${url}`, data, {
             observe: 'response',
             responseType: 'text',
@@ -34,7 +35,7 @@ export class CommunicationService {
     basicDelete(url: string): Observable<HttpResponse<string>> {
         return this.http.delete(`${this.baseUrl}/${url}`, {
             observe: 'response',
-            responseType: 'text',  // Le type de réponse est défini comme "text"
+            responseType: 'text', // Le type de réponse est défini comme "text"
         });
     }
 
