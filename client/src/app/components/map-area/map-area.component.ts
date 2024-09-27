@@ -120,10 +120,10 @@ export class MapAreaComponent implements OnInit {
         this.isErasing = false;
     }
 
-    @HostListener('document:mouseup', ['$event'])
-    onMouseUp(event: MouseEvent) {
-        this.stopPlacingTile();
-    }
+//     @HostListener('document:mouseup', ['$event'])
+//     onMouseUp(event: MouseEvent) {
+//         this.stopPlacingTile();
+//     }
 
     @HostListener('dragstart', ['$event'])
     onDragStart(event: DragEvent) {
