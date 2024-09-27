@@ -15,8 +15,7 @@ export class GameChoicePageComponent implements OnInit {
     map: Map;
     maps: Map[] = [];
     selectedMap: string | undefined = undefined;
-    showErrorMessage: { selectionError: boolean; userError: boolean } = {
-        selectionError: false,
+    showErrorMessage: { userError: boolean } = {
         userError: false,
     };
 
@@ -39,6 +38,9 @@ export class GameChoicePageComponent implements OnInit {
     next() {
         if (this.selectedMap) {
             this.router.navigate(['/create-character'], { queryParams: { id: this.selectedMap } });
+            this.communicationMapService.maps$.subscribe((maps) => {
+                this.maps = maps.filter((map) => map.isVisible);
+            });
         } else {
             this.showErrorMessage.userError = true;
         }

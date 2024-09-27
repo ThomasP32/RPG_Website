@@ -26,9 +26,7 @@
     </div>
     <div class="footer">
         <button class="next-button" (click)="next()">Suivant</button>
-        @if (showErrorMessage.selectionError) {
-        <div class="error-message">Error : The selected game is no longer available. Please select a new game.</div>
-        } @if (showErrorMessage.userError) {
+        @if (showErrorMessage.userError) {
         <div class="error-message">Error : No game was selected. Please select a game.</div>
         }
     </div>
