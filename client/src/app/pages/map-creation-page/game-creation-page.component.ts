@@ -28,10 +28,9 @@ export class GameCreationPageComponent implements OnInit {
         });
         this.mapService.generateMap$.subscribe(() => {
             if (this.mapAreaComponent) {
-                console.log('generating map via service');
                 const mapData = this.mapAreaComponent.generateMapData();
                 this.mapService.saveMap(mapData);
-                this.mapAreaComponent.resetMapToDefault();
+                console.log('generating map via service', mapData);
             }
         });
     }

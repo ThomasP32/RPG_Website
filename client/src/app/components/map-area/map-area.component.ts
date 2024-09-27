@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
-import { Map, TileCategory } from '@common/map.types';
+import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -12,17 +12,20 @@ import { Map, TileCategory } from '@common/map.types';
 })
 export class MapAreaComponent {
     @Input() selectedTile: string = '';
-    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed' }[][] = [];
+    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
     isPlacing: boolean = false;
     isErasing: boolean = false;
+    isMouseDown: boolean = false;
     defaultTile = 'floor';
     mapSize: string;
-    mode: string;
+    mode: Mode;
     convertedMapSize: number;
     convertedCellSize: number;
     convertedMode: string;
 
     startingPointCounter: number;
+    randomItemCounter: number;
+    itemsCounter: number;
 
     constructor(
         private route: ActivatedRoute,
@@ -39,9 +42,18 @@ export class MapAreaComponent {
         this.urlConverter(this.mapSize);
         this.createMap(this.convertedMapSize, this.mode);
         this.setCellSize();
+        this.setCountersBasedOnMapSize(this.convertedMapSize);
+
+        this.mapService.randomItemCounter$.subscribe((counter) => {
+            this.randomItemCounter = counter;
+        });
 
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
+        });
+
+        this.mapService.itemsCounter$.subscribe((counter) => {
+            this.itemsCounter = counter;
         });
 
         this.mapService.mapTitle$.subscribe((title) => {
@@ -74,21 +86,21 @@ export class MapAreaComponent {
 
     selectTile(tile: string) {
         this.selectedTile = tile;
-        // console.log('Selected tile:', tile);
     }
 
-    // Handles left-click or right-click on the map
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
+        this.isMouseDown = true;
         if (isRightClick) {
             this.isErasing = true;
-            this.placeTile(rowIndex, colIndex, true); // Right-click to erase
+            this.placeTile(rowIndex, colIndex, true);
         } else {
             this.isPlacing = true;
-            this.placeTile(rowIndex, colIndex, false); // Left-click to place
+            this.placeTile(rowIndex, colIndex, false);
         }
     }
 
     stopPlacingTile() {
+        this.isMouseDown = false;
         this.isPlacing = false;
         this.isErasing = false;
     }
@@ -98,16 +110,40 @@ export class MapAreaComponent {
         this.stopPlacingTile();
     }
 
+    @HostListener('dragstart', ['$event'])
+    onDragStart(event: DragEvent) {
+        if ((event.target as HTMLElement).tagName === 'IMG') {
+            event.preventDefault();
+        }
+    }
+
     placeTileOnMove(rowIndex: number, colIndex: number) {
-        if (this.isPlacing) {
-            this.placeTile(rowIndex, colIndex, false);
-        } else if (this.isErasing) {
-            this.placeTile(rowIndex, colIndex, true);
+        if (this.isMouseDown) {
+            if (this.isPlacing) {
+                this.placeTile(rowIndex, colIndex, false);
+            } else if (this.isErasing) {
+                this.placeTile(rowIndex, colIndex, true);
+            }
         }
     }
 
     placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
-        if (!this.selectedTile || this.selectedTile === 'empty') {
+        if (isErasing) {
+            if (this.Map[rowIndex][colIndex].item === 'starting-point') {
+                this.Map[rowIndex][colIndex].item = undefined;
+                this.mapService.updateStartingPointCounter(this.startingPointCounter + 1);
+                console.log('Starting point removed at:', rowIndex, colIndex);
+            } else if (this.Map[rowIndex][colIndex].item === 'random') {
+                this.Map[rowIndex][colIndex].item = undefined;
+                this.mapService.updateRandomItemCounter(this.randomItemCounter + 1);
+                console.log('Random item removed at:', rowIndex, colIndex);
+            } else if (this.Map[rowIndex][colIndex].item !== undefined) {
+                this.Map[rowIndex][colIndex].item = undefined;
+                this.mapService.updateItemsCounter(this.itemsCounter - 1);
+            }
+
+            this.Map[rowIndex][colIndex].value = this.defaultTile;
+        } else if (!this.selectedTile || this.selectedTile === 'empty') {
             if (!isErasing && this.Map[rowIndex][colIndex].value === 'door') {
                 const currentState = this.Map[rowIndex][colIndex].doorState;
                 this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
@@ -146,11 +182,30 @@ export class MapAreaComponent {
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
         const itemType = event.dataTransfer?.getData('item');
 
-        if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-            this.Map[rowIndex][colIndex].value = 'starting-point';
-            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
-            this.selectedTile = 'empty';
-            console.log('Starting point placed at:', rowIndex, colIndex);
+        if (itemType) {
+            if (
+                this.Map[rowIndex][colIndex].value === 'wall' ||
+                this.Map[rowIndex][colIndex].value === 'water' ||
+                this.Map[rowIndex][colIndex].value === 'ice' ||
+                this.Map[rowIndex][colIndex].value === 'door'
+            ) {
+                console.log('Cannot place items on walls, door, water or ice');
+                return;
+            }
+            if (itemType === 'starting-point' && this.startingPointCounter > 0) {
+                this.Map[rowIndex][colIndex].item = 'starting-point';
+                this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+                this.selectedTile = 'empty';
+                console.log('Starting point placed at:', rowIndex, colIndex);
+            } else if (itemType === 'random' && this.randomItemCounter > 0) {
+                this.Map[rowIndex][colIndex].item = 'random';
+                this.mapService.updateRandomItemCounter(this.randomItemCounter - 1);
+                console.log('Random item placed at:', rowIndex, colIndex);
+            } else {
+                this.Map[rowIndex][colIndex].item = itemType;
+                this.Map[rowIndex][colIndex].item = itemType;
+                console.log(`${itemType} placed at [${rowIndex}, ${colIndex}]`);
+            }
         }
     }
 
@@ -158,24 +213,28 @@ export class MapAreaComponent {
         for (let i = 0; i < this.Map.length; i++) {
             for (let j = 0; j < this.Map[i].length; j++) {
                 this.Map[i][j].value = this.defaultTile;
+                this.Map[i][j].item = undefined;
             }
         }
+        this.setCountersBasedOnMapSize(this.convertedMapSize);
         console.log('Map has been reset to default');
     }
 
     public generateMapData(): Map {
         const mapData: Map = {
             name: this.mapTitle,
-            // description: this.mapDescription,
-            isVisible: true,
+            description: this.mapDescription,
+            imagePreview: "url d'image",
+            mode: Mode.Ctf,
+            // isVisible: false,
             mapSize: {
                 x: this.convertedMapSize,
                 y: this.convertedMapSize,
             },
             tiles: [] as { coordinate: { x: number; y: number }; category: TileCategory }[],
             doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
-            items: [] as any[],
-            startTiles: [] as any[],
+            items: [] as { coordinate: { x: number; y: number }; category: ItemCategory }[],
+            startTiles: [] as { coordinate: { x: number; y: number } }[],
         };
 
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
@@ -193,6 +252,19 @@ export class MapAreaComponent {
                         mapData.tiles.push({
                             coordinate,
                             category: cell.value as TileCategory,
+                        });
+                    }
+
+                    if (cell.item && cell.item !== '' && cell.item !== 'starting-point') {
+                        mapData.items.push({
+                            coordinate,
+                            category: cell.item as ItemCategory,
+                        });
+                    }
+
+                    if (cell.item === 'starting-point') {
+                        mapData.startTiles.push({
+                            coordinate,
                         });
                     }
                 }
@@ -213,13 +285,54 @@ export class MapAreaComponent {
                 return '../../../../assets/tiles/ice1.jpg';
             case 'water':
                 return '../../../../assets/tiles/water.png';
-            case 'starting-point':
-                return '../../../../assets/tiles/startingpoint.png';
             default:
                 return '../../../../assets/tiles/floor.png';
         }
     }
-    //TODO: PUT it in a service, same as in toolbar.component.ts
+
+    getItemImage(item: string): string {
+        switch (item) {
+            case 'vest':
+                return '../../../../assets/items/vest.png';
+            case 'mask':
+                return '../../../../assets/items/mask.png';
+            case 'jar':
+                return '../../../../assets/items/jar.png';
+            case 'acidgun':
+                return '../../../../assets/items/acidgun.png';
+            case 'key':
+                return '../../../../assets/items/keysilver.png';
+            case 'hat':
+                return '../../../../assets/items/hat.png';
+            case 'random':
+                return '../../../../assets/items/randomchest.png';
+            case 'starting-point':
+                return '../../../../assets/tiles/startingpoint.png';
+            default:
+                return '';
+        }
+    }
+
+    setCountersBasedOnMapSize(mapSize: number) {
+        if (mapSize === 10) {
+            this.randomItemCounter = 2;
+            this.startingPointCounter = 2;
+            this.itemsCounter = 10;
+        } else if (mapSize === 15) {
+            this.randomItemCounter = 4;
+            this.startingPointCounter = 4;
+            this.itemsCounter = 14;
+        } else if (mapSize === 20) {
+            this.randomItemCounter = 6;
+            this.startingPointCounter = 6;
+            this.itemsCounter = 18;
+        }
+        this.mapService.updateRandomItemCounter(this.randomItemCounter);
+        this.mapService.updateStartingPointCounter(this.startingPointCounter);
+        this.mapService.updateItemsCounter(this.itemsCounter);
+
+        console.log(`Map size: ${mapSize}, Random items: ${this.randomItemCounter}, Starting points: ${this.startingPointCounter}`);
+    }
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];

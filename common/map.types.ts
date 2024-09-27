@@ -11,11 +11,17 @@ export enum TileCategory {
 
 export enum Mode {
     Ctf = 'ctf',
-    Normal = 'normal',
+    Classic = 'classic',
 }
 
 export enum ItemCategory {
-    Sword = 'sword',
+    Hat = 'hat',
+    Jar = 'jar',
+    Key = 'key',
+    Mask = 'mask',
+    Random = 'random',
+    Vest = 'vest',
+    Acidgun = 'acidgun',
 }
 
 export interface Tile {

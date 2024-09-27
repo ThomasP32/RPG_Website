@@ -30,7 +30,7 @@ export class MapService {
                 isVisible: true,
                 mapSize: { x: 10, y: 10 },
                 startTiles: [{ coordinate: { x: 5, y: 1 } }],
-                items: [{ coordinate: { x: 1, y: 3 }, category: ItemCategory.Sword }],
+                items: [{ coordinate: { x: 1, y: 3 }, category: ItemCategory.Hat }],
                 tiles: [{ coordinate: { x: 3, y: 4 }, category: TileCategory.Ice }],
                 doorTiles: [{ coordinate: { x: 1, y: 2 }, isOpened: true }],
             },

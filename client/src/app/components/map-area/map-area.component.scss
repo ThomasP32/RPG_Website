@@ -10,10 +10,10 @@
     width: 720px;
     height: 720px;
     box-sizing: border-box;
-    border: 2px solid #3B3B3B;
-    // background-color: #3B3B3B; 
+    border: 2px solid #3b3b3b;
+    // background-color: #3B3B3B;
 }
-.map-row{
+.map-row {
     display: flex;
     flex: 1;
 }
@@ -23,9 +23,11 @@
     text-align: center;
     line-height: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #3B3B3B;
-    background-color: #3B3B3B;
+    border: 1px solid #3b3b3b;
+    background-color: #3b3b3b;
     cursor: pointer;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .map-cell img {
@@ -33,6 +35,25 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    z-index: 1;
+}
+
+.object-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 60%;
+}
+
+.grid-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    z-index: 2;
 }
 
 :host {
