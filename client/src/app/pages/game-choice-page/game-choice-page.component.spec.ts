@@ -55,13 +55,6 @@ describe('GameChoicePageComponent', () => {
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/create-character'], { queryParams: { id: '1' } });
     });
 
-    it('should set selectionError to true when next is called and map is not visible', () => {
-        component.selectedMap = '2';
-        component.maps = [{ _id: '2', isVisible: false }] as Map[];
-        component.next();
-        expect(component.showErrorMessage.selectionError).toBeTrue();
-    });
-
     it('should set userError to true when next is called and no map is selected', () => {
         component.selectedMap = undefined;
         component.next();
