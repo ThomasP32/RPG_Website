@@ -1,5 +1,5 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MapGetService } from '@app/services/map-get.service';
@@ -24,38 +24,34 @@ export class MapControlBarComponent implements OnInit {
     gameMode: string = '';
     numberOfPlayers: number = 0;
 
-<<<<<<< HEAD
+    map!: Map;
+
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
         entryError: false,
         nameError: false,
     };
-=======
-    @Input() map!: Map;
->>>>>>> feature/map-load-from-admin
 
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
-        private mapGetService: MapGetService
+        private mapGetService: MapGetService,
     ) {}
 
     ngOnInit(): void {
-<<<<<<< HEAD
         this.getUrlParams();
         this.urlConverter(this.mode);
         this.mapTitle = '';
         this.mapDescription = '';
-=======
-        if(this.route.snapshot.params['mode']){
+        if (this.route.snapshot.params['mode']) {
             this.getUrlParams();
             this.urlConverter(this.mode);
-        }else {
+        } else {
             this.map = this.mapGetService.map;
             this.mapTitle = this.map.name;
             this.mapDescription = this.map.description;
         }
->>>>>>> feature/map-load-from-admin
     }
+
     toggleEditTitle(): void {
         this.isEditingTitle = !this.isEditingTitle;
     }
@@ -70,17 +66,6 @@ export class MapControlBarComponent implements OnInit {
         this.mapService.resetMap();
     }
 
-<<<<<<< HEAD
-=======
-    createMap(): void {
-        const mapData = this.mapService.generateMapData();
-
-        this.mapService.saveMap(mapData);
-        console.log('map saving');
-
-    }
-
->>>>>>> feature/map-load-from-admin
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mode = this.route.snapshot.params['mode'];
@@ -93,7 +78,6 @@ export class MapControlBarComponent implements OnInit {
         }
     }
 
-<<<<<<< HEAD
     saveMap(): void {
         if (this.mapTitle !== '') {
             console.log('saving the map', this.mapTitle);
@@ -105,6 +89,4 @@ export class MapControlBarComponent implements OnInit {
             return;
         }
     }
-=======
->>>>>>> feature/map-load-from-admin
 }

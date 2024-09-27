@@ -15,54 +15,22 @@ import { Map } from '@common/map.types';
     styleUrl: './game-creation-page.component.scss',
 })
 export class GameCreationPageComponent implements OnInit {
-<<<<<<< HEAD
-    selectedTile: string;
-
-    @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
-    @ViewChild(MapControlBarComponent, { static: false }) MapControlBarComponent!: MapControlBarComponent;
-
-    constructor(private mapService: MapService) {}
-
-    ngOnInit(): void {
-        this.mapService.resetMap$.subscribe(() => {
-            if (this.mapAreaComponent) {
-                console.log('Resetting map via service');
-                this.mapAreaComponent.resetMapToDefault();
-            }
-        });
-        this.mapService.generateMap$.subscribe(() => {
-            if (this.mapAreaComponent) {
-                const mapData = this.mapAreaComponent.generateMapData();
-                this.mapService.saveMap(mapData);
-                console.log('generating map via service', mapData);
-            }
-        });
-    }
-
-    onTileSelected(tile: string) {
-        this.selectedTile = tile;
-    }
-=======
     @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
     @ViewChild(MapControlBarComponent, { static: false }) mapControlBarComponent!: MapControlBarComponent;
     @ViewChild(ToolbarComponent, { static: false }) appToolbarComponent!: ToolbarComponent;
     isCreationPage = false;
 
     map!: Map;
-    
     mapId: string = '';
-    
-    
-
-
-    selectedTile: string = 'grass';
-
-    constructor(private mapService: MapService, 
-        private route : ActivatedRoute, 
-        private mapGetService : MapGetService) {}
+    selectedTile: string;
+    constructor(
+        private mapService: MapService,
+        private route: ActivatedRoute,
+        private mapGetService: MapGetService,
+    ) {}
 
     async ngOnInit(): Promise<void> {
-        if(this.route.snapshot.params['id']){
+        if (this.route.snapshot.params['id']) {
             this.getUrlParams();
             await this.mapGetService.getMap(this.mapId);
             this.map = this.mapGetService.map;
@@ -70,16 +38,16 @@ export class GameCreationPageComponent implements OnInit {
         } else {
             this.isCreationPage = true;
         }
-       
+
         this.mapService.resetMap$.subscribe(() => {
             if (this.mapAreaComponent) {
                 this.mapAreaComponent.resetMapToDefault();
             }
         });
-
         this.mapService.generateMap$.subscribe(() => {
             if (this.mapAreaComponent) {
-                this.mapAreaComponent.resetMapToDefault();
+                const mapData = this.mapAreaComponent.generateMapData();
+                this.mapService.saveMap(mapData);
             }
         });
     }
@@ -93,5 +61,4 @@ export class GameCreationPageComponent implements OnInit {
             this.mapId = this.route.snapshot.params['id'];
         });
     }
->>>>>>> feature/map-load-from-admin
 }
