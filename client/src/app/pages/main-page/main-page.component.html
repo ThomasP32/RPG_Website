@@ -1,15 +1,14 @@
-<div class="mainPage-container">
-    <h1 class="header-item">{{ title }}</h1>
-    <img [src]="logoPath" alt="Logo Projet" class ="game-logo"/>
+<div class="mainpage-container">
+    <img class=game-logo src="../../../assets/mainmenu/SteamSteel.png" alt ="game-logo"/>
 
     <div class="button-section">
-        <button class="disabled">Join Game</button>
-            <button class="button" (click)="navigateToCreateGame()">Start New Game</button>
-            <button class="button" (click)="navigateToAdmin()">Admin</button>
+        <button class="disabled">Rejoindre une partie</button>
+            <button class="button" (click)="navigateToCreateGame()">Commencer une nouvelle partie</button>
+            <button class="button" (click)="navigateToAdmin()">Vue d'administrateur</button>
         </div>
 
-    <footer class="footer-item">
+    <!-- <footer class="footer-item">
         <h4 class="team-number">{{teamNumber}}</h4>
         <p> {{developers.join (', ')}}</p>
-    </footer>
+    </footer> -->
 </div>
