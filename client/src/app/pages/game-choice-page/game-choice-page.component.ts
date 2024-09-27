@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
@@ -19,6 +19,8 @@ export class GameChoicePageComponent {
         selectionError: false,
         userError: false,
     };
+
+    private readonly router: Router = inject(Router);
 
     constructor(private communicationMapService: CommunicationMapService) {
         this.communicationMapService.maps$.subscribe((maps) => {
@@ -47,5 +49,9 @@ export class GameChoicePageComponent {
         } else {
             this.showErrorMessage.userError = true;
         }
+    }
+
+    onReturn() {
+        this.router.navigate(['/mainmenu']);
     }
 }
