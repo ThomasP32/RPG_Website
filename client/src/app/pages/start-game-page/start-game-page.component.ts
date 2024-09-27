@@ -9,5 +9,4 @@ import { CreateGameComponent } from '@app/components/create-game/create-game.com
     styleUrls: ['./start-game-page.component.scss'],
     imports: [RouterOutlet, CreateGameComponent],
 })
-export class StartGamePageComponent {
-}
+export class StartGamePageComponent {}
