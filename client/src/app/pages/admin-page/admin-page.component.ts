@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
@@ -15,21 +15,10 @@ export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
     
-    @ViewChild(ScreenshotComponent) screenshotComponent!: ScreenshotComponent;
-
     constructor(
         private router: Router,
         private communicationService: CommunicationMapService,
     ) {}
-
-    screenShot(): void {
-        // Vérification que screenshotComponent est bien initialisé avant d'appeler captureAndUpload
-        if (this.screenshotComponent) {
-            this.screenshotComponent.captureAndUpload();
-        } else {
-            console.error('ScreenshotComponent is not available');
-        }
-    }
 
     ngOnInit(): void {
         this.communicationService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
