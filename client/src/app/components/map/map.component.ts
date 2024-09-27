@@ -77,7 +77,7 @@ export class MapComponent {
         this.selectedMode = $event;
     }
 
-    closeComponent(){
+    closeComponent() {
         this.close.emit();
     }
     // checkMapNameAvailability() {
