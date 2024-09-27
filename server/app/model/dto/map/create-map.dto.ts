@@ -1,8 +1,8 @@
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { ObjectId } from 'mongoose';
+import { ArrayNotEmpty, IsArray, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CoordinateDto {
     @ApiProperty()
@@ -61,13 +61,13 @@ export class CreateMapDto {
     @IsString()
     description: string;
 
-    @ApiProperty({ type: String, enum: Mode })
-    @IsEnum(Mode)
-    mode: Mode;
-
     @ApiProperty()
     @IsString()
     imagePreview: string;
+
+    @ApiProperty()
+    @IsEnum(Mode)
+    mode: Mode;
 
     @ApiProperty({ default: false })
     @IsOptional()
@@ -81,25 +81,26 @@ export class CreateMapDto {
 
     @ApiProperty({ type: [StartTileDto] })
     @IsArray()
+    @ArrayNotEmpty()
     @ValidateNested()
     @Type(() => StartTileDto)
     startTiles: StartTileDto[];
 
     @ApiProperty({ type: [ItemDto] })
     @IsArray()
-    @ValidateNested()
+    @ValidateNested({ each: true })
     @Type(() => ItemDto)
     items: ItemDto[];
 
     @ApiProperty({ type: [TileDto] })
     @IsArray()
-    @ValidateNested()
+    @ValidateNested({ each: true })
     @Type(() => TileDto)
     tiles: TileDto[];
 
     @ApiProperty({ type: [DoorTileDto] })
     @IsArray()
-    @ValidateNested()
+    @ValidateNested({ each: true })
     @Type(() => DoorTileDto)
     doorTiles: DoorTileDto[];
 
@@ -110,5 +111,5 @@ export class CreateMapDto {
     lastModified?: Date;
 
     @ApiProperty()
-    _id?: ObjectId;
+    _id?: Types.ObjectId;
 }
