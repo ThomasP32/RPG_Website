@@ -11,11 +11,9 @@ import { Map } from '@common/map.types';
 })
 export class MaterialPageMapsComponent implements OnInit {
     maps: Map[] = [];
-    constructor(readonly communicationService: CommunicationMapService) {
-        this.communicationService.maps$.subscribe((maps) => (this.maps = maps));
+    constructor(readonly communicationMapService: CommunicationMapService) {
+        this.communicationMapService.maps$.subscribe((maps) => (this.maps = maps));
     }
 
-    ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
-    }
+    ngOnInit(): void {}
 }

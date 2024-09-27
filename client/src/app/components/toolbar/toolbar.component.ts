@@ -1,7 +1,9 @@
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-toolbar',
@@ -10,7 +12,7 @@ import { MapService } from '@app/services/map.service';
     templateUrl: './toolbar.component.html',
     styleUrls: ['./toolbar.component.scss'],
 })
-export class ToolbarComponent {
+export class ToolbarComponent implements OnInit {
     @Input() selectedTile: string;
 
     @Output() tileSelected = new EventEmitter<string>();
@@ -19,6 +21,9 @@ export class ToolbarComponent {
 
     mode: string;
     convertedMode: string;
+    mapId: string;
+
+    map!: Map;
 
     isTilesVisible: boolean = true;
     isItemsVisible: boolean = true;
@@ -35,11 +40,17 @@ export class ToolbarComponent {
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
+        private mapGetService: MapGetService,
     ) {}
 
-    ngOnInit() {
-        this.getUrlParams();
-        this.urlConverter(this.mode);
+    async ngOnInit() {
+        if (this.route.snapshot.params['mode']) {
+            this.getUrlParams();
+            this.urlConverterMode();
+        } else {
+            this.map = this.mapGetService.map;
+            this.mode = this.map.mode;
+        }
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
         });
@@ -71,20 +82,16 @@ export class ToolbarComponent {
             // If the tile is already selected, deselect it
             this.selectedTile = 'empty';
             this.tileSelected.emit(this.selectedTile);
-            console.log('Tile deselected, selectedTile is now empty');
         } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
             // this.selectedTile = tile;
             // this.tileSelected.emit(tile);
-            console.log('Starting point selected, counter:', this.startingPointCounter);
         } else {
             this.selectedTile = tile;
             this.tileSelected.emit(tile);
-            console.log('Selected tile:', this.selectedTile);
         }
 
         if (this.startingPointCounter === 0) {
             this.isStartingPointVisible = false;
-            console.log('No more starting points available');
         }
     }
 
@@ -111,15 +118,14 @@ export class ToolbarComponent {
         this.itemSelected.emit(item);
     }
 
-    getUrlParams() {
-        this.route.queryParams.subscribe((params) => {
+    getUrlParams(): void {
+        this.route.queryParams.subscribe(() => {
             this.mode = this.route.snapshot.params['mode'];
         });
     }
-    urlConverter(mode: string) {
-        console.log('URL params:', mode);
-        this.convertedMode = mode.split('=')[1];
+
+    urlConverterMode(): void {
+        this.convertedMode = this.mode.split('=')[1];
         this.mode = this.convertedMode;
-        console.log('Converted mode:', this.convertedMode);
     }
 }

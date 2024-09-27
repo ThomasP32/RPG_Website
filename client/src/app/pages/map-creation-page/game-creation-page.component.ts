@@ -1,8 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
 import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-game-creation-page',
@@ -12,6 +15,7 @@ import { MapService } from '@app/services/map.service';
     styleUrl: './game-creation-page.component.scss',
 })
 export class GameCreationPageComponent implements OnInit {
+<<<<<<< HEAD
     selectedTile: string;
 
     @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
@@ -38,4 +42,56 @@ export class GameCreationPageComponent implements OnInit {
     onTileSelected(tile: string) {
         this.selectedTile = tile;
     }
+=======
+    @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
+    @ViewChild(MapControlBarComponent, { static: false }) mapControlBarComponent!: MapControlBarComponent;
+    @ViewChild(ToolbarComponent, { static: false }) appToolbarComponent!: ToolbarComponent;
+    isCreationPage = false;
+
+    map!: Map;
+    
+    mapId: string = '';
+    
+    
+
+
+    selectedTile: string = 'grass';
+
+    constructor(private mapService: MapService, 
+        private route : ActivatedRoute, 
+        private mapGetService : MapGetService) {}
+
+    async ngOnInit(): Promise<void> {
+        if(this.route.snapshot.params['id']){
+            this.getUrlParams();
+            await this.mapGetService.getMap(this.mapId);
+            this.map = this.mapGetService.map;
+            this.isCreationPage = false;
+        } else {
+            this.isCreationPage = true;
+        }
+       
+        this.mapService.resetMap$.subscribe(() => {
+            if (this.mapAreaComponent) {
+                this.mapAreaComponent.resetMapToDefault();
+            }
+        });
+
+        this.mapService.generateMap$.subscribe(() => {
+            if (this.mapAreaComponent) {
+                this.mapAreaComponent.resetMapToDefault();
+            }
+        });
+    }
+
+    onTileSelected(tile: string) {
+        this.selectedTile = tile;
+    }
+
+    getUrlParams(): void {
+        this.route.queryParams.subscribe(() => {
+            this.mapId = this.route.snapshot.params['id'];
+        });
+    }
+>>>>>>> feature/map-load-from-admin
 }

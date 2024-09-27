@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectorRef, Component, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 @Component({
@@ -10,9 +11,11 @@ import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
     templateUrl: './map-area.component.html',
     styleUrl: './map-area.component.scss',
 })
-export class MapAreaComponent {
+export class MapAreaComponent implements OnInit {
     @Input() selectedTile: string = '';
+    map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
+
     isPlacing: boolean = false;
     isErasing: boolean = false;
     isMouseDown: boolean = false;
@@ -32,21 +35,28 @@ export class MapAreaComponent {
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
         private mapService: MapService,
+        private mapGetService: MapGetService,
+        private router: Router,
     ) {}
 
     mapTitle: string = '';
     mapDescription: string;
 
     ngOnInit() {
-        this.getUrlParams();
-        this.urlConverter(this.mapSize);
-        this.createMap(this.convertedMapSize, this.mode);
-        this.setCellSize();
-        this.setCountersBasedOnMapSize(this.convertedMapSize);
+        this.initMap();
+    }
 
-        this.mapService.randomItemCounter$.subscribe((counter) => {
-            this.randomItemCounter = counter;
-        });
+    initMap() {
+        console.log(this.router.url);
+        if (this.router.url.includes('creation')) {
+            this.getUrlParams();
+            this.urlConverter(this.mapSize);
+            this.createMap(this.convertedMapSize);
+            this.setCellSize();
+        } else if (this.router.url.includes('edition')) {
+            this.map = this.mapGetService.map;
+            this.loadMap(this.map);
+        }
 
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
@@ -63,9 +73,10 @@ export class MapAreaComponent {
         this.mapService.mapDescription$.subscribe((description) => {
             this.mapDescription = description;
         });
+        this.setCountersBasedOnMapSize(this.convertedMapSize);
     }
 
-    createMap(mapSize: number, mode: string) {
+    createMap(mapSize: number) {
         this.Map = [];
 
         for (let i = 0; i < mapSize; i++) {
@@ -84,7 +95,6 @@ export class MapAreaComponent {
     setCellSize() {
         const root = document.querySelector(':root') as HTMLElement;
         this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-        console.log('cellsize =', this.convertedCellSize);
         this.cdRef.detectChanges();
     }
 
@@ -376,8 +386,32 @@ export class MapAreaComponent {
     }
 
     urlConverter(size: string) {
-        console.log('URL params:', size);
-        this.convertedMapSize = parseInt(size.split('=')[1]);
-        console.log('Converted map size:', this.convertedMapSize);
+        if (size) {
+            console.log('URL params:', size);
+            this.convertedMapSize = parseInt(size.split('=')[1]);
+            console.log('Converted map size:', this.convertedMapSize);
+        }
+    }
+
+    loadMap(map: Map) {
+        console.log('Loading map:', map);
+        this.createMap(map.mapSize.x);
+
+        map.tiles.forEach((tile) => {
+            this.Map[tile.coordinate.x][tile.coordinate.y].value = tile.category;
+        });
+
+        map.doorTiles.forEach((door) => {
+            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
+            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
+        });
+
+        map.startTiles.forEach((start) => {
+            this.Map[start.coordinate.x][start.coordinate.y].value = 'starting-point';
+        });
+
+        map.items.forEach((item) => {
+            this.Map[item.coordinate.x][item.coordinate.y].value = 'item';
+        });
     }
 }

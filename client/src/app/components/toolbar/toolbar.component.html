@@ -98,13 +98,13 @@
             </div>
         </div>
 
-        <div class="toggle-section" *ngIf="mode === 'CTF'">
+        <div class="toggle-section" *ngIf="mode === 'ctf'">
             <h3>Drapeau</h3>
             <button (click)="toggleFlag()">
                 {{ isFlagVisible ? '-' : '+' }}
             </button>
         </div>
-        <div class="flag-section" *ngIf="isFlagVisible && mode === 'CTF'">
+        <div class="flag-section" *ngIf="isFlagVisible && mode === 'ctf'">
             <div class="item" (click)="selectItem('flag')" [class.disabled]="flagCounter === 0">
                 <img src="../../../../assets/items/flag.png" alt="drapeau" />
                 <span class="description">Le drapeau en mode Capture du Drapeau. Capturez-le pour gagner la partie !</span>

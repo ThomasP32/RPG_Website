@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
@@ -11,7 +11,7 @@ import { Map } from '@common/map.types';
     styleUrls: ['./start-game-page.component.scss'],
     imports: [CommonModule, RouterLink],
 })
-export class StartGamePageComponent {
+export class StartGamePageComponent implements OnInit {
     availableMaps: Map[] = [];
     errorMessage: string = '';
     map: Map;
@@ -28,7 +28,10 @@ export class StartGamePageComponent {
     }
 
     ngOnInit(): void {
+<<<<<<< HEAD
         this.communicationMapService.getMapsFromServer();
+=======
+>>>>>>> feature/map-load-from-admin
     }
 
     selectMap(mapName: string) {

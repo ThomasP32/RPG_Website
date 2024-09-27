@@ -1,41 +1,55 @@
 <div class="adminPage-container">
     <h2 class="header-item">{{ title }}</h2>
-
-    <button class="button" (click)="navigateToMain()"> Retour au menu principal </button>
-    <button class="button" (click)="toggleGameCreationModalVisibility()">Commencer une nouvelle partie</button>
-    @if(isMapVisible) {<div>
-        <!-- <app-mapChoices-component></app-mapChoices-component> -->
+      @if(isMapVisible) {
+    <div>
+        <app-map-choices-component (close)="onCloseModal()" ></app-map-choices-component>
     </div>
     }
-
-    <div class="map-list">
-        @for(map of this.maps; track map.name) {
-        <div class="map-item">
-            <h2 class="map-name">{{ map.name }}</h2>
-            <p>image de prévisualisation</p>
-            <div class="map-description">description à ajouter au serveur lors du survol</div>
-            <div class="map-info">
-                <p class="map-details">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                <!-- <p class="game-details">Mode : {{game.mode}}</p> -->
-                <p class="map-details">Dernière modification : à ajouter au serveur</p>
-                <p class="map-details">
-                    Visibilité : @if(map.isVisible) {
-                    <span> Publique </span>
-                    } @else {
-                    <span> Privée </span>
+    @if(isMapVisible === false){
+        <button class="button" (click)="navigateToMain()">Retour au menu principal</button>
+    }
+        @if(isMapVisible === false){
+        <button class="button" (click)="toggleGameCreationModalVisibility()">Créer une nouvelle partie</button>
+    }
+  
+    @if(isMapVisible === false){
+        <div class="map-list" >
+            @for(map of this.maps; track map.name) {
+            <div class="map-item">
+                <h2 class="map-name">{{ map.name }}</h2>
+                <p>image de prévisualisation</p>
+                <div class="map-description">description à ajouter au serveur lors du survol</div>
+                <div class="map-info">
+                    <p class="map-details">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
+                    <p class="game-details">Mode : {{map.mode}}</p>
+                    <p class="map-details">Dernière modification : à ajouter au serveur</p>
+                    <p class="map-details" (click)="toggleVisibility(map._id!.toString())">
+                        Visibilité : @if(map.isVisible) {
+                        <span> Publique </span>
+                        } @else {
+                        <span> Privée </span>
+                        }
+                    </p>
+                    <button class="edit-button" (click)="editGame(map)">Modifier</button>
+                    <button class="map-delete" (click)="deleteTriggered = true">Supprimer</button>
+                    @if(deleteTriggered === true) {
+                        <div class="delete-confirmation">
+                            <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
+                            <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
+                            <button class="delete-confirmation-button" (click)="deleteTriggered = false">Non</button>
+                        </div>
                     }
-                </p>
+                </div>
             </div>
-        </div>
-        }
-
-         <!-- <div class="map-actions">
-            <button class="button" (click)="editGame(game.id)">Modifier</button>
-                <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
-                <button (click)="toggleVisibility(game.id)">
-                     {{ map.visibility ? 'Cacher' : 'Afficher' }}  
-                </button>
-        </div> -->
+            }
     </div>
-</div>
+    }
+    
+        <!-- <div class="map-actions">
+            
+            <button (click)="toggleVisibility(map._id.toString())">
+                {{ map.isVisible ? 'Cacher' : 'Afficher' }}
+            </button>
+        </div> -->
+  
 <!-- </div> -->

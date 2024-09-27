@@ -23,11 +23,12 @@ const routes: Routes = [
     { path: 'mainmenu', component: MainPageComponent },
     { path: 'map-creation', component: MapComponent },
     { path: 'creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'material', component: MaterialPageMapsComponent },
     { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
-    { path: 'waitin-groom', component: WaitingRoomComponent },
+    { path: 'waiting-room', component: WaitingRoomComponent },
     { path: '**', redirectTo: '/mainmenu' },
 ];
 
