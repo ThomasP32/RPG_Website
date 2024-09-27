@@ -23,15 +23,15 @@ const routes: Routes = [
     { path: '', redirectTo: '/mainmenu', pathMatch: 'full' },
     { path: 'mainmenu', component: HomePageComponent },
     { path: 'map-creation', component: MapComponent },
-    { path: 'game-creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'material', component: MaterialPageMapsComponent },
     { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
-    {path : 'waitin-groom', component : WaitingRoomComponent},
+    { path: 'waitin-groom', component: WaitingRoomComponent },
     { path: '**', redirectTo: '/mainmenu' },
 ];
-
 
 bootstrapApplication(AppComponent, {
     providers: [provideHttpClient(), provideRouter(routes), provideAnimations()],

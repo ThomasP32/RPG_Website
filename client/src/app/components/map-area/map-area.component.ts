@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, Input, Renderer2 } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
+import { DoorTile, Item, Map, StartTile, Tile } from '@common/map.types';
 
 @Component({
     selector: 'app-map-area',
@@ -10,8 +11,9 @@ import { MapService } from '@app/services/map.service';
     templateUrl: './map-area.component.html',
     styleUrl: './map-area.component.scss',
 })
-export class MapAreaComponent {
+export class MapAreaComponent implements OnInit {
     @Input() selectedTile: string = '';
+    @Input() map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed' }[][] = [];
     isPlacing: boolean = false;
     isErasing: boolean = false;
@@ -24,13 +26,11 @@ export class MapAreaComponent {
 
     startingPointCounter: number;
 
-    
-
     constructor(
         private route: ActivatedRoute,
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
-        private mapService: MapService
+        private mapService: MapService,
     ) {}
 
     ngOnInit() {
@@ -41,7 +41,7 @@ export class MapAreaComponent {
 
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
-          });
+        });
     }
 
     createMap(mapSize: number, mode: string) {
@@ -59,7 +59,6 @@ export class MapAreaComponent {
     setCellSize() {
         const root = document.querySelector(':root') as HTMLElement;
         this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-        console.log('cellsize =', this.convertedCellSize);
         this.cdRef.detectChanges();
     }
 
@@ -143,18 +142,18 @@ export class MapAreaComponent {
 
     allowDrop(event: DragEvent) {
         event.preventDefault();
-      }
-      
-      onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
+    }
+
+    onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
         const itemType = event.dataTransfer?.getData('item');
-        
+
         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-          this.Map[rowIndex][colIndex].value = 'starting-point';
-          this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
-          this.selectedTile = 'empty';
-          console.log('Starting point placed at:', rowIndex, colIndex);
+            this.Map[rowIndex][colIndex].value = 'starting-point';
+            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+            this.selectedTile = 'empty';
+            console.log('Starting point placed at:', rowIndex, colIndex);
         }
-      }
+    }
 
     resetMapToDefault() {
         for (let i = 0; i < this.Map.length; i++) {
@@ -163,44 +162,44 @@ export class MapAreaComponent {
             }
         }
         console.log('Map has been reset to default');
-      }
-    
-      generateMapData() {
+    }
+
+    generateMapData() {
         const mapData = {
-            name: '', 
-            description: '', 
-            mode: this.mode, 
+            name: '',
+            description: '',
+            mode: this.mode,
             mapSize: {
-                x: this.convertedMapSize, 
-                y: this.convertedMapSize 
+                x: this.convertedMapSize,
+                y: this.convertedMapSize,
             },
-            tiles: [] as { coordinate: { x: number; y: number }; category: string }[], 
-            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[], 
-            items: [] as any[], 
-            startTiles: [] as any[] 
+            tiles: [] as { coordinate: { x: number; y: number }; category: string }[],
+            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
+            items: [] as unknown[],
+            startTiles: [] as unknown[],
         };
-    
+
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
             for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
                 const cell = this.Map[rowIndex][colIndex];
                 const coordinate = { x: rowIndex, y: colIndex };
-    
+
                 if (cell && cell.value) {
                     if (cell.value === 'door') {
                         mapData.doorTiles.push({
                             coordinate,
-                            isOpened: cell.doorState === 'open'
+                            isOpened: cell.doorState === 'open',
                         });
                     } else if (['water', 'ice', 'wall', 'floor'].includes(cell.value)) {
                         mapData.tiles.push({
                             coordinate,
-                            category: cell.value
+                            category: cell.value,
                         });
                     }
                 }
             }
         }
-    
+
         return mapData;
     }
 
@@ -221,7 +220,7 @@ export class MapAreaComponent {
                 return '../../../../assets/tiles/floor.png';
         }
     }
-    //TODO: PUT it in a service, same as in toolbar.component.ts
+    // TODO: PUT it in a service, same as in toolbar.component.ts
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
@@ -229,8 +228,24 @@ export class MapAreaComponent {
     }
 
     urlConverter(size: string) {
-        console.log('URL params:', size);
-        this.convertedMapSize = parseInt(size.split('=')[1]);
-        console.log('Converted map size:', this.convertedMapSize);
+        if (size) {
+            console.log('URL params:', size);
+            this.convertedMapSize = parseInt(size.split('=')[1]);
+            console.log('Converted map size:', this.convertedMapSize);
+        }
+    }
+
+    //TODO: GET MAP
+    tiles: Tile[] = [];
+    doorTiles: DoorTile[] = [];
+    items: Item[] = [];
+    startTiles: StartTile[] = [];
+    initializeMap(map: Map) {
+        // this.mode: map.mode,
+        this.convertedMapSize = map.mapSize.x;
+        this.tiles = map.tiles;
+        this.doorTiles = map.doorTiles;
+        this.items = map.items;
+        this.startTiles = map.startTiles;
     }
 }

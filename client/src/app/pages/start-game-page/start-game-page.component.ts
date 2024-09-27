@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -11,7 +11,7 @@ import { Map } from '@common/map.types';
     styleUrls: ['./start-game-page.component.scss'],
     imports: [CommonModule, RouterLink],
 })
-export class StartGamePageComponent {
+export class StartGamePageComponent implements OnInit {
     availableMaps: Map[] = [];
     errorMessage: string = '';
     map: Map;
@@ -20,15 +20,14 @@ export class StartGamePageComponent {
 
     constructor(
         private router: Router,
-        private communicationService: CommunicationService,
+        private communicationMapService: CommunicationMapService,
     ) {
-        this.communicationService.maps$.subscribe((maps) => {
+        this.communicationMapService.maps$.subscribe((maps) => {
             this.maps = maps;
         });
     }
 
     ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
     }
 
     selectMap(mapName: string) {

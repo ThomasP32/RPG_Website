@@ -1,5 +1,5 @@
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModesComponent } from '../modes/modes.component';
 
@@ -23,9 +23,9 @@ export enum NbItems {
 }
 
 @Component({
-    selector: 'app-mapChoices-component',
+    selector: 'app-map-choices-component',
     standalone: true,
-    imports: [NgForOf, NgClass, NgIf, ModesComponent, FormsModule],
+    imports: [NgForOf, NgClass, NgIf, FormsModule, ModesComponent],
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss'],
 })
@@ -36,16 +36,14 @@ export class MapComponent {
     mapName: string;
     nbItems: number;
     isHovered = false;
+    @Output() close = new EventEmitter<void>();
     selectedMode: string;
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
         entryError: false,
         nameError: false,
     };
 
-    // constructor(private http: HttpClient) {}
-
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
-        console.log('Button clicked, Size :', size);
         switch (size) {
             case 'small':
                 this.mapSize = MapSize.Small;
@@ -58,9 +56,6 @@ export class MapComponent {
             case 'large':
                 this.mapSize = MapSize.Large;
                 this.nbItems = NbItems.Large;
-                break;
-            default:
-                console.error('Invalid size value:', size);
                 break;
         }
     }
@@ -75,16 +70,19 @@ export class MapComponent {
             this.showErrorMessage.entryError = true;
             return;
         }
-        window.location.href = `/game-creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
+        window.location.href = `/creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
     }
 
     onModeSelected($event: string) {
         this.selectedMode = $event;
     }
 
+    closeComponent(){
+        this.close.emit();
+    }
     // checkMapNameAvailability() {
     //     this.http.get(`/api/check-map-name?name=${this.mapName}`).subscribe((response: unknown) => {
     //         this.showErrorMessage.nameError = response.isTaken;
     //     });
-    //}
+    // }
 }

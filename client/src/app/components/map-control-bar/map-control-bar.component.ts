@@ -1,8 +1,9 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MapService } from '@app/services/map.service';
+import { Map } from '@common/map.types';
 
 @Component({
     selector: 'app-map-control-bar',
@@ -21,6 +22,8 @@ export class MapControlBarComponent implements OnInit {
     mode: string;
     gameMode: string = '';
     numberOfPlayers: number = 0;
+
+    @Input() map!: Map;
 
     constructor(
         private route: ActivatedRoute,
@@ -44,18 +47,17 @@ export class MapControlBarComponent implements OnInit {
         console.log('resetting the map');
         console.log('MapControlBar: Triggering reset via service');
         this.mapService.resetMap();
-
     }
 
-  createMap(): void {
-    const mapData = this.mapService.generateMapData();
+    createMap(): void {
+        const mapData = this.mapService.generateMapData();
 
-    this.mapService.saveMap(mapData);
-    console.log("map saving");
-    // .subscribe(response => {
-    //     console.log('Map saved successfully:', response);
-    // });
-}
+        this.mapService.saveMap(mapData);
+        console.log('map saving');
+        // .subscribe(response => {
+        //     console.log('Map saved successfully:', response);
+        // });
+    }
 
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
@@ -64,7 +66,13 @@ export class MapControlBarComponent implements OnInit {
     }
 
     urlConverter(mode: string) {
-        console.log('URL params:', mode);
-        this.gameMode = mode.split('=')[1];
+        if (mode) {
+            this.gameMode = mode.split('=')[1];
+        }
     }
+    //TODO: GET MAP
+    initializeMap(map: Map) {
+        this.mapTitle = map.name;
+        // this.mapDescription = map.description;
+      }
 }
