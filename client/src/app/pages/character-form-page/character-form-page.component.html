@@ -135,6 +135,9 @@
                 <h4>Avatar selectionné :</h4>
                 <h3>{{ selectedCharacter.name }}</h3>
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
+                @if (showErrorMessage.selectionError) {
+                <div class="error-message">Error : The selected game is no longer available. Please select a new game.</div>
+                }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
         </div>

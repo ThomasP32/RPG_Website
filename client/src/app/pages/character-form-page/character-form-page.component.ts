@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
+import { Map } from '@common/map.types';
 
 const defaultHp = 4;
 const defaultSpeed = 4;
@@ -34,6 +36,11 @@ export class CharacterFormPageComponent {
     defense = defaultDefense;
 
     mapId: string | null = null;
+    maps: Map[] = [];
+    map: Map;
+    showErrorMessage: { selectionError: boolean } = {
+        selectionError: false,
+    };
 
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
@@ -41,7 +48,7 @@ export class CharacterFormPageComponent {
 
     private currentIndex: number = 0;
 
-    constructor() {
+    constructor(private communicationMapService: CommunicationMapService) {
         // Assume characters are fetched from a service
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
@@ -99,7 +106,21 @@ export class CharacterFormPageComponent {
     }
 
     onSubmit() {
-        this.router.navigate(['/waiting-room'], { queryParams: { id: this.mapId } });
+        this.communicationMapService.getMapsFromServer();
+        this.communicationMapService.maps$.subscribe((maps) => {
+            this.maps = maps.filter((map) => map.isVisible || map._id === this.mapId);
+
+            const chosenMap = this.maps.find((map) => map._id === this.mapId);
+            if (chosenMap) {
+                if (chosenMap.isVisible) {
+                    this.router.navigate(['/waiting-room'], { queryParams: { id: this.mapId } });
+                } else {
+                    this.showErrorMessage.selectionError = true;
+                }
+            } else {
+                this.showErrorMessage.selectionError = true;
+            }
+        });
     }
 
     onReturn() {
