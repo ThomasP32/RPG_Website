@@ -38,20 +38,7 @@ export class GameChoicePageComponent implements OnInit {
 
     next() {
         if (this.selectedMap) {
-            // this.communicationMapService.getMapsFromServer();
-            // this.communicationMapService.maps$.pipe(take(1)).subscribe((maps) => {
-            //     const chosenMap = maps.find((map) => map._id === this.selectedMap);
-
-            //     console.log('Updated Selected Map:', chosenMap);
-            const chosenMap = this.maps.find((map) => map._id === this.selectedMap);
-            if (chosenMap) {
-                if (chosenMap.isVisible) {
-                    this.router.navigate(['/create-character'], { queryParams: { id: this.selectedMap } });
-                } else {
-                    this.showErrorMessage.selectionError = true;
-                }
-            }
-            // });
+            this.router.navigate(['/create-character'], { queryParams: { id: this.selectedMap } });
         } else {
             this.showErrorMessage.userError = true;
         }
