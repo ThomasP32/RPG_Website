@@ -55,6 +55,7 @@ export class MapAreaComponent implements OnInit {
             this.setCellSize();
         } else if (this.router.url.includes('edition')) {
             this.map = this.mapGetService.map;
+            this.convertedMapSize = this.map.mapSize.x;
             this.loadMap(this.map);
         }
 

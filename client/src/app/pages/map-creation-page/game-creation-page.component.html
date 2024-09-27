@@ -1,18 +1,15 @@
 <div class="game-creation-page">
-  @if (map || isCreationPage) {
-  <!-- Toolbar on the left -->
-  <div class="left-area">
-    <app-toolbar (tileSelected)="onTileSelected($event)"></app-toolbar>
-  </div>
+    @if (map || isCreationPage) {
+    <div class="left-area">
+        <app-toolbar (tileSelected)="onTileSelected($event)"></app-toolbar>
+    </div>
 
-  <!-- Map in the middle -->
-  <div class="center-area">
-    <app-map-area [selectedTile]="selectedTile"></app-map-area>
-  </div>
+    <div class="center-area">
+        <app-map-area [selectedTile]="selectedTile"></app-map-area>
+    </div>
 
-  <!-- Control bar on the right -->
-  <div class="right-area">
-    <app-map-control-bar ></app-map-control-bar>
-  </div>
-  }
+    <div class="right-area">
+        <app-map-control-bar></app-map-control-bar>
+    </div>
+    }
 </div>
