@@ -1,38 +1,69 @@
 <div class="character-page-container">
     <div class="character-selection-container">
-        <div class="player-stats">
-            <h2>{{ characterName }}</h2>
-            <div class="stats">
-                <div class="stat">
-                    <label>Vie : {{ life }} PV</label>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(life / 6) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat">
-                    <label>Rapidité : {{ speed }} PTS</label>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(speed / 6) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat">
-                    <label>Attaque : {{ attack }} PTS</label>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(attack / 6) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat"></div>
-                <label>Défense : {{ defense }} PTS</label>
-                <div class="stat-bar">
-                    <div class="stat-bar-fill" [style.width.%]="(defense / 6) * 100"></div>
-                </div>
-            </div>
-            <h4>Choisis ton bonus</h4>
+        <div class="return-to-previous-page">
+            <button class="return-button" (click)="onReturn()">Retour</button>
         </div>
+        <div class="left-side">
+            <div class="player-stats">
+                <h2 class="character-name">
+                    @if(!isEditing){
+                    <span>{{ characterName }}</span
+                    >} @if(isEditing){
+                    <input
+                        [(ngModel)]="characterName"
+                        class="character-name-input"
+                        (blur)="stopEditing()"
+                        (keydown.enter)="stopEditing()"
+                        maxlength="25"
+                    />
+                    }
+
+                    <button class="edit-icon" (click)="toggleEditing()">
+                        @if(!isEditing){
+                        <i class="fas fa-pencil-alt"></i>} @if(isEditing){<i class="fas fa-save"></i>}
+                    </button>
+                </h2>
+                <div class="stats">
+                    <div class="stat">
+                        <label class="stat-label" title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" [style.width.%]="(life / 6) * 100"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <label class="stat-label" title="Correspond aux points de mouvement par tour d’un personnage."
+                            >Rapidité : {{ speed }} PTS</label
+                        >
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" [style.width.%]="(speed / 6) * 100"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <label class="stat-label" title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
+                            >Attaque : {{ attack }} PTS</label
+                        >
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" [style.width.%]="(attack / 6) * 100"></div>
+                        </div>
+                    </div>
+                    <div class="stat"></div>
+                    <label class="stat-label" title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ defense }} PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(defense / 6) * 100"></div>
+                    </div>
+                </div>
+                <h4>Choisis ton bonus</h4>
+            </div>
+
+            <div class="hover-explanation">
+                <span>Placez votre souris sur chacun des attributs pour voir leur description.</span>
+            </div>
+        </div>
+
         <div class="character-display">
             <button class="arrow-button left-arrow" (click)="previousCharacter()">&#9664;</button>
             <div class="selected-character">
-                <h1>CHOISISSEZ TON AVATAR</h1>
+                <h1>CHOISIS TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
                 <h4>Avatar selectionné :</h4>
                 <h3>{{ selectedCharacter.name }}</h3>

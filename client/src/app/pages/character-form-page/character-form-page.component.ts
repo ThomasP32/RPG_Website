@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';
-import { CreateCharacterComponent } from '@app/components/create-character/create-character.component';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character.service';
 
@@ -12,12 +12,14 @@ const defaultDefense = 4;
 @Component({
     selector: 'app-character-form-page',
     standalone: true,
-    imports: [CreateCharacterComponent, RouterOutlet, CommonModule],
+    imports: [RouterOutlet, CommonModule, FormsModule],
     templateUrl: './character-form-page.component.html',
     styleUrls: ['./character-form-page.component.scss'],
 })
 export class CharacterFormPageComponent {
     characterName: string = 'Nom du personnage';
+    isEditing: boolean = false;
+
     lifeOrSpeedBonus = '';
     attackOrDefenseBonus = '';
     attackBonus = '';
@@ -60,21 +62,15 @@ export class CharacterFormPageComponent {
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
-    // addBonus() {
-    //     this.selectedCharacter.stats.hp = four;
-    //     this.speed = four;
-
-    //     if (this.lifeOrSpeedBonus === 'life') {
-    //         this.life += 2;
-    //     } else if (this.lifeOrSpeedBonus === 'speed') {
-    //         this.speed += 2;
-    //     }
-    // }
+    addBonus() {
+        if (this.lifeOrSpeedBonus === 'life') {
+            this.life += 2;
+        } else if (this.lifeOrSpeedBonus === 'speed') {
+            this.speed += 2;
+        }
+    }
 
     assignDice() {
-        this.attackBonus = '';
-        this.defenseBonus = '';
-
         if (this.attackOrDefenseBonus === 'attack') {
             this.attackBonus = 'D6';
             this.defenseBonus = 'D4';
@@ -84,7 +80,19 @@ export class CharacterFormPageComponent {
         }
     }
 
+    toggleEditing() {
+        this.isEditing = !this.isEditing;
+    }
+
+    stopEditing() {
+        this.isEditing = false;
+    }
+
     onSubmit() {
         this.router.navigate(['/waiting-room']);
+    }
+
+    onReturn() {
+        this.router.navigate(['/create-game']);
     }
 }
