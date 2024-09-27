@@ -86,5 +86,5 @@ export class MapComponent {
     //     this.http.get(`/api/check-map-name?name=${this.mapName}`).subscribe((response: unknown) => {
     //         this.showErrorMessage.nameError = response.isTaken;
     //     });
-    //}
+    // }
 }

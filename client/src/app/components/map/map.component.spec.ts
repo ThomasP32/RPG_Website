@@ -52,7 +52,7 @@ describe('MapComponent', () => {
 
     it('should handle invalid size', () => {
         spyOn(console, 'error');
-        component.sizeConversion('invalid' as any); // Cast to any to bypass type checking
+        component.sizeConversion('invalid' as unknown); // Cast to any to bypass type checking
         expect(console.error).toHaveBeenCalledWith('Invalid size value:', 'invalid');
     });
 

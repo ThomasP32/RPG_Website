@@ -33,7 +33,7 @@ export class AdminPageComponent implements OnInit {
 
     deleteGame(mapId: string): void {
         if (confirm('Are you sure you want to delete this game ?')) {
-            this.communicationService.basicDelete(`admin/${mapId}`).subscribe(()=>this.updateDisplay());
+            this.communicationService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay());
         }
     }
 

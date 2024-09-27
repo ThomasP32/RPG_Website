@@ -12,6 +12,8 @@ const defaultHp = 4;
 const defaultSpeed = 4;
 const defaultAttack = 4;
 const defaultDefense = 4;
+const timeLimit = 5000;
+
 @Component({
     selector: 'app-character-form-page',
     standalone: true,
@@ -107,14 +109,14 @@ export class CharacterFormPageComponent {
     }
 
     async onSubmit() {
-            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`))
-            if(!chosenMap) {
-                this.showErrorMessage.selectionError = true;
-                setTimeout(() => {
-                    this.router.navigate(['/create-game']); 
-                  }, 5000);
-            } else {
-            this.router.navigate(['/waiting-room'], { queryParams: { name: chosenMap.name } });console.log(chosenMap);
+        const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
+        if (!chosenMap) {
+            this.showErrorMessage.selectionError = true;
+            setTimeout(() => {
+                this.router.navigate(['/create-game']);
+            }, timeLimit);
+        } else {
+            this.router.navigate(['/waiting-room'], { queryParams: { name: chosenMap.name } });
         }
     }
 
