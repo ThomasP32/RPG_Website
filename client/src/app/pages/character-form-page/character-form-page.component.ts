@@ -17,7 +17,7 @@ const defaultDefense = 4;
     styleUrls: ['./character-form-page.component.scss'],
 })
 export class CharacterFormPageComponent {
-    characterName: string = 'Nom du personnage';
+    characterName: string = 'Choisis un nom';
     isEditing: boolean = false;
 
     lifeOrSpeedBonus = '';
@@ -93,6 +93,9 @@ export class CharacterFormPageComponent {
 
     stopEditing() {
         this.isEditing = false;
+        if (!this.characterName) {
+            this.characterName = 'Default Name';
+        }
     }
 
     onSubmit() {

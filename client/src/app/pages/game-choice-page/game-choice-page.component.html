@@ -11,7 +11,7 @@
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
                 <div class="map-card" [ngClass]="{ selected: selectedMap === map._id }" (click)="selectMap(map._id)">
-                    <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                    <!-- <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" /> -->
                     <div class="map-details">
                         <!-- <p class="description">Description: {{map.description}} </p> -->
                         <!-- <p class="mode">Game Mode: {{map.mode}} </p> -->
