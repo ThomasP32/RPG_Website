@@ -12,7 +12,7 @@ import { Map } from '@common/map.types';
     imports: [RouterLink, MapComponent],
 })
 export class AdminPageComponent implements OnInit {
-    readonly title: string = 'Maps Administration';
+    readonly title: string = 'Administration des jeux';
     maps: Map[] = [];
 
     constructor(
@@ -52,6 +52,10 @@ export class AdminPageComponent implements OnInit {
         this.router.navigate(['/main-menu']);
     }
 
+    toggleEditing(): void {
+       
+    }
+
     editGame(mapId: string): void {
         this.router.navigate(['/admin/edit-map', mapId]);
     }
@@ -63,6 +67,7 @@ export class AdminPageComponent implements OnInit {
             // });
         }
     }
+
 
     // showDescription(): void {
 

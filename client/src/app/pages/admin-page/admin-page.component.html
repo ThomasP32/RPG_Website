@@ -1,22 +1,57 @@
 <div class="adminPage-container">
-    <h2 class="header-item">{{ title }}</h2>
+    <h2 class="header">{{ title }}</h2>
 
     <button class="button" (click)="navigateToMain()"> Retour au menu principal </button>
-    <button class="button" (click)="toggleGameCreationModalVisibility()">Commencer une nouvelle partie</button>
+    <button class="button" >Créer un nouveau jeu</button>
+
     @if(isMapVisible) {<div>
         <!-- <app-mapChoices-component></app-mapChoices-component> -->
     </div>
     }
 
-    <div class="map-list">
+    <div class="map-view">
+        <div class="map-cards">
+            @for(map of this.maps; track map.name) {
+                <!-- <div class="map-card" (mouseover)="showDescription(map)" (mouseleave)="hideDescription(map)"></div> -->
+                <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                <div class="map-details">
+                    <h2 class="name">{{ map.name }}</h2>
+                    <p class="mode">Mode de jeu: À FAIRE </p>
+                    <p class="size">Taille: À FAIRE</p>
+                    <p class="lastModified">Dernière modification: À FAIRE</p>
+                    <!-- <p class="visibility">Visibilité: 
+                        <button (click)="toggleVisibility(map)">
+                            {{ map.visibility ? 'Cacher' : 'Afficher' }}
+                        </button>
+                    </p> -->    
+                </div>
+                <div class="map-actions">
+                    <button class="button" >Modifier</button>
+                    <button class="button" >Supprimer</button>
+                </div>
+                <!-- <div class="description" *ngIf="map.showDescription">{{ map.description }}</div> -->
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+    <!-- <div class="map-list">
+        <div class="map-item"></div>
         @for(map of this.maps; track map.name) {
-        <div class="map-item">
             <h2 class="map-name">{{ map.name }}</h2>
-            <p>image de prévisualisation</p>
+            <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
             <div class="map-description">description à ajouter au serveur lors du survol</div>
-            <div class="map-info">
-                <p class="map-details">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                <!-- <p class="game-details">Mode : {{game.mode}}</p> -->
+            <div class="map-info"> -->
+                <!-- <p class="map-details">Mode de jeu : {{map.mode}}</p> -->
+                 <!-- <p class="map-details"> Taille : {{map.size}}</p> -->
+
+<!--                 
                 <p class="map-details">Dernière modification : à ajouter au serveur</p>
                 <p class="map-details">
                     Visibilité : @if(map.isVisible) {
@@ -26,8 +61,8 @@
                     }
                 </p>
             </div>
-        </div>
-        }
+
+        } -->
 
          <!-- <div class="map-actions">
             <button class="button" (click)="editGame(game.id)">Modifier</button>
@@ -36,6 +71,6 @@
                      {{ map.visibility ? 'Cacher' : 'Afficher' }}  
                 </button>
         </div> -->
-    </div>
-</div>
+    <!-- </div>
+</div> -->
 <!-- </div> -->
