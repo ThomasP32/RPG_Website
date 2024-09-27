@@ -4,6 +4,8 @@ import { MapService } from '@app/services/map/map.service';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AdminController } from './controllers/admin/admin.controller';
+import { AdminService } from './services/admin/admin.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -19,7 +21,7 @@ import { MongooseModule } from '@nestjs/mongoose';
         }),
         MongooseModule.forFeature([{ name: Map.name, schema: mapSchema }]),
     ],
-    controllers: [MapController],
-    providers: [MapService, Logger],
+    controllers: [MapController, AdminController],
+    providers: [MapService, AdminService, Logger],
 })
 export class AppModule {}
