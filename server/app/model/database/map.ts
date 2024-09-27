@@ -1,9 +1,17 @@
-import { Coordinate as CoordinateType, DoorTile as DoorTileType, 
-    Map as MapType, StartTile as StartTileType, Item as ItemType, 
-    TileCategory, Tile as TileType, ItemCategory } from '@common/map.types';
+import {
+    Coordinate as CoordinateType,
+    DoorTile as DoorTileType,
+    ItemCategory,
+    Item as ItemType,
+    Map as MapType,
+    Mode,
+    StartTile as StartTileType,
+    TileCategory,
+    Tile as TileType,
+} from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type MapDocument = Map & Document;
 
@@ -42,7 +50,6 @@ class Tile implements TileType {
     @ApiProperty()
     @Prop({ type: String, enum: TileCategory, required: true })
     category: TileCategory;
-
 }
 
 export const tileSchema = SchemaFactory.createForClass(Tile);
@@ -52,7 +59,6 @@ class StartTile implements StartTileType {
     @ApiProperty({ type: Coordinate })
     @Prop({ type: coordinateSchema, required: true, _id: false })
     coordinate: Coordinate;
-
 }
 
 export const startTileSchema = SchemaFactory.createForClass(StartTile);
@@ -67,11 +73,10 @@ class Item implements ItemType {
     @Prop({ type: String, enum: ItemCategory, required: true })
     category: ItemCategory;
 
-    // Attributs supplémentaires seront ajouté ici 
+    // Attributs supplémentaires seront ajouté ici
 }
 
 export const itemTileSchema = SchemaFactory.createForClass(Item);
-
 
 @Schema()
 export class Map implements MapType {
@@ -80,8 +85,20 @@ export class Map implements MapType {
     name: string;
 
     @ApiProperty()
+    @Prop({ type: String, required: true })
+    description: string;
+
+    @ApiProperty()
+    @Prop({ type: String, required: true })
+    imagePreview: string;
+
+    @ApiProperty()
+    @Prop({ type: String, enum: Mode, required: true })
+    mode: Mode;
+
+    @ApiProperty()
     @Prop({ type: Boolean, required: false, default: false })
-    isVisible: boolean;
+    isVisible?: boolean;
 
     @ApiProperty({ type: Coordinate })
     @Prop({ type: coordinateSchema, required: true })
@@ -104,7 +121,11 @@ export class Map implements MapType {
     doorTiles: DoorTile[];
 
     @ApiProperty()
-    _id?: string;
+    @Prop({ type: Date })
+    lastModified?: Date;
+
+    @ApiProperty()
+    _id?: Types.ObjectId;
 }
 
 export const mapSchema = SchemaFactory.createForClass(Map);

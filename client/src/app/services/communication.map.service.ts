@@ -26,6 +26,33 @@ export class CommunicationMapService {
         return this.http.post(`${this.baseUrl}/map`, map, { observe: 'response', responseType: 'text' });
     }
 
+    // // fonction qui retourne un observable émettant soit la liste de jeux soit une erreur (emettre cest .next())
+    // basicGet<T>(url: string): Observable<T> {
+    //     return this.http.get<T>(`${this.baseUrl}/${url}`).pipe(catchError(this.handleError<T>('basicGet')));
+    // }
+
+    // // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
+    // basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
+    //     return this.http.post(`${this.baseUrl}/${url}`, data, {
+    //         observe: 'response',
+    //         responseType: 'text',
+    //     });
+    // }
+
+    // basicPatch<T>(url: string, data?: T): Observable<HttpResponse<Object>> {
+    //     return this.http.patch(`${this.baseUrl}/${url}`, data, {
+    //         observe: 'response',
+    //         responseType: 'text',
+    //     });
+    // }
+
+    basicDelete(url: string): Observable<HttpResponse<string>> {
+        return this.http.delete(`${this.baseUrl}/${url}`, {
+            observe: 'response',
+            responseType: 'text', // Le type de réponse est défini comme "text"
+        });
+    }
+
     setMaps(updatedMaps: Map[]) {
         this.maps.next(updatedMaps);
         console.log('liste mise à jour');
