@@ -1,5 +1,6 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Map } from '@common/map.types';
 import { catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -17,13 +18,11 @@ export class CommunicationMapService {
     }
 
     // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
-    basicPost(map: Map): Observable<HttpResponse<string>> {
-        return this.http.post(`${this.baseUrl}/map`, map, { observe: 'response', responseType: 'text' });
-    // basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
-    //     return this.http.post(`${this.baseUrl}/${url}`, data, {
-    //         observe: 'response',
-    //         responseType: 'text',
-    //     });
+    basicPost(url: string, data: Map): Observable<HttpResponse<string>> {
+        return this.http.post(`${this.baseUrl}/${url}`, data, {
+            observe: 'response',
+            responseType: 'text',
+        });
     }
 
     basicPatch<T>(url: string, data?: T): Observable<HttpResponse<Object>> {

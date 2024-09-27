@@ -10,13 +10,11 @@
         <div class="scrollable-container">
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
-                <div class="map-card" [ngClass]="{ selected: selectedMap === map._id }" (click)="selectMap(map._id)">
+                <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
                     <!-- <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" /> -->
                     <div class="map-details">
-                        <!-- <p class="description">Description: {{map.description}} </p> -->
-                        <!-- <p class="mode">Game Mode: {{map.mode}} </p> -->
-                        <p class="description">description de la map</p>
-                        <p class="mode">Mode de jeu</p>
+                        <p class="description">Description: {{map.description}} </p>
+                        <p class="mode">Game Mode: {{map.mode}} </p>
                         <h2 class="name">{{ map.name }}</h2>
                     </div>
                 </div>
@@ -27,7 +25,7 @@
     <div class="footer">
         <button class="next-button" (click)="next()">Suivant</button>
         @if (showErrorMessage.userError) {
-        <div class="error-message">Error : No game was selected. Please select a game.</div>
+        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
         }
     </div>
 </div>

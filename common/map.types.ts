@@ -7,14 +7,11 @@ export enum TileCategory {
     Water = 'water',
     Ice = 'ice',
     Wall = 'wall',
-<<<<<<< HEAD
-=======
 }
 
 export enum Mode {
     Ctf = 'ctf',
     Normal = 'normal',
->>>>>>> dev
 }
 
 export enum ItemCategory {
