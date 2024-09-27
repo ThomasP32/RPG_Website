@@ -1,18 +1,18 @@
 <app-screenshot></app-screenshot>
 <div class="adminPage-container">
     <h2 class="header-item">{{ title }}</h2>
-    <button class="button" (click)="navigateToMain()"> Return to Main Menu </button>
-    <button class="button"> Start New Game</button>
+    <button class="button" (click)="navigateToMain()">Return to Main Menu</button>
+    <button class="button">Start New Game</button>
     <div class="map-list">
         @for(map of this.maps; track map.name) {
-        <div class="map-item" (click)="screenShot()">
+        <div class="map-item">
             <h2 class="map-name" (click)="deleteGame(map._id!.toString())">{{ map.name }}</h2>
             <p>preview image</p>
             <div class="map-description">{{ map.description }}</div>
             <div class="map-info">
                 <p class="map-details">Size : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                <p class="game-details">Mode : {{map.mode}}</p> 
-                <p class="map-details">Last modified : {{formatDate(map.lastModified!)}}</p>
+                <p class="game-details">Mode : {{ map.mode }}</p>
+                <p class="map-details">Last modified : {{ formatDate(map.lastModified!) }}</p>
                 <p class="map-modifiable-details" (click)="togglesVisibility(map._id!.toString())">
                     Visibilité : @if(map.isVisible) {
                     <span> Public </span>
