@@ -1,6 +1,6 @@
-import { Map } from '@app/model/database/map';
 import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
 import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
+import { Map } from '@app/model/schemas/map';
 import { AdminService } from '@app/services/admin/admin.service';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -102,7 +102,6 @@ export class AdminController {
         }
     }
 
-    
     @ApiOkResponse({
         description: 'Delete a course',
     })

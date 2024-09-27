@@ -1,5 +1,5 @@
-import { MapDocument } from '@app/model/database/map';
 import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
+import { MapDocument } from '@app/model/schemas/map';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';

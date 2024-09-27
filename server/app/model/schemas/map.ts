@@ -127,5 +127,4 @@ export class Map implements MapType {
     @ApiProperty()
     _id?: Types.ObjectId;
 }
-
 export const mapSchema = SchemaFactory.createForClass(Map);
