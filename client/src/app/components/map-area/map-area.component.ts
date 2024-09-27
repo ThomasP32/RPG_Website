@@ -59,7 +59,6 @@ export class MapAreaComponent implements OnInit {
     setCellSize() {
         const root = document.querySelector(':root') as HTMLElement;
         this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-        console.log('cellsize =', this.convertedCellSize);
         this.cdRef.detectChanges();
     }
 

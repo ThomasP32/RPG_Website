@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
@@ -11,11 +11,10 @@ import { Map } from '@common/map.types';
 })
 export class MaterialPageMapsComponent implements OnInit {
     maps: Map[] = [];
-    constructor(readonly communicationService: CommunicationService) {
-        this.communicationService.maps$.subscribe((maps) => (this.maps = maps));
+    constructor(readonly communicationMapService: CommunicationMapService) {
+        this.communicationMapService.maps$.subscribe((maps) => (this.maps = maps));
     }
 
     ngOnInit(): void {
-        this.communicationService.getMapsFromServer();
     }
 }
