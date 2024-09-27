@@ -21,23 +21,23 @@ export class CommunicationMapService {
         return this.http.get<Map[]>(`${this.baseUrl}/map`).pipe(catchError(this.handleError<Map[]>('basicGet')));
     }
 
-    // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
-    basicPost(map: Map): Observable<HttpResponse<string>> {
-        return this.http.post(`${this.baseUrl}/map`, map, { observe: 'response', responseType: 'text' });
-    }
+    // // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
+    // basicPost(map: Map): Observable<HttpResponse<string>> {
+    //     return this.http.post(`${this.baseUrl}/map`, map, { observe: 'response', responseType: 'text' });
+    // }
 
     // // fonction qui retourne un observable émettant soit la liste de jeux soit une erreur (emettre cest .next())
     // basicGet<T>(url: string): Observable<T> {
     //     return this.http.get<T>(`${this.baseUrl}/${url}`).pipe(catchError(this.handleError<T>('basicGet')));
     // }
 
-    // // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
-    // basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
-    //     return this.http.post(`${this.baseUrl}/${url}`, data, {
-    //         observe: 'response',
-    //         responseType: 'text',
-    //     });
-    // }
+    // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
+    basicPost(url: string, data: Map): Observable<HttpResponse<string>> {
+        return this.http.post(`${this.baseUrl}/${url}`, data, {
+            observe: 'response',
+            responseType: 'text',
+        });
+    }
 
     // basicPatch<T>(url: string, data?: T): Observable<HttpResponse<Object>> {
     //     return this.http.patch(`${this.baseUrl}/${url}`, data, {
@@ -64,15 +64,15 @@ export class CommunicationMapService {
     }
 
     // en appelant la fonction tu tabonne a lobservable et si elle retourne une reponse de reussite tu peux ajouter map à maps et setMap
-    sendMapToServer(map: Map): void {
-        // abonnement à basicPost qui prend en parametre un jeu et on attend sa réponse
-        this.basicPost(map).subscribe({
-            next: () => this.getMapsFromServer(),
-            error: (error) => {
-                console.log(error.error);
-            },
-        });
-    }
+    // sendMapToServer(map: Map): void {
+    //     // abonnement à basicPost qui prend en parametre un jeu et on attend sa réponse
+    //     this.basicPost(map).subscribe({
+    //         next: () => this.getMapsFromServer(),
+    //         error: (error) => {
+    //             console.log(error.error);
+    //         },
+    //     });
+    // }
 
     private handleError<T>(request: string, result?: T): (error: Error) => Observable<T> {
         return () => of(result as T);

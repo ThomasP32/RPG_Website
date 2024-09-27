@@ -35,6 +35,8 @@ export class MapControlBarComponent implements OnInit {
     ngOnInit(): void {
         this.getUrlParams();
         this.urlConverter(this.mode);
+        this.mapTitle = '';
+        this.mapDescription = '';
     }
 
     toggleEditTitle(): void {
@@ -68,8 +70,6 @@ export class MapControlBarComponent implements OnInit {
             this.mapService.setMapTitle(this.mapTitle);
             this.mapService.setMapDescription(this.mapDescription);
             this.mapService.generateMapData();
-            this.mapTitle = '';
-            this.mapDescription = '';
         } else {
             this.showErrorMessage.entryError = true;
             return;

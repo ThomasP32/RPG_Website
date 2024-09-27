@@ -26,8 +26,9 @@ export class ToolbarComponent {
     isStartingPointVisible: boolean = true;
 
     startingPointCounter: number;
-    flagCounter: number = 2;
-    randomItemCounter: number = 6;
+    flagCounter: number = 0;
+    randomItemCounter: number;
+    itemsCounter: number;
 
     constructor(
         private route: ActivatedRoute,
@@ -39,6 +40,12 @@ export class ToolbarComponent {
         this.urlConverter(this.mode);
         this.mapService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
+        });
+        this.mapService.randomItemCounter$.subscribe((counter) => {
+            this.randomItemCounter = counter;
+        });
+        this.mapService.itemsCounter$.subscribe((counter) => {
+            this.itemsCounter = counter;
         });
     }
 
@@ -81,6 +88,9 @@ export class ToolbarComponent {
 
     startDrag(event: DragEvent, itemType: string) {
         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
+            event.dataTransfer?.setData('item', itemType);
+            console.log('Dragging:', itemType);
+        } else if (itemType === 'random' && this.randomItemCounter > 0) {
             event.dataTransfer?.setData('item', itemType);
             console.log('Dragging:', itemType);
         } else if (itemType) {

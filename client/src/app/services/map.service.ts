@@ -13,13 +13,17 @@ export class MapService {
     private mapTitleSource = new BehaviorSubject<string>('');
     private mapDescriptionSource = new BehaviorSubject<string>('');
 
-    private startingPointCounterSource = new BehaviorSubject<number>(10);
+    private startingPointCounterSource = new Subject<number>();
+    private randomItemtCounterSource = new Subject<number>();
+    private itemsCounterSource = new Subject<number>();
 
     resetMap$ = this.resetMapSource.asObservable();
     generateMap$ = this.generateMapSource.asObservable();
     mapTitle$ = this.mapTitleSource.asObservable();
     mapDescription$ = this.mapDescriptionSource.asObservable();
     startingPointCounter$ = this.startingPointCounterSource.asObservable();
+    randomItemCounter$ = this.randomItemtCounterSource.asObservable();
+    itemsCounter$ = this.randomItemtCounterSource.asObservable();
 
     constructor(private CommunicationMapService: CommunicationMapService) {}
 
@@ -36,6 +40,14 @@ export class MapService {
         this.startingPointCounterSource.next(value);
     }
 
+    updateRandomItemCounter(value: number) {
+        this.randomItemtCounterSource.next(value);
+    }
+
+    updateItemsCounter(value: number) {
+        this.itemsCounterSource.next(value);
+    }
+
     generateMapData() {
         this.generateMapSource.next();
     }
@@ -45,11 +57,12 @@ export class MapService {
         this.resetMapSource.next();
     }
 
-    saveMap(mapData: Map): void {
+    saveMap(map: Map) {
+        console.log('MapService: Triggering map saving');
         try {
-            // const mapData = this.generateMapData();
-            this.CommunicationMapService.sendMapToServer(mapData);
-            console.log('Map saved', mapData);
+            this.CommunicationMapService.basicPost('admin/creation', map).subscribe((error) => {
+                console.log(error, 'La map a été save');
+            });
         } catch (error) {
             console.error('Error while saving map:', error);
         }
