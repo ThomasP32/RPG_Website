@@ -7,18 +7,18 @@
     <div class="map-list">
         @for(map of this.maps; track map.name) {
         <div class="map-item">
-            <h2 class="map-name">{{ map.name }}</h2>
+            <h2 class="map-name" (click)="deleteGame(map._id!.toString())">{{ map.name }}</h2>
             <p>preview image</p>
-            <div class="map-description">descirption to be added to server on hover</div>
+            <div class="map-description">{{ map.description }}</div>
             <div class="map-info">
                 <p class="map-details">Size : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                <!-- <p class="game-details">Mode : {{game.mode}}</p> -->
-                <p class="map-details">Last modified : to be added to server</p>
-                <p class="map-details">
-                    Visibility : @if(map.isVisible) {
+                <p class="game-details">Mode : {{map.mode}}</p> 
+                <p class="map-details">Last modified : {{formatDate(map.lastModified!)}}</p>
+                <p class="map-modifiable-details" (click)="togglesVisibility(map._id!.toString())">
+                    Visibilité : @if(map.isVisible) {
                     <span> Public </span>
                     } @else {
-                    <span> Private </span>
+                    <span (click)="togglesVisibility(map._id!.toString())"> Privé </span>
                     }
                 </p>
             </div>

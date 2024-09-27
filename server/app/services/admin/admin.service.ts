@@ -133,7 +133,7 @@ export class AdminService {
         return await this.mapModel.findByIdAndUpdate(map._id, map, { new: true, upsert: true });
     }
 
-    private async visibilityToggle(mapId: string) {
+    public async visibilityToggle(mapId: string) {
         const map = await this.getMapById(mapId);
         return await this.mapModel.findByIdAndUpdate(
             map._id,
