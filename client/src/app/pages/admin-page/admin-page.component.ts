@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, MapComponent],
+    imports: [RouterLink],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
@@ -22,10 +22,11 @@ export class AdminPageComponent implements OnInit {
     constructor(
         private router: Router,
         private communicationMapService: CommunicationMapService,
-    ) {
-        // this.communicationMapService.maps$.subscribe((map) => {
-        //     this.maps = maps;
-        // });
+    ) {}
+
+    
+    ngOnInit(): void {
+        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
     }
 
     @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
@@ -39,13 +40,6 @@ export class AdminPageComponent implements OnInit {
     onCloseModal(): void {
         this.isMapVisible = false;
     }
-
-    ngOnInit(): void {
-        this.communicationMapService.basicGet('admin').subscribe((maps) => {
-            this.maps = maps as Map[];
-        });
-    }
-
     navigateToMain(): void {
         this.router.navigate(['/mainmenu']);
     }
@@ -65,14 +59,6 @@ export class AdminPageComponent implements OnInit {
             console.error('Error deleting game:', error);
         }
     }
-
-    // showDescription(): void {
-
-    // }
-
-    // hideDescription(): void {
-    //     // game.showDescription = false
-    // }
 
     updateDisplay(): void {
         this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));

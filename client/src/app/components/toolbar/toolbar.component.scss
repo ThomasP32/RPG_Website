@@ -96,7 +96,6 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    // background-color: #2C3E50;
     cursor: pointer;
     transition:
         background-color 0.3s,
@@ -143,11 +142,12 @@ button:hover {
 
 .description {
     visibility: hidden;
-    background-color: #333;
+    background-color: #3b3b3b;
+    border: 2px solid #202020;
     color: #fff;
     text-align: center;
     padding: 5px 10px;
-    border-radius: 6px;
+    // border-radius: 6px;
     position: absolute;
     z-index: 1;
     top: 100%;

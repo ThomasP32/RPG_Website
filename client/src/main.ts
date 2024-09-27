@@ -3,14 +3,13 @@ import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter } from '@angular/router';
-import { WaitingRoomComponent } from '@app/components/waiting-room/waiting-room.component';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
+import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { GameCreationPageComponent } from '@app/pages/map-creation-page/game-creation-page.component';
-import { MaterialPageMapsComponent } from '@app/pages/material-page/material-page-map.component';
-import { StartGamePageComponent } from '@app/pages/start-game-page/start-game-page.component';
+import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { environment } from './environments/environment';
 
@@ -24,11 +23,14 @@ const routes: Routes = [
     { path: 'map-creation', component: MapComponent },
     { path: 'creation/:size/:mode', component: GameCreationPageComponent },
     { path: 'edition/:id', component: GameCreationPageComponent },
-    { path: 'material', component: MaterialPageMapsComponent },
-    { path: 'create-game', component: StartGamePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
-    { path: 'waiting-room', component: WaitingRoomComponent },
+    { path: 'create-game', component: GameChoicePageComponent },
+    { path: 'admin-page', component: AdminPageComponent },
+    { path: 'create-character', component: CharacterFormPageComponent },
+    { path: 'create-character/:id', component: CharacterFormPageComponent },
+    { path: 'waiting-room', component: WaitingRoomPageComponent },
+    { path: 'waiting-room/:id', component: WaitingRoomPageComponent },
     { path: '**', redirectTo: '/mainmenu' },
 ];
 

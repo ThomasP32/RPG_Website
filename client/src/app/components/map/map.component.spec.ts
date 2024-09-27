@@ -49,6 +49,7 @@ describe('MapComponent', () => {
         expect(component.mapSize).toBe(20);
         expect(component.nbItems).toBe(6);
     });
+<<<<<<< HEAD
     
     it('should redirect to the correct URL with mapSize and selectedMode', () => {
         const componentMock = { 
@@ -62,6 +63,14 @@ describe('MapComponent', () => {
         expect(window.location.href).toBe('/game-creation/size=10/:mode=mode1');
         expect(component.showErrorMessage.entryError).toBe(false); 
       });
+=======
+
+    it('should handle invalid size', () => {
+        spyOn(console, 'error');
+        component.sizeConversion('invalid' as unknown); // Cast to any to bypass type checking
+        expect(console.error).toHaveBeenCalledWith('Invalid size value:', 'invalid');
+    });
+>>>>>>> dev
 
     it('should update selected mode', () => {
         spyOn(console, 'log');
