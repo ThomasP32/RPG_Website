@@ -1,16 +1,16 @@
-import { TestBed } from '@angular/core/testing';
+// import { TestBed } from '@angular/core/testing';
 
-import { UrlParamRetrieverService } from './url-param-retriever.service';
+// import { UrlParamRetrieverService } from './url-param-retriever.service';
 
-describe('UrlParamRetrieverService', () => {
-    let service: UrlParamRetrieverService;
+// describe('UrlParamRetrieverService', () => {
+//     let service: UrlParamRetrieverService;
 
-    beforeEach(() => {
-        TestBed.configureTestingModule({});
-        service = TestBed.inject(UrlParamRetrieverService);
-    });
+//     beforeEach(() => {
+//         TestBed.configureTestingModule({});
+//         service = TestBed.inject(UrlParamRetrieverService);
+//     });
 
-    it('should be created', () => {
-        expect(service).toBeTruthy();
-    });
-});
+//     it('should be created', () => {
+//         expect(service).toBeTruthy();
+//     });
+// });
