@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
 import { Map } from '@common/map.types';
-import { ScreenshotComponent } from "../../components/screenshot/screenshot.component";
+import { ScreenshotComponent } from '../../services/screenshot/screenshot.component';
 
 @Component({
     selector: 'app-admin-page',
@@ -14,7 +14,7 @@ import { ScreenshotComponent } from "../../components/screenshot/screenshot.comp
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
-    
+
     constructor(
         private router: Router,
         private communicationService: CommunicationMapService,
