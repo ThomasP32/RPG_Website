@@ -37,8 +37,8 @@ export class MapController {
     @Get('/:mapName')
     async getMapByName(@Param('mapName') mapName: string, @Res() response: Response) {
         try {
-            const course = await this.mapService.getMapByName(mapName);
-            response.status(HttpStatus.OK).json(course);
+            const map = await this.mapService.getMapByName(mapName);
+            response.status(HttpStatus.OK).json(map);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
         }
