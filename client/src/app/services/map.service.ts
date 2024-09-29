@@ -22,11 +22,11 @@ export class MapService {
     private startingPointCounterSource = new Subject<number>();
     startingPointCounter$ = this.startingPointCounterSource.asObservable();
 
-    private randomItemtCounterSource = new Subject<number>();
-    randomItemCounter$ = this.randomItemtCounterSource.asObservable();
+    private randomItemCounterSource = new Subject<number>();
+    randomItemCounter$ = this.randomItemCounterSource.asObservable();
 
     private itemsCounterSource = new Subject<number>();
-    itemsCounter$ = this.randomItemtCounterSource.asObservable();
+    itemsCounter$ = this.randomItemCounterSource.asObservable();
 
     constructor(private CommunicationMapService: CommunicationMapService) {}
 
@@ -43,7 +43,7 @@ export class MapService {
     }
 
     updateRandomItemCounter(value: number) {
-        this.randomItemtCounterSource.next(value);
+        this.randomItemCounterSource.next(value);
     }
 
     updateItemsCounter(value: number) {
@@ -59,11 +59,22 @@ export class MapService {
         this.resetMapSource.next();
     }
 
-    saveMap(map: Map) {
+    saveNewMap(map: Map) {
         console.log('MapService: Triggering map saving');
         try {
             this.CommunicationMapService.basicPost('admin/creation', map).subscribe((error) => {
                 console.log(error, 'La map a été save');
+            });
+        } catch (error) {
+            console.error('Error while saving map:', error);
+        }
+    }
+
+    saveEditedMap(map: Map) {
+        console.log('MapService: Triggering map saving');
+        try {
+            this.CommunicationMapService.basicPatch('admin/edition', map).subscribe((error) => {
+                console.log(error, 'La map a été modifiée & save');
             });
         } catch (error) {
             console.error('Error while saving map:', error);

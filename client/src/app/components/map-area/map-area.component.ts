@@ -257,14 +257,18 @@ export class MapAreaComponent implements OnInit {
     }
 
     resetMapToDefault() {
-        for (let i = 0; i < this.Map.length; i++) {
+        if (this.route.snapshot.params['mode']){
+              for (let i = 0; i < this.Map.length; i++) {
             for (let j = 0; j < this.Map[i].length; j++) {
                 this.Map[i][j].value = this.defaultTile;
                 this.Map[i][j].item = undefined;
             }
         }
         this.setCountersBasedOnMapSize(this.convertedMapSize);
-        console.log('Map has been reset to default');
+        } else {
+            this.loadMap(this.map);
+        }
+      
     }
 
     public generateMapData(): Map {
@@ -406,13 +410,12 @@ export class MapAreaComponent implements OnInit {
             this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
             this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
         });
-
         map.startTiles.forEach((start) => {
-            this.Map[start.coordinate.x][start.coordinate.y].value = 'starting-point';
+            this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
         });
 
         map.items.forEach((item) => {
-            this.Map[item.coordinate.x][item.coordinate.y].value = 'item';
+            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
     }
 }
