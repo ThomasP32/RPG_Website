@@ -6,7 +6,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule); // creation d'une instance de l'application
     app.setGlobalPrefix('api'); // ajoute un préfixe global à toute les routes (/courses devient /api/courses)
-    app.useGlobalPipes(new ValidationPipe()); // verifie les données du corps de la requete, param url, etc
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            transform: true,
+        }),
+    );
     app.enableCors();
 
     const config = new DocumentBuilder() // configure swagger qui genere documentation interactive de l'api
