@@ -83,8 +83,9 @@ export class AdminService {
     }
 
     async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DBMap> {
-        this.verifyMapModification(mapId, updateMapDto);
+        await this.verifyMapModification(mapId, updateMapDto);
         try {
+            this.verifyMapModification(mapId, updateMapDto);
             const existingMap = await this.mapModel.findById(mapId);
 
             if (existingMap) {

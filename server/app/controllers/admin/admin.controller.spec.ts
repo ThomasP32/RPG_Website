@@ -101,8 +101,9 @@ describe('AdminController', () => {
         await controller.addMap(createMapDto, res);
     });
 
-    it('addMap() should return BAD_REQUEST if adding the map fails', async () => {
-        const createMapDto = {
+    it('addMap() should return BAD_REQUEST with message if adding the map fails', async () => {
+        // Arrange
+        const mapDto = {
             name: 'New Map',
             description: 'Test map',
             imagePreview: 'http://example.com/test.png',
@@ -114,7 +115,41 @@ describe('AdminController', () => {
             doorTiles: [],
         };
 
-        adminService.addMap.rejects(new Error('Failed to add map'));
+        // Simuler une erreur générique (sans message particulier) dans addMap()
+        adminService.addMap.rejects(new Error());
+
+        // Préparer l'objet de réponse simulé
+        const res = {} as unknown as Response;
+        res.status = (code: number) => {
+            expect(code).toEqual(HttpStatus.BAD_REQUEST);
+            return res;
+        };
+        res.json = (payload) => {
+            expect(payload).toEqual({
+                status: HttpStatus.BAD_REQUEST,
+                message: 'La création du jeu a échoué',
+            });
+            return res;
+        };
+
+        // Act
+        await controller.addMap(mapDto, res);
+    });
+
+    it('modifyMap() should return BAD_REQUEST with message if updating the map fails', async () => {
+        const mapDto = {
+            name: 'New Map',
+            description: 'Test map',
+            imagePreview: 'http://example.com/test.png',
+            mode: Mode.Ctf,
+            mapSize: { x: 20, y: 20 },
+            startTiles: [],
+            items: [],
+            tiles: [],
+            doorTiles: [],
+        };
+
+        adminService.modifyMap.rejects(new Error());
 
         const res = {} as unknown as Response;
         res.status = (code: number) => {
@@ -124,12 +159,12 @@ describe('AdminController', () => {
         res.json = (payload) => {
             expect(payload).toEqual({
                 status: HttpStatus.BAD_REQUEST,
-                message: 'Failed to add map',
+                message: 'La modification du jeu a échoué',
             });
             return res;
         };
 
-        await controller.addMap(createMapDto, res);
+        await controller.modifyMap(new Types.ObjectId().toString(), mapDto, res);
     });
 
     it('getMapById() should return the map with the specified ID', async () => {
