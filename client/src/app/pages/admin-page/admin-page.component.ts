@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map } from '@common/map.types';
+import { DBMap as Map } from '@common/map.types';
 
 @Component({
     selector: 'app-admin-page',
