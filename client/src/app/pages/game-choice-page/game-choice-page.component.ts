@@ -5,7 +5,7 @@ import { CommunicationMapService } from '@app/services/communication.map.service
 import { Map } from '@common/map.types';
 
 @Component({
-    selector: 'game-choice-page',
+    selector: 'app-game-choice-page',
     standalone: true,
     templateUrl: './game-choice-page.component.html',
     styleUrls: ['./game-choice-page.component.scss'],
