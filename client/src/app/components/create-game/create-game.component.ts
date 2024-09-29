@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.map.service';
+import { CommunicationService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({

@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map, Mode } from '@common/map.types';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { DBMap as Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
 import { GameChoicePageComponent } from './game-choice-page.component';
 
 const mockMaps: Map[] = [
     {
         _id: '1',
+        isVisible: true,
         name: 'Map1',
         description: 'Description1',
         imagePreview: 'image1.png',
@@ -22,6 +23,7 @@ const mockMaps: Map[] = [
     },
     {
         _id: '2',
+        isVisible: true,
         name: 'Map2',
         description: 'Description2',
         imagePreview: 'image2.png',
