@@ -1,0 +1,55 @@
+import { Mode } from '@common/map.types';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
+import { DoorTileDto } from './door.dto';
+import { ItemDto, TileDto } from './tiles.dto';
+import { CoordinateDto, StartTileDto } from './coordinate.dto';
+
+export class MapDto {
+    @ApiProperty()
+    @IsString()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    imagePreview: string;
+
+    @ApiProperty({ enum: Mode })
+    @IsEnum(Mode)
+    mode: Mode;
+
+    @ApiProperty({ type: CoordinateDto })
+    @ValidateNested()
+    @Type(() => CoordinateDto)
+    mapSize: CoordinateDto;
+
+    @ApiProperty({ type: [StartTileDto] })
+    @IsArray()
+    @ArrayNotEmpty()
+    @ValidateNested({ each: true })
+    @Type(() => StartTileDto)
+    startTiles: StartTileDto[];
+
+    @ApiProperty({ type: [ItemDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ItemDto)
+    items: ItemDto[];
+
+    @ApiProperty({ type: [TileDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => TileDto)
+    tiles: TileDto[];
+
+    @ApiProperty({ type: [DoorTileDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => DoorTileDto)
+    doorTiles: DoorTileDto[];
+}

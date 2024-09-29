@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map } from '@common/map.types';
-import { ScreenshotComponent } from '../../services/screenshot/screenshot.component';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { DBMap as Map } from '@common/map.types';
 
 @Component({
     selector: 'app-admin-page',
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, ScreenshotComponent],
+    imports: [RouterLink],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
