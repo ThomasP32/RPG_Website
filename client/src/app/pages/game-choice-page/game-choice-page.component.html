@@ -13,9 +13,10 @@
                 <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
                     <!-- <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" /> -->
                     <div class="map-details">
-                        <p class="description">Description: {{map.description}} </p>
-                        <p class="mode">Game Mode: {{map.mode}} </p>
+                        <p class="description">Description: {{ map.description }}</p>
+                        <p class="mode">Game Mode: {{ map.mode }}</p>
                         <h2 class="name">{{ map.name }}</h2>
+                        <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
                     </div>
                 </div>
                 }
