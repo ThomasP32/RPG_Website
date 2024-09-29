@@ -15,7 +15,10 @@ import { firstValueFrom } from 'rxjs';
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
-    deleteTriggered = false;
+    deleteTriggered: { [mapId: string]: boolean } = {}; 
+    isMapVisible = false;
+
+    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
 
     @Input() mapId: string = '';
 
@@ -25,12 +28,8 @@ export class AdminPageComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
+        this.updateDisplay();    
     }
-
-    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
-
-    isMapVisible = false;
 
     toggleGameCreationModalVisibility(): void {
         this.isMapVisible = true;

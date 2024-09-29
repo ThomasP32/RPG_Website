@@ -31,12 +31,17 @@
                         }
                     </p>
                     <button class="edit-button" (click)="editGame(map)">Modifier</button>
-                    <button class="map-delete" (click)="deleteTriggered = true">Supprimer</button>
-                    @if(deleteTriggered === true) {
+                    <button class="map-delete" (click)="deleteTriggered[map._id!.toString()] = true">Supprimer</button>
+                    <div class="map-actions">
+                        <button (click)="toggleVisibility(map._id!.toString())">
+                            {{ map.isVisible ? 'Cacher' : 'Afficher' }}
+                        </button>
+                    </div>
+                    @if(deleteTriggered[map._id!.toString()]) {
                         <div class="delete-confirmation">
                             <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
                             <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
-                            <button class="delete-confirmation-button" (click)="deleteTriggered = false">Non</button>
+                            <button class="delete-confirmation-button" (click)="deleteTriggered[map._id!.toString()] = false">Non</button>
                         </div>
                     }
                 </div>
@@ -44,12 +49,4 @@
             }
     </div>
     }
-    
-        <!-- <div class="map-actions">
-            
-            <button (click)="toggleVisibility(map._id.toString())">
-                {{ map.isVisible ? 'Cacher' : 'Afficher' }}
-            </button>
-        </div> -->
-  
-<!-- </div> -->
+</div>
