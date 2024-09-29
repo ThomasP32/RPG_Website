@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationMapService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
 
 @Component({

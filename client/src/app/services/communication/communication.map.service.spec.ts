@@ -1,7 +1,7 @@
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
+import { ItemCategory, DBMap as Map, Mode, TileCategory } from '@common/map.types';
 import { environment } from 'src/environments/environment';
 import { CommunicationMapService } from './communication.map.service';
 
@@ -14,7 +14,7 @@ const mockResponse: Map = {
     isVisible: true,
     mapSize: { x: 10, y: 10 },
     startTiles: [{ coordinate: { x: 1, y: 1 } }],
-    items: [{ coordinate: { x: 2, y: 2 }, category: ItemCategory.Sword }],
+    items: [{ coordinate: { x: 2, y: 2 }, category: ItemCategory.Hat }],
     doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
     tiles: [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Water }],
     lastModified: new Date(),
@@ -61,7 +61,7 @@ describe('CommunicationMapService', () => {
     });
 
     it('should perform a POST request', () => {
-        const mockMap: Map = { ...mockResponse, _id: undefined }; // Remove _id for POST request
+        const mockMap: Map = { ...mockResponse }; // Remove _id for POST request
 
         service.basicPost('map', mockMap).subscribe((response) => {
             expect(response.body).toBe('Success');

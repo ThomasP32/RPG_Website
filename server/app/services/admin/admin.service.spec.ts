@@ -1,7 +1,7 @@
 import { MapDto } from '@app/model/dto/map/map.dto';
 import { Map, MapDocument, mapSchema } from '@app/model/schemas/map.schema';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
-import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -157,28 +157,60 @@ describe('AdminServiceEndToEnd', () => {
 
     it('visibilityToggle() should throw NotFoundException if the map does not exist', async () => {
         const nonExistentMapId = new Types.ObjectId().toString();
-
         await expect(service.visibilityToggle(nonExistentMapId)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw error when start tiles are not placed', async () => {
         await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow('Toutes les tuiles de départ doivent être placées');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto())).rejects.toThrow(
+            'Toutes les tuiles de départ doivent être placées',
+        );
     });
 
     it('should throw error when doors are not free', async () => {
         await expect(service.addMap(getFakeInvalidMapDto2())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.addMap(getFakeInvalidMapDto22())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto2())).rejects.toThrow(
+            'Toutes les portes doivent être libérées',
+        );
     });
 
     it('should throw error when elements are out of bounds', async () => {
         await expect(service.addMap(getFakeInvalidMapDto4())).rejects.toThrow("Tous les éléments doivent être à l'intérieur de la carte");
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto4())).rejects.toThrow(
+            "Tous les éléments doivent être à l'intérieur de la carte",
+        );
     });
 
     it('should throw error when there are isolated ground tiles', async () => {
         await expect(service.addMap(getFakeInvalidMapDto5())).rejects.toThrow('Le jeu ne doit pas avoir de tuile de terrain isolée');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto5())).rejects.toThrow(
+            'Le jeu ne doit pas avoir de tuile de terrain isolée',
+        );
     });
 
     it('should throw error when less than 50% are grass tiles', async () => {
         await expect(service.addMap(getFakeInvalidMapDto6())).rejects.toThrow('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto6())).rejects.toThrow(
+            'La surface de jeu doit contenir plus de 50% de tuiles de terrain',
+        );
+    });
+
+    it('should throw exceptions when adding map with name that already exists', async () => {
+        const mapDto: MapDto = {
+            name: 'testMap',
+            description: 'test description',
+            imagePreview: 'test-image-url',
+            mode: Mode.Normal,
+            mapSize: { x: 10, y: 10 },
+            startTiles: [{ coordinate: { x: 12, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
+            items: [],
+            tiles: [],
+            doorTiles: [],
+        };
+        await mapModel.insertMany([mapDto]);
+        await expect(service.verifyMap(mapDto)).rejects.toThrow(ConflictException);
+        await expect(service.verifyMapModification(new Types.ObjectId().toString(), mapDto)).rejects.toThrow(ConflictException);
     });
 
     const getFakeMap = (): MapDto => ({
@@ -240,8 +272,31 @@ describe('AdminServiceEndToEnd', () => {
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
+            { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
+            { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
+        doorTiles: [
+            { coordinate: { x: 1, y: 3 }, isOpened: true },
+            { coordinate: { x: 4, y: 1 }, isOpened: true },
+        ],
+    });
+
+    // door problem 2
+    const getFakeInvalidMapDto22 = (): MapDto => ({
+        name: getRandomString(),
+        description: getRandomString(),
+        imagePreview: getRandomString(),
+        mode: getRandomEnumValue(Mode),
+        mapSize: { x: 10, y: 10 },
+        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
+        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        tiles: [
+            { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
+            { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }],
     });
 
     // out of bounds
