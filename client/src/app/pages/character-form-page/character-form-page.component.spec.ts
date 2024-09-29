@@ -98,17 +98,27 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should select the previous character', () => {
-        component.characters = mockCharacters;
         component.currentIndex = 1;
         component.previousCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
     it('should select the next character', () => {
-        component.characters = mockCharacters;
         component.currentIndex = 0;
         component.nextCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+    });
+
+    it('should select the last character when selecting previous character from the first', () => {
+        component.currentIndex = 0;
+        component.previousCharacter();
+        expect(component.selectedCharacter).toEqual(mockCharacters[mockCharacters.length - 1]);
+    });
+
+    it('should select the first character when selecting next character from the last', () => {
+        component.currentIndex = mockCharacters.length - 1;
+        component.nextCharacter();
+        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
     it('should add life bonus', () => {
@@ -164,17 +174,18 @@ describe('CharacterFormPageComponent', () => {
         expect(component.characterName).toBe('Test Name');
     });
 
-    // it('should handle onSubmit correctly when map is not found', fakeAsync(() => {
-    //     communicationMapService.basicGet.and.returnValue(of(null));
-    //     component.onSubmit();
-    //     tick();
-    //     expect(router.navigate).toHaveBeenCalledWith(['/create-game']);
-    // }));
+    it('should handle onSubmit correctly when map is not found', fakeAsync(() => {
+        communicationMapService.basicGet.and.returnValue(of(undefined));
+        component.onSubmit();
+        tick(5000);
+        expect(component.showErrorMessage.selectionError).toBeTrue();
+        expect(router.navigate).toHaveBeenCalledWith(['/create-game']);
+    }));
 
     it('should handle onSubmit correctly when map is found', fakeAsync(() => {
         communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
         component.onSubmit();
-        tick();
+        tick(5000);
         expect(router.navigate).toHaveBeenCalledWith(['/waiting-room'], { queryParams: { name: mockMaps[0].name } });
     }));
 
