@@ -16,6 +16,7 @@ describe('CharacterService', () => {
 
     it('should return an observable of characters', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
+            /* eslint-disable @typescript-eslint/no-magic-numbers */
             expect(characters.length).toBe(12);
             expect(characters[0].name).toBe('Alistair Clockhaven');
             expect(characters[1].name).toBe('Arachnoform');
@@ -37,6 +38,7 @@ describe('CharacterService', () => {
     it('should return characters with correct IDs', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
             const ids = characters.map((c) => c.id);
+            /* eslint-disable @typescript-eslint/no-magic-numbers */
             expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
             done();
         });
