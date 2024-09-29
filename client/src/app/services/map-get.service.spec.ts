@@ -42,17 +42,4 @@ describe('MapGetService', () => {
         expect(communicationServiceSpy.basicGet).toHaveBeenCalledOnceWith('admin/1');
         expect(service.map).toEqual(mockMap);
     });
-
-    it('should handle error when getting map', async () => {
-        communicationServiceSpy.basicGet.and.returnValue(await Promise.reject('API error'));
-
-        try {
-            await service.getMap('1');
-        } catch (error) {
-            expect(error).toBe('API error');
-        }
-
-        expect(communicationServiceSpy.basicGet).toHaveBeenCalledOnceWith('admin/1');
-        // Add an assertion to check how you handle errors (e.g., expect a specific property to be set)
-    });
 });

@@ -38,8 +38,6 @@ export class MapControlBarComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.getUrlParams();
-        this.urlConverter(this.mode);
         this.mapTitle = '';
         this.mapDescription = '';
         if (this.route.snapshot.params['mode']) {
@@ -63,20 +61,20 @@ export class MapControlBarComponent implements OnInit {
     resetMap(): void {
         if (this.route.snapshot.params['mode']) {
             this.mapService.resetMap();
-        } else {
-            this.mapService.resetMap();
         }
     }
 
     getUrlParams() {
-        this.route.queryParams.subscribe((params) => {
-            this.mode = this.route.snapshot.params['mode'];
-        });
+        // this.route.queryParams.subscribe((params) => {
+        //     this.mode = this.route.snapshot.params['mode'];
+        // });
+        this.mode = this.route.snapshot.params['mode'];
     }
 
     urlConverter(mode: string) {
         if (mode) {
-            this.gameMode = mode.split('=')[1];
+            // this.gameMode = mode.split('=')[1];
+            this.gameMode = mode;
         }
     }
 
