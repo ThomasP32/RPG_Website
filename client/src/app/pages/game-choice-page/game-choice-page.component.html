@@ -16,7 +16,7 @@
                         <p class="description">Description: {{ map.description }}</p>
                         <p class="mode">Game Mode: {{ map.mode }}</p>
                         <h2 class="name">{{ map.name }}</h2>
-                        <img src="{{ map.imagePreview }}" alt="map-preview" class="map-img" />
+                        <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
                     </div>
                 </div>
                 }
