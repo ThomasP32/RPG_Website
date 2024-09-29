@@ -1,4 +1,4 @@
-import { Map } from '@app/model/schemas/map';
+import { Map } from '@app/model/schemas/map.schema';
 import { MapService } from '@app/services/map/map.service';
 import { Controller, Get, HttpStatus, Param, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
