@@ -1,4 +1,4 @@
-import { Map } from '@app/model/schemas/map';
+import { Map } from '@app/model/schemas/map.schema';
 import { MapService } from '@app/services/map/map.service';
 import { Controller, Get, HttpStatus, Param, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -37,8 +37,8 @@ export class MapController {
     @Get('/:mapName')
     async getMapByName(@Param('mapName') mapName: string, @Res() response: Response) {
         try {
-            const course = await this.mapService.getMapByName(mapName);
-            response.status(HttpStatus.OK).json(course);
+            const map = await this.mapService.getMapByName(mapName);
+            response.status(HttpStatus.OK).json(map);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
         }
