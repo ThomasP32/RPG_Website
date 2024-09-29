@@ -33,6 +33,8 @@ export class CharacterFormPageComponent {
     selectedCharacter: Character;
     characters: Character[] = [];
 
+    currentIndex: number = 0;
+
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;
@@ -40,7 +42,7 @@ export class CharacterFormPageComponent {
 
     mapName: string | null = null;
     maps: Map[] = [];
-    map: Map;
+    // map: Map;
     showErrorMessage: { selectionError: boolean } = {
         selectionError: false,
     };
@@ -48,8 +50,6 @@ export class CharacterFormPageComponent {
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
     private readonly route: ActivatedRoute = inject(ActivatedRoute);
-
-    private currentIndex: number = 0;
 
     constructor(private communicationMapService: CommunicationMapService) {
         // Assume characters are fetched from a service
