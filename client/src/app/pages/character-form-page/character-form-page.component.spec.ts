@@ -114,14 +114,18 @@ describe('CharacterFormPageComponent', () => {
     it('should add life bonus', () => {
         component.lifeOrSpeedBonus = 'life';
         component.addBonus();
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(component.life).toBe(6);
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(component.speed).toBe(4);
     });
 
     it('should add speed bonus', () => {
         component.lifeOrSpeedBonus = 'speed';
         component.addBonus();
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(component.life).toBe(4);
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(component.speed).toBe(6);
     });
 
