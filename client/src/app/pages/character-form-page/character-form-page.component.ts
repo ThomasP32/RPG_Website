@@ -3,8 +3,8 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
-import { CharacterService } from '@app/services/character.service';
-import { CommunicationMapService } from '@app/services/communication.map.service';
+import { CharacterService } from '@app/services/character/character.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 

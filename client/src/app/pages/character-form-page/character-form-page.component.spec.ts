@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Character } from '@app/interfaces/character';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map, Mode } from '@common/map.types';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { DBMap as Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
 
@@ -26,6 +26,7 @@ const mockCharacters: Character[] = [
 const mockMaps: Map[] = [
     {
         _id: '1',
+        isVisible: true,
         name: 'Map1',
         description: 'Description1',
         imagePreview: 'image1.png',
@@ -39,6 +40,7 @@ const mockMaps: Map[] = [
     },
     {
         _id: '2',
+        isVisible: true,
         name: 'Map2',
         description: 'Description2',
         imagePreview: 'image2.png',
