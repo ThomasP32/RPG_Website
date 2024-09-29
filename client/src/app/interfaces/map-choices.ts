@@ -16,4 +16,3 @@ export enum NbItems {
     Medium = MEDIUM_MAP_ITEMS,
     Large = LARGE_MAP_ITEMS,
 }
-

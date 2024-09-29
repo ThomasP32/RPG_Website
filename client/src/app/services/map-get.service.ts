@@ -4,26 +4,14 @@ import { firstValueFrom } from 'rxjs';
 import { CommunicationMapService } from './communication.map.service';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class MapGetService {
+    map!: Map;
 
-  map!: Map;
+    constructor(private communicationMapService: CommunicationMapService) {}
 
-  constructor(
-    private communicationMapService: CommunicationMapService
-  ) { }
-
-
-  async getMap(id: string): Promise<void> {
-    this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
-  }
-
-
-  
-
-
-
-
-
+    async getMap(id: string): Promise<void> {
+        this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
+    }
 }

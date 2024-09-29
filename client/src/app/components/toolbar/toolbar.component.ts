@@ -98,13 +98,10 @@ export class ToolbarComponent implements OnInit {
     startDrag(event: DragEvent, itemType: string) {
         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
             event.dataTransfer?.setData('item', itemType);
-            console.log('Dragging:', itemType);
         } else if (itemType === 'random' && this.randomItemCounter > 0) {
             event.dataTransfer?.setData('item', itemType);
-            console.log('Dragging:', itemType);
         } else if (itemType) {
             event.dataTransfer?.setData('item', itemType);
-            console.log('Dragging:', itemType);
         }
     }
 

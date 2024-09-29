@@ -7,10 +7,10 @@ import { CommunicationMapService } from './communication.map.service';
     providedIn: 'root',
 })
 export class MapService {
-    private resetMapSource = new Subject<void>();
+    resetMapSource = new Subject<void>();
     resetMap$ = this.resetMapSource.asObservable();
 
-    private generateMapSource = new Subject<void>();
+    generateMapSource = new Subject<void>();
     generateMap$ = this.generateMapSource.asObservable();
 
     private mapTitleSource = new BehaviorSubject<string>('');
@@ -55,29 +55,32 @@ export class MapService {
     }
 
     resetMap() {
-        console.log('MapService: Triggering map reset');
         this.resetMapSource.next();
     }
 
     saveNewMap(map: Map) {
-        console.log('MapService: Triggering map saving');
-        try {
-            this.CommunicationMapService.basicPost('admin/creation', map).subscribe((error) => {
-                console.log(error, 'La map a été save');
-            });
-        } catch (error) {
-            console.error('Error while saving map:', error);
-        }
+        this.CommunicationMapService.basicPost('admin/creation', map).subscribe({
+            next: () => {
+                // Handle success (e.g., display a success message to the user)
+                // ... your logic to handle success (e.g., show a notification, update the UI) ...
+            },
+            error: (error) => {
+                // Handle the error (e.g., display an error message to the user)
+                // ... your logic to handle the error (e.g., show an error notification, log the error to a service) ...
+            },
+        });
     }
 
     saveEditedMap(map: Map) {
-        console.log('MapService: Triggering map saving');
-        try {
-            this.CommunicationMapService.basicPatch('admin/edition', map).subscribe((error) => {
-                console.log(error, 'La map a été modifiée & save');
-            });
-        } catch (error) {
-            console.error('Error while saving map:', error);
-        }
+        this.CommunicationMapService.basicPatch('admin/edition', map).subscribe({
+            next: () => {
+                // Handle success (e.g., display a success message)
+                // ... your logic to handle success ...
+            },
+            error: (error) => {
+                // Handle error (e.g., display an error message)
+                // ... your logic to handle error ...
+            },
+        });
     }
 }

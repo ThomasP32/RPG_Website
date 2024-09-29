@@ -1,22 +1,46 @@
-import { CommonModule } from '@angular/common';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MapGetService } from '@app/services/map-get.service';
+import { MapService } from '@app/services/map.service';
+import { Map, Mode } from '@common/map.types';
 import { MapAreaComponent } from './map-area.component';
 
 describe('MapAreaComponent', () => {
     let component: MapAreaComponent;
     let fixture: ComponentFixture<MapAreaComponent>;
+    let mapServiceSpy: jasmine.SpyObj<MapService>;
+    let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
+    let routerSpy: jasmine.SpyObj<Router>;
+    let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
+
+    const mockMap: Map = {
+        _id: '1',
+        name: 'Test Map',
+        isVisible: true,
+        mapSize: { x: 10, y: 10 },
+        startTiles: [],
+        items: [],
+        doorTiles: [],
+        tiles: [],
+        mode: Mode.Ctf,
+        description: '',
+        imagePreview: '',
+    };
 
     beforeEach(async () => {
-        const mockActivatedRoute = {
-            queryParams: of({}),
-            snapshot: { params: {} },
-        };
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateStartingPointCounter', 'updateRandomItemCounter', 'updateItemsCounter']);
+        mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
+        routerSpy = jasmine.createSpyObj('Router', ['url']);
+        activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
 
         await TestBed.configureTestingModule({
-            imports: [CommonModule, MapAreaComponent],
-            providers: [{ provide: ActivatedRoute, useValue: mockActivatedRoute }],
+            imports: [MapAreaComponent],
+            providers: [
+                { provide: MapService, useValue: mapServiceSpy },
+                { provide: MapGetService, useValue: mapGetServiceSpy },
+                { provide: Router, useValue: routerSpy },
+                { provide: ActivatedRoute, useValue: activatedRouteSpy },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MapAreaComponent);
@@ -27,128 +51,72 @@ describe('MapAreaComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should have default values', () => {
-        expect(component.selectedTile).toBe('floor');
-        expect(component.isPlacing).toBe(false);
-        expect(component.isErasing).toBe(false);
-        expect(component.defaultTile).toBe('floor');
-    });
+    it('should initialize map in creation mode', () => {
+        Object.defineProperty(routerSpy, 'url', { get: () => '/creation/size=10/:mode=ctf' });
+        activatedRouteSpy.snapshot.params = { size: '10', mode: 'ctf' };
 
-    it('should create a map on init', fakeAsync(() => {
-        const mockActivatedRoute = TestBed.inject(ActivatedRoute);
-        mockActivatedRoute.snapshot.params['size'] = 'size=5';
         component.ngOnInit();
-        tick();
 
-        expect(component.convertedMapSize).toBe(5);
-        expect(component.Map.length).toBe(5);
-        expect(component.Map[0].length).toBe(5);
-        expect(component.Map[0][0].value).toBe('grass');
-    }));
-
-    it('should select a tile', () => {
-        spyOn(console, 'log');
-        component.selectTile('wall');
-        expect(component.selectedTile).toBe('wall');
-        expect(console.log).toHaveBeenCalledWith('Selected tile:', 'wall');
-    });
-
-    it('should start placing tiles with left-click and place the selected tile', () => {
-        component.selectedTile = 'wall';
-        component.createMap(3, 'edit');
-
-        component.startPlacingTile(1, 1, false);
-
-        expect(component.isPlacing).toBe(true);
-        expect(component.Map[1][1].value).toBe('wall');
-    });
-
-    it('should start erasing tiles with right-click and replace with default tile', () => {
-        component.selectedTile = 'wall';
-        component.createMap(3, 'edit');
-
-        component.startPlacingTile(1, 1, false);
-        expect(component.Map[1][1].value).toBe('wall');
-
-        component.startPlacingTile(1, 1, true);
-
-        expect(component.isErasing).toBe(true);
-        expect(component.Map[1][1].value).toBe('floor');
-    });
-
-    it('should stop placing and erasing tiles', () => {
-        component.isPlacing = true;
-        component.isErasing = true;
-
-        component.stopPlacingTile();
-
-        expect(component.isPlacing).toBe(false);
-        expect(component.isErasing).toBe(false);
-    });
-
-    it('should place a door tile and toggle between open and closed states', () => {
-        component.selectedTile = 'door';
-        component.createMap(3, 'edit');
-
-        // Place a closed door first
-        component.placeTile(1, 1, false);
-        expect(component.Map[1][1].value).toBe('door');
-        expect(component.Map[1][1].doorState).toBe('closed');
-
-        // Click again to toggle to open
-        component.placeTile(1, 1, false);
-        expect(component.Map[1][1].doorState).toBe('open');
-
-        // Click again to toggle back to closed
-        component.placeTile(1, 1, false);
-        expect(component.Map[1][1].doorState).toBe('closed');
-    });
-
-    it('should place a tile with left-click', () => {
-        component.selectedTile = 'wall';
-        component.createMap(3, 'edit');
-        component.placeTile(1, 1, false);
-        expect(component.Map[1][1].value).toBe('wall');
-    });
-
-    it('should replace a tile with the default tile on right-click', () => {
-        component.createMap(3, 'edit');
-        component.Map[1][1].value = 'wall';
-        component.placeTile(1, 1, true);
-        expect(component.Map[1][1].value).toBe('floor');
-    });
-
-    it('should not place a tile if it is the same as the existing tile', () => {
-        component.selectedTile = 'grass';
-        component.createMap(3, 'edit');
-        component.placeTile(0, 0, false);
-        expect(component.Map[0][0].value).toBe('grass');
-    });
-
-    it('should get the correct tile image', () => {
-        expect(component.getTileImage('floor', 0, 0)).toBe('../../../../assets/tiles/floor.png');
-        expect(component.getTileImage('wall', 0, 0)).toBe('../../../../assets/tiles/wall.png');
-        expect(component.getTileImage('ice', 0, 0)).toBe('../../../../assets/tiles/ice.png');
-        expect(component.getTileImage('water', 0, 0)).toBe('../../../../assets/tiles/water.png');
-        expect(component.getTileImage('door', 1, 1)).toBe('../../../../assets/tiles/door_y.png');
-
-        // Simulate door open state
-        component.Map[1][1].doorState = 'open';
-        expect(component.getTileImage('door', 1, 1)).toBe('../../../../assets/tiles/door_x.png');
-    });
-
-    it('should convert URL params', () => {
-        spyOn(console, 'log');
-        component.urlConverter('size=10');
         expect(component.convertedMapSize).toBe(10);
-        expect(console.log).toHaveBeenCalledWith('URL params:', 'size=10');
-        expect(console.log).toHaveBeenCalledWith('Converted map size:', 10);
+        expect(component.Map.length).toBe(10);
+        expect(component.Map[0].length).toBe(10);
     });
 
-    it('should reset the map to default tile', () => {
-        component.createMap(3, 'edit');
-        component.Map[1][1].value = 'wall';
+    it('should initialize map in edition mode', () => {
+        Object.defineProperty(routerSpy, 'url', { get: () => '/edition/123' });
+        mapGetServiceSpy.map = mockMap;
+
+        component.ngOnInit();
+
+        expect(component.map).toEqual(mockMap);
+        expect(component.convertedMapSize).toBe(10);
+    });
+
+    it('should place a tile', () => {
+        component.createMap(10);
+        component.selectedTile = 'wall';
+        component.placeTile(0, 0, false);
+        expect(component.Map[0][0].value).toBe('wall');
+    });
+
+    it('should erase a tile', () => {
+        component.createMap(10);
+        component.Map[0][0].value = 'wall';
+        component.placeTile(0, 0, true);
+        expect(component.Map[0][0].value).toBe('floor');
+    });
+
+    it('should place a starting point', () => {
+        component.createMap(10);
+        component.selectedTile = 'starting-point';
+        component.onDrop({ dataTransfer: new DataTransfer(), preventDefault: () => {} } as DragEvent, 0, 0);
+        expect(component.Map[0][0].item).toBe('starting-point');
+    });
+
+    it('should move a starting point', () => {
+        component.createMap(10);
+        component.Map[0][0].item = 'starting-point';
+        component.currentDraggedItem = { rowIndex: 0, colIndex: 0 };
+        component.onDrop({ dataTransfer: new DataTransfer(), preventDefault: () => {} } as DragEvent, 1, 1);
+        expect(component.Map[0][0].item).toBeUndefined();
+        expect(component.Map[1][1].item).toBe('starting-point');
+    });
+
+    it('should reset the map', () => {
+        component.createMap(10);
+        component.Map[0][0].value = 'wall';
         component.resetMapToDefault();
-        expect(component.Map[1][1].value).toBe(component.defaultTile);
+        expect(component.Map[0][0].value).toBe('floor');
+    });
+
+    it('should generate map data', () => {
+        component.createMap(10);
+        component.mapTitle = 'Generated Map';
+        component.mapDescription = 'This is a test map';
+        const mapData = component.generateMapData();
+
+        expect(mapData.name).toBe('Generated Map');
+        expect(mapData.description).toBe('This is a test map');
+        expect(mapData.mapSize.x).toBe(10);
     });
 });

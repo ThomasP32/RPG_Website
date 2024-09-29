@@ -18,7 +18,7 @@ export class MapComponent {
     mapName: string;
     nbItems: number;
     isHovered = false;
-    @Output() close = new EventEmitter<void>();
+    @Output() closeChoices = new EventEmitter<void>();
     selectedMode: string;
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
         entryError: false,
@@ -60,6 +60,6 @@ export class MapComponent {
     }
 
     closeComponent() {
-        this.close.emit();
+        this.closeChoices.emit();
     }
 }

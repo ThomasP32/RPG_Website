@@ -61,16 +61,11 @@ export class MapControlBarComponent implements OnInit {
     }
 
     resetMap(): void {
-        if(this.route.snapshot.params['mode']){
-            console.log('resetting the new map');
-        console.log('MapControlBar: Triggering reset via service');
-        this.mapService.resetMap();
+        if (this.route.snapshot.params['mode']) {
+            this.mapService.resetMap();
         } else {
-            console.log('resetting the map : '+ this.map);
-            console.log('MapControlBar: Triggering reset via service');
             this.mapService.resetMap();
         }
-        
     }
 
     getUrlParams() {
@@ -86,15 +81,14 @@ export class MapControlBarComponent implements OnInit {
     }
 
     saveMap(): void {
-        if(this.route.snapshot.params['mode']){
+        if (this.route.snapshot.params['mode']) {
             if (this.mapTitle !== '') {
-                console.log('saving the map', this.mapTitle);
                 this.mapService.setMapTitle(this.mapTitle);
                 this.mapService.setMapDescription(this.mapDescription);
                 this.mapService.generateMapData();
-            }	
-        } else if(this.route.snapshot.params['id']){
-            if(this.mapTitle !== ''){
+            }
+        } else if (this.route.snapshot.params['id']) {
+            if (this.mapTitle !== '') {
                 this.mapService.saveEditedMap(this.map);
             }
         } else {

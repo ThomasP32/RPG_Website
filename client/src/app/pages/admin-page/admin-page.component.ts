@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Maps Administration';
     maps: Map[] = [];
-    deleteTriggered: { [mapId: string]: boolean } = {}; 
+    deleteTriggered: { [mapId: string]: boolean } = {};
     isMapVisible = false;
 
     @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
@@ -28,7 +28,7 @@ export class AdminPageComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.updateDisplay();    
+        this.updateDisplay();
     }
 
     toggleGameCreationModalVisibility(): void {
