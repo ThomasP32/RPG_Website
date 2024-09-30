@@ -81,11 +81,8 @@ export class ToolbarComponent implements OnInit {
     }
 
     selectTile(tile: string) {
-        console.log('tile ', tile);
-        console.log('tile selected', this.selectedTile);
         if (this.selectedTile === tile) {
-            this.selectedTile = 'empty';
-            this.mapService.updateSelectedTile(this.selectedTile);
+            this.mapService.updateSelectedTile('empty');
         } else {
             this.selectedTile = tile;
             this.mapService.updateSelectedTile(tile);

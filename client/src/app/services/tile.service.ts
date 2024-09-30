@@ -8,10 +8,16 @@ export class TileService {
     constructor(private mapCounterService: MapCounterService) {}
 
     placeTile(map: any[][], rowIndex: number, colIndex: number, selectedTile: string) {
-        if (selectedTile) {
+        if (selectedTile === 'wall' || selectedTile === 'water' || selectedTile === 'ice' || selectedTile === 'door') {
             if (map[rowIndex][colIndex].item && (selectedTile === 'wall' || selectedTile === 'door')) {
                 this.mapCounterService.updateCounters(map[rowIndex][colIndex].item, 'add');
                 map[rowIndex][colIndex].item = undefined;
+            } else if (map[rowIndex][colIndex].value === 'door') {
+                const currentState = map[rowIndex][colIndex].doorState;
+                map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
+            } else if (selectedTile === 'door') {
+                map[rowIndex][colIndex].value = selectedTile;
+                map[rowIndex][colIndex].doorState = 'closed';
             }
             map[rowIndex][colIndex].value = selectedTile;
         }

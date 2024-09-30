@@ -1,7 +1,8 @@
+import { HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -44,17 +45,14 @@ export class MapService {
         this.updateSelectedTileSource.next(value);
     }
 
-    saveNewMap(map: Map) {
-        this.CommunicationMapService.basicPost('admin/creation', map).subscribe({
-            next: () => {
-                // Handle success (e.g., display a success message to the user)
-                // ... your logic to handle success (e.g., show a notification, update the UI) ...
-            },
-            error: (error) => {
-                // Handle the error (e.g., display an error message to the user)
-                // ... your logic to handle the error (e.g., show an error notification, log the error to a service) ...
-            },
-        });
+    async saveNewMap(map: Map): Promise<string> {
+        try {
+            const response: HttpResponse<string> = await firstValueFrom(this.CommunicationMapService.basicPost('admin/creation', map));
+            return response.body as string;
+        } catch (error: any) {
+            console.error('Error during map creation:', error);
+            throw new Error(error.message || 'Une erreur est survenue lors de la création de la carte.');
+        }
     }
 
     saveEditedMap(map: Map) {
