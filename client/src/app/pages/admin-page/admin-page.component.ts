@@ -1,17 +1,16 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MapComponent } from '@app/components/map/map.component';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
-
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { DBMap as Map } from '@common/map.types';
 
 @Component({
     selector: 'app-admin-page',
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, MapComponent],
+    imports: [RouterLink],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Administration des jeux';
@@ -48,7 +47,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     navigateToMain(): void {
-        this.router.navigate(['/mainmenu']);
+        this.router.navigate(['/main-menu']);
     }
 
     editGame(map: Map): void {
@@ -67,8 +66,14 @@ export class AdminPageComponent implements OnInit {
           } catch (error) {
             console.error('Error deleting game:', error);
           }
-        }
       }
+    }
+
+    // deleteGame(mapId: string): void {
+    //     if (confirm('Are you sure you want to delete this game ?')) {
+    //         this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay()); 
+    //     }
+    // }
 
     deleteTrigger(): void {
         this.deleteTriggered = !this.deleteTriggered;

@@ -1,141 +1,55 @@
 <div class="adminPage-container">
     <div class="header">
         <div class="header-buttons">
-            <button class="return-button" (click)="navigateToMain()"> Retour </button>
+            <button class="return-button" (click)="navigateToMain()">Retour</button>
         </div>
         <h2>{{ title }}</h2>
 
         <div class="header-buttons">
-            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()"> Nouveau jeu </button>
+            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
         </div>
-
     </div>
 
-      @if(isMapVisible) {
+    @if(isMapVisible) {
     <div>
-        <app-map-choices-component (close)="onCloseModal()" ></app-map-choices-component>
+        <app-map-choices-component (close)="onCloseModal()"></app-map-choices-component>
     </div>
     }
 
     <div class="map-view">
         <div class="scrollable-container">
             <div class="map-cards">
-                @for(map of this.maps; track map.name) { 
-                     <div class="map-card" (mouseover)="showDescription()" (mouseleave)="hideDescription()">
-                        <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                @for(map of this.maps; track map.name) {
+                <div class="map-card" (mouseover)="showDescription()" (mouseleave)="hideDescription()">
+                    <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                    <div class="map-details">
                         <div class="map-details">
-                            <div class="map-details">
-                              <h2 class="name">{{ map.name }}</h2>
-                                <p class="mode">Mode de jeu: À FAIRE </p>
-                                <p class="size">Taille: À FAIRE</p>
-                                <p class="lastModified">Dernière modification: À FAIRE</p>
-                                <p class="visibility">Visibilité: 
-                                    <!-- <button (click)="toggleVisibility(map)">
+                            <h2 class="name">{{ map.name }}</h2>
+                            <p class="mode">Mode de jeu: À FAIRE</p>
+                            <p class="size">Taille: À FAIRE</p>
+                            <p class="lastModified">Dernière modification: À FAIRE</p>
+                            <p class="visibility">
+                                Visibilité:
+                                <!-- <button (click)="toggleVisibility(map)">
                                         {{ map.visibility ? 'Cacher' : 'Afficher' }}
                                     </button> -->
-                                </p>    
-                            </div>
-                            <div class="map-actions">
+                            </p>
+                        </div>
+                        <div class="map-actions">
                             <button class="edit-button" (click)="editGame(map)">Modifier</button>
                             <button class="map-delete" (click)="deleteTrigger()">Supprimer</button>
                             @if(deleteTriggered === true) {
-                                <div class="delete-confirmation">
-                                    <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
-                                    <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
-                                    <button class="delete-confirmation-button" (click)="deleteTrigger()">Non</button>
-                                </div>
-                            }
+                            <div class="delete-confirmation">
+                                <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
+                                <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
+                                <button class="delete-confirmation-button" (click)="deleteTrigger()">Non</button>
                             </div>
-                            
+                            }
                         </div>
-                     </div>
+                    </div>
+                </div>
                 }
             </div>
-        </div>  
+        </div>
     </div>
 </div>
-
-
-
-
-
-
-
-    <!-- <div class="map-list">
-        <div class="map-item"></div>
-        @for(map of this.maps; track map.name) {
-            <h2 class="map-name">{{ map.name }}</h2>
-            <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
-            <div class="map-description">description à ajouter au serveur lors du survol</div>
-            <div class="map-info"> -->
-                <!-- <p class="map-details">Mode de jeu : {{map.mode}}</p> -->
-                 <!-- <p class="map-details"> Taille : {{map.size}}</p> -->
-
-<!--                 
-                <p class="map-details">Dernière modification : à ajouter au serveur</p>
-                <p class="map-details">
-                    Visibilité : @if(map.isVisible) {
-                    <span> Publique </span>
-                    } @else {
-                    <span> Privée </span>
-                    }
-                </p>
-    @if(isMapVisible === false){
-        <button class="button" (click)="navigateToMain()">Retour au menu principal</button>
-    }
-        @if(isMapVisible === false){
-        <button class="button" (click)="toggleGameCreationModalVisibility()">Commencer une nouvelle partie</button>
-    }
-  
-    @if(isMapVisible === false){
-        <div class="map-list" >
-            @for(map of this.maps; track map.name) {
-            <div class="map-item">
-                <h2 class="map-name">{{ map.name }}</h2>
-                <p>image de prévisualisation</p>
-                <div class="map-description">description à ajouter au serveur lors du survol</div>
-                <div class="map-info">
-                    <p class="map-details">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                    <p class="game-details">Mode : {{map.mode}}</p>
-                    <p class="map-details">Dernière modification : à ajouter au serveur</p>
-                    <p class="map-details" (click)="toggleVisibility(map._id!.toString())">
-                        Visibilité : @if(map.isVisible) {
-                        <span> Publique </span>
-                        } @else {
-                        <span> Privée </span>
-                        }
-                    </p>
-                    <button class="edit-button" (click)="editGame(map)">Modifier</button>
-                    <button class="map-delete" (click)="deleteTriggered = true">Supprimer</button>
-                    @if(deleteTriggered === true) {
-                        <div class="delete-confirmation">
-                            <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
-                            <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
-                            <button class="delete-confirmation-button" (click)="deleteTriggered = false">Non</button>
-                        </div>
-                    }
-                </div>
-            </div>
-
-        } -->
-
-         <!-- <div class="map-actions">
-            <button class="button" (click)="editGame(game.id)">Modifier</button>
-                <button class="button" (click)="deleteGame(game.id)">Supprimer</button>
-                <button (click)="toggleVisibility(game.id)">
-                     {{ map.visibility ? 'Cacher' : 'Afficher' }}  
-                </button>
-            }
-    </div>
-    }
-    
-        <!-- <div class="map-actions">
-            
-            <button (click)="toggleVisibility(map._id.toString())">
-                {{ map.isVisible ? 'Cacher' : 'Afficher' }}
-            </button>
-        </div> -->
-    <!-- </div>
-</div> -->
-  
-<!-- </div> -->

@@ -1,21 +1,12 @@
-import { Map, MapDocument, mapSchema } from '@app/model/database/map';
-import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
+import { MapDto } from '@app/model/dto/map/map.dto';
+import { Map, MapDocument, mapSchema } from '@app/model/schemas/map.schema';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
-import { Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Connection, Model, Types } from 'mongoose';
 import { AdminService } from './admin.service';
-
-/**
- * There is two way to test the service :
- * - Mock the mongoose Model implementation and do what ever we want to do with it (see describe CourseService) or
- * - Use mongodb memory server implementation (see describe CourseServiceEndToEnd) and let everything go through as if we had a real database
- *
- * The second method is generally better because it tests the database queries too.
- * We will use it more
- */
 
 describe('AdminServiceEndToEnd', () => {
     let service: AdminService;
@@ -25,8 +16,6 @@ describe('AdminServiceEndToEnd', () => {
 
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();
-        // notice that only the functions we call from the model are mocked
-        // we can´t use sinon because mongoose Model is an interface
         const module = await Test.createTestingModule({
             imports: [
                 MongooseModule.forRootAsync({
@@ -59,66 +48,45 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     it('getAllMaps() return all maps in database', async () => {
-        const map = getFakeMap();
-        await mapModel.create(map);
+        await mapModel.create(getFakeMap());
         expect((await service.getAllMaps()).length).toBeGreaterThan(0);
     });
 
     it('getMapById() return map with the specified id', async () => {
-        const map = getFakeMap();
-        await mapModel.create(map);
+        const map = await mapModel.create(getFakeMap());
         const result = await service.getMapById(map._id.toString());
-        expect(result).toMatchObject(map);
+        expect(result._id.toString()).toBe(map._id.toString());
+        expect(result.name).toBe(map.name);
     });
 
     it('getMapById() should fail if map does not exist', async () => {
-        const map = getFakeMap();
-        await expect(service.getMapById(map._id.toString())).rejects.toBeTruthy();
+        const mapId = new Types.ObjectId().toString();
+        await expect(service.getMapById(mapId)).rejects.toBeTruthy();
     });
 
-    // it('modifyCourse() should fail if course does not exist', async () => {
-    //     const course = getFakeCourse();
-    //     await expect(service.modifyCourse(course)).rejects.toBeTruthy();
-    // });
+    it('deleteMap()should throw NotFoundException if map is not found', async () => {
+        const fakeId = new Types.ObjectId().toHexString();
+        await expect(service.deleteMap(fakeId)).rejects.toThrow(NotFoundException);
+    });
 
-    // it('modifyCourse() should fail if mongo query failed', async () => {
-    //     jest.spyOn(courseModel, 'updateOne').mockRejectedValue('');
-    //     const course = getFakeCourse();
-    //     await expect(service.modifyCourse(course)).rejects.toBeTruthy();
-    // });
+    it('deleteMap() should throw BadRequestException on other errors', async () => {
+        jest.spyOn(mapModel, 'deleteOne').mockRejectedValueOnce(new Error('Some database error'));
+        const fakeId = new Types.ObjectId().toHexString();
+        await expect(service.deleteMap(fakeId)).rejects.toThrow(BadRequestException);
+    });
 
-    // it('getCoursesByTeacher() return course with the specified teacher', async () => {
-    //     const course = getFakeCourse();
-    //     await courseModel.create(course);
-    //     await courseModel.create(course);
-    //     const courses = await service.getCoursesByTeacher(course.teacher);
-    //     expect(courses.length).toEqual(2);
-    //     expect(courses[0]).toEqual(expect.objectContaining(course));
-    // });
-
-    // it('deleteMap() should delete the course with specified name', async () => {
-    //     const map = getFakeMap();
-    //     await mapModel.create(map);
-    //     await service.deleteMap(map.name);
-    //     expect(await mapModel.countDocuments()).toEqual(0);
-    // });
-
-    // it('deleteMap() should fail if the course does not exist', async () => {
-    //     const map = getFakeMap();
-    //     await expect(service.deleteMap(map.name)).rejects.toBeTruthy();
-    // });
-
-    // it('deleteMap() should fail if mongo query failed', async () => {
-    //     jest.spyOn(mapModel, 'deleteOne').mockRejectedValue('');
-    //     const map = getFakeMap();
-    //     await expect(service.deleteMap(map.name)).rejects.toBeTruthy();
-    // });
+    it('deleteMap() should delete a map successfully', async () => {
+        const map = getFakeMap();
+        const mapDto = await mapModel.create(map);
+        await service.deleteMap(mapDto._id.toString());
+        const found = await mapModel.findById(mapDto._id);
+        expect(found).toBeNull();
+    });
 
     it('addMap() should add the map to the DB', async () => {
         const map = getFakeMap();
         await service.addMap(map);
-        const result = await service.getMapById(map._id.toString());
-        expect(result).toMatchObject(map);
+        expect((await service.getAllMaps()).length).toBeGreaterThan(0);
     });
 
     it('addMap() should fail if mongo query failed', async () => {
@@ -127,37 +95,125 @@ describe('AdminServiceEndToEnd', () => {
         await expect(service.addMap(map)).rejects.toBeTruthy();
     });
 
+    it('modifyMap() should update the map successfully with insertMany', async () => {
+        const [map] = await mapModel.insertMany([getFakeMap()]);
+        const updatedMap = getFakeUpdateMap();
+
+        const modifiedMap = await service.modifyMap(map._id.toString(), updatedMap);
+
+        expect(modifiedMap).toMatchObject({
+            ...updatedMap,
+            isVisible: false,
+            lastModified: expect.any(Date),
+        });
+
+        expect(modifiedMap._id.toString()).toBe(map._id.toString());
+        expect(modifiedMap.lastModified).toBeInstanceOf(Date);
+    });
+
+    it('modifyMap() should create a new map successfully if ID does not exist', async () => {
+        const updatedMap = getFakeUpdateMap();
+        const mapId = new Types.ObjectId().toString(); // Un identifiant inexistant
+
+        const modifiedMap = await service.modifyMap(mapId, updatedMap);
+
+        expect(modifiedMap).toMatchObject({
+            ...updatedMap,
+            isVisible: false,
+            lastModified: expect.any(Date), // Vérifie que lastModified est une date
+        });
+    });
+
+    it('modifyMap() should throw Error if map update fails for other reasons', async () => {
+        jest.spyOn(mapModel, 'findById').mockRejectedValueOnce(new Error('Database error'));
+
+        const mapId = new Types.ObjectId().toString();
+        const updatedMap: MapDto = {
+            name: 'Updated Map',
+            description: 'Updated description',
+            imagePreview: 'http://example.com/updated-image.png',
+            mode: Mode.Normal,
+            mapSize: { x: 10, y: 10 },
+            startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
+            items: [],
+            tiles: [],
+            doorTiles: [],
+        };
+
+        // Vérifier que l'exception est bien lancée
+        await expect(service.modifyMap(mapId, updatedMap)).rejects.toThrow("Le jeu n'a pas pu être modifié");
+    });
+
+    it('visibilityToggle() should toggle the visibility of an existing map', async () => {
+        const [map] = await mapModel.insertMany([getFakeMap()]);
+
+        expect(map.isVisible).toBeDefined();
+        const initialVisibility = map.isVisible;
+
+        const modifiedMap = await service.visibilityToggle(map._id.toString());
+
+        expect(modifiedMap.isVisible).toBe(!initialVisibility);
+    });
+
+    it('visibilityToggle() should throw NotFoundException if the map does not exist', async () => {
+        const nonExistentMapId = new Types.ObjectId().toString();
+        await expect(service.visibilityToggle(nonExistentMapId)).rejects.toThrow(NotFoundException);
+    });
+
     it('should throw error when start tiles are not placed', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow('All start tiles must be placed');
+        await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow('Toutes les tuiles de départ doivent être placées');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto())).rejects.toThrow(
+            'Toutes les tuiles de départ doivent être placées',
+        );
     });
 
     it('should throw error when doors are not free', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto2())).rejects.toThrow('All doors must be free');
+        await expect(service.addMap(getFakeInvalidMapDto2())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.addMap(getFakeInvalidMapDto22())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto2())).rejects.toThrow(
+            'Toutes les portes doivent être libérées',
+        );
     });
 
-    // // en pratique ca marche, mais la je comprend pas pourquoi ca retourne toujours faux
-    // it('should throw error when map name already exists', async () => {
-    //     const map1 = getFakeMap2();
-    //     await mapModel.create(map1); // Ajoute la première carte
-    //     console.log(mapModel.findOne({name: map1.name}));
-    //     const result = service.addMap(map1);
-    //     await expect(result).rejects.toBeTruthy();
-    // });
-
     it('should throw error when elements are out of bounds', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto4())).rejects.toThrow('All elements must be inside map');
+        await expect(service.addMap(getFakeInvalidMapDto4())).rejects.toThrow("Tous les éléments doivent être à l'intérieur de la carte");
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto4())).rejects.toThrow(
+            "Tous les éléments doivent être à l'intérieur de la carte",
+        );
     });
 
     it('should throw error when there are isolated ground tiles', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto5())).rejects.toThrow('Map must not have any isolated ground tile');
+        await expect(service.addMap(getFakeInvalidMapDto5())).rejects.toThrow('Le jeu ne doit pas avoir de tuile de terrain isolée');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto5())).rejects.toThrow(
+            'Le jeu ne doit pas avoir de tuile de terrain isolée',
+        );
     });
 
     it('should throw error when less than 50% are grass tiles', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto6())).rejects.toThrow('Map must contain more than 50% of grass tiles');
+        await expect(service.addMap(getFakeInvalidMapDto6())).rejects.toThrow('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto6())).rejects.toThrow(
+            'La surface de jeu doit contenir plus de 50% de tuiles de terrain',
+        );
     });
 
-    const getFakeMap = (): Map => ({
-        _id: new Types.ObjectId('507f191e810c19729de860ea'),
+    it('should throw exceptions when adding map with name that already exists', async () => {
+        const mapDto: MapDto = {
+            name: 'testMap',
+            description: 'test description',
+            imagePreview: 'test-image-url',
+            mode: Mode.Normal,
+            mapSize: { x: 10, y: 10 },
+            startTiles: [{ coordinate: { x: 12, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
+            items: [],
+            tiles: [],
+            doorTiles: [],
+        };
+        await mapModel.insertMany([mapDto]);
+        await expect(service.verifyMap(mapDto)).rejects.toThrow(ConflictException);
+        await expect(service.verifyMapModification(new Types.ObjectId().toString(), mapDto)).rejects.toThrow(ConflictException);
+    });
+
+    const getFakeMap = (): MapDto => ({
         name: 'Bonjour',
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -172,8 +228,8 @@ describe('AdminServiceEndToEnd', () => {
         doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
     });
 
-    const getFakeMap2 = (): Map => ({
-        name: 'Bonjour',
+    const getFakeUpdateMap = (): MapDto => ({
+        name: 'Hello',
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
@@ -188,7 +244,7 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     // startTiles problem
-    const getFakeInvalidMapDto = (): CreateMapDto => ({
+    const getFakeInvalidMapDto = (): MapDto => ({
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -204,7 +260,7 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     // door problem
-    const getFakeInvalidMapDto2 = (): CreateMapDto => ({
+    const getFakeInvalidMapDto2 = (): MapDto => ({
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -216,13 +272,19 @@ describe('AdminServiceEndToEnd', () => {
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
+            { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
+            { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
+        doorTiles: [
+            { coordinate: { x: 1, y: 3 }, isOpened: true },
+            { coordinate: { x: 4, y: 1 }, isOpened: true },
+        ],
     });
 
-    // name unicity problem
-    const getFakeInvalidMapDto3 = (): CreateMapDto => ({
-        name: 'Test de jeu',
+    // door problem 2
+    const getFakeInvalidMapDto22 = (): MapDto => ({
+        name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
@@ -230,15 +292,15 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
         tiles: [
-            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
-            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
+            { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
+            { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
+        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }],
     });
 
     // out of bounds
-    const getFakeInvalidMapDto4 = (): CreateMapDto => ({
+    const getFakeInvalidMapDto4 = (): MapDto => ({
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -253,7 +315,8 @@ describe('AdminServiceEndToEnd', () => {
         doorTiles: [],
     });
 
-    const getFakeInvalidMapDto5 = (): CreateMapDto => ({
+    // isolated ground tiles
+    const getFakeInvalidMapDto5 = (): MapDto => ({
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -277,7 +340,7 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     // 50 below
-    const getFakeInvalidMapDto6 = (): CreateMapDto => ({
+    const getFakeInvalidMapDto6 = (): MapDto => ({
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
@@ -351,9 +414,5 @@ describe('AdminServiceEndToEnd', () => {
         const enumValues = Object.values(enumObj) as T[keyof T][];
         const randomIndex = Math.floor(Math.random() * enumValues.length);
         return enumValues[randomIndex];
-    }
-
-    function getRandomNumberBetween(min: number, max: number): number {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 });
