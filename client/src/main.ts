@@ -6,15 +6,11 @@ import { Routes, provideRouter } from '@angular/router';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
-import { HomePageComponent } from '@app/pages/home-page/home-page.component';
-import { GameCreationPageComponent } from '@app/pages/map-creation-page/game-creation-page.component';
-import { MaterialPageMapsComponent } from '@app/pages/material-page/material-page-map.component';
-import { StartGamePageComponent } from '@app/pages/start-game-page/start-game-page.component';
 import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
+import { HomePageComponent } from '@app/pages/home-page/home-page.component';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { environment } from './environments/environment';
-
 
 if (environment.production) {
     enableProdMode();
