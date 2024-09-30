@@ -1,7 +1,6 @@
-import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { ModesComponent } from '../modes/modes.component';
+import { MapSize, NbItems } from '@app/interfaces/map-choices';
+import { Mode } from '@common/map.types';
 import { MapComponent } from './map.component';
 
 describe('MapComponent', () => {
@@ -9,14 +8,8 @@ describe('MapComponent', () => {
     let fixture: ComponentFixture<MapComponent>;
 
     beforeEach(async () => {
-        // Mock the ModesComponent to avoid testing its internal logic
-        const mockModesComponent = {
-            // Add any necessary properties or methods for interaction, if needed
-        };
-
         await TestBed.configureTestingModule({
-            imports: [MapComponent, NgClass, NgForOf, NgIf], // Import MapComponent directly
-            providers: [{ provide: ModesComponent, useValue: mockModesComponent }],
+            imports: [MapComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MapComponent);
@@ -28,40 +21,69 @@ describe('MapComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should create a map with the correct size', () => {
-        component.sizeConversion('medium');
-        expect(component.mapSize).toBe(15);
-    });
-
-    it('should convert size correctly', () => {
-        spyOn(console, 'log');
+    it('should convert size to MapSize and NbItems', () => {
         component.sizeConversion('small');
-        expect(component.mapSize).toBe(10);
-        expect(component.nbItems).toBe(2);
+        expect(component.mapSize).toBe(MapSize.Small);
+        expect(component.nbItems).toBe(NbItems.Small);
 
         component.sizeConversion('medium');
-        expect(component.mapSize).toBe(15);
-        expect(component.nbItems).toBe(4);
+        expect(component.mapSize).toBe(MapSize.Medium);
+        expect(component.nbItems).toBe(NbItems.Medium);
 
         component.sizeConversion('large');
-        expect(component.mapSize).toBe(20);
-        expect(component.nbItems).toBe(6);
+        expect(component.mapSize).toBe(MapSize.Large);
+        expect(component.nbItems).toBe(NbItems.Large);
     });
 
-    it('should handle invalid size', () => {
-        spyOn(console, 'error');
-        component.sizeConversion('invalid' as 'small' | 'medium' | 'large');
+    it('should redirect to edit view with correct params', () => {
+        const originalLocation = window.location;
+
+        const mockLocation = {
+            href: 'http://localhost:4200/mock-route',
+            assign: jasmine.createSpy('assign'),
+        };
+
+        Object.defineProperty(window, 'location', {
+            writable: true,
+            value: mockLocation,
+        });
+
+        component.mapSize = MapSize.Medium;
+        component.selectedMode = 'classic';
+        component.redirectToEditView();
+        expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=15/:mode=classic`);
+
+        // component.mapSize = MapSize.Small;
+        // component.selectedMode = 'ctf';
+        // component.redirectToEditView();
+        // expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=10/:mode=ctf`);
+
+        window.location = originalLocation;
     });
 
-    it('should update selected mode', () => {
-        spyOn(console, 'log');
-        const newMode = 'CTF';
-        component.onModeSelected(newMode);
-        expect(component.selectedMode).toBe(newMode);
+    it('should set error message if no mode selected', () => {
+        component.mapSize = MapSize.Large;
+        component.selectedMode = undefined;
+        component.redirectToEditView();
+        expect(component.showErrorMessage).toBe(true);
     });
 
-    it('should render the ModesComponent', () => {
-        const modesComponent = fixture.debugElement.query(By.directive(ModesComponent));
-        expect(modesComponent).toBeTruthy();
+    it('should set error message if no map size selected', () => {
+        component.mapSize = undefined;
+        component.selectedMode = Mode.Classic;
+        component.redirectToEditView();
+        expect(component.showErrorMessage).toBe(true);
+    });
+
+    it('should set selected mode', () => {
+        const mode = 'classic';
+        component.onModeSelected(mode);
+        expect(component.selectedMode).toBe(mode);
+    });
+
+    it('should emit close event', () => {
+        spyOn(component.closeChoices, 'emit');
+        component.closeComponent();
+        expect(component.closeChoices.emit).toHaveBeenCalled();
     });
 });
