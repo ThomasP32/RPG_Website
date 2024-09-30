@@ -57,8 +57,6 @@ export class GameCreationPageComponent implements OnInit {
     }
 
     getUrlParams(): void {
-        this.route.queryParams.subscribe(() => {
-            this.mapId = this.route.snapshot.params['id'];
-        });
+        this.mapId = this.route.snapshot.params['id'];
     }
 }

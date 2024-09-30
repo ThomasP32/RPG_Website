@@ -13,17 +13,14 @@ import { ModesComponent } from '../modes/modes.component';
 })
 export class MapComponent {
     size: 'small' | 'medium' | 'large';
-    mapSize: MapSize;
+    mapSize: MapSize | undefined;
     mapSizeType: typeof MapSize = MapSize;
     mapName: string;
     nbItems: number;
     isHovered = false;
     @Output() closeChoices = new EventEmitter<void>();
-    selectedMode: string;
-    showErrorMessage: { entryError: boolean; nameError: boolean } = {
-        entryError: false,
-        nameError: false,
-    };
+    selectedMode: string | undefined;
+    showErrorMessage: boolean = false;
 
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         switch (size) {
@@ -43,13 +40,11 @@ export class MapComponent {
     }
     redirectToEditView() {
         const params = new URLSearchParams();
-        if (this.mapSize !== undefined) {
+        if (this.mapSize !== undefined && this.selectedMode !== undefined) {
             params.set('mapSize', this.mapSize.toString());
-        }
-        if (this.selectedMode !== undefined) {
             params.set('mode', this.selectedMode);
         } else {
-            this.showErrorMessage.entryError = true;
+            this.showErrorMessage = true;
             return;
         }
         window.location.href = `/creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
