@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MapComponent } from '@app/components/map/map.component';
-import { firstValueFrom } from 'rxjs';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
 
@@ -15,7 +14,8 @@ import { DBMap as Map } from '@common/map.types';
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Administration des jeux';
     maps: Map[] = [];
-    deleteTriggered = false;
+    currentMapId: string | null = null;
+    showDeleteModal = false;
 
     @Input() mapId: string = '';
 
@@ -23,9 +23,6 @@ export class AdminPageComponent implements OnInit {
         private router: Router,
         private communicationMapService: CommunicationMapService,
     ) {
-        // this.communicationMapService.maps$.subscribe((map) => {
-        //     this.maps = maps;
-        // });
     }
 
     @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
@@ -41,51 +38,58 @@ export class AdminPageComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.communicationMapService.basicGet('admin').subscribe((maps => {
+        this.communicationMapService.basicGet('admin').subscribe((maps) => {
             this.maps = maps as Map[];
-        }));
+        });
     }
 
     navigateToMain(): void {
         this.router.navigate(['/main-menu']);
     }
 
-    editGame(map: Map): void {
+    editMap(map: Map): void {
         if (map._id) {
             window.location.href = `/edition/${map._id}`;
         }
     }
 
-   
-    async deleteGame(id: string): Promise<void> {
-        if (confirm('Êtes-vous sûr de vouloir supprimer cette carte?')) {
-          try {
-            await firstValueFrom(this.communicationMapService.basicDelete(`admin/${id}`));
-            console.log('Game deleted successfully');
-            this.updateDisplay();
-          } catch (error) {
-            console.error('Error deleting game:', error);
-          }
-      }
-    }
-
-    // deleteGame(mapId: string): void {
-    //     if (confirm('Are you sure you want to delete this game ?')) {
-    //         this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay()); 
-    //     }
+    // deleteMap(mapId: string): void {
+    //     this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay());
     // }
 
-    deleteTrigger(): void {
-        this.deleteTriggered = !this.deleteTriggered;
-        console.log(this.deleteTriggered);
-    }
-    
-    showDescription(): void {
+    deleteMap(mapId: string): void {
+        this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe(
+          (response) => {
+            console.log(`Game with ID ${mapId} deleted.`);
+            this.maps = this.maps.filter(map => map._id !== mapId);
+          },
+          (error) => {
+            console.error('Error deleting the game:', error);
+          }
+        );
+      }
 
+    openConfirmationModal(map: any): void {
+        this.currentMapId = map._id;
+        this.showDeleteModal = true;
     }
 
-    hideDescription(): void {
-        // game.showDescription = false
+    closeDeleteModal(): void {
+        this.showDeleteModal = false;
+        this.currentMapId = null;
+    }
+
+    confirmDelete(mapId: string): void {
+        this.deleteMap(mapId);
+        this.closeDeleteModal();
+    }
+
+    showDescription(map: any): void {
+        map.showDescription = true;
+    }
+
+    hideDescription(map: any): void {
+        map.showDescription = false;
     }
 
     updateDisplay(): void {
@@ -99,7 +103,7 @@ export class AdminPageComponent implements OnInit {
     formatDate(lastModified: Date): string {
         const date = new Date(lastModified);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Mois de 0 à 11
+        const month = String(date.getMonth() + 1).padStart(2, '0'); 
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');

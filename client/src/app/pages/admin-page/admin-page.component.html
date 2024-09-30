@@ -20,32 +20,42 @@
         <div class="scrollable-container">
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
-                <div class="map-card" (mouseover)="showDescription()" (mouseleave)="hideDescription()">
-                    <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" />
+                    <div class="map-card" (mouseenter)="showDescription(map)" (mouseleave)="hideDescription(map)">
+                    <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
                     <div class="map-details">
                         <div class="map-details">
                             <h2 class="name">{{ map.name }}</h2>
-                            <p class="mode">Mode de jeu: À FAIRE</p>
-                            <p class="size">Taille: À FAIRE</p>
-                            <p class="lastModified">Dernière modification: À FAIRE</p>
-                            <p class="visibility">
-                                Visibilité:
-                                <!-- <button (click)="toggleVisibility(map)">
-                                        {{ map.visibility ? 'Cacher' : 'Afficher' }}
-                                    </button> -->
+                            <p class="mode">Mode de jeu: {{map.mode}}</p>
+                            <p class="size">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
+                            <p class="visibility" (click)="toggleVisibility(map._id!.toString())">
+                                Visibilité : @if(map.isVisible) {
+                                <span> Visible </span>
+                                <i class="fas fa-eye"></i> 
+                                } @else {
+                                <span (click)="toggleVisibility(map._id!.toString())"> Caché </span>
+                                <i class="fas fa-eye-slash"></i> 
+                                }
                             </p>
+                            
                         </div>
                         <div class="map-actions">
-                            <button class="edit-button" (click)="editGame(map)">Modifier</button>
-                            <button class="map-delete" (click)="deleteTrigger()">Supprimer</button>
-                            @if(deleteTriggered === true) {
-                            <div class="delete-confirmation">
-                                <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
-                                <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
-                                <button class="delete-confirmation-button" (click)="deleteTrigger()">Non</button>
+                            <button class="edit-button" (click)="editMap(map)">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="map-delete" (click)="openConfirmationModal(map)">
+                                <i class="fas fa-trash"></i>
+                                
+                            </button>
+                            <div class="open-confirmation-modal" [class.show]="showDeleteModal">
+                                <div class="modal">
+                                    <h2>Confirmer la suppression</h2>
+                                    <p>Êtes-vous sûr de vouloir supprimer ce jeu ?</p>
+                                    <button class="modal-button" (click)="currentMapId && confirmDelete(currentMapId)">Oui</button>
+                                    <button class="modal-button" (click)="closeDeleteModal()">Non</button>
+                                </div>
                             </div>
-                            }
                         </div>
+                        <p class="lastModified">Dernière modification : {{formatDate(map.lastModified!)}}</p>
                     </div>
                 </div>
                 }
