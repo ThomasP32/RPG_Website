@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Routes, provideRouter } from '@angular/router';
 import { HomePageComponent } from '@app/pages/home-page/home-page.component';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { of } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 
@@ -12,7 +12,7 @@ const routes: Routes = [];
 describe('HomePageComponent', () => {
     let component: HomePageComponent;
     let fixture: ComponentFixture<HomePageComponent>;
-    let communicationServiceSpy: SpyObj<CommunicationService>;
+    let communicationServiceSpy: SpyObj<CommunicationMapService>;
 
     beforeEach(async () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationService', ['basicGet', 'basicPost']);
@@ -23,7 +23,7 @@ describe('HomePageComponent', () => {
             imports: [HomePageComponent],
             providers: [
                 {
-                    provide: CommunicationService,
+                    provide: CommunicationMapService,
                     useValue: communicationServiceSpy,
                 },
                 provideHttpClientTesting(),

@@ -128,7 +128,6 @@
     justify-content: flex-start;
     gap: 0 10px;
     padding: 5px;
-    // width: 100%;
     height: 100%;
     padding-left: 50px;
 
@@ -190,49 +189,101 @@
             }
 
             .mode,
-            .size,
-            .lastModified,
+            .size {
+                font-size: 0.7rem;
+                margin-bottom: 10px;
+                text-overflow: ellipsis;
+                color: #c0c0c0;
+                max-width: fit-content;
+            }
+
             .visibility {
                 font-size: 0.7rem;
                 margin-bottom: 10px;
-                white-space: nowrap;
                 text-overflow: ellipsis;
                 color: #c0c0c0;
+                max-width: fit-content;
+                white-space: normal;
+                transition: color 0.3s ease;
+
+                i {
+                    margin-right: 5px;
+                }
+
+                &.visible {
+                    color: #4caf50;
+                    i {
+                        color: #4caf50;
+                    }
+                }
+
+                &.hidden {
+                    color: #f44336;
+                    i {
+                        color: #f44336;
+                    }
+                }
+
+                &:hover {
+                    color: #6ae4a1;
+                }
+            }
+
+            .lastModified {
+                font-size: 0.6rem;
+                margin-top: 35px;
+                text-overflow: ellipsis;
+                color: #c0c0c0;
+                max-width: fit-content;
+                white-space: normal;
             }
 
             .description {
+                opacity: 0;
+                transition: opacity 0.3s ease;
                 font-size: 0.9rem;
                 color: #c0c0c0;
                 margin-bottom: 10px;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 color: #c0c0c0;
-            }
 
+                .hidden {
+                    opacity: 0;
+                }
+
+                &:hover .description {
+                    opacity: 1;
+                }
+            }
             .map-actions {
                 display: flex;
-                flex-direction: column;
-                gap: 10px;
+                justify-content: center;
+                gap: 30px;
                 margin-top: 10px;
-                align-items: left;
-                justify-content: left;
+                align-items: center;
 
                 .edit-button,
                 .map-delete {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     padding: 5px 10px;
                     background-color: #2c3e50;
                     border: 3px solid #202020;
                     color: white;
-                    height: 5vh;
-                    width: 8vw;
+                    height: 6vh;
+                    width: 10vw;
                     cursor: pointer;
                     max-width: fit-content;
-                    font-size: 0.7rem;
-                    font-family: 'Press Start 2P';
+
+                    i {
+                        font-size: 1.2rem;
+                    }
                 }
 
                 .map-delete:hover {
-                    background-color: #3b3f46;
+                    background-color: #953939;
                 }
 
                 .edit-button:hover {
@@ -259,6 +310,81 @@
             }
         }
     }
+}
+
+.open-confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #1c242c;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 500px;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    border: 4px solid #7d7f7d;
+}
+
+.modal h2 {
+    margin-bottom: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    justify-content: center;
+    font-size: 1.5rem;
+    color:#aa3d3d;
+}
+
+.modal p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: #c0c0c0;
+    max-width: fit-content;
+    white-space: normal;
+    word-wrap: break-word;
+    text-align: center;
+    min-height: 3em;
+    line-height: 1.5em;
+    font-family: 'Press Start 2P';
+}
+
+.modal-button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    height: 6vh;
+    width: 10vw;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    margin-top: 10px;
+    gap: 15px;
+    font-family: 'Press Start 2P';
+}
+
+.modal-button:hover {
+    background-color: #3b3f46;
+}
+.open-confirmation-modal.show {
+    display: flex; 
 }
 
 .footer {
