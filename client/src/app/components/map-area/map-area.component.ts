@@ -1,9 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ImageService } from '@app/services/image.service';
+import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
+import { TileService } from '@app/services/tile.service';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
+
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -12,13 +16,16 @@ import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
     styleUrl: './map-area.component.scss',
 })
 export class MapAreaComponent implements OnInit {
-    @Input() selectedTile: string = '';
+    selectedTile: string;
     map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
 
     isPlacing: boolean = false;
-    isErasing: boolean = false;
     isMouseDown: boolean = false;
+    isRightClickDown = false;
+
+    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
+
     defaultTile = 'floor';
     mapSize: string;
     mode: Mode;
@@ -26,16 +33,19 @@ export class MapAreaComponent implements OnInit {
     convertedCellSize: number;
     convertedMode: string;
 
-    startingPointCounter: number;
     randomItemCounter: number;
+    startingPointCounter: number;
     itemsCounter: number;
 
     constructor(
+        private tileService: TileService,
         private route: ActivatedRoute,
         private renderer: Renderer2,
         private cdRef: ChangeDetectorRef,
         private mapService: MapService,
         private mapGetService: MapGetService,
+        private mapCounterService: MapCounterService,
+        private imageService: ImageService,
         private router: Router,
     ) {}
 
@@ -59,11 +69,13 @@ export class MapAreaComponent implements OnInit {
             this.loadMap(this.map);
         }
 
-        this.mapService.startingPointCounter$.subscribe((counter) => {
+        this.setCountersBasedOnMapSize(this.convertedMapSize);
+
+        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
             this.startingPointCounter = counter;
         });
 
-        this.mapService.itemsCounter$.subscribe((counter) => {
+        this.mapCounterService.itemsCounter$.subscribe((counter) => {
             this.itemsCounter = counter;
         });
 
@@ -74,7 +86,9 @@ export class MapAreaComponent implements OnInit {
         this.mapService.mapDescription$.subscribe((description) => {
             this.mapDescription = description;
         });
-        this.setCountersBasedOnMapSize(this.convertedMapSize);
+        this.mapService.updateSelectedTile$.subscribe((tile) => {
+            this.selectedTile = tile;
+        });
     }
 
     createMap(mapSize: number) {
@@ -83,14 +97,10 @@ export class MapAreaComponent implements OnInit {
         for (let i = 0; i < mapSize; i++) {
             const row: { value: string | null; isHovered: boolean }[] = [];
             for (let j = 0; j < mapSize; j++) {
-                row.push({ value: 'grass', isHovered: false });
+                row.push({ value: 'floor', isHovered: false });
             }
             this.Map.push(row);
         }
-    }
-
-    isTileDraggable(rowIndex: number, colIndex: number): boolean {
-        return this.Map[rowIndex][colIndex].item === 'starting-point';
     }
 
     setCellSize() {
@@ -106,96 +116,55 @@ export class MapAreaComponent implements OnInit {
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         this.isMouseDown = true;
         if (isRightClick) {
-            this.isErasing = true;
-            this.placeTile(rowIndex, colIndex, true);
+            this.isRightClickDown = true;
+            this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
         } else {
             this.isPlacing = true;
-            this.placeTile(rowIndex, colIndex, false);
+            this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile, this.defaultTile);
         }
     }
 
-    stopPlacingTile() {
+    stopPlacing() {
         this.isMouseDown = false;
         this.isPlacing = false;
-        this.isErasing = false;
+        this.isRightClickDown = false;
     }
 
     @HostListener('document:mouseup', ['$event'])
     onMouseUp(event: MouseEvent) {
-        this.stopPlacingTile();
+        this.stopPlacing();
     }
 
     @HostListener('dragstart', ['$event'])
     onDragStart(event: DragEvent) {
-        if ((event.target as HTMLElement).tagName === 'IMG') {
-            event.preventDefault();
+        const targetElement = event.target as HTMLElement;
+
+        if (targetElement.tagName === 'IMG') {
+            const tileElement = targetElement.closest('.grid-item');
+
+            if (!tileElement) {
+                event.preventDefault();
+            }
         }
     }
 
     placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isMouseDown) {
-            if (this.isPlacing) {
-                this.placeTile(rowIndex, colIndex, false);
-            } else if (this.isErasing) {
-                this.placeTile(rowIndex, colIndex, true);
+            if (this.isRightClickDown) {
+                this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
+            } else if (this.selectedTile) {
+                this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile, this.defaultTile);
             }
         }
     }
-
-    placeTile(rowIndex: number, colIndex: number, isErasing: boolean) {
-        if (isErasing) {
-            if (this.Map[rowIndex][colIndex].item === 'starting-point') {
-                this.Map[rowIndex][colIndex].item = undefined;
-                this.mapService.updateStartingPointCounter(this.startingPointCounter + 1);
-            } else if (this.Map[rowIndex][colIndex].item === 'random') {
-                this.Map[rowIndex][colIndex].item = undefined;
-                this.mapService.updateRandomItemCounter(this.randomItemCounter + 1);
-            } else if (this.Map[rowIndex][colIndex].item !== undefined) {
-                this.Map[rowIndex][colIndex].item = undefined;
-                this.mapService.updateItemsCounter(this.itemsCounter - 1);
-            }
-
-            this.Map[rowIndex][colIndex].value = this.defaultTile;
-        } else if (!this.selectedTile || this.selectedTile === 'empty') {
-            if (!isErasing && this.Map[rowIndex][colIndex].value === 'door') {
-                const currentState = this.Map[rowIndex][colIndex].doorState;
-                this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
-            } else if (isErasing) {
-                this.Map[rowIndex][colIndex].value = this.defaultTile;
-            }
-            return;
-        }
-        if (this.Map[rowIndex][colIndex].item === 'starting-point') {
-            if (this.selectedTile === 'wall' || this.selectedTile === 'door') {
-                this.Map[rowIndex][colIndex].item = undefined;
-                this.Map[rowIndex][colIndex].value = this.selectedTile;
-            } else {
-                this.Map[rowIndex][colIndex].value = this.selectedTile;
-            }
-        } else if (this.selectedTile === 'door' && !isErasing) {
-            if (this.Map[rowIndex][colIndex].value === 'door') {
-                const currentState = this.Map[rowIndex][colIndex].doorState;
-                this.Map[rowIndex][colIndex].doorState = currentState === 'closed' ? 'open' : 'closed';
-            } else {
-                this.Map[rowIndex][colIndex].value = 'door';
-                this.Map[rowIndex][colIndex].doorState = 'closed';
-            }
-        } else {
-            const tileToPlace = isErasing ? this.defaultTile : this.selectedTile;
-
-            if (isErasing) {
-                this.Map[rowIndex][colIndex].value = this.defaultTile;
-            } else if (this.Map[rowIndex][colIndex].value !== tileToPlace) {
-                this.Map[rowIndex][colIndex].value = tileToPlace;
-            }
-        }
-    }
-    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
 
     startDrag(event: DragEvent, rowIndex: number, colIndex: number) {
-        if (this.isTileDraggable(rowIndex, colIndex)) {
+        const cell = this.Map[rowIndex][colIndex];
+
+        if (cell.item) {
             this.currentDraggedItem = { rowIndex, colIndex };
-            event.dataTransfer?.setData('item', 'starting-point');
+
+            event.dataTransfer?.setData('item', cell.item);
         } else {
             event.preventDefault();
         }
@@ -206,37 +175,18 @@ export class MapAreaComponent implements OnInit {
     }
 
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
-        event.preventDefault();
         const itemType = event.dataTransfer?.getData('item');
-        if (itemType === 'starting-point' && this.currentDraggedItem) {
-            const { rowIndex: prevRow, colIndex: prevCol } = this.currentDraggedItem;
-            this.Map[prevRow][prevCol].item = undefined;
-
-            if (this.Map[rowIndex][colIndex].value === 'floor') {
-                this.Map[rowIndex][colIndex].item = 'starting-point';
-            }
-            this.currentDraggedItem = null;
-        } else if (itemType) {
-            if (
-                this.Map[rowIndex][colIndex].value === 'wall' ||
-                this.Map[rowIndex][colIndex].value === 'water' ||
-                this.Map[rowIndex][colIndex].value === 'ice' ||
-                this.Map[rowIndex][colIndex].value === 'door'
-            ) {
-                return;
-            }
-            if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-                this.Map[rowIndex][colIndex].item = 'starting-point';
-                this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
-                this.selectedTile = 'empty';
-            } else if (itemType === 'random' && this.randomItemCounter > 0) {
-                this.Map[rowIndex][colIndex].item = 'random';
-                this.mapService.updateRandomItemCounter(this.randomItemCounter - 1);
+        if (itemType === 'starting-point') {
+            if (this.currentDraggedItem) {
+                this.tileService.moveItem(this.Map, this.currentDraggedItem, { rowIndex, colIndex });
+                this.currentDraggedItem = null;
+                event.preventDefault();
             } else {
-                this.Map[rowIndex][colIndex].item = itemType;
-                this.Map[rowIndex][colIndex].item = itemType;
+                this.tileService.setItem(this.Map, itemType, { rowIndex, colIndex });
+                this.mapCounterService.updateCounters(itemType, 'remove');
             }
         }
+        this.selectedTile = '';
     }
 
     resetMapToDefault() {
@@ -307,42 +257,11 @@ export class MapAreaComponent implements OnInit {
     }
 
     getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
-        switch (tileValue) {
-            case 'door':
-                const doorState = this.Map[rowIndex][colIndex].doorState;
-                return doorState === 'open' ? '../../../../assets/tiles/door_x.png' : '../../../../assets/tiles/door_y.png';
-            case 'wall':
-                return '../../../../assets/tiles/wall.png';
-            case 'ice':
-                return '../../../../assets/tiles/ice1.jpg';
-            case 'water':
-                return '../../../../assets/tiles/water.png';
-            default:
-                return '../../../../assets/tiles/floor.png';
-        }
+        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.Map);
     }
 
     getItemImage(item: string): string {
-        switch (item) {
-            case 'vest':
-                return '../../../../assets/items/vest.png';
-            case 'mask':
-                return '../../../../assets/items/mask.png';
-            case 'jar':
-                return '../../../../assets/items/jar.png';
-            case 'acidgun':
-                return '../../../../assets/items/acidgun.png';
-            case 'key':
-                return '../../../../assets/items/keysilver.png';
-            case 'hat':
-                return '../../../../assets/items/hat.png';
-            case 'random':
-                return '../../../../assets/items/randomchest.png';
-            case 'starting-point':
-                return '../../../../assets/tiles/startingpoint.png';
-            default:
-                return '';
-        }
+        return this.imageService.getItemImage(item);
     }
 
     setCountersBasedOnMapSize(mapSize: number) {
@@ -359,9 +278,9 @@ export class MapAreaComponent implements OnInit {
             this.startingPointCounter = 6;
             this.itemsCounter = 18;
         }
-        this.mapService.updateRandomItemCounter(this.randomItemCounter);
-        this.mapService.updateStartingPointCounter(this.startingPointCounter);
-        this.mapService.updateItemsCounter(this.itemsCounter);
+        this.mapCounterService.updateRandomItemCounter(this.randomItemCounter);
+        this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
+        this.mapCounterService.updateItemsCounter(this.itemsCounter);
     }
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
