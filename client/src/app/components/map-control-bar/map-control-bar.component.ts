@@ -24,7 +24,8 @@ export class MapControlBarComponent implements OnInit {
     gameMode: string = '';
     numberOfPlayers: number = 0;
 
-    map!: Map;
+    map: Map;
+    errorMessage: string;
 
     showErrorMessage: { entryError: boolean; nameError: boolean } = {
         entryError: false,
@@ -82,19 +83,18 @@ export class MapControlBarComponent implements OnInit {
     }
 
     saveMap(): void {
+        console.log('map saving');
         if (this.route.snapshot.params['mode']) {
-            if (this.mapTitle !== '') {
-                this.mapService.setMapTitle(this.mapTitle);
-                this.mapService.setMapDescription(this.mapDescription);
-                this.mapService.generateMapData();
-            }
-        } else if (this.route.snapshot.params['id']) {
-            if (this.mapTitle !== '') {
-                this.mapService.saveEditedMap(this.map);
-            }
+            this.mapService.setMapTitle(this.mapTitle);
+            this.mapService.setMapDescription(this.mapDescription);
+            this.mapService.generateMapData();
         } else {
-            this.showErrorMessage.entryError = true;
-            return;
+            this.mapService.saveEditedMap(this.map);
         }
+        console.log("message d'erreur :", this.errorMessage);
+    }
+
+    showError(message: string) {
+        this.errorMessage = message;
     }
 }
