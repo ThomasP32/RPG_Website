@@ -2,19 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from './character.service';
 
-const one = 1;
-const two = 2;
-const three = 3;
-const four = 4;
-const five = 5;
-const six = 6;
-const seven = 7;
-const eight = 8;
-const nine = 9;
-const ten = 10;
-const eleven = 11;
-const twelve = 12;
-
 describe('CharacterService', () => {
     let service: CharacterService;
 
@@ -29,8 +16,10 @@ describe('CharacterService', () => {
 
     it('should return an observable of characters', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
+            /* eslint-disable @typescript-eslint/no-magic-numbers */
             expect(characters.length).toBe(12);
             expect(characters[0].name).toBe('Alistair Clockhaven');
+            expect(characters[1].name).toBe('Arachnoform');
             done();
         });
     });
@@ -49,7 +38,8 @@ describe('CharacterService', () => {
     it('should return characters with correct IDs', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
             const ids = characters.map((c) => c.id);
-            expect(ids).toEqual([one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve]);
+            /* eslint-disable @typescript-eslint/no-magic-numbers */
+            expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
             done();
         });
     });

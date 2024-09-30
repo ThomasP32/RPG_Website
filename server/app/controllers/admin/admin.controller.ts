@@ -1,6 +1,5 @@
-import { CreateMapDto } from '@app/model/dto/map/create-map.dto';
-import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
-import { Map } from '@app/model/schemas/map';
+import { MapDto } from '@app/model/dto/map/map.dto';
+import { Map } from '@app/model/schemas/map.schema';
 import { AdminService } from '@app/services/admin/admin.service';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -53,14 +52,14 @@ export class AdminController {
         description: 'Return NOT_FOUND http status when request fails',
     })
     @Post('/creation')
-    async addMap(@Body() mapDto: CreateMapDto, @Res() response: Response) {
+    async addMap(@Body() mapDto: MapDto, @Res() response: Response) {
         try {
             await this.adminService.addMap(mapDto);
             response.status(HttpStatus.CREATED).send();
         } catch (error) {
             return response.status(error.status || HttpStatus.BAD_REQUEST).json({
                 status: error.status || HttpStatus.BAD_REQUEST,
-                message: error.message || 'Failed to add map',
+                message: error.message || 'La création du jeu a échoué',
             });
         }
     }
@@ -73,14 +72,14 @@ export class AdminController {
         description: 'Return NOT_FOUND http status when request fails',
     })
     @Patch('/edition/:mapId')
-    async modifyMap(@Param('mapId') mapId: string, @Body() mapDto: UpdateMapDto, @Res() response: Response) {
+    async modifyMap(@Param('mapId') mapId: string, @Body() mapDto: MapDto, @Res() response: Response) {
         try {
             const updatedMap = await this.adminService.modifyMap(mapId, mapDto);
             response.status(HttpStatus.OK).json(updatedMap);
         } catch (error) {
             return response.status(error.status || HttpStatus.BAD_REQUEST).json({
                 status: error.status || HttpStatus.BAD_REQUEST,
-                message: error.message || 'Failed to add map',
+                message: error.message || 'La modification du jeu a échoué',
             });
         }
     }
@@ -108,13 +107,16 @@ export class AdminController {
     @ApiNotFoundResponse({
         description: 'Return NOT_FOUND http status when request fails',
     })
-    @Delete('/:mapName')
-    async deleteCourse(@Param('mapName') mapName: string, @Res() response: Response) {
+    @Delete('/:mapId')
+    async deleteCourse(@Param('mapId') mapId: string, @Res() response: Response) {
         try {
-            await this.adminService.deleteMap(mapName);
+            await this.adminService.deleteMap(mapId);
             response.status(HttpStatus.OK).send();
         } catch (error) {
-            response.status(HttpStatus.NOT_FOUND).send(error.message);
+            return response.status(error.status || HttpStatus.BAD_REQUEST).json({
+                status: error.status || HttpStatus.BAD_REQUEST,
+                message: error.message || 'La supression du jeu a échoué',
+            });
         }
     }
 }
