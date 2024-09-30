@@ -115,12 +115,15 @@ export class MapAreaComponent implements OnInit {
 
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         this.isMouseDown = true;
+        console.log('Mouse button:', isRightClick ? 'Right click' : 'Left click');
         if (isRightClick) {
             this.isRightClickDown = true;
+            console.log('Right click: Erasing tile');
             this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
         } else {
+            console.log('Left click: Placing tile');
             this.isPlacing = true;
-            this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile, this.defaultTile);
+            this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
         }
     }
 
@@ -151,9 +154,10 @@ export class MapAreaComponent implements OnInit {
     placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isMouseDown) {
             if (this.isRightClickDown) {
+                console.log('is erasing');
                 this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
             } else if (this.selectedTile) {
-                this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile, this.defaultTile);
+                this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
             }
         }
     }

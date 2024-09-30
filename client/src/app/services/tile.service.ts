@@ -5,10 +5,9 @@ import { MapCounterService } from './map-counter.service';
     providedIn: 'root',
 })
 export class TileService {
-    defaultTile: string = 'floor';
     constructor(private mapCounterService: MapCounterService) {}
 
-    placeTile(map: any[][], rowIndex: number, colIndex: number, selectedTile: string, defaultTile: string) {
+    placeTile(map: any[][], rowIndex: number, colIndex: number, selectedTile: string) {
         if (selectedTile) {
             if (map[rowIndex][colIndex].item && (selectedTile === 'wall' || selectedTile === 'door')) {
                 this.mapCounterService.updateCounters(map[rowIndex][colIndex].item, 'add');
