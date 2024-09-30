@@ -14,7 +14,6 @@ describe('MapAreaComponent', () => {
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
     const mockMap: Map = {
-        _id: '1',
         name: 'Test Map',
         isVisible: true,
         mapSize: { x: 10, y: 10 },

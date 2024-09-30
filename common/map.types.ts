@@ -41,21 +41,22 @@ export interface StartTile {
 export interface Item {
     coordinate: Coordinate;
     category: ItemCategory;
-
-    // les fonctionnalités supplémentaires des items seront ajoutée ici
 }
 
 export interface Map {
-    _id?: Object;
     name: string;
     description: string;
     imagePreview: string;
     mode: Mode;
-    isVisible?: boolean;
     mapSize: Coordinate;
     startTiles: StartTile[];
     items: Item[];
     doorTiles: DoorTile[];
     tiles: Tile[];
-    lastModified?: Date;
+}
+
+export interface DBMap extends Map {
+    _id: Object;
+    isVisible: boolean;
+    lastModified: Date;
 }

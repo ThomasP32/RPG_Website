@@ -22,7 +22,6 @@ export class GameCreationPageComponent implements OnInit {
 
     map!: Map;
     mapId: string = '';
-    selectedTile: string;
     constructor(
         private mapService: MapService,
         private route: ActivatedRoute,
@@ -42,6 +41,7 @@ export class GameCreationPageComponent implements OnInit {
         this.mapService.resetMap$.subscribe(() => {
             if (this.mapAreaComponent) {
                 this.mapAreaComponent.resetMapToDefault();
+                this.mapService.updateSelectedTile('empty');
             }
         });
         this.mapService.generateMap$.subscribe(() => {
@@ -50,10 +50,6 @@ export class GameCreationPageComponent implements OnInit {
                 this.mapService.saveNewMap(mapData);
             }
         });
-    }
-
-    onTileSelected(tile: string) {
-        this.selectedTile = tile;
     }
 
     getUrlParams(): void {
