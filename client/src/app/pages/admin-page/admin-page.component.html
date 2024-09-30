@@ -37,12 +37,12 @@
                             </div>
                             <div class="map-actions">
                             <button class="edit-button" (click)="editGame(map)">Modifier</button>
-                            <button class="map-delete" (click)="deleteTriggered = true">Supprimer</button>
+                            <button class="map-delete" (click)="deleteTrigger()">Supprimer</button>
                             @if(deleteTriggered === true) {
                                 <div class="delete-confirmation">
                                     <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
                                     <button class="delete-confirmation-button" (click)="deleteGame(map._id!.toString())">Oui</button>
-                                    <button class="delete-confirmation-button" (click)="deleteTriggered = false">Non</button>
+                                    <button class="delete-confirmation-button" (click)="deleteTrigger()">Non</button>
                                 </div>
                             }
                             </div>
