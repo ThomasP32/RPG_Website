@@ -10,7 +10,7 @@ import { DBMap as Map } from '@common/map.types';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink],
+    imports: [RouterLink, MapComponent],
 })
 export class AdminPageComponent implements OnInit {
     readonly title: string = 'Administration des jeux';

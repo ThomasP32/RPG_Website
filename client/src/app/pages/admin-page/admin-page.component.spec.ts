@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Routes, provideRouter } from '@angular/router';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { of } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 
@@ -12,17 +12,17 @@ const routes: Routes = [];
 describe('MainPageComponent', () => {
     let component: AdminPageComponent;
     let fixture: ComponentFixture<AdminPageComponent>;
-    let communicationServiceSpy: SpyObj<CommunicationService>;
+    let communicationServiceSpy: SpyObj<CommunicationMapService>;
 
     beforeEach(async () => {
-        communicationServiceSpy = jasmine.createSpyObj('CommunicationService', ['getGames', 'deleteGame', 'updateGame']);
-        communicationServiceSpy.getMapsFromServer.and.returnValue(of([{ name: 'Game 1', mapSize: { x: 100, y: 100 }, isVisible: true }]));
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['getGames', 'deleteGame', 'updateGame']);
+        communicationServiceSpy.getGames.and.returnValue(of([{ name: 'Game 1', mapSize: { x: 100, y: 100 }, isVisible: true }]));
 
         await TestBed.configureTestingModule({
             imports: [AdminPageComponent],
             providers: [
                 {
-                    provide: CommunicationService,
+                    provide: CommunicationMapService,
                     useValue: communicationServiceSpy,
                 },
                 provideHttpClientTesting(),
