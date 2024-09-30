@@ -1,8 +1,8 @@
 import { HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
-import { CommunicationMapService } from './communication.map.service';
 import { MapService } from './map.service';
 
 describe('MapService', () => {
@@ -70,9 +70,7 @@ describe('MapService', () => {
 
     it('should save new map', () => {
         const mockMap: Map = {
-            _id: '2',
             name: 'Test Map',
-            isVisible: true,
             mapSize: { x: 10, y: 10 },
             startTiles: [],
             items: [],
@@ -91,9 +89,7 @@ describe('MapService', () => {
 
     it('should save edited map', () => {
         const mockMap: Map = {
-            _id: '1',
             name: 'Test Map',
-            isVisible: true,
             mapSize: { x: 10, y: 10 },
             startTiles: [],
             items: [],

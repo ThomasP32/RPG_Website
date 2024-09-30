@@ -6,17 +6,17 @@
                 class="map-cell"
                 (mousedown)="startPlacingTile(rowIndex, colIndex, $event.button === 2)"
                 (mouseenter)="placeTileOnMove(rowIndex, colIndex)"
-                (mouseup)="stopPlacingTile()"
-                (contextmenu)="$event.preventDefault()"
+                (mouseup)="stopPlacing()"
                 (dragover)="allowDrop($event)"
                 (drop)="onDrop($event, rowIndex, colIndex)"
+                (contextmenu)="$event.preventDefault()"
             >
                 <img *ngIf="cell.value" [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" draggable="false " class="grid-tile" />
 
                 <img
                     *ngIf="cell.item"
                     [src]="getItemImage(cell.item)"
-                    draggable="true"
+                    [draggable]="true"
                     alt="Item"
                     class="grid-item"
                     (dragstart)="startDrag($event, rowIndex, colIndex)"

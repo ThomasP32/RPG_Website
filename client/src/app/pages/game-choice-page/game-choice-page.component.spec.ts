@@ -27,7 +27,7 @@ const mockMaps: Map[] = [
         name: 'Map2',
         description: 'Description2',
         imagePreview: 'image2.png',
-        mode: Mode.Normal,
+        mode: Mode.Classic,
         mapSize: { x: 2, y: 2 },
         startTiles: [],
         items: [],

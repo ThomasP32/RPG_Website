@@ -59,6 +59,9 @@ export class MapControlBarComponent implements OnInit {
     }
 
     resetMap(): void {
+        this.mapTitle = '';
+        this.mapDescription = '';
+
         if (this.route.snapshot.params['mode']) {
             this.mapService.resetMap();
         }

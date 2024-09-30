@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { environment } from 'src/environments/environment';
-import { CommunicationMapService } from './communication.map.service';
+import { CommunicationMapService } from './communication/communication.map.service';
 
 const mockResponse: Map = {
     _id: { $oid: '507f1f77bcf86cd799439011' },
