@@ -120,10 +120,10 @@ export class MapAreaComponent implements OnInit {
         this.isErasing = false;
     }
 
-    //     @HostListener('document:mouseup', ['$event'])
-    //     onMouseUp(event: MouseEvent) {
-    //         this.stopPlacingTile();
-    //     }
+    @HostListener('document:mouseup', ['$event'])
+    onMouseUp(event: MouseEvent) {
+        this.stopPlacingTile();
+    }
 
     @HostListener('dragstart', ['$event'])
     onDragStart(event: DragEvent) {
@@ -259,7 +259,6 @@ export class MapAreaComponent implements OnInit {
             description: this.mapDescription,
             imagePreview: "url d'image",
             mode: Mode.Ctf,
-            // isVisible: false,
             mapSize: {
                 x: this.convertedMapSize,
                 y: this.convertedMapSize,

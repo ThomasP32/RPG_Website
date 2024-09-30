@@ -3,8 +3,8 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
-import { CharacterService } from '@app/services/character.service';
-import { CommunicationMapService } from '@app/services/communication.map.service';
+import { CharacterService } from '@app/services/character/character.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 
@@ -33,6 +33,8 @@ export class CharacterFormPageComponent {
     selectedCharacter: Character;
     characters: Character[] = [];
 
+    currentIndex: number = 0;
+
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;
@@ -40,7 +42,7 @@ export class CharacterFormPageComponent {
 
     mapName: string | null = null;
     maps: Map[] = [];
-    map: Map;
+    // map: Map;
     showErrorMessage: { selectionError: boolean } = {
         selectionError: false,
     };
@@ -48,8 +50,6 @@ export class CharacterFormPageComponent {
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
     private readonly route: ActivatedRoute = inject(ActivatedRoute);
-
-    private currentIndex: number = 0;
 
     constructor(private communicationMapService: CommunicationMapService) {
         // Assume characters are fetched from a service
