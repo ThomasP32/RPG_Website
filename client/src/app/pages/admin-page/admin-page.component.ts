@@ -20,7 +20,7 @@ export class AdminPageComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.communicationService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
+        this.communicationService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
     }
 
     navigateToMain(): void {
@@ -38,7 +38,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     updateDisplay(): void {
-        this.communicationService.basicGet<Map[]>('admin').subscribe((maps) => (this.maps = maps));
+        this.communicationService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
     }
 
     togglesVisibility(mapId: string): void {

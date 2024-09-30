@@ -179,6 +179,7 @@ describe('CharacterFormPageComponent', () => {
     it('should handle onSubmit correctly when map is not found', fakeAsync(() => {
         communicationMapService.basicGet.and.returnValue(of(undefined));
         component.onSubmit();
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         tick(5000);
         expect(component.showErrorMessage.selectionError).toBeTrue();
         expect(router.navigate).toHaveBeenCalledWith(['/create-game']);
@@ -187,6 +188,7 @@ describe('CharacterFormPageComponent', () => {
     it('should handle onSubmit correctly when map is found', fakeAsync(() => {
         communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
         component.onSubmit();
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         tick(5000);
         expect(router.navigate).toHaveBeenCalledWith(['/waiting-room'], { queryParams: { name: mockMaps[0].name } });
     }));
