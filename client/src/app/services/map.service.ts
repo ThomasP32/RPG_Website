@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { CommunicationMapService } from './communication.map.service';
 
 @Injectable({
     providedIn: 'root',
@@ -13,20 +13,14 @@ export class MapService {
     generateMapSource = new Subject<void>();
     generateMap$ = this.generateMapSource.asObservable();
 
+    updateSelectedTileSource = new BehaviorSubject<string>('');
+    updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
+
     private mapTitleSource = new BehaviorSubject<string>('');
     mapTitle$ = this.mapTitleSource.asObservable();
 
     private mapDescriptionSource = new BehaviorSubject<string>('');
     mapDescription$ = this.mapDescriptionSource.asObservable();
-
-    private startingPointCounterSource = new Subject<number>();
-    startingPointCounter$ = this.startingPointCounterSource.asObservable();
-
-    private randomItemCounterSource = new Subject<number>();
-    randomItemCounter$ = this.randomItemCounterSource.asObservable();
-
-    private itemsCounterSource = new Subject<number>();
-    itemsCounter$ = this.randomItemCounterSource.asObservable();
 
     constructor(private CommunicationMapService: CommunicationMapService) {}
 
@@ -38,24 +32,16 @@ export class MapService {
         this.mapDescriptionSource.next(description);
     }
 
-    updateStartingPointCounter(value: number) {
-        this.startingPointCounterSource.next(value);
-    }
-
-    updateRandomItemCounter(value: number) {
-        this.randomItemCounterSource.next(value);
-    }
-
-    updateItemsCounter(value: number) {
-        this.itemsCounterSource.next(value);
-    }
-
     generateMapData() {
         this.generateMapSource.next();
     }
 
     resetMap() {
         this.resetMapSource.next();
+    }
+
+    updateSelectedTile(value: string) {
+        this.updateSelectedTileSource.next(value);
     }
 
     saveNewMap(map: Map) {

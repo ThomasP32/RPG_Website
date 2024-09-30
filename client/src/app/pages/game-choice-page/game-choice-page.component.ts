@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommunicationMapService } from '@app/services/communication.map.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 
 @Component({
-    selector: 'app-game-choice-page',
+    // eslint-disable-next-line @angular-eslint/component-selector
+    selector: 'game-choice-page',
     standalone: true,
     templateUrl: './game-choice-page.component.html',
     styleUrls: ['./game-choice-page.component.scss'],

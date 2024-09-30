@@ -12,7 +12,16 @@
         "Express": true,
         "Mocha": true
     },
-    "overrides": [],
+    "overrides": [
+        {
+            "files": ["*.spec.ts"],
+            "rules": {
+                "@typescript-eslint/no-explicit-any": "off",    
+                "no-magic-numbers": "off",                      
+                "max-lines": "off"                              
+            }
+        }
+    ],
     "env": {
         "node": true,
         "jest": true

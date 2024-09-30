@@ -1,6 +1,8 @@
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ImageService } from '@app/services/image.service';
+import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
@@ -13,7 +15,7 @@ import { Map } from '@common/map.types';
     styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent implements OnInit {
-    @Input() selectedTile: string;
+    selectedTile: string;
 
     @Output() tileSelected = new EventEmitter<string>();
 
@@ -30,17 +32,14 @@ export class ToolbarComponent implements OnInit {
     isFlagVisible: boolean = true;
     isStartingPointVisible: boolean = true;
 
-    startingPointCounter: number;
-    flagCounter: number = 0;
-    randomItemCounter: number;
-    itemsCounter: number;
-
     itemsUsable: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
         private mapGetService: MapGetService,
+        public mapCounterService: MapCounterService,
+        public imageService: ImageService,
     ) {}
 
     async ngOnInit() {
@@ -51,14 +50,18 @@ export class ToolbarComponent implements OnInit {
             this.map = this.mapGetService.map;
             this.mode = this.map.mode;
         }
-        this.mapService.startingPointCounter$.subscribe((counter) => {
-            this.startingPointCounter = counter;
+        this.mapService.updateSelectedTile$.subscribe((tile) => {
+            this.selectedTile = tile;
         });
-        this.mapService.randomItemCounter$.subscribe((counter) => {
-            this.randomItemCounter = counter;
+
+        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
+            this.mapCounterService.startingPointCounter = counter;
         });
-        this.mapService.itemsCounter$.subscribe((counter) => {
-            this.itemsCounter = counter;
+        this.mapCounterService.randomItemCounter$.subscribe((counter) => {
+            this.mapCounterService.randomItemCounter = counter;
+        });
+        this.mapCounterService.itemsCounter$.subscribe((counter) => {
+            this.mapCounterService.itemsCounter = counter;
         });
     }
 
@@ -78,41 +81,53 @@ export class ToolbarComponent implements OnInit {
     }
 
     selectTile(tile: string) {
+        console.log('tile ', tile);
+        console.log('tile selected', this.selectedTile);
         if (this.selectedTile === tile) {
-            // If the tile is already selected, deselect it
             this.selectedTile = 'empty';
-            this.tileSelected.emit(this.selectedTile);
-        } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
-            // this.selectedTile = tile;
-            // this.tileSelected.emit(tile);
+            this.mapService.updateSelectedTile(this.selectedTile);
         } else {
             this.selectedTile = tile;
-            this.tileSelected.emit(tile);
-        }
-
-        if (this.startingPointCounter === 0) {
-            this.isStartingPointVisible = false;
+            this.mapService.updateSelectedTile(tile);
         }
     }
 
     startDrag(event: DragEvent, itemType: string) {
-        if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-            event.dataTransfer?.setData('item', itemType);
-        } else if (itemType === 'random' && this.randomItemCounter > 0) {
-            event.dataTransfer?.setData('item', itemType);
-        } else if (itemType) {
-            event.dataTransfer?.setData('item', itemType);
+        if (itemType === 'starting-point') {
+            this.selectedTile = 'empty';
+            this.mapService.updateSelectedTile(this.selectedTile);
+            if (this.mapCounterService.startingPointCounter > 0) {
+                event.dataTransfer?.setData('item', itemType);
+            } else if (itemType) {
+                event.dataTransfer?.setData('item', itemType);
+            }
+        } else {
+            return;
         }
     }
 
     placeStartingPoint() {
-        if (this.startingPointCounter > 0) {
-            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+        if (this.mapCounterService.startingPointCounter > 0) {
+            this.mapCounterService.updateStartingPointCounter(this.mapCounterService.startingPointCounter - 1);
         }
     }
 
     selectItem(item: string) {
+        this.selectedTile = 'empty';
+        this.mapService.updateSelectedTile(this.selectedTile);
+
+        if (this.mapCounterService.startingPointCounter === 0) {
+            this.isStartingPointVisible = false;
+        }
         this.itemSelected.emit(item);
+    }
+
+    getTileImage(tile: string): string {
+        return this.imageService.loadTileImage(tile);
+    }
+
+    getItemImage(item: string): string {
+        return this.imageService.getItemImage(item);
     }
 
     getUrlParams(): void {

@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MapComponent } from '@app/components/map/map.component';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { Map } from '@common/map.types';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { DBMap as Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 
 @Component({

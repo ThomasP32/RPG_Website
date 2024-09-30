@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
-import { CommunicationMapService } from './communication.map.service';
 import { MapGetService } from './map-get.service';
 
 describe('MapGetService', () => {
@@ -23,9 +23,7 @@ describe('MapGetService', () => {
 
     it('should get map by ID', async () => {
         const mockMap: Map = {
-            _id: '1',
             name: 'Test Map',
-            isVisible: true,
             mapSize: { x: 10, y: 10 },
             startTiles: [],
             items: [],
