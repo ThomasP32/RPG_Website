@@ -69,7 +69,11 @@ export class AdminPageComponent implements OnInit {
           }
         }
       }
-      
+
+    deleteTrigger(): void {
+        this.deleteTriggered = !this.deleteTriggered;
+        console.log(this.deleteTriggered);
+    }
     
     showDescription(): void {
 
