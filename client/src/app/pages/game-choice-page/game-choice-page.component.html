@@ -1,0 +1,32 @@
+<div class="create-game-component">
+    <div class="header">
+        <div class="return-to-previous-page">
+            <button class="return-button" (click)="onReturn()">Retour</button>
+        </div>
+        <h2>CHOISIS TON JEU</h2>
+    </div>
+
+    <div class="map-view">
+        <div class="scrollable-container">
+            <div class="map-cards">
+                @for(map of this.maps; track map.name) {
+                <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
+                    <!-- <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" /> -->
+                    <div class="map-details">
+                        <p class="description">Description: {{ map.description }}</p>
+                        <p class="mode">Game Mode: {{ map.mode }}</p>
+                        <h2 class="name">{{ map.name }}</h2>
+                        <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <button class="next-button" (click)="next()">Suivant</button>
+        @if (showErrorMessage.userError) {
+        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
+        }
+    </div>
+</div>

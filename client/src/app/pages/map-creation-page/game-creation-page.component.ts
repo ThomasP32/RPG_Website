@@ -1,73 +1,42 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { MapAreaComponent } from '@app/components/map-area/map-area.component';
-import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
-import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
-import { CommunicationMapService } from '@app/services/communication.map.service';
-import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
-import { firstValueFrom } from 'rxjs';
+// import { Component, OnInit, ViewChild } from '@angular/core';
+// import { MapAreaComponent } from '@app/components/map-area/map-area.component';
+// import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
+// import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
+// import { MapService } from '@app/services/map.service';
 
-@Component({
-    selector: 'app-game-creation-page',
-    standalone: true,
-    imports: [MapControlBarComponent, ToolbarComponent, MapAreaComponent],
-    templateUrl: './game-creation-page.component.html',
-    styleUrl: './game-creation-page.component.scss',
-})
-export class GameCreationPageComponent implements OnInit {
-    @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
-    @ViewChild(MapControlBarComponent, { static: false }) mapControlBarComponent!: MapControlBarComponent;
-    @ViewChild(ToolbarComponent, { static: false }) appToolbarComponent!: ToolbarComponent;
+// @Component({
+//     selector: 'app-game-creation-page',
+//     standalone: true,
+//     imports: [MapControlBarComponent, ToolbarComponent, MapAreaComponent],
+//     templateUrl: './game-creation-page.component.html',
+//     styleUrl: './game-creation-page.component.scss',
+// })
+// export class GameCreationPageComponent implements OnInit {
+//     selectedTile: string;
 
-    map!: Map;
-    
-    mapId: string = '';
-    newMap: Map ;
+//     @ViewChild(MapAreaComponent, { static: false }) mapAreaComponent!: MapAreaComponent;
+//     @ViewChild(MapControlBarComponent, { static: false }) MapControlBarComponent!: MapControlBarComponent;
 
+//     constructor(private mapService: MapService) {}
 
-    selectedTile: string = 'grass';
+//     ngOnInit(): void {
+//         this.mapService.resetMap$.subscribe(() => {
+//             if (this.mapAreaComponent) {
+//                 console.log('Resetting map via service');
+//                 this.mapAreaComponent.resetMapToDefault();
+//             }
+//         });
+//         this.mapService.generateMap$.subscribe(() => {
+//             if (this.mapAreaComponent) {
+//                 console.log('generating map via service');
+//                 const mapData = this.mapAreaComponent.generateMapData();
+//                 this.mapService.saveMap(mapData);
+//                 this.mapAreaComponent.resetMapToDefault();
+//             }
+//         });
+//     }
 
-    constructor(private mapService: MapService, private route : ActivatedRoute, private communicationMapService : CommunicationMapService) {}
-
-    async ngOnInit(): Promise<void> {
-        if(this.route.snapshot.params['id']){
-            this.getUrlParams();
-            await this.getMap(this.mapId);
-            console.log('get map : ', this.newMap);
-        }
-       
-        this.mapService.resetMap$.subscribe(() => {
-            if (this.mapAreaComponent) {
-                this.mapAreaComponent.resetMapToDefault();
-            }
-        });
-        this.mapService.generateMap$.subscribe(() => {
-            if (this.mapAreaComponent) {
-                this.mapAreaComponent.resetMapToDefault();
-            }
-        });
-    }
-
-    onTileSelected(tile: string) {
-        this.selectedTile = tile;
-    }
-
-    getUrlParams(): void {
-        this.route.queryParams.subscribe(() => {
-            this.mapId = this.route.snapshot.params['id'];
-        });
-    }
-
-    async getMap(id: string): Promise<void> {
-        this.newMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
-    }
-
-    //TODO: GET MAP
-    initializeMapComponents(map: Map) {
-        this.appToolbarComponent.initializeMap(map);
-        this.mapAreaComponent.initializeMap(map); 
-        this.mapControlBarComponent.initializeMap(map);
-      }
-
-}
+//     onTileSelected(tile: string) {
+//         this.selectedTile = tile;
+//     }
+// }

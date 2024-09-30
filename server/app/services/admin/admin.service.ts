@@ -1,38 +1,67 @@
-import { MapDocument } from '@app/model/database/map';
-import { CoordinateDto, CreateMapDto, DoorTileDto, ItemDto, StartTileDto, TileDto } from '@app/model/dto/map/create-map.dto';
-import { UpdateMapDto } from '@app/model/dto/map/update-map.dto';
-import { Coordinate, Map, TileCategory } from '@common/map.types';
+import { DoorTileDto } from '@app/model/dto/map/door.dto';
+import { CoordinateDto, StartTileDto } from '@app/model/dto/map/coordinate.dto';
+import { MapDto } from '@app/model/dto/map/map.dto';
+import { ItemDto, TileDto } from '@app/model/dto/map/tiles.dto';
+import { MapDocument } from '@app/model/schemas/map.schema';
+import { Coordinate, DBMap, Map, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+const HALF = 0.5;
+const SMALL_MAP_SIZE = 10;
+const MEDIUM_MAP_SIZE = 15;
+const LARGE_MAP_SIZE = 20;
+const SMALL_MAP_START_TILES = 2;
+const MEDIUM_MAP_START_TILES = 4;
+const LARGE_MAP_START_TILES = 6;
+
 @Injectable()
 export class AdminService {
+    private directions = [
+        { x: 0, y: -1 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
+        { x: 1, y: 0 },
+    ];
+
     constructor(@InjectModel(Map.name) public mapModel: Model<MapDocument>) {}
 
     async getAllMaps(): Promise<Map[]> {
         return await this.mapModel.find({});
     }
 
-    async getMapById(mapId: string): Promise<Map> {
-        try {
-            const objectId = new Types.ObjectId(mapId);
-            const map = await this.mapModel.findOne({ _id: objectId });
-            if (!map) {
-                throw new NotFoundException(mapId);
-            }
-            return map;
-        } catch (err) {
-            throw new Error(`Failed to find map with id ${err.message}`);
+    async getMapById(mapId: string): Promise<DBMap> {
+        const objectId = new Types.ObjectId(mapId);
+        const map = await this.mapModel.findOne({ _id: objectId });
+        if (!map) {
+            throw new NotFoundException(mapId);
+        }
+        return map;
+    }
+
+    async verifyMap(mapDto: MapDto): Promise<void> {
+        if (!(await this.isUnique(mapDto.name))) {
+            throw new ConflictException('Un jeu avec ce nom existe déjà');
+        } else if (this.isOutOfBounds(mapDto.startTiles, mapDto.tiles, mapDto.doorTiles, mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException("Tous les éléments doivent être à l'intérieur de la carte");
+        } else if (!this.isBelowHalf(mapDto.doorTiles, mapDto.tiles, mapDto.mapSize)) {
+            throw new ForbiddenException('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
+        } else if (!this.isAllTilesAccessible(mapDto.startTiles, mapDto.tiles, mapDto.mapSize)) {
+            throw new ForbiddenException('Le jeu ne doit pas avoir de tuile de terrain isolée');
+        } else if (!this.areDoorsFree(mapDto.doorTiles, mapDto.tiles)) {
+            throw new ForbiddenException('Toutes les portes doivent être libérées');
+        } else if (!this.areStartTilePlaced(mapDto.startTiles, mapDto.mapSize)) {
+            throw new ForbiddenException('Toutes les tuiles de départ doivent être placées');
         }
     }
 
-    async addMap(map: CreateMapDto): Promise<void> {
+    async addMap(map: MapDto): Promise<void> {
         await this.verifyMap(map);
         try {
             await this.mapModel.create(map);
         } catch (error) {
-            throw new Error('Failed to add map');
+            throw new Error('La création du jeu a échoué');
         }
     }
 
@@ -43,104 +72,60 @@ export class AdminService {
                 _id: objectId,
             });
             if (res.deletedCount === 0) {
-                throw new NotFoundException('Could not find map to delete');
+                throw new NotFoundException("Le jeu n'a pas été trouvé");
             }
         } catch (err) {
-            if (err.message !== 'Could not find map to delete') {
-                throw new BadRequestException('Failed to delete map');
+            if (err instanceof NotFoundException) {
+                throw err;
             }
+            throw new BadRequestException('La suppression du jeu a échoué');
         }
     }
 
-    // ici on a un problème: on veut que quand on sauvegarde les modif dun jeu supprimé, ca créé un nouveau jeu,
-    // mais comment recuperer les data manquante de ce jeu sil est plus sur la db?
-    // à revoir ou créer un truc qui fait une sauvegarde qqpart du jeu dès qu'on accède à sa page de modification
-    async modifyMap(mapId: string, updateMapDto: UpdateMapDto): Promise<Map> {
-        const map = await this.getMapById(mapId);
+    async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DBMap> {
+        await this.verifyMapModification(mapId, updateMapDto);
+        try {
+            this.verifyMapModification(mapId, updateMapDto);
+            const existingMap = await this.mapModel.findById(mapId);
 
-        if (!map) {
-            // je pourrais mettre ici la création dun map avec le data quon a dans updateMap et ensuite faire des comparaisons
-            // dans les if et au fond ca revient à la meme qu'un createMapdto juste name est optionnel
-            throw new NotFoundException('Map not found');
-        }
-
-        if (updateMapDto.name) {
-            if (!(await this.isUnique(updateMapDto.name))) {
-                throw new Error('A map with this name already exists');
-            }
-            map.name = updateMapDto.name;
-        }
-
-        if (updateMapDto.description !== undefined) {
-            map.description = updateMapDto.description;
-        }
-
-        if (updateMapDto.mode !== undefined) {
-            map.mode = updateMapDto.mode;
-        }
-
-        if (updateMapDto.startTiles !== undefined) {
-            if (this.isOutOfBounds(updateMapDto.startTiles, map.tiles, map.doorTiles, map.items, map.mapSize)) {
-                throw new ForbiddenException('All elements must be inside map');
-            }
-            map.startTiles = updateMapDto.startTiles;
-        }
-
-        if (updateMapDto.tiles !== undefined || updateMapDto.doorTiles !== undefined) {
-            if (updateMapDto.tiles !== undefined && updateMapDto.doorTiles !== undefined) {
-                if (!this.isBelowHalf(updateMapDto.doorTiles, updateMapDto.tiles, map.mapSize)) {
-                    throw new ForbiddenException('Map must contain more than 50% of grass tiles');
-                }
-                if (this.isOutOfBounds(map.startTiles, updateMapDto.tiles, updateMapDto.doorTiles, map.items, map.mapSize)) {
-                    throw new ForbiddenException('All elements must be inside map');
-                }
-                if (!this.areDoorsFree(updateMapDto.doorTiles, updateMapDto.tiles)) {
-                    throw new ForbiddenException('All doors must be free');
-                }
-                if (!this.isAllTilesAccessible(map.startTiles, updateMapDto.tiles, map.mapSize)) {
-                    throw new ForbiddenException('Map must not have any isolated ground tile');
-                }
-                map.doorTiles = updateMapDto.doorTiles;
-                map.tiles = updateMapDto.tiles;
-            } else if (updateMapDto.tiles !== undefined && updateMapDto.doorTiles === undefined) {
-                if (this.isOutOfBounds(map.startTiles, updateMapDto.tiles, map.doorTiles, map.items, map.mapSize)) {
-                    throw new ForbiddenException('All elements must be inside map');
-                }
-                if (!this.isBelowHalf(map.doorTiles, updateMapDto.tiles, map.mapSize)) {
-                    throw new ForbiddenException('Map must contain more than 50% of grass tiles');
-                }
-                if (!this.isAllTilesAccessible(map.startTiles, updateMapDto.tiles, map.mapSize)) {
-                    throw new ForbiddenException('Map must not have any isolated ground tile');
-                }
-                map.tiles = updateMapDto.tiles;
+            if (existingMap) {
+                existingMap.set({ ...updateMapDto });
+                existingMap.isVisible = false;
+                existingMap.lastModified = new Date();
+                return await existingMap.save();
             } else {
-                if (this.isOutOfBounds(map.startTiles, map.tiles, updateMapDto.doorTiles, map.items, map.mapSize)) {
-                    throw new ForbiddenException('All elements must be inside map');
-                }
-                if (!this.isBelowHalf(updateMapDto.doorTiles, map.tiles, map.mapSize)) {
-                    throw new ForbiddenException('Map must contain more than 50% of grass tiles');
-                }
-                if (!this.areDoorsFree(updateMapDto.doorTiles, map.tiles)) {
-                    throw new ForbiddenException('All doors must be free');
-                }
-                map.doorTiles = updateMapDto.doorTiles;
+                const newMap = new this.mapModel({
+                    ...updateMapDto,
+                    _id: new Types.ObjectId(),
+                    isVisible: false,
+                    lastModified: new Date(),
+                });
+                return await newMap.save();
             }
+        } catch (error) {
+            throw new Error("Le jeu n'a pas pu être modifié");
         }
+    }
 
-        if (updateMapDto.items !== undefined) {
-            if (this.isOutOfBounds(map.startTiles, map.tiles, map.doorTiles, updateMapDto.items, map.mapSize)) {
-                throw new ForbiddenException('All elements must be inside map');
-            }
-            map.items = updateMapDto.items;
-        }
-
-        map.isVisible = false;
-
-        map.lastModified = new Date();
-        return await this.mapModel.findByIdAndUpdate(map._id, map, {
-            new: true,
-            upsert: true,
+    async verifyMapModification(mapId: string, mapDto: MapDto): Promise<void> {
+        const idObject = new Types.ObjectId(mapId);
+        const existingMap = await this.mapModel.findOne({
+            name: mapDto.name,
+            _id: { $ne: idObject },
         });
+        if (existingMap) {
+            throw new ConflictException('Un jeu avec ce nom existe déjà');
+        } else if (this.isOutOfBounds(mapDto.startTiles, mapDto.tiles, mapDto.doorTiles, mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException("Tous les éléments doivent être à l'intérieur de la carte");
+        } else if (!this.isBelowHalf(mapDto.doorTiles, mapDto.tiles, mapDto.mapSize)) {
+            throw new ForbiddenException('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
+        } else if (!this.isAllTilesAccessible(mapDto.startTiles, mapDto.tiles, mapDto.mapSize)) {
+            throw new ForbiddenException('Le jeu ne doit pas avoir de tuile de terrain isolée');
+        } else if (!this.areDoorsFree(mapDto.doorTiles, mapDto.tiles)) {
+            throw new ForbiddenException('Toutes les portes doivent être libérées');
+        } else if (!this.areStartTilePlaced(mapDto.startTiles, mapDto.mapSize)) {
+            throw new ForbiddenException('Toutes les tuiles de départ doivent être placées');
+        }
     }
 
     async visibilityToggle(mapId: string) {
@@ -150,27 +135,19 @@ export class AdminService {
             { isVisible: !map.isVisible },
             {
                 new: true,
-                upsert: true,
             },
         );
     }
 
-    async isUnique(mapName: string): Promise<boolean> {
+    private async isUnique(mapName: string): Promise<boolean> {
         return !(await this.mapModel.findOne({ name: mapName }));
     }
 
     private isBelowHalf(doors: DoorTileDto[], tiles: TileDto[], mapSize: CoordinateDto): boolean {
         const totalTiles: number = mapSize.x * mapSize.y;
         const occupiedTiles: number = doors.length + tiles.length;
-        return occupiedTiles < 0.5 * totalTiles;
+        return occupiedTiles < HALF * totalTiles;
     }
-
-    private directions = [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-    ];
 
     private isAllTilesAccessible(startTiles: StartTileDto[], tiles: TileDto[], mapSize: CoordinateDto): boolean {
         const startTile = startTiles[0].coordinate;
@@ -195,7 +172,7 @@ export class AdminService {
         return true;
     }
 
-    dfs(coordinate: CoordinateDto, mapMatrix: boolean[][], visited: CoordinateDto[], mapSize: CoordinateDto): void {
+    private dfs(coordinate: CoordinateDto, mapMatrix: boolean[][], visited: CoordinateDto[], mapSize: CoordinateDto): void {
         visited.push(coordinate);
 
         for (const direction of this.directions) {
@@ -210,15 +187,15 @@ export class AdminService {
             }
         }
     }
-    isVisited(coordinate: Coordinate, coordinates: Coordinate[]): boolean {
+    private isVisited(coordinate: Coordinate, coordinates: Coordinate[]): boolean {
         return coordinates.some((tile) => tile.x === coordinate.x && tile.y === coordinate.y);
     }
 
-    isCoordinateOutOfBounds(coordinate: Coordinate, mapSize: Coordinate): boolean {
+    private isCoordinateOutOfBounds(coordinate: Coordinate, mapSize: Coordinate): boolean {
         return coordinate.x >= mapSize.x || coordinate.y >= mapSize.y || coordinate.x < 0 || coordinate.y < 0;
     }
 
-    isOutOfBounds(startTiles: StartTileDto[], tiles: TileDto[], doors: DoorTileDto[], items: ItemDto[], mapSize: CoordinateDto): boolean {
+    private isOutOfBounds(startTiles: StartTileDto[], tiles: TileDto[], doors: DoorTileDto[], items: ItemDto[], mapSize: CoordinateDto): boolean {
         const tileOutOfBounds = tiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
         const startTileOutOfBounds = startTiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
         const doorTileOutOfBounds = doors.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
@@ -227,7 +204,7 @@ export class AdminService {
         return tileOutOfBounds || startTileOutOfBounds || doorTileOutOfBounds || itemOutOfBounds;
     }
 
-    areDoorsFree(doors: DoorTileDto[], tiles: TileDto[]): boolean {
+    private areDoorsFree(doors: DoorTileDto[], tiles: TileDto[]): boolean {
         const walls = tiles.filter((tile) => tile.category === TileCategory.Wall);
         for (const door of doors) {
             const hasWallsHorizontally =
@@ -256,31 +233,14 @@ export class AdminService {
         return true; // Si toutes les portes sont valides
     }
 
-    areStartTilePlaced(startTiles: StartTileDto[], mapSize: CoordinateDto): boolean {
-        if (mapSize.x === 10 && startTiles.length === 2) {
+    private areStartTilePlaced(startTiles: StartTileDto[], mapSize: CoordinateDto): boolean {
+        if (mapSize.x === SMALL_MAP_SIZE && startTiles.length === SMALL_MAP_START_TILES) {
             return true;
-        } else if (mapSize.x === 15 && startTiles.length === 4) {
+        } else if (mapSize.x === MEDIUM_MAP_SIZE && startTiles.length === MEDIUM_MAP_START_TILES) {
             return true;
-        } else if (mapSize.x === 20 && startTiles.length === 6) {
+        } else if (mapSize.x === LARGE_MAP_SIZE && startTiles.length === LARGE_MAP_START_TILES) {
             return true;
         }
         return false;
     }
-
-    async verifyMap(mapDto: CreateMapDto): Promise<void> {
-        if (!(await this.isUnique(mapDto.name))) {
-            throw new ConflictException('A map with this name already exists');
-        } else if (this.isOutOfBounds(mapDto.startTiles, mapDto.tiles, mapDto.doorTiles, mapDto.items, mapDto.mapSize)) {
-            throw new ForbiddenException('All elements must be inside map');
-        } else if (!this.isBelowHalf(mapDto.doorTiles, mapDto.tiles, mapDto.mapSize)) {
-            throw new ForbiddenException('Map must contain more than 50% of grass tiles');
-        } else if (!this.isAllTilesAccessible(mapDto.startTiles, mapDto.tiles, mapDto.mapSize)) {
-            throw new ForbiddenException('Map must not have any isolated ground tile');
-        } else if (!this.areDoorsFree(mapDto.doorTiles, mapDto.tiles)) {
-            throw new ForbiddenException('All doors must be free');
-        } else if (!this.areStartTilePlaced(mapDto.startTiles, mapDto.mapSize)) {
-            throw new ForbiddenException('All start tiles must be placed');
-        }
-    }
-
 }

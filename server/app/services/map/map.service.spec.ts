@@ -1,29 +1,19 @@
-import { Map, MapDocument, mapSchema } from '@app/model/database/map';
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { MapDocument, mapSchema } from '@app/model/schemas/map.schema';
+import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Connection, Model, Types } from 'mongoose';
-import { start } from 'repl';
+import { Connection, Model } from 'mongoose';
 import { MapService } from './map.service';
 
-/**
- * There is two way to test the service :
- * - Mock the mongoose Model implementation and do what ever we want to do with it (see describe CourseService) or
- * - Use mongodb memory server implementation (see describe CourseServiceEndToEnd) and let everything go through as if we had a real database
- *
- * The second method is generally better because it tests the database queries too.
- * We will use it more
- */
+const RANDOM_NUMBER_END = 9;
 
 describe('MapService', () => {
     let service: MapService;
     let mapModel: Model<MapDocument>;
 
     beforeEach(async () => {
-        // notice that only the functions we call from the model are mocked
-        // we can´t use sinon because mongoose Model is an interface
         mapModel = {
             countDocuments: jest.fn(),
             insertMany: jest.fn(),
@@ -76,8 +66,6 @@ describe('MapServiceEndToEnd', () => {
 
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();
-        // notice that only the functions we call from the model are mocked
-        // we can´t use sinon because mongoose Model is an interface
         const module = await Test.createTestingModule({
             imports: [
                 MongooseModule.forRootAsync({
@@ -125,25 +113,26 @@ describe('MapServiceEndToEnd', () => {
 
     it('getAllVisibleMaps() return only visible maps in database', async () => {
         await mapModel.create(getFakeMap());
-        await mapModel.create(getFakeMap2());
-        expect((await service.getAllVisibleMaps()).length).toEqual(1);
+        const map2 = await mapModel.create(getFakeMap2());
+
+        await mapModel.findByIdAndUpdate(map2._id, { isVisible: true });
+
+        const visibleMaps = await service.getAllVisibleMaps();
+        expect(visibleMaps.length).toEqual(1);
+        expect(visibleMaps[0]._id).toEqual(map2._id);
     });
 
     it('getMapByName() return map with the specified name only if visible', async () => {
-        const map = getFakeMap();
-        map.isVisible = false;
-        await mapModel.create(map); 
+        const map = await mapModel.create(getFakeMap());
         await expect(service.getMapByName(map.name)).rejects.toThrow(`Failed to find visible map : ${map.name}`);
-
     });
 
     it('getMapByName() return visible map with the specified name', async () => {
-        const map = getFakeMap();
-        map.isVisible = true; 
-        await mapModel.create(map);
+        const map = await mapModel.create(getFakeMap());
+        await mapModel.findByIdAndUpdate(map._id, { isVisible: true });
         const result = await service.getMapByName(map.name);
-        expect(result).toBeTruthy(); 
-        expect(result.name).toEqual(map.name); 
+        expect(result).toBeTruthy();
+        expect(result.name).toEqual(map.name);
         expect(result.isVisible).toBe(true);
     });
 
@@ -153,30 +142,51 @@ describe('MapServiceEndToEnd', () => {
     });
 
     const getFakeMap = (): Map => ({
-        _id: new Types.ObjectId('507f191e810c19729de860ea'),
         name: 'Test de jeu',
-        isVisible: false,
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
         mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) } }],
-        items: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(TileCategory) }],
-        doorTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, isOpened: true }],
+        startTiles: [{ coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) } }],
+        items: [
+            {
+                coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) },
+                category: getRandomEnumValue(ItemCategory),
+            },
+        ],
+        tiles: [
+            {
+                coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) },
+                category: getRandomEnumValue(TileCategory),
+            },
+        ],
+        doorTiles: [
+            { coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) }, isOpened: true },
+        ],
     });
 
     const getFakeMap2 = (): Map => ({
         name: 'Test',
-        isVisible: true,
         description: getRandomString(),
         imagePreview: getRandomString(),
         mode: getRandomEnumValue(Mode),
         mapSize: { x: 10, y: 10 },
-        startTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) } }],
-        items: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(ItemCategory) }],
-        tiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, category: getRandomEnumValue(TileCategory) }],
-        doorTiles: [{ coordinate: { x: getRandomNumberBetween(0, 9), y: getRandomNumberBetween(0, 9) }, isOpened: true }],
+        startTiles: [{ coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) } }],
+        items: [
+            {
+                coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) },
+                category: getRandomEnumValue(ItemCategory),
+            },
+        ],
+        tiles: [
+            {
+                coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) },
+                category: getRandomEnumValue(TileCategory),
+            },
+        ],
+        doorTiles: [
+            { coordinate: { x: getRandomNumberBetween(0, RANDOM_NUMBER_END), y: getRandomNumberBetween(0, RANDOM_NUMBER_END) }, isOpened: true },
+        ],
     });
 
     const BASE_36 = 36;

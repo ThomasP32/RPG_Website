@@ -1,115 +1,110 @@
-import { CommonModule, NgClass } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
+// import { CommonModule, NgClass } from '@angular/common';
+// import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+// import { ActivatedRoute } from '@angular/router';
+// import { MapService } from '@app/services/map.service';
 
-@Component({
-    selector: 'app-toolbar',
-    standalone: true,
-    imports: [NgClass, CommonModule],
-    templateUrl: './toolbar.component.html',
-    styleUrls: ['./toolbar.component.scss'],
-})
-export class ToolbarComponent implements OnInit {
-    @Input() selectedTile: string;
+// @Component({
+//     selector: 'app-toolbar',
+//     standalone: true,
+//     imports: [NgClass, CommonModule],
+//     templateUrl: './toolbar.component.html',
+//     styleUrls: ['./toolbar.component.scss'],
+// })
+// export class ToolbarComponent implements OnInit {
+//     @Input() selectedTile: string;
 
-    @Input() map! : Map;
+//     @Output() tileSelected = new EventEmitter<string>();
 
-    @Output() tileSelected = new EventEmitter<string>();
+//     @Output() itemSelected = new EventEmitter<string>();
 
-    @Output() itemSelected = new EventEmitter<string>();
+//     mode: string;
+//     convertedMode: string;
 
-    mode: string;
-    convertedMode: string;
-    mapId: string;
-    name: string; //TODO: a enlever
+//     isTilesVisible: boolean = true;
+//     isItemsVisible: boolean = true;
+//     isFlagVisible: boolean = true;
+//     isStartingPointVisible: boolean = true;
 
-    isTilesVisible: boolean = true;
-    isItemsVisible: boolean = true;
-    isFlagVisible: boolean = true;
-    isStartingPointVisible: boolean = true;
+//     startingPointCounter: number;
+//     flagCounter: number = 2;
+//     randomItemCounter: number = 6;
 
-    startingPointCounter: number;
-    flagCounter: number = 2;
-    randomItemCounter: number = 6;
+//     constructor(
+//         private route: ActivatedRoute,
+//         private mapService: MapService,
+//     ) {}
 
-    constructor(
-        private route: ActivatedRoute,
-        private mapService: MapService,
-    ) {}
+//     ngOnInit() {
+//         this.getUrlParams();
+//         this.urlConverter(this.mode);
+//         this.mapService.startingPointCounter$.subscribe((counter) => {
+//             this.startingPointCounter = counter;
+//         });
+//     }
 
-    ngOnInit() {
-        this.getUrlParams();
-        this.urlConverterMode();
-        this.mapService.startingPointCounter$.subscribe((counter) => {
-            this.startingPointCounter = counter;
-        });
-    }
+//     toggleTiles() {
+//         this.isTilesVisible = !this.isTilesVisible;
+//     }
 
-    toggleTiles() {
-        this.isTilesVisible = !this.isTilesVisible;
-    }
+//     toggleItems() {
+//         this.isItemsVisible = !this.isItemsVisible;
+//     }
 
-    toggleItems() {
-        this.isItemsVisible = !this.isItemsVisible;
-    }
+//     toggleFlag() {
+//         this.isFlagVisible = !this.isFlagVisible;
+//     }
+//     toggleStartingPoint() {
+//         this.isStartingPointVisible = !this.isStartingPointVisible;
+//     }
 
-    toggleFlag() {
-        this.isFlagVisible = !this.isFlagVisible;
-    }
-    toggleStartingPoint() {
-        this.isStartingPointVisible = !this.isStartingPointVisible;
-    }
+//     selectTile(tile: string) {
+//         if (this.selectedTile === tile) {
+//             // If the tile is already selected, deselect it
+//             this.selectedTile = 'empty';
+//             this.tileSelected.emit(this.selectedTile);
+//             console.log('Tile deselected, selectedTile is now empty');
+//         } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
+//             // this.selectedTile = tile;
+//             // this.tileSelected.emit(tile);
+//             console.log('Starting point selected, counter:', this.startingPointCounter);
+//         } else {
+//             this.selectedTile = tile;
+//             this.tileSelected.emit(tile);
+//             console.log('Selected tile:', this.selectedTile);
+//         }
 
-    selectTile(tile: string) {
-        if (this.selectedTile === tile) {
-            // If the tile is already selected, deselect it
-            this.selectedTile = 'empty';
-            this.tileSelected.emit(this.selectedTile);
-        } else if (tile === 'starting-point' && this.startingPointCounter > 0) {
-            // this.selectedTile = tile;
-            // this.tileSelected.emit(tile);
-        } else {
-            this.selectedTile = tile;
-            this.tileSelected.emit(tile);
-        }
+//         if (this.startingPointCounter === 0) {
+//             this.isStartingPointVisible = false;
+//             console.log('No more starting points available');
+//         }
+//     }
 
-        if (this.startingPointCounter === 0) {
-            this.isStartingPointVisible = false;
-        }
-    }
+//     startDrag(event: DragEvent, itemType: string) {
+//         if (itemType === 'starting-point' && this.startingPointCounter > 0) {
+//             event.dataTransfer?.setData('item', itemType);
+//             console.log('Dragging:', itemType);
+//         }
+//     }
 
-    startDrag(event: DragEvent, itemType: string) {
-        if (itemType === 'starting-point' && this.startingPointCounter > 0) {
-            event.dataTransfer?.setData('item', itemType);
-        }
-    }
+//     placeStartingPoint() {
+//         if (this.startingPointCounter > 0) {
+//             this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
+//         }
+//     }
 
-    placeStartingPoint() {
-        if (this.startingPointCounter > 0) {
-            this.mapService.updateStartingPointCounter(this.startingPointCounter - 1);
-        }
-    }
+//     selectItem(item: string) {
+//         this.itemSelected.emit(item);
+//     }
 
-    selectItem(item: string) {
-        this.itemSelected.emit(item);
-    }
-
-    getUrlParams(): void {
-        this.route.queryParams.subscribe(() => {
-            this.mode = this.route.snapshot.params['mode'];
-        });
-    }
-
-    urlConverterMode(): void {
-        this.convertedMode = this.mode.split('=')[1];
-        this.mode = this.convertedMode;
-    }
-
-    //TODO: GET MAP
-    initializeMap(map: Map) {
-        this.name = map.name; //TODO: a enlever
-        // this.convertedMode = map.mode;
-      }
-}
+//     getUrlParams() {
+//         this.route.queryParams.subscribe((params) => {
+//             this.mode = this.route.snapshot.params['mode'];
+//         });
+//     }
+//     urlConverter(mode: string) {
+//         console.log('URL params:', mode);
+//         this.convertedMode = mode.split('=')[1];
+//         this.mode = this.convertedMode;
+//         console.log('Converted mode:', this.convertedMode);
+//     }
+// }
