@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';

@@ -25,7 +25,7 @@ export class CommunicationMapService {
         });
     }
 
-    basicPatch<T>(url: string, data?: T): Observable<HttpResponse<Object>> {
+    basicPatch<T>(url: string, data?: T): Observable<HttpResponse<string>> {
         return this.http.patch(`${this.baseUrl}/${url}`, data, {
             observe: 'response',
             responseType: 'text',
