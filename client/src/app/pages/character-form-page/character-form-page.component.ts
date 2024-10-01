@@ -43,9 +43,11 @@ export class CharacterFormPageComponent {
     mapName: string | null = null;
     maps: Map[] = [];
     // map: Map;
-    showErrorMessage: { selectionError: boolean; characterNameError: boolean } = {
+    showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean } = {
         selectionError: false,
         characterNameError: false,
+        bonusError: false,
+        diceError: false,
     };
 
     private readonly characterService: CharacterService = inject(CharacterService);
@@ -113,10 +115,28 @@ export class CharacterFormPageComponent {
     async onSubmit() {
         const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
 
-        if (this.characterName === '' || this.characterName === 'Choisis ton nom') {
+        this.showErrorMessage = {
+            selectionError: false,
+            characterNameError: false,
+            bonusError: false,
+            diceError: false,
+        };
+
+        if (this.characterName === '' || this.characterName === 'Choisis un nom') {
             this.showErrorMessage.characterNameError = true;
             return;
         }
+
+        if (!this.lifeOrSpeedBonus) {
+            this.showErrorMessage.bonusError = true;
+            return;
+        }
+
+        if (!this.attackOrDefenseBonus) {
+            this.showErrorMessage.diceError = true;
+            return;
+        }
+
         if (!chosenMap) {
             this.showErrorMessage.selectionError = true;
             setTimeout(() => {
