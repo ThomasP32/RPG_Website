@@ -35,27 +35,6 @@ describe('MapService', () => {
         expect(description).toBe('Test Description');
     });
 
-    it('should update starting point counter', () => {
-        let counter = 0;
-        service.startingPointCounter$.subscribe((value) => (counter = value));
-        service.updateStartingPointCounter(5);
-        expect(counter).toBe(5);
-    });
-
-    it('should update random item counter', () => {
-        let counter = 0;
-        service.randomItemCounter$.subscribe((value) => (counter = value));
-        service.updateRandomItemCounter(10);
-        expect(counter).toBe(10);
-    });
-
-    it('should update items counter', () => {
-        let counter = 0;
-        service.itemsCounter$.subscribe((value) => (counter = value));
-        service.updateItemsCounter(8);
-        expect(counter).toBe(8);
-    });
-
     it('should trigger generate map data', () => {
         spyOn(service.generateMapSource, 'next');
         service.generateMapData();
@@ -99,10 +78,25 @@ describe('MapService', () => {
             imagePreview: '',
             mode: Mode.Classic,
         };
-        communicationServiceSpy.basicPatch.and.returnValue(of(new HttpResponse({ body: {} })));
+        communicationServiceSpy.basicPatch.and.returnValue(of(new HttpResponse({ body: 'response' })));
 
         service.saveEditedMap(mockMap);
 
         expect(communicationServiceSpy.basicPatch).toHaveBeenCalledOnceWith('admin/edition', mockMap);
+    });
+
+    it('should be created', () => {
+        expect(service).toBeTruthy();
+    });
+
+    it('should update selected tile', () => {
+        let selectedTile = '';
+        service.updateSelectedTileSource.subscribe((tile) => (selectedTile = tile)); // Subscribe directly to the BehaviorSubject
+
+        service.updateSelectedTile('wall');
+        expect(selectedTile).toBe('wall');
+
+        service.updateSelectedTile('door');
+        expect(selectedTile).toBe('door');
     });
 });

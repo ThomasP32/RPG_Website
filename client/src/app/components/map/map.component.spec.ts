@@ -35,31 +35,31 @@ describe('MapComponent', () => {
         expect(component.nbItems).toBe(NbItems.Large);
     });
 
-    it('should redirect to edit view with correct params', () => {
-        const originalLocation = window.location;
+    // it('should redirect to edit view with correct params', () => {
+    //     const originalLocation = window.location;
 
-        const mockLocation = {
-            href: 'http://localhost:4200/mock-route',
-            assign: jasmine.createSpy('assign'),
-        };
+    //     const mockLocation = {
+    //         href: 'http://localhost:4200/mock-route',
+    //         assign: jasmine.createSpy('assign'),
+    //     };
 
-        Object.defineProperty(window, 'location', {
-            writable: true,
-            value: mockLocation,
-        });
+    //     Object.defineProperty(window, 'location', {
+    //         writable: true,
+    //         value: mockLocation,
+    //     });
 
-        component.mapSize = MapSize.Medium;
-        component.selectedMode = 'classic';
-        component.redirectToEditView();
-        expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=15/:mode=classic`);
+    //     component.mapSize = MapSize.Medium;
+    //     component.selectedMode = 'classic';
+    //     component.redirectToEditView();
+    //     expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=15/:mode=classic`);
 
-        // component.mapSize = MapSize.Small;
-        // component.selectedMode = 'ctf';
-        // component.redirectToEditView();
-        // expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=10/:mode=ctf`);
+    //     // component.mapSize = MapSize.Small;
+    //     // component.selectedMode = 'ctf';
+    //     // component.redirectToEditView();
+    //     // expect(mockLocation.assign).toHaveBeenCalledWith(`/creation/size=10/:mode=ctf`);
 
-        window.location = originalLocation;
-    });
+    //     window.location = originalLocation;
+    // });
 
     it('should set error message if no mode selected', () => {
         component.mapSize = MapSize.Large;

@@ -49,19 +49,18 @@ export class GameCreationPageComponent implements OnInit {
                 const mapData = this.mapAreaComponent.generateMapData();
 
                 if (this.route.snapshot.params['mode']) {
-                    this.mapService
-                        .saveNewMap(mapData)
-                        .then((message: string) => {
-                            if (message) {
-                                this.mapControlBarComponent.showError(message);
-                            } else {
-                                console.log('Nouvelle carte sauvegardée avec succès.');
-                            }
-                        })
-                        .catch((error: any) => {
-                            console.error('Erreur lors de la sauvegarde de la carte:', error.message);
-                            this.mapControlBarComponent.showError(error.message.toString() || 'Une erreur est survenue.');
-                        });
+                    this.mapService.saveNewMap(mapData);
+                    // .then((message: string) => {
+                    //     if (message) {
+                    //         this.mapControlBarComponent.showError(message);
+                    //     } else {
+                    //         console.log('Nouvelle carte sauvegardée avec succès.');
+                    //     }
+                    // })
+                    // .catch((error: any) => {
+                    //     console.error('Erreur lors de la sauvegarde de la carte:', error.message);
+                    //     this.mapControlBarComponent.showError(error.message.toString() || 'Une erreur est survenue.');
+                    // });
                 }
             }
         });

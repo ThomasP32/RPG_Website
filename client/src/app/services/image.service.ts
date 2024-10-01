@@ -23,9 +23,10 @@ export class ImageService {
 
     getTileImage(tileValue: string, rowIndex: number, colIndex: number, map: any[][]): string {
         switch (tileValue) {
-            case 'door':
+            case 'door': {
                 const doorState = map[rowIndex][colIndex].doorState;
                 return doorState === 'open' ? '../../../../assets/tiles/door_x.png' : '../../../../assets/tiles/door_y.png';
+            }
             case 'wall':
                 return '../../../../assets/tiles/wall.png';
             case 'ice':
