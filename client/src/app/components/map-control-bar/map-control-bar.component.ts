@@ -69,21 +69,16 @@ export class MapControlBarComponent implements OnInit {
     }
 
     getUrlParams() {
-        // this.route.queryParams.subscribe((params) => {
-        //     this.mode = this.route.snapshot.params['mode'];
-        // });
         this.mode = this.route.snapshot.params['mode'];
     }
 
     urlConverter(mode: string) {
         if (mode) {
-            // this.gameMode = mode.split('=')[1];
             this.gameMode = mode;
         }
     }
 
     saveMap(): void {
-        console.log('map saving');
         if (this.route.snapshot.params['mode']) {
             this.mapService.setMapTitle(this.mapTitle);
             this.mapService.setMapDescription(this.mapDescription);

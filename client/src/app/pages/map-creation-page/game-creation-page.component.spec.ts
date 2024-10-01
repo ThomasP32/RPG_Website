@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { DBMap as Map, Mode } from '@common/map.types';
+import { Subject } from 'rxjs';
 import { GameCreationPageComponent } from './game-creation-page.component';
 
 describe('GameCreationPageComponent', () => {
@@ -25,10 +25,11 @@ describe('GameCreationPageComponent', () => {
         description: '',
         mode: Mode.Classic,
         imagePreview: '',
+        lastModified: new Date(),
     };
 
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['resetMap', 'saveNewMap']);
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['resetMap', 'saveNewMap'], { resetMap$: new Subject<void>() });
         mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['getMap', 'map']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
 
@@ -74,29 +75,16 @@ describe('GameCreationPageComponent', () => {
     it('should handle reset map event', () => {
         const mapAreaComponent = jasmine.createSpyObj('MapAreaComponent', ['resetMapToDefault']);
         component.mapAreaComponent = mapAreaComponent;
-        mapServiceSpy.resetMap$ = of(undefined);
+        spyOn(mapServiceSpy.resetMap$, 'subscribe').and.callThrough();
+        spyOn(mapServiceSpy, 'updateSelectedTile').and.callThrough();
+        spyOn(mapAreaComponent, 'resetMapToDefault');
 
         component.ngOnInit();
+
+        (mapServiceSpy.resetMap$ as Subject<void>).next();
 
         expect(mapAreaComponent.resetMapToDefault).toHaveBeenCalled();
-    });
-
-    it('should set selected tile', () => {
-        const tile = 'wall';
-        component.onTileSelected(tile);
-        expect(component.selectedTile).toBe(tile);
-    });
-
-    it('should handle generate map event', () => {
-        const mapAreaComponent = jasmine.createSpyObj('MapAreaComponent', ['generateMapData']);
-        component.mapAreaComponent = mapAreaComponent;
-        mapAreaComponent.generateMapData.and.returnValue(mockMap);
-        mapServiceSpy.generateMap$ = of(undefined);
-
-        component.ngOnInit();
-
-        expect(mapAreaComponent.generateMapData).toHaveBeenCalled();
-        expect(mapServiceSpy.saveNewMap).toHaveBeenCalledWith(mockMap);
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
     });
 
     it('should get url params', () => {

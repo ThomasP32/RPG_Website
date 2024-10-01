@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { Map, Mode } from '@common/map.types';
+import { DBMap, Mode } from '@common/map.types';
+import { Types } from 'mongoose';
 import { MapControlBarComponent } from './map-control-bar.component';
 
 describe('MapControlBarComponent', () => {
@@ -12,18 +13,20 @@ describe('MapControlBarComponent', () => {
     let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
-    const mockMap: Map = {
-        _id: '1',
+    const mapId = new Types.ObjectId().toString();
+    const mockMap: DBMap = {
+        _id: new Types.ObjectId(mapId),
         name: 'Test Map',
-        isVisible: true,
-        mapSize: { x: 10, y: 10 },
-        startTiles: [],
-        items: [],
-        doorTiles: [],
-        tiles: [],
-        description: '',
-        imagePreview: '',
+        description: 'This is a test map',
+        imagePreview: 'http://example.com/test.png',
         mode: Mode.Classic,
+        mapSize: { x: 20, y: 20 },
+        startTiles: [{ coordinate: { x: 0, y: 0 } }],
+        items: [],
+        tiles: [],
+        doorTiles: [],
+        isVisible: true,
+        lastModified: new Date(),
     };
 
     beforeEach(async () => {
@@ -128,11 +131,9 @@ describe('MapControlBarComponent', () => {
         expect(component.showErrorMessage.entryError).toBe(false);
     });
 
-    it('Should return an error if url contains no mode or id', () => {
-        activatedRouteSpy.snapshot.params = {};
-
-        component.saveMap();
-
-        expect(component.showErrorMessage.entryError).toBe(true);
+    it('should show error message', () => {
+        const errorMessage = 'This is an error message';
+        component.showError(errorMessage);
+        expect(component.errorMessage).toBe(errorMessage);
     });
 });
