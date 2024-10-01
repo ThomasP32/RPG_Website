@@ -6,7 +6,7 @@
 @import '~@fortawesome/fontawesome-free/css/all.css';
 
 .character-page-container {
-    height: 110vh;
+    height: 100vh;
     width: 100%;
     background-color: #1c242c;
     font-family: 'Press Start 2P', sans-serif;
@@ -50,7 +50,6 @@
 
 .character-display img {
     width: 30vw;
-    // max-width: 300px;
     height: auto;
 }
 
@@ -67,6 +66,7 @@ h1 {
     text-align: center;
 }
 h2 {
+    font-size: 1rem;
     color: #c0c0c0;
     text-shadow: 1px 1px 2px #000;
     text-align: center;
@@ -75,7 +75,12 @@ h2 {
 h3 {
     color: #f39c12;
     text-shadow: 1px 1px 2px #000;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    margin: 10px 0;
+}
+
+h4 {
+    margin: 15px 0;
 }
 
 .stat-bar {
@@ -247,18 +252,15 @@ h3 {
     margin-top: 15px;
 }
 
-.name-edit-container {
-    display: flex;
-    align-items: center;
-}
-
 .character-name-input {
-    font-size: 1.5rem;
+    font-size: 1rem;
+    width: 80%;
     color: #f0f0f0;
     background-color: transparent;
     border: none;
     border-bottom: 1px solid #f39c12;
     margin-right: 10px;
+    font-family: 'Press Start 2P', sans-serif;
 }
 
 .edit-icon {
@@ -291,6 +293,7 @@ h3 {
 }
 
 .bonus-text {
+    width: 100%;
     margin-top: 30px;
 }
 

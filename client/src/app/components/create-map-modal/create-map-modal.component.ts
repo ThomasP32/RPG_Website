@@ -1,7 +1,8 @@
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ModesComponent } from '../modes/modes.component';
+import { Router } from '@angular/router';
+import { ModesComponent } from '@app/components/modes/modes.component';
 
 const SMALL_MAP_SIZE = 10;
 const MEDIUM_MAP_SIZE = 15;
@@ -26,8 +27,8 @@ export enum NbItems {
     selector: 'app-map-choices-component',
     standalone: true,
     imports: [NgForOf, NgClass, NgIf, FormsModule, ModesComponent],
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.scss'],
+    templateUrl: './create-map-modal.component.html',
+    styleUrls: ['./create-map-modal.component.scss'],
 })
 export class MapComponent {
     size: 'small' | 'medium' | 'large';
@@ -36,12 +37,9 @@ export class MapComponent {
     mapName: string;
     nbItems: number;
     isHovered = false;
-    @Output() close = new EventEmitter<void>();
     selectedMode: string;
-    showErrorMessage: { entryError: boolean; nameError: boolean } = {
-        entryError: false,
-        nameError: false,
-    };
+
+    constructor(private router: Router) {}
 
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         switch (size) {
@@ -57,6 +55,8 @@ export class MapComponent {
                 this.mapSize = MapSize.Large;
                 this.nbItems = NbItems.Large;
                 break;
+            default:
+                throw new Error(`Invalid size value: ${size}`);
         }
     }
     redirectToEditView() {
@@ -66,23 +66,15 @@ export class MapComponent {
         }
         if (this.selectedMode !== undefined) {
             params.set('mode', this.selectedMode);
-        } else {
-            this.showErrorMessage.entryError = true;
-            return;
         }
-        window.location.href = `/creation/size=${this.mapSize}/:mode=${this.selectedMode}`;
+        this.router.navigate([`/creation/size=${this.mapSize}/:mode=${this.selectedMode}`]);
+    }
+
+    canCreateGame(): boolean {
+        return this.mapSize !== undefined && this.selectedMode !== undefined;
     }
 
     onModeSelected($event: string) {
         this.selectedMode = $event;
     }
-
-    closeComponent(){
-        this.close.emit();
-    }
-    // checkMapNameAvailability() {
-    //     this.http.get(`/api/check-map-name?name=${this.mapName}`).subscribe((response: unknown) => {
-    //         this.showErrorMessage.nameError = response.isTaken;
-    //     });
-    // }
 }
