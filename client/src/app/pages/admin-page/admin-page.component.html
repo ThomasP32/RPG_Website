@@ -1,34 +1,69 @@
 <div class="adminPage-container">
-    <h2 class="header-item">{{ title }}</h2>
-    <button class="button" (click)="navigateToMain()">Return to Main Menu</button>
-    <button class="button">Start New Game</button>
-    <div class="map-list">
-        @for(map of this.maps; track map.name) {
-        <div class="map-item">
-            <h2 class="map-name" (click)="deleteGame(map._id!.toString())">{{ map.name }}</h2>
-            <p>preview image</p>
-            <div class="map-description">{{ map.description }}</div>
-            <div class="map-info">
-                <p class="map-details">Size : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
-                <p class="game-details">Mode : {{ map.mode }}</p>
-                <p class="map-details">Last modified : {{ formatDate(map.lastModified!) }}</p>
-                <p class="map-modifiable-details" (click)="togglesVisibility(map._id!.toString())">
-                    Visibilité : @if(map.isVisible) {
-                    <span> Public </span>
-                    } @else {
-                    <span (click)="togglesVisibility(map._id!.toString())"> Privé </span>
-                    }
-                </p>
-            </div>
+    <div class="header">
+        <div class="header-buttons">
+            <button class="return-button" (click)="navigateToMain()">Retour</button>
         </div>
-        }
+        <h2>Administration des jeux</h2>
 
-        <div class="map-actions">
-            <!-- <button class="button" (click)="editGame(game.id)">Modify</button>
-                <button class="button" (click)="deleteGame(game.id)">Delete</button>
-                <button (click)="toggleVisibility(game.id)">
-                    {{ map.visibility ? 'Hide' : 'Show' }} 
-                </button> -->
+        <div class="header-buttons">
+            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
+        </div>
+    </div>
+
+    @if(isCreateMapModalVisible) {
+    <div class="modal-overlay">
+        <div class="modal">
+            <span class="close-button" (click)="onCloseModal()">×</span>
+            <app-map-choices-component (close)="onCloseModal()"></app-map-choices-component>
+        </div>
+    </div>
+    }
+
+    <div class="map-view">
+        <div class="scrollable-container">
+            <div class="map-cards">
+                @for(map of this.maps; track map.name) {
+                <div class="map-card">
+                    <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                    <div class="map-details">
+                        <div class="map-details">
+                            <h2 class="name">{{ map.name }}</h2>
+                            <p class="description">{{ map.description }}</p>
+                            <p class="mode">Mode de jeu: {{ map.mode }}</p>
+                            <p class="size">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
+                            <p class="visibility" (click)="toggleVisibility(map._id!.toString())">
+                                Visibilité : @if(map.isVisible) {
+                                <span> Public </span>
+                                <i class="fas fa-eye"></i>
+                                } @else {
+                                <span (click)="toggleVisibility(map._id!.toString())"> Caché </span>
+                                <i class="fas fa-eye-slash"></i>
+                                }
+                            </p>
+                        </div>
+                        <div class="map-actions">
+                            <button class="edit-button" (click)="editMap(map)">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="map-delete" (click)="openConfirmationModal(map)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            @if (currentMapId) {
+                            <div class="open-confirmation-modal" [class.show]="showDeleteModal">
+                                <div class="modal">
+                                    <h2>Confirmer la suppression</h2>
+                                    <p>Êtes-vous sûr de vouloir supprimer ce jeu ?</p>
+                                    <button class="modal-button" (click)="confirmDelete(currentMapId)">Oui</button>
+                                    <button class="modal-button" (click)="closeDeleteModal()">Non</button>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                        <p class="lastModified">Dernière modification le {{ formatDate(map.lastModified) }}</p>
+                    </div>
+                </div>
+                }
+            </div>
         </div>
     </div>
 </div>
