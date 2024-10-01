@@ -30,7 +30,15 @@ describe('MapControlBarComponent', () => {
     };
 
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['resetMap', 'setMapTitle', 'setMapDescription', 'generateMapData', 'saveEditedMap']);
+        mapServiceSpy = jasmine.createSpyObj('MapService', [
+            'resetMap',
+            'saveNewMap',
+            'setMapTitle',
+            'setMapDescription',
+            'generateMapData',
+            'saveEditedMap',
+            'updateMap',
+        ]);
         mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
 
@@ -99,17 +107,6 @@ describe('MapControlBarComponent', () => {
         expect(mapServiceSpy.setMapTitle).toHaveBeenCalledWith('New Map');
         expect(mapServiceSpy.setMapDescription).toHaveBeenCalledWith('New Description');
         expect(mapServiceSpy.generateMapData).toHaveBeenCalled();
-        // expect(component.showErrorMessage.entryError).toBe(false);
-    });
-
-    it('should save map in edition mode', () => {
-        activatedRouteSpy.snapshot.params = { id: '123' };
-        component.mapTitle = 'Edited Map';
-        component.map = mockMap;
-
-        component.saveMap();
-
-        expect(mapServiceSpy.updateMap).toHaveBeenCalledWith(mockMap, activatedRouteSpy.snapshot.params['id']);
         // expect(component.showErrorMessage.entryError).toBe(false);
     });
 

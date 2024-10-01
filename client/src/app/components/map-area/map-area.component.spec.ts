@@ -4,6 +4,7 @@ import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
+import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
 import { ItemCategory, DBMap as Map, Mode, TileCategory } from '@common/map.types';
 import { of } from 'rxjs';
@@ -19,6 +20,7 @@ describe('MapAreaComponent', () => {
     let tileServiceSpy: jasmine.SpyObj<TileService>;
     let routerSpy: jasmine.SpyObj<Router>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
+    let screenShotService: jasmine.SpyObj<ScreenShotService>;
 
     beforeEach(async () => {
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$', 'mapTitle$', 'mapDescription$']);
@@ -47,6 +49,8 @@ describe('MapAreaComponent', () => {
                 { provide: TileService, useValue: tileServiceSpy },
                 { provide: Router, useValue: routerSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
+                { provide: MapService, useValue: mapServiceSpy },
+                { provide: ScreenShotService, useValue: screenShotService },
             ],
         }).compileComponents();
 
@@ -54,7 +58,7 @@ describe('MapAreaComponent', () => {
         component = fixture.componentInstance;
     });
 
-    const mockMap: Map = {
+    const mockMap1: Map = {
         _id: '1',
         name: 'Test Map',
         description: 'A test map',
@@ -72,6 +76,43 @@ describe('MapAreaComponent', () => {
         imagePreview: '',
     };
 
+    it('should create the map and set tiles correctly', () => {
+        const mockMap = {
+            _id: '1',
+            name: 'Test Map',
+            description: 'A test map',
+            mapSize: { x: 10, y: 10 },
+            mode: Mode.Classic,
+            tiles: [
+                { coordinate: { x: 1, y: 1 }, category: TileCategory.Ice },
+                { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+            ],
+            doorTiles: [
+                { coordinate: { x: 3, y: 3 }, isOpened: true },
+                { coordinate: { x: 4, y: 4 }, isOpened: false },
+            ],
+            startTiles: [{ coordinate: { x: 5, y: 5 } }],
+            items: [{ coordinate: { x: 6, y: 6 }, category: ItemCategory.Acidgun }],
+            isVisible: false,
+            lastModified: new Date(),
+            imagePreview: '',
+        };
+
+        component.createMap = jasmine.createSpy('createMap');
+
+        component.loadMap(mockMap);
+
+        expect(component.createMap).toHaveBeenCalledWith(10);
+        expect(component.Map[1][1].value).toBe('ice');
+        expect(component.Map[2][2].value).toBe('water');
+        expect(component.Map[3][3].value).toBe('door');
+        expect(component.Map[3][3].doorState).toBe('open');
+        expect(component.Map[4][4].value).toBe('door');
+        expect(component.Map[4][4].doorState).toBe('closed');
+        expect(component.Map[5][5].item).toBe('starting-point');
+        expect(component.Map[6][6].item).toBe('acidgun');
+    });
+
     it('should initialize map in creation mode', fakeAsync(() => {
         routerSpy.navigateByUrl('/creation/size=10/:mode=CTF');
         activatedRouteSpy.snapshot.params = { size: '10', mode: 'CTF' };
@@ -88,7 +129,7 @@ describe('MapAreaComponent', () => {
     it('should initialize map in edition mode', fakeAsync(async () => {
         await routerSpy.navigateByUrl('/edition/123');
         fixture.detectChanges();
-        mapGetServiceSpy.map = mockMap;
+        mapGetServiceSpy.map = mockMap1;
 
         spyOn(component, 'loadMap');
         spyOn(component, 'setCountersBasedOnMapSize');
@@ -96,9 +137,9 @@ describe('MapAreaComponent', () => {
 
         component.initMap();
 
-        expect(component.map).toEqual(mockMap);
+        expect(component.map).toEqual(mockMap1);
         expect(component.convertedMapSize).toBe(10);
-        expect(component.loadMap).toHaveBeenCalledWith(mockMap);
+        expect(component.loadMap).toHaveBeenCalledWith(mockMap1);
         expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(component.convertedMapSize);
     }));
 
@@ -165,6 +206,7 @@ describe('MapAreaComponent', () => {
     it('should get URL parameters', () => {
         const expectedMapSize = 'size=15';
         activatedRouteSpy.snapshot.params = { size: expectedMapSize };
+        activatedRouteSpy.params = of({});
 
         component.getUrlParams();
         expect(component.mapSize).toBe(expectedMapSize);
@@ -293,12 +335,12 @@ describe('MapAreaComponent', () => {
 
     it('should load map in edition mode', () => {
         activatedRouteSpy.snapshot.params = {};
-        component.map = mockMap;
+        component.map = mockMap1;
 
         spyOn(component, 'loadMap');
 
         component.resetMapToDefault();
 
-        expect(component.loadMap).toHaveBeenCalledWith(mockMap);
+        expect(component.loadMap).toHaveBeenCalledWith(mockMap1);
     });
 });
