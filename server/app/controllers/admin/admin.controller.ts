@@ -38,8 +38,8 @@ export class AdminController {
     @Get('/:mapId')
     async getMapById(@Param('mapId') mapId: string, @Res() response: Response) {
         try {
-            const course = await this.adminService.getMapById(mapId);
-            response.status(HttpStatus.OK).json(course);
+            const map = await this.adminService.getMapById(mapId);
+            response.status(HttpStatus.OK).json(map);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
         }

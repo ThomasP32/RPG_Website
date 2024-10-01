@@ -9,7 +9,7 @@
             <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
         </div>
     </div>
-
+    
     @if(isCreateMapModalVisible) {
     <div class="modal-overlay">
         <div class="modal">
@@ -18,6 +18,8 @@
         </div>
     </div>
     }
+
+    <app-error-message-component></app-error-message-component>
 
     <div class="map-view">
         <div class="scrollable-container">
@@ -67,3 +69,4 @@
         </div>
     </div>
 </div>
+

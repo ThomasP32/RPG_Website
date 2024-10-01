@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AdminPageComponent } from './admin-page.component';
 
 describe('AdminPageComponent', () => {
@@ -75,6 +75,21 @@ describe('AdminPageComponent', () => {
 
     it('should create the component', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('should handle error when deleting a map fails', () => {
+        const errorMessage = 'Failed to delete map';
+        const mockError = new HttpErrorResponse({
+            status: 500,
+            error: JSON.stringify({ message: errorMessage }),
+        });
+
+        spyOn(component.errorMessageModal, 'open');
+        communicationMapService.basicDelete.and.returnValue(throwError(() => mockError));
+
+        component.deleteMap('1');
+
+        expect(component.errorMessageModal.open).toHaveBeenCalledWith(errorMessage);
     });
 
     it('should set isMapVisible to true when toggleGameCreationModalVisibility is called', () => {
