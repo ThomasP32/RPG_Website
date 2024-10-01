@@ -25,13 +25,13 @@
                 </h2>
                 <div class="stats">
                     <div class="stat">
-                        <label class="stat-label" title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
+                        <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
                         <div class="stat-bar">
                             <div class="stat-bar-fill" [style.width.%]="(life / 10) * 100"></div>
                         </div>
                     </div>
                     <div class="stat">
-                        <label class="stat-label" title="Correspond aux points de mouvement par tour d’un personnage."
+                        <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage."
                             >Rapidité : {{ speed }} PTS</label
                         >
                         <div class="stat-bar">
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="stat">
-                        <label class="stat-label" title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
+                        <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
                             >Attaque : {{ attack }} PTS</label
                         >
                         <div class="stat-bar">
@@ -47,7 +47,7 @@
                         </div>
                     </div>
                     <div class="stat"></div>
-                    <label class="stat-label" title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ defense }} PTS</label>
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ defense }} PTS</label>
                     <div class="stat-bar">
                         <div class="stat-bar-fill" [style.width.%]="(defense / 10) * 100"></div>
                     </div>
@@ -120,10 +120,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="hover-explanation">
-                <span>Placez votre souris sur chacun des attributs pour voir leur description.</span>
             </div>
         </div>
 

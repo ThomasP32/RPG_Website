@@ -1,5 +1,5 @@
-import { DoorTileDto } from '@app/model/dto/map/door.dto';
 import { CoordinateDto, StartTileDto } from '@app/model/dto/map/coordinate.dto';
+import { DoorTileDto } from '@app/model/dto/map/door.dto';
 import { MapDto } from '@app/model/dto/map/map.dto';
 import { ItemDto, TileDto } from '@app/model/dto/map/tiles.dto';
 import { MapDocument } from '@app/model/schemas/map.schema';
@@ -52,7 +52,9 @@ export class AdminService {
         } else if (!this.areDoorsFree(mapDto.doorTiles, mapDto.tiles)) {
             throw new ForbiddenException('Toutes les portes doivent être libérées');
         } else if (!this.areStartTilePlaced(mapDto.startTiles, mapDto.mapSize)) {
-            throw new ForbiddenException('Toutes les tuiles de départ doivent être placées');
+            throw new ForbiddenException(
+                'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
+            );
         }
     }
 
@@ -124,7 +126,9 @@ export class AdminService {
         } else if (!this.areDoorsFree(mapDto.doorTiles, mapDto.tiles)) {
             throw new ForbiddenException('Toutes les portes doivent être libérées');
         } else if (!this.areStartTilePlaced(mapDto.startTiles, mapDto.mapSize)) {
-            throw new ForbiddenException('Toutes les tuiles de départ doivent être placées');
+            throw new ForbiddenException(
+                'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
+            );
         }
     }
 

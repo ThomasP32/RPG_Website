@@ -61,7 +61,7 @@ describe('CommunicationMapService', () => {
     });
 
     it('should perform a POST request', () => {
-        const mockMap: Map = { ...mockResponse }; // Remove _id for POST request
+        const mockMap: Map = { ...mockResponse };
 
         service.basicPost('map', mockMap).subscribe((response) => {
             expect(response.body).toBe('Success');
