@@ -7,10 +7,9 @@ import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
 import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
-import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { HomePageComponent } from '@app/pages/home-page/home-page.component';
 import { GameCreationPageComponent } from '@app/pages/map-creation-page/game-creation-page.component';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
-import { MapComponent } from 'src/app/components/map/map.component';
 import { environment } from './environments/environment';
 
 if (environment.production) {
@@ -18,20 +17,17 @@ if (environment.production) {
 }
 
 const routes: Routes = [
-    { path: '', redirectTo: '/mainmenu', pathMatch: 'full' },
-    { path: 'mainmenu', component: MainPageComponent },
-    { path: 'map-creation', component: MapComponent },
+    { path: '', redirectTo: '/main-menu', pathMatch: 'full' },
+    { path: 'main-menu', component: HomePageComponent },
     { path: 'creation/:size/:mode', component: GameCreationPageComponent },
     { path: 'edition/:id', component: GameCreationPageComponent },
-    { path: 'admin-page', component: AdminPageComponent },
-    { path: 'create-character', component: CharacterFormPageComponent },
     { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
     { path: 'create-character', component: CharacterFormPageComponent },
     { path: 'create-character/:id', component: CharacterFormPageComponent },
     { path: 'waiting-room', component: WaitingRoomPageComponent },
     { path: 'waiting-room/:id', component: WaitingRoomPageComponent },
-    { path: '**', redirectTo: '/mainmenu' },
+    { path: '**', redirectTo: '/main-menu' },
 ];
 
 bootstrapApplication(AppComponent, {

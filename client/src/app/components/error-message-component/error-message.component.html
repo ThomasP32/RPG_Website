@@ -1,0 +1,9 @@
+@if(showModal) {
+<div class="modal-overlay">
+    <div class="error-message-modal">
+        <h2 class="message-text">Une erreur s'est produite...</h2>
+        <p class="message-text">{{ message }}</p>
+        <button class="error-confirm-button" (click)="closeModal()">OK</button>
+    </div>
+</div>
+}

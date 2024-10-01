@@ -4,13 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 @Component({
     selector: 'app-main-page',
     standalone: true,
-    templateUrl: './main-page.component.html',
-    styleUrls: ['./main-page.component.scss'],
+    templateUrl: './home-page.component.html',
+    styleUrls: ['./home-page.component.scss'],
     imports: [RouterLink],
 })
-export class MainPageComponent {
+export class HomePageComponent {
     teamNumber = 'Équipe 109';
-    developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 'Thomas Perron Duveau', 'Emelyn Victoria'];
+    developers = ['Léa Desmars', 'Anis Mehenni', 'Céline Ouchiha', 'Thomas Perron Duveau', 'Emlyn Murphy'];
 
     constructor(private router: Router) {}
 

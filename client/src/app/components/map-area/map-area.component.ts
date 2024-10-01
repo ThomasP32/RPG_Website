@@ -5,6 +5,7 @@ import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
+import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 
@@ -19,6 +20,7 @@ export class MapAreaComponent implements OnInit {
     selectedTile: string;
     map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
+    imagePreviewUrl: string = '';
 
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
@@ -47,6 +49,7 @@ export class MapAreaComponent implements OnInit {
         private mapCounterService: MapCounterService,
         private imageService: ImageService,
         private router: Router,
+        private screenshotService: ScreenShotService,
     ) {}
 
     mapTitle: string = '';
@@ -57,7 +60,6 @@ export class MapAreaComponent implements OnInit {
     }
 
     initMap() {
-        console.log(this.router.url);
         if (this.router.url.includes('creation')) {
             this.getUrlParams();
             this.urlConverter(this.mapSize);
@@ -115,13 +117,10 @@ export class MapAreaComponent implements OnInit {
 
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         this.isMouseDown = true;
-        console.log('Mouse button:', isRightClick ? 'Right click' : 'Left click');
         if (isRightClick) {
             this.isRightClickDown = true;
-            console.log('Right click: Erasing tile');
             this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
         } else {
-            console.log('Left click: Placing tile');
             this.isPlacing = true;
             this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
         }
@@ -154,7 +153,6 @@ export class MapAreaComponent implements OnInit {
     placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isMouseDown) {
             if (this.isRightClickDown) {
-                console.log('is erasing');
                 this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
             } else if (this.selectedTile) {
                 this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
@@ -207,11 +205,11 @@ export class MapAreaComponent implements OnInit {
         }
     }
 
-    public generateMapData(): Map {
+    generateMapData(): Map {
         const mapData: Map = {
             name: this.mapTitle,
             description: this.mapDescription,
-            imagePreview: "url d'image",
+            imagePreview: this.imagePreviewUrl,
             mode: Mode.Ctf,
             mapSize: {
                 x: this.convertedMapSize,
@@ -297,6 +295,12 @@ export class MapAreaComponent implements OnInit {
             console.log('URL params:', size);
             this.convertedMapSize = parseInt(size.split('=')[1]);
         }
+    }
+
+    async screenMap() {
+        await this.screenshotService.captureAndUpload('screenshot-container').then((result: string) => {
+            this.imagePreviewUrl = result;
+        });
     }
 
     loadMap(map: Map) {

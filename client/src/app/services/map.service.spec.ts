@@ -1,7 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Map, Mode } from '@common/map.types';
+import { DBMap as Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
 import { MapService } from './map.service';
 
@@ -58,6 +58,9 @@ describe('MapService', () => {
             description: '',
             imagePreview: '',
             mode: Mode.Ctf,
+            _id: '1',
+            isVisible: false,
+            lastModified: new Date(),
         };
         communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse({ body: 'response' })));
 
@@ -77,10 +80,16 @@ describe('MapService', () => {
             description: '',
             imagePreview: '',
             mode: Mode.Classic,
+            _id: '1',
+            isVisible: false,
+            lastModified: new Date(),
         };
+
+        const id = '1';
+
         communicationServiceSpy.basicPatch.and.returnValue(of(new HttpResponse({ body: 'response' })));
 
-        service.saveEditedMap(mockMap);
+        service.updateMap(mockMap, id);
 
         expect(communicationServiceSpy.basicPatch).toHaveBeenCalledOnceWith('admin/edition', mockMap);
     });

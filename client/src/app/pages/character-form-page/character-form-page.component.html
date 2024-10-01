@@ -13,6 +13,7 @@
                         [(ngModel)]="characterName"
                         class="character-name-input"
                         (blur)="stopEditing()"
+                        placeholder="Choisis ton nom"
                         (keydown.enter)="stopEditing()"
                         maxlength="25"
                     />
@@ -25,13 +26,13 @@
                 </h2>
                 <div class="stats">
                     <div class="stat">
-                        <label class="stat-label" title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
+                        <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
                         <div class="stat-bar">
                             <div class="stat-bar-fill" [style.width.%]="(life / 10) * 100"></div>
                         </div>
                     </div>
                     <div class="stat">
-                        <label class="stat-label" title="Correspond aux points de mouvement par tour d’un personnage."
+                        <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage."
                             >Rapidité : {{ speed }} PTS</label
                         >
                         <div class="stat-bar">
@@ -39,7 +40,7 @@
                         </div>
                     </div>
                     <div class="stat">
-                        <label class="stat-label" title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
+                        <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
                             >Attaque : {{ attack }} PTS</label
                         >
                         <div class="stat-bar">
@@ -47,7 +48,9 @@
                         </div>
                     </div>
                     <div class="stat"></div>
-                    <label class="stat-label" title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ defense }} PTS</label>
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire."
+                        >Défense : {{ defense }} PTS</label
+                    >
                     <div class="stat-bar">
                         <div class="stat-bar-fill" [style.width.%]="(defense / 10) * 100"></div>
                     </div>
@@ -121,10 +124,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="hover-explanation">
-                <span>Placez votre souris sur chacun des attributs pour voir leur description.</span>
-            </div>
         </div>
 
         <div class="character-display">
@@ -135,8 +134,10 @@
                 <h4>Avatar selectionné :</h4>
                 <h3>{{ selectedCharacter.name }}</h3>
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
-                @if (showErrorMessage.selectionError) {
-                <div class="error-message">Le jeu selectionné n'est plus disponible. Vous serez bientôt redirigé. </div>
+                @if (showErrorMessage.characterNameError) {
+                <div class="error-message">Choisissez votre nom de joueur</div>
+                } @else if (showErrorMessage.selectionError) {
+                <div class="error-message">Le jeu selectionné n'est plus disponible. Vous serez bientôt redirigé.</div>
                 }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
