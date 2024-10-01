@@ -35,7 +35,13 @@ describe('ToolbarComponent', () => {
     beforeEach(async () => {
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$']);
         mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'randomItemCounter$', 'itemsCounter$']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
+            'startingPointCounter$',
+            'randomItemCounter$',
+            'itemsCounter$',
+            'updateStartingPointCounter',
+            'startingPointCounter',
+        ]);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot'], { snapshot: { params: {} } });
 
@@ -60,6 +66,7 @@ describe('ToolbarComponent', () => {
 
     it('should initialize in creation mode', () => {
         activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
+        activatedRouteSpy.queryParams = of({});
         component.ngOnInit();
 
         expect(component.mode).toBe('classic');
@@ -161,6 +168,7 @@ describe('ToolbarComponent', () => {
 
     it('should get URL parameters', () => {
         activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
+        activatedRouteSpy.queryParams = of({});
         component.getUrlParams();
         expect(component.mode).toBe('mode=classic');
     });
@@ -173,8 +181,20 @@ describe('ToolbarComponent', () => {
     });
 
     it('should update starting point counter on subscription', () => {
-        mapCounterServiceSpy.startingPointCounter$ = of(5);
+        mapCounterServiceSpy.startingPointCounter = 5;
         component.ngOnInit();
         expect(mapCounterServiceSpy.startingPointCounter).toBe(5);
+    });
+
+    it('should update random item counter on subscription', () => {
+        mapCounterServiceSpy.randomItemCounter$ = of(5);
+        component.ngOnInit();
+        expect(mapCounterServiceSpy.randomItemCounter$).toBeTruthy();
+    });
+
+    it('should update items counter on subscription', () => {
+        mapCounterServiceSpy.itemsCounter$ = of(5);
+        component.ngOnInit();
+        expect(mapCounterServiceSpy.itemsCounter$).toBeTruthy();
     });
 });
