@@ -12,11 +12,11 @@
     transition: background-color 0.3s ease, color 0.3s ease;
 
     &:hover {
-        background-color: #223240; 
+        background-color: #3b3f46; 
     }
     
     &.selected {
-        background-color: #223240; 
+        background-color: #3b3f46; 
         color: white; 
     }
 }
@@ -61,7 +61,7 @@
     font-family: 'Press Start 2P', sans-serif;
 
     &:hover {
-        background-color: #223240;
+        background-color: #3b3f46;
         color: white; 
     }
 
