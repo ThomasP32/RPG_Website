@@ -208,12 +208,12 @@ h4 {
     cursor: pointer;
 }
 
-.stat-label[title] {
+.stat-label[data-title] {
     position: relative;
 }
 
-.stat-label[title]::after {
-    content: attr(title);
+.stat-label[data-title]::after {
+    content: attr(data-title);
     position: absolute;
     background-color: rgb(56, 54, 54);
     color: #fff;
@@ -234,23 +234,13 @@ h4 {
         top 0.3s ease;
 }
 
-.stat-label:hover[title]::after {
+.stat-label:hover[data-title]::after {
     display: block;
     opacity: 1;
     top: 100%;
 }
 
-.hover-explanation {
-    background-color: rgba(220, 220, 220, 0.1);
-    border: 2px solid #202020;
-    padding: 12px;
-    height: 5vh;
-    margin-left: 20px;
-    margin-right: 20px;
-    font-size: 0.7rem;
-    color: #f0f0f0;
-    margin-top: 15px;
-}
+
 
 .character-name-input {
     font-size: 1rem;

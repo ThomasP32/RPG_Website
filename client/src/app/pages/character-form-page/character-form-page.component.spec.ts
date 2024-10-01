@@ -182,6 +182,7 @@ describe('CharacterFormPageComponent', () => {
 
         component.characterName = 'Nom valide';
         component.onSubmit();
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         tick(5000);
         fixture.detectChanges();
         expect(router.navigate).toHaveBeenCalledWith(['/waiting-room'], { queryParams: { name: mockMaps[0].name } });
