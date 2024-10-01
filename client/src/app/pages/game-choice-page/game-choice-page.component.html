@@ -11,20 +11,22 @@
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
                 <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
-                    <!-- <img src="../../../assets/map-preview/map-preview.png" alt="map-preview" class="map-img" /> -->
+                    <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
                     <div class="map-details">
-                        <p class="description">Description: {{ map.description }}</p>
-                        <p class="mode">Game Mode: {{ map.mode }}</p>
                         <h2 class="name">{{ map.name }}</h2>
-                        <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                        <p class="description">{{ map.description }}</p>
+                        <p class="mode">Mode de jeu : {{ map.mode }}</p>
                     </div>
                 </div>
                 }
             </div>
         </div>
     </div>
+
     <div class="footer">
-        <button class="next-button" (click)="next()">Suivant</button>
+        <div>
+            <button class="next-button" (click)="next()">Suivant</button>
+        </div>
         @if (showErrorMessage.userError) {
         <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
         }

@@ -42,12 +42,11 @@ describe('HomePageComponent', () => {
         expect(component).toBeTruthy();
     });
 
-
     it('should display the game logo', () => {
         const logoElement = fixture.debugElement.nativeElement.querySelector('.game-logo');
         expect(logoElement).toBeTruthy();
     });
-    
+
     it('should display the team number', () => {
         const teamNumberElement = fixture.debugElement.nativeElement.querySelector('.team-number');
         expect(teamNumberElement.textContent).toContain(component.teamNumber);
@@ -64,13 +63,12 @@ describe('HomePageComponent', () => {
         expect(joinGameButton.disabled).toBeTrue();
     });
 
-
     it('should navigate to the create game view when navigateToCreateGame is called', () => {
         const routerSpy = spyOn(component['router'], 'navigate');
         component.navigateToCreateGame();
         expect(routerSpy).toHaveBeenCalledWith(['/create-game']);
     });
-    
+
     it('should navigate to the admin page view when navigateToAdmin is called', () => {
         const routerSpy = spyOn(component['router'], 'navigate');
         component.navigateToAdmin();

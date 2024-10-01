@@ -6,24 +6,27 @@
 .adminPage-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100vh; 
     align-items: center;
-    padding: 20px;
+    padding: 0; 
     background-color: #1c242c;
     font-family: 'Press Start 2P', cursive;
+    overflow: hidden; 
+    box-sizing: border-box;
 }
 
 .header {
     display: flex;
-    text-align: center;
-    font-size: 2.5em;
-    padding: 20px;
-    color: #c0c0c0;
-    top: 0;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px;
-
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    color: #c0c0c0;
+    font-size: 2.5em;
+    height: 10vh; 
+    margin: 20px 0;
+    
     .header-buttons {
         display: flex;
         align-items: center;
@@ -77,12 +80,12 @@
 }
 
 .map-view {
+    height: 80vh;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex-grow: 1;
-    overflow: hidden;
-    padding: 20px;
+    padding: 20px 0;
     overflow-y: hidden;
     overflow-x: auto;
 }
@@ -94,31 +97,10 @@
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
-    padding: 30px;
+    padding: 0 20px;
     justify-content: flex-start;
     align-items: flex-start;
-    overflow-y: hidden;
-    overflow-x: auto;
     width: max-content;
-    padding-left: 50px;
-
-    &::-webkit-scrollbar {
-        height: 12px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: #2c3e50;
-        border: 1px solid #202020;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: rgba(0, 0, 0, 0.7);
-        border: 1px solid #202020;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-        background: #2c3e50;
-        border-color: #9c9c9c;
-    }
 }
 
 .map-cards {
@@ -129,185 +111,137 @@
     gap: 0 10px;
     padding: 5px;
     height: 100%;
-    padding-left: 50px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+.map-cards::-webkit-scrollbar {
+    height: 12px;
+}
 
-    .map-card {
-        width: 30vw;
-        height: 70vh;
-        display: flex;
-        flex-direction: column;
-        text-align: left;
-        align-items: left;
-        justify-content: space-between;
-        border: 2px solid #7d7f7d;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        background-color: rgba(0, 0, 0, 0.7);
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        transition:
-            transform 0.3s,
-            border-color 0.3s;
+.map-cards::-webkit-scrollbar-thumb {
+    background: #2c3e50;
+    border: 1px solid #202020;
+}
 
-        &:hover {
-            border-color: #bdbdbd;
-        }
+.map-cards::-webkit-scrollbar-thumb:hover {
+    background: #2c3e50;
+    border-color: #9c9c9c;
+}
 
-        .map-img {
-            width: 100%;
-            height: 30vh;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 5px;
-        }
+.map-cards::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #202020;
+}
 
-        .map-details {
-            flex-grow: 1;
-            padding: 5px;
-            overflow: hidden;
-            text-align: left;
-            align-items: left;
-            white-space: nowrap;
+.map-card {
+    flex: 0 0 auto;
+    width: 25vw;
+    height: calc(80vh - 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    border: 2px solid #7d7f7d;
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition:
+        transform 0.3s,
+        border-color 0.3s;
+    gap: 15px;
+    box-sizing: border-box;
+
+    &:hover {
+        border-color: #bdbdbd;
+    }
+
+    .map-img {
+        width: 80%;
+        height: 80%;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .map-details {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        color: #c0c0c0;
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            line-height: 1.5em;
             text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+        }
+
+        .description {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 0.9rem;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+
+        .mode,
+        .size,
+        .visibility {
+            font-size: 0.8rem;
+            margin: 5px 0;
+            text-align: center;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+
+        .lastModified {
+            font-size: 0.5rem;
+            margin: 5px 0;
+            text-align: center;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+    }
+
+    &:hover .map-details .description {
+        opacity: 1;
+    }
+
+    .map-actions {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 15px;
+
+        .edit-button,
+        .map-delete {
+            flex: 1;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            max-width: 100%;
-            cursor: default;
+            padding: 10px;
+            background-color: #2c3e50;
+            border: 3px solid #202020;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
 
-            h2 {
-                font-size: 1.5rem;
-                margin-bottom: 20px;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                color: #c0c0c0;
-                max-width: fit-content;
-                white-space: normal;
-                word-wrap: break-word;
-                text-align: center;
-                min-height: 3em;
-                line-height: 1.5em;
+            i {
+                font-size: 1.2rem;
             }
+        }
 
-            .mode,
-            .size {
-                font-size: 0.7rem;
-                margin-bottom: 10px;
-                text-overflow: ellipsis;
-                color: #c0c0c0;
-                max-width: fit-content;
-            }
+        .map-delete:hover {
+            background-color: #953939;
+        }
 
-            .visibility {
-                font-size: 0.7rem;
-                margin-bottom: 10px;
-                text-overflow: ellipsis;
-                color: #c0c0c0;
-                max-width: fit-content;
-                white-space: normal;
-                transition: color 0.3s ease;
-
-                i {
-                    margin-right: 5px;
-                }
-
-                &.visible {
-                    color: #4caf50;
-                    i {
-                        color: #4caf50;
-                    }
-                }
-
-                &.hidden {
-                    color: #f44336;
-                    i {
-                        color: #f44336;
-                    }
-                }
-
-                &:hover {
-                    color: #6ae4a1;
-                }
-            }
-
-            .lastModified {
-                font-size: 0.6rem;
-                margin-top: 35px;
-                text-overflow: ellipsis;
-                color: #c0c0c0;
-                max-width: fit-content;
-                white-space: normal;
-            }
-
-            .description {
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                font-size: 0.9rem;
-                color: #c0c0c0;
-                margin-bottom: 10px;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                color: #c0c0c0;
-
-                .hidden {
-                    opacity: 0;
-                }
-
-                &:hover .description {
-                    opacity: 1;
-                }
-            }
-            .map-actions {
-                display: flex;
-                justify-content: center;
-                gap: 30px;
-                margin-top: 10px;
-                align-items: center;
-
-                .edit-button,
-                .map-delete {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 5px 10px;
-                    background-color: #2c3e50;
-                    border: 3px solid #202020;
-                    color: white;
-                    height: 6vh;
-                    width: 10vw;
-                    cursor: pointer;
-                    max-width: fit-content;
-
-                    i {
-                        font-size: 1.2rem;
-                    }
-                }
-
-                .map-delete:hover {
-                    background-color: #953939;
-                }
-
-                .edit-button:hover {
-                    background-color: #3b3f46;
-                }
-            }
-
-            .delete-confirmation {
-                display: none;
-                flex-direction: column;
-                text-align: center;
-                background-color: #2c3e50;
-                border: 3px solid #202020;
-                color: white;
-                height: 6vh;
-                width: 15vw;
-                cursor: pointer;
-                font-size: 16px;
-                font-family: 'Press Start 2P';
-
-                &:hover {
-                    background-color: #3b3f46;
-                }
-            }
+        .edit-button:hover {
+            background-color: #3b3f46;
         }
     }
 }
@@ -331,7 +265,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 500px;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     align-items: center;
     border: 4px solid #7d7f7d;
 }
@@ -342,7 +276,7 @@
     text-overflow: ellipsis;
     justify-content: center;
     font-size: 1.5rem;
-    color:#aa3d3d;
+    color: #aa3d3d;
 }
 
 .modal p {
@@ -383,12 +317,85 @@
 .modal-button:hover {
     background-color: #3b3f46;
 }
+
 .open-confirmation-modal.show {
-    display: flex; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #1c242c;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 500px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 4px solid #7d7f7d;
+    position: relative;
+    z-index: 1001;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: #c0c0c0;
+    font-weight: bold;
+    background: none;
+    border: none;
+}
+
+.modal-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.modal-button:hover {
+    background-color: #3b3f46;
 }
 
 .footer {
+    height: 10vh; /* Réserve une hauteur fixe pour le pied de page */
+    width: 100%;
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 40px;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
 }
+
