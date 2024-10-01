@@ -80,9 +80,11 @@ export class MapService {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
                 if (error.error) {
                     const errorObj = JSON.parse(error.error);
-                    console.log(errorObj);
-                    if (errorObj.message) {
-                        errorMessage = errorObj.message[0].toString();
+                    if (typeof errorObj.message === 'string') {
+                        errorMessage = errorObj.message;
+                    } else {
+                        const message: string = errorObj.message.join('');
+                        errorMessage = message;
                     }
                 }
                 return errorMessage;
