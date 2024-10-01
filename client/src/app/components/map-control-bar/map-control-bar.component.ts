@@ -1,11 +1,12 @@
 import { CommonModule, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
 
+const timeLimit = 2000;
 @Component({
     selector: 'app-map-control-bar',
     standalone: true,
@@ -21,30 +22,31 @@ export class MapControlBarComponent implements OnInit {
     isEditingDescription: boolean = false;
 
     mode: string;
-    gameMode: string = '';
     numberOfPlayers: number = 0;
+    id: string;
 
     map: Map;
-    errorMessage: string;
+    message: string;
 
-    showErrorMessage: { entryError: boolean; nameError: boolean } = {
-        entryError: false,
-        nameError: false,
-    };
+    // showErrorMessage: { entryError: boolean; nameError: boolean } = {
+    //     entryError: false,
+    //     nameError: false,
+    // };
 
     constructor(
         private route: ActivatedRoute,
         private mapService: MapService,
         private mapGetService: MapGetService,
+        private router: Router,
     ) {}
 
     ngOnInit(): void {
         this.mapTitle = '';
         this.mapDescription = '';
         if (this.route.snapshot.params['mode']) {
-            this.getUrlParams();
-            this.urlConverter(this.mode);
+            this.getUrlMode();
         } else {
+            this.getUrlId();
             this.map = this.mapGetService.map;
             this.mapTitle = this.map.name;
             this.mapDescription = this.map.description;
@@ -63,14 +65,12 @@ export class MapControlBarComponent implements OnInit {
         this.mapService.resetMap();
     }
 
-    getUrlParams() {
+    getUrlMode() {
         this.mode = this.route.snapshot.params['mode'];
     }
 
-    urlConverter(mode: string) {
-        if (mode) {
-            this.gameMode = mode;
-        }
+    getUrlId() {
+        this.id = this.route.snapshot.params['id'];
     }
 
     saveMap(): void {
@@ -78,13 +78,19 @@ export class MapControlBarComponent implements OnInit {
             this.mapService.setMapTitle(this.mapTitle);
             this.mapService.setMapDescription(this.mapDescription);
             this.mapService.generateMapData();
-        } else {
-            this.mapService.saveEditedMap(this.map);
+        } else if (this.route.snapshot.params['id']) {
+            this.mapService.setMapTitle(this.mapTitle);
+            this.mapService.setMapDescription(this.mapDescription);
+            this.mapService.generateMapData();
         }
-        console.log("message d'erreur :", this.errorMessage);
     }
 
     showError(message: string) {
-        this.errorMessage = message;
+        this.message = message;
+        if (this.message === 'Votre jeu a été sauvegardé avec succès!') {
+            setTimeout(() => {
+                this.router.navigate(['/admin-page']);
+            }, timeLimit);
+        }
     }
 }

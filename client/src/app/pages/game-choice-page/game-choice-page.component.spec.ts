@@ -90,7 +90,7 @@ describe('GameChoicePageComponent', () => {
     it('should set error message if no map selected', () => {
         component.selectedMap = undefined;
         component.next();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
+        expect(router.navigate).not.toHaveBeenCalled();
         expect(component.showErrorMessage.userError).toBe(true);
     });
 

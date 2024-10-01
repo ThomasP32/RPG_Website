@@ -17,7 +17,7 @@
     </div>
 
     <div class="button-section">
-        <div *ngIf="showErrorMessage.entryError" class="error-message">{{ errorMessage }}</div>
+        <div class="error-message">{{ message }}</div>
         <button (click)="resetMap()">Rénitialiser</button>
         <button (click)="saveMap()">Sauvegarder</button>
     </div>

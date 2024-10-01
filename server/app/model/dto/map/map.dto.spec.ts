@@ -11,7 +11,7 @@ describe('MapDto', () => {
             name: 'Updated Map',
             description: 'Updated description',
             imagePreview: 'http://example.com/updated-image.png',
-            mode: Mode.Normal,
+            mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
             items: [{ coordinate: { x: 1, y: 1 }, category: ItemCategory.Hat }],
@@ -31,7 +31,7 @@ describe('MapDto', () => {
             name: 'Invalid Item Category Map',
             description: 'This map has an invalid item category',
             imagePreview: 'http://example.com/invalid-item.png',
-            mode: Mode.Normal,
+            mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
             items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], // Invalid value
@@ -52,7 +52,7 @@ describe('MapDto', () => {
             name: 'Invalid Item Category Map',
             description: 'This map has an invalid item category',
             imagePreview: 'http://example.com/invalid-item.png',
-            mode: Mode.Normal,
+            mode: Mode.Classic,
             mapSize: { x: 'a', y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
             items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], // Invalid value

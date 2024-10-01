@@ -1,7 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -44,29 +45,52 @@ export class MapService {
         this.updateSelectedTileSource.next(value);
     }
 
-    saveNewMap(map: Map) {
-        this.CommunicationMapService.basicPost('admin/creation', map).subscribe({
-            next: () => {
-                // Handle success (e.g., display a success message to the user)
-                // ... your logic to handle success (e.g., show a notification, update the UI) ...
-            },
-            error: (error) => {
-                // Handle the error (e.g., display an error message to the user)
-                // ... your logic to handle the error (e.g., show an error notification, log the error to a service) ...
-            },
-        });
+    async saveNewMap(map: Map): Promise<string> {
+        try {
+            console.log('creating map');
+            await firstValueFrom(this.CommunicationMapService.basicPost<Map>('admin/creation', map));
+        } catch (error) {
+            if (error instanceof HttpErrorResponse) {
+                let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
+                if (error.error) {
+                    const errorObj = JSON.parse(error.error);
+                    if (typeof errorObj.message === 'string') {
+                        errorMessage = errorObj.message;
+                    } else {
+                        const message: string = errorObj.message.join('');
+                        errorMessage = message;
+                    }
+                }
+
+                return errorMessage;
+            } else {
+                console.error('Erreur inattendue:', error);
+                return 'Erreur inconnue, veuillez réessayer plus tard...';
+            }
+        }
+        return 'Votre jeu a été sauvegardé avec succès!';
     }
 
-    saveEditedMap(map: Map) {
-        this.CommunicationMapService.basicPatch('admin/edition', map).subscribe({
-            next: () => {
-                // Handle success (e.g., display a success message)
-                // ... your logic to handle success ...
-            },
-            error: (error) => {
-                // Handle error (e.g., display an error message)
-                // ... your logic to handle error ...
-            },
-        });
+    async updateMap(map: Map, mapId: string): Promise<string> {
+        try {
+            console.log('updating map');
+            await firstValueFrom(this.CommunicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, map));
+        } catch (error) {
+            if (error instanceof HttpErrorResponse) {
+                let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
+                if (error.error) {
+                    const errorObj = JSON.parse(error.error);
+                    console.log(errorObj);
+                    if (errorObj.message) {
+                        errorMessage = errorObj.message[0].toString();
+                    }
+                }
+                return errorMessage;
+            } else {
+                console.error('Erreur inattendue:', error);
+                return 'Erreur inconnue, veuillez réessayer plus tard...';
+            }
+        }
+        return 'Votre jeu a été sauvegardé avec succès!';
     }
 }

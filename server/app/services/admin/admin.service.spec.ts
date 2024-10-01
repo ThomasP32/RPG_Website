@@ -132,7 +132,7 @@ describe('AdminServiceEndToEnd', () => {
             name: 'Updated Map',
             description: 'Updated description',
             imagePreview: 'http://example.com/updated-image.png',
-            mode: Mode.Normal,
+            mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
             items: [],
@@ -161,9 +161,11 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     it('should throw error when start tiles are not placed', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow('Toutes les tuiles de départ doivent être placées');
+        await expect(service.addMap(getFakeInvalidMapDto())).rejects.toThrow(
+            'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
+        );
         await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto())).rejects.toThrow(
-            'Toutes les tuiles de départ doivent être placées',
+            'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
         );
     });
 
@@ -201,7 +203,7 @@ describe('AdminServiceEndToEnd', () => {
             name: 'testMap',
             description: 'test description',
             imagePreview: 'test-image-url',
-            mode: Mode.Normal,
+            mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 12, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
             items: [],
