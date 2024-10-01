@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MapComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
 
@@ -8,47 +9,72 @@ import { DBMap as Map } from '@common/map.types';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink],
+    imports: [RouterLink, MapComponent],
 })
 export class AdminPageComponent implements OnInit {
-    readonly title: string = 'Maps Administration';
+    @Input() mapId: string = '';
+    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
     maps: Map[] = [];
+    currentMapId: string | null = null;
+    showDeleteModal = false;
+    isCreateMapModalVisible = false;
 
     constructor(
         private router: Router,
-        private communicationService: CommunicationMapService,
+        private communicationMapService: CommunicationMapService,
     ) {}
 
+    toggleGameCreationModalVisibility(): void {
+        this.isCreateMapModalVisible = true;
+    }
+
+    onCloseModal(): void {
+        this.isCreateMapModalVisible = false;
+    }
+
     ngOnInit(): void {
-        this.communicationService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
     }
 
     navigateToMain(): void {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/main-menu']);
     }
 
-    editGame(mapId: string): void {
-        this.router.navigate(['/admin/edit-map', mapId]);
+    editMap(map: Map): void {
+        this.router.navigate(['/map-creation', map._id]);
     }
 
-    deleteGame(mapId: string): void {
-        if (confirm('Are you sure you want to delete this game ?')) {
-            this.communicationService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay());
-        }
+    deleteMap(mapId: string): void {
+        this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe(() => this.updateDisplay());
+    }
+
+    openConfirmationModal(map: Map): void {
+        this.currentMapId = map._id.toString();
+        this.showDeleteModal = true;
+    }
+
+    closeDeleteModal(): void {
+        this.showDeleteModal = false;
+        this.currentMapId = null;
+    }
+
+    confirmDelete(mapId: string): void {
+        this.deleteMap(mapId);
+        this.closeDeleteModal();
     }
 
     updateDisplay(): void {
-        this.communicationService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
     }
 
-    togglesVisibility(mapId: string): void {
-        this.communicationService.basicPatch(`admin/${mapId}`).subscribe(() => this.updateDisplay());
+    toggleVisibility(mapId: string): void {
+        this.communicationMapService.basicPatch(`admin/${mapId}`).subscribe(() => this.updateDisplay());
     }
 
     formatDate(lastModified: Date): string {
         const date = new Date(lastModified);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Mois de 0 à 11
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');

@@ -6,79 +6,396 @@
 .adminPage-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    height: 100vh; 
     align-items: center;
-    min-height: 100vh;
-    padding: 10px;
-    height: auto;
-    background-color: #495c6b;
+    padding: 0; 
+    background-color: #1c242c;
     font-family: 'Press Start 2P', cursive;
+    overflow: hidden; 
+    box-sizing: border-box;
 }
 
-.header-item {
-    font-size: 2.5em;
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+    box-sizing: border-box;
     color: #c0c0c0;
-    margin-bottom: 20px;
-    text-align: center;
+    font-size: 2.5em;
+    height: 10vh; 
+    margin: 20px 0;
+    
+    .header-buttons {
+        display: flex;
+        align-items: center;
+    }
+
+    h2 {
+        flex-grow: 1;
+        font-size: 30px;
+        text-align: center;
+    }
+
+    .return-button {
+        margin-left: auto;
+        position: absolute;
+        left: 20px;
+        align-items: left;
+        padding: 12px 20px;
+        background-color: #2c3e50;
+        border: 3px solid #202020;
+        color: white;
+        height: 6vh;
+        width: 15vw;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: 'Press Start 2P';
+    }
+
+    .create-game-button {
+        margin-right: auto;
+        position: absolute;
+        align-items: right;
+        right: 20px;
+        padding: 12px 20px;
+        background-color: #2c3e50;
+        border: 3px solid #202020;
+        color: white;
+        height: 6vh;
+        width: 15vw;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: 'Press Start 2P';
+    }
+
+    .return-button:hover {
+        background-color: #3b3f46;
+    }
+
+    .create-game-button:hover {
+        background-color: #3b3f46;
+    }
 }
 
-.map-list {
+.map-view {
+    height: 80vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-grow: 1;
+    padding: 20px 0;
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+.scrollable-container {
+    display: flex;
+    flex-direction: row;
+    max-width: 100vw;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding: 0 20px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: max-content;
+}
+
+.map-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0 10px;
+    padding: 5px;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+.map-cards::-webkit-scrollbar {
+    height: 12px;
+}
+
+.map-cards::-webkit-scrollbar-thumb {
+    background: #2c3e50;
+    border: 1px solid #202020;
+}
+
+.map-cards::-webkit-scrollbar-thumb:hover {
+    background: #2c3e50;
+    border-color: #9c9c9c;
+}
+
+.map-cards::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #202020;
+}
+
+.map-card {
+    flex: 0 0 auto;
+    width: 25vw;
+    height: calc(80vh - 40px);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    border: 2px solid #7d7f7d;
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition:
+        transform 0.3s,
+        border-color 0.3s;
+    gap: 15px;
+    box-sizing: border-box;
+
+    &:hover {
+        border-color: #bdbdbd;
+    }
+
+    .map-img {
+        width: 80%;
+        height: 80%;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .map-details {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        color: #c0c0c0;
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            line-height: 1.5em;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+        }
+
+        .description {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 0.9rem;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+
+        .mode,
+        .size,
+        .visibility {
+            font-size: 0.8rem;
+            margin: 5px 0;
+            text-align: center;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+
+        .lastModified {
+            font-size: 0.5rem;
+            margin: 5px 0;
+            text-align: center;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+    }
+
+    &:hover .map-details .description {
+        opacity: 1;
+    }
+
+    .map-actions {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 15px;
+
+        .edit-button,
+        .map-delete {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background-color: #2c3e50;
+            border: 3px solid #202020;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            i {
+                font-size: 1.2rem;
+            }
+        }
+
+        .map-delete:hover {
+            background-color: #953939;
+        }
+
+        .edit-button:hover {
+            background-color: #3b3f46;
+        }
+    }
+}
+
+.open-confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    gap: 20px;
+    z-index: 1000;
 }
 
-.map-item {
+.modal {
+    background-color: #1c242c;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 500px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #2c3e50;
-    border: 1px solid black;
-    padding: 20px;
-    width: 200px;
+    border: 4px solid #7d7f7d;
 }
 
-.map-image {
+.modal h2 {
+    margin-bottom: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #aa3d3d;
+}
+
+.modal p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: #c0c0c0;
+    max-width: fit-content;
+    white-space: normal;
+    word-wrap: break-word;
+    text-align: center;
+    min-height: 3em;
+    line-height: 1.5em;
+    font-family: 'Press Start 2P';
+}
+
+.modal-button {
+    display: flex;
     width: 100%;
-    height: auto;
-    margin-bottom: 10px;
-}
-
-.map-description {
-    color: #c0c0c0;
-    font-size: 1em;
-    margin-top: 10px;
-    text-align: center;
-}
-
-.button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    text-align: center;
-    color: #c0c0c0;
-    font-size: 1em;
-    padding: 5px 15px;
-    border: 1px solid black;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
     background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    height: 6vh;
+    width: 10vw;
     cursor: pointer;
+    text-align: center;
+    align-items: center;
+    margin-top: 10px;
+    gap: 15px;
+    font-family: 'Press Start 2P';
 }
 
-.button:hover {
-    background-color: #2c5049;
+.modal-button:hover {
+    background-color: #3b3f46;
 }
 
-div[ngIf] {
-    transition: opacity 0.3s ease-in-out;
+.open-confirmation-modal.show {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-div[ngIf].ng-enter {
-    opacity: 0;
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-div[ngIf].ng-enter-active {
-    opacity: 1;
+.modal {
+    background-color: #1c242c;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 500px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 4px solid #7d7f7d;
+    position: relative;
+    z-index: 1001;
 }
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: #c0c0c0;
+    font-weight: bold;
+    background: none;
+    border: none;
+}
+
+.modal-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.modal-button:hover {
+    background-color: #3b3f46;
+}
+
+.footer {
+    height: 10vh; /* Réserve une hauteur fixe pour le pied de page */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+

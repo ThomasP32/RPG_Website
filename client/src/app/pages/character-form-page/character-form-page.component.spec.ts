@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
@@ -176,21 +177,27 @@ describe('CharacterFormPageComponent', () => {
         expect(component.characterName).toBe('Test Name');
     });
 
-    it('should handle onSubmit correctly when map is not found', fakeAsync(() => {
-        communicationMapService.basicGet.and.returnValue(of(undefined));
-        component.onSubmit();
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        tick(5000);
-        expect(component.showErrorMessage.selectionError).toBeTrue();
-        expect(router.navigate).toHaveBeenCalledWith(['/create-game']);
-    }));
-
     it('should handle onSubmit correctly when map is found', fakeAsync(() => {
         communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
+
+        component.characterName = 'Nom valide';
         component.onSubmit();
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         tick(5000);
+        fixture.detectChanges();
         expect(router.navigate).toHaveBeenCalledWith(['/waiting-room'], { queryParams: { name: mockMaps[0].name } });
+    }));
+    
+
+    it('should handle onSubmit correctly when map is not found', fakeAsync(() => {
+        communicationMapService.basicGet.and.returnValue(of(undefined));
+        component.characterName = 'Nom valide';
+        component.onSubmit();
+        tick(5000); 
+        fixture.detectChanges();
+
+        expect(component.showErrorMessage.selectionError).toBeTrue();
+        expect(router.navigate).toHaveBeenCalledWith(['/create-game']);
     }));
 
     it('should navigate to create game on return', () => {
