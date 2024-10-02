@@ -62,12 +62,13 @@ export class MapAreaComponent implements OnInit {
     initMap() {
         if (this.router.url.includes('creation')) {
             this.getUrlParams();
-            this.urlConverter(this.mapSize);
+            this.urlConverter();
             this.createMap(this.convertedMapSize);
             this.setCellSize();
         } else if (this.router.url.includes('edition')) {
             this.map = this.mapGetService.map;
             this.convertedMapSize = this.map.mapSize.x;
+            this.convertedMode = this.mode;
             this.loadMap(this.map);
         }
 
@@ -210,7 +211,7 @@ export class MapAreaComponent implements OnInit {
             name: this.mapTitle,
             description: this.mapDescription,
             imagePreview: this.imagePreviewUrl,
-            mode: Mode.Ctf,
+            mode: this.mode,
             mapSize: {
                 x: this.convertedMapSize,
                 y: this.convertedMapSize,
@@ -287,13 +288,18 @@ export class MapAreaComponent implements OnInit {
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {
             this.mapSize = this.route.snapshot.params['size'];
+            this.mode = this.route.snapshot.params['mode'];
         });
     }
 
-    urlConverter(size: string) {
-        if (size) {
-            console.log('URL params:', size);
-            this.convertedMapSize = parseInt(size.split('=')[1]);
+    urlConverter() {
+        this.convertedMode = this.mode.split('=')[1];
+        this.convertedMapSize = parseInt(this.mapSize.split('=')[1]);
+
+        if (this.convertedMode === 'classic') {
+            this.mode = Mode.Classic;
+        } else {
+            this.mode = Mode.Ctf;
         }
     }
 

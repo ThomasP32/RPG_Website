@@ -11,7 +11,7 @@ export enum TileCategory {
 
 export enum Mode {
     Ctf = 'ctf',
-    Classic = 'classic',
+    Classic = 'classique',
 }
 
 export enum ItemCategory {
