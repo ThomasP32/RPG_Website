@@ -120,7 +120,7 @@ describe('MapAreaComponent', () => {
         component.initMap();
 
         expect(component.getUrlParams).toHaveBeenCalled();
-        expect(component.urlConverter).toHaveBeenCalledWith(component.mapSize);
+        expect(component.urlConverter).toHaveBeenCalled();
         expect(component.createMap).toHaveBeenCalledWith(component.convertedMapSize);
         expect(component.setCellSize).toHaveBeenCalled();
         expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(component.convertedMapSize);
@@ -210,7 +210,7 @@ describe('MapAreaComponent', () => {
 
         component.getUrlParams();
         expect(component.mapSize).toBe(expectedMapSize);
-        component.urlConverter(expectedMapSize);
+        component.urlConverter();
         expect(component.convertedMapSize).toBe(15);
     });
 
