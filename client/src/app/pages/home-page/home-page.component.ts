@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-
+/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-main-page',
     standalone: true,

@@ -8,7 +8,7 @@ import { MapService } from '@app/services/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
-
+/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-map-area',
     standalone: true,

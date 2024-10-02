@@ -4,7 +4,7 @@ import { MapComponent } from '@app/components/create-map-modal/create-map-modal.
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
-
+/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-admin-page',
     standalone: true,

@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
-
+/* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',
 })
