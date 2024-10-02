@@ -1,0 +1,197 @@
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+.create-game-component {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: 'Press Start 2P';
+    background-color: #1c242c;
+}
+
+.header {
+    text-align: center;
+    margin-top: 40px;
+    color: white;
+    position: relative;
+}
+
+.return-to-previous-page {
+    position: absolute;
+    top: 25px;
+    left: 35px;
+}
+
+.return-button {
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.4s;
+}
+
+.return-button:hover {
+    background-color: #3b3f46;
+    border: 3px solid #202020;
+}
+
+.map-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.scrollable-container {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding: 10px;
+    width: 100%;
+
+    &::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #2c3e50;
+        border: 1px solid #202020;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 1px solid #202020;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #2c3e50;
+        border-color: #9c9c9c;
+    }
+}
+
+.map-cards {
+    display: inline-flex;
+    gap: 20px;
+    padding: 20px;
+    height: auto;
+}
+
+.map-card {
+    width: 25vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border: 2px solid #7d7f7d;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    transition:
+        transform 0.3s,
+        border-color 0.3s,
+        box-shadow 0.3s;
+    gap: 15px;
+    box-sizing: border-box;
+    position: relative;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #bdbdbd;
+        transform: scale(1.05);
+        box-shadow: 0px 0px 10px rgba(189, 189, 189, 0.5);
+    }
+    .selected {
+        box-shadow: 0px 0px 10px rgba(243, 156, 18, 0.5);
+    }
+
+    .map-img {
+        width: 20vw;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border: 1px solid #202020;
+    }
+
+    .map-details {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        color: #c0c0c0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .name {
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .mode {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin: 0;
+        }
+
+        .description {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 0.9rem;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+            width: 100%;
+        }
+    }
+
+    &:hover .map-details .description {
+        opacity: 1;
+    }
+}
+
+.map-card.selected {
+    border-color: #bdbdbd;
+    transform: scale(1.05);
+    box-shadow: 0px 0px 10px rgba(189, 189, 189, 0.5);
+}
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    color: white;
+    gap: 20px;
+}
+
+.next-button {
+    padding: 12px 20px;
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Press Start 2P';
+    transition: background-color 0.4s;
+}
+
+.next-button:hover {
+    background-color: #3b3f46;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+    font-size: 1rem;
+    font-family: 'Press Start 2P';
+}

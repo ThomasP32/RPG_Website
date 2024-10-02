@@ -1,0 +1,30 @@
+<div class="control-bar">
+    <div class="info-section">
+        <h3>Titre du jeu</h3>
+        <div>
+            @if(!isEditingTitle){
+            <pre class="title">{{ mapTitle }}</pre>
+            } @if(isEditingTitle) {
+            <textarea [(ngModel)]="mapTitle" id="map-title" type="text" maxlength="22"></textarea>
+            }
+            <button (click)="toggleEditTitle()">{{ mapTitle === '' || isEditingTitle ? 'Ajouter titre' : 'Modifier titre' }}</button>
+        </div>
+        <h3>Description du jeu</h3>
+        <div>
+            @if(!isEditingDescription) {
+            <pre class="description">{{ mapDescription }}</pre>
+            } @if(isEditingDescription) {
+            <textarea [(ngModel)]="mapDescription" id="map-description" type="text" maxlength="200"></textarea>
+            }
+            <button (click)="toggleEditDescription()">
+                {{ mapDescription === '' || isEditingDescription ? 'Ajouter description' : 'Modifier description' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="button-section">
+        <div class="error-message">{{ message }}</div>
+        <button (click)="resetMap()">Rénitialiser</button>
+        <button (click)="saveMap()">Sauvegarder</button>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+<div class="map-container">
+    <div class="map" id="screenshot-container">
+        <div *ngFor="let Row of Map; let rowIndex = index" class="map-row">
+            <div
+                *ngFor="let cell of Row; let colIndex = index"
+                class="map-cell"
+                (mousedown)="startPlacingTile(rowIndex, colIndex, $event.button === 2)"
+                (mouseenter)="placeTileOnMove(rowIndex, colIndex)"
+                (mouseup)="stopPlacing()"
+                (dragover)="allowDrop($event)"
+                (drop)="onDrop($event, rowIndex, colIndex)"
+                (contextmenu)="$event.preventDefault()"
+            >
+                <img *ngIf="cell.value" [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" draggable="false " class="grid-tile" />
+
+                <img
+                    *ngIf="cell.item"
+                    [src]="getItemImage(cell.item)"
+                    [draggable]="true"
+                    alt="Item"
+                    class="grid-item"
+                    (dragstart)="startDrag($event, rowIndex, colIndex)"
+                />
+            </div>
+        </div>
+    </div>
+</div>
