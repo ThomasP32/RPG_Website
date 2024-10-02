@@ -1,4 +1,4 @@
-import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +26,7 @@ export enum NbItems {
 @Component({
     selector: 'app-map-choices-component',
     standalone: true,
-    imports: [NgForOf, NgClass, NgIf, FormsModule, ModesComponent],
+    imports: [NgClass, FormsModule, ModesComponent],
     templateUrl: './create-map-modal.component.html',
     styleUrls: ['./create-map-modal.component.scss'],
 })

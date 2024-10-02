@@ -1,4 +1,4 @@
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,7 +12,7 @@ const timeLimit = 2000;
     standalone: true,
     templateUrl: './map-control-bar.component.html',
     styleUrls: ['./map-control-bar.component.scss'],
-    imports: [CommonModule, NgIf, FormsModule],
+    imports: [CommonModule, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
     mapTitle: string = '';
