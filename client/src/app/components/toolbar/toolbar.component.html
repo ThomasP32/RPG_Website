@@ -7,7 +7,8 @@
                 {{ isTilesVisible ? '-' : '+' }}
             </button>
         </div>
-        <div class="tile-section" *ngIf="isTilesVisible">
+        @if(isTilesVisible) {
+        <div class="tile-section">
             <div class="tile-grid">
                 <div class="tile" [ngClass]="{ selected: selectedTile === 'door' }" (click)="selectTile('door')">
                     <img [src]="getTileImage('door')" alt="Door" />
@@ -31,14 +32,15 @@
                 </div>
             </div>
         </div>
-
+        }
         <div class="toggle-section">
             <h3>Objets</h3>
             <button (click)="toggleItems()">
                 {{ isItemsVisible ? '-' : '+' }}
             </button>
         </div>
-        <div class="item-section" *ngIf="isItemsVisible">
+        @if(isTilesVisible) {
+        <div class="item-section">
             <div class="item-grid">
                 <div class="item" [class.disabled]="itemsUsable === false">
                     <img [src]="getItemImage('vest')" alt="Vest" draggable="false" (dragstart)="startDrag($event, 'vest')" />
@@ -75,6 +77,7 @@
                 </div>
             </div>
         </div>
+        }
 
         <div class="toggle-section">
             <h3>Point de départ</h3>
@@ -82,7 +85,8 @@
                 {{ isStartingPointVisible ? '-' : '+' }}
             </button>
         </div>
-        <div class="starting-point-section" *ngIf="isStartingPointVisible">
+        @if(isStartingPointVisible) {
+        <div class="starting-point-section">
             <div class="tile" [class.disabled]="mapCounterService.startingPointCounter === 0">
                 <img
                     [src]="getItemImage('starting-point')"
@@ -94,5 +98,6 @@
                 <span class="counter" draggable="false">{{ mapCounterService.startingPointCounter }}</span>
             </div>
         </div>
+        }
     </div>
 </div>
