@@ -1,0 +1,65 @@
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+body {
+    background-color: #1c242c;
+    font-family: 'Press Start 2P', 'cursive';
+    color: #e6e6e6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.waiting-room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #3b3f46 30%, #282c34 100%);
+    border: 5px solid #b5651d;
+    padding: 20px;
+    width: 600px;
+    box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.8);
+}
+
+.code-display h1 {
+    color: #f39c12;
+    font-size: 1.5rem;
+}
+
+#game-code {
+    font-size: 2rem;
+    color: #fff;
+    padding: 10px 20px;
+    letter-spacing: 5px;
+    margin-top: 10px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.gear-animation img {
+    width: 150px;
+    height: 150px;
+    margin: 20px 0;
+    animation: rotate-gear 6s infinite linear;
+}
+
+@keyframes rotate-gear {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.player-waiting h2 {
+    color: #f39c12;
+    font-size: 1.5rem;
+    margin-top: 20px;
+}

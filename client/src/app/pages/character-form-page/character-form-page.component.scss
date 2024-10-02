@@ -1,0 +1,295 @@
+@font-face {
+    font-family: 'Press Start 2P';
+    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+// @import '~@fortawesome/fontawesome-free/css/all.css';
+
+.character-page-container {
+    height: 100vh;
+    width: 100%;
+    background-color: #1c242c;
+    font-family: 'Press Start 2P', sans-serif;
+}
+.character-selection-container {
+    background-color: #1c242c;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100vh;
+}
+
+.player-stats {
+    background-color: #3b3f46;
+    border: 2px solid #202020;
+    padding: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    height: 65vh;
+}
+.hover-explanation {
+    margin-left: 20px;
+}
+
+.character-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.character-display:hover img {
+    transform: rotateY(360deg);
+}
+
+.selected-character {
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+.selected-character img {
+    transition: transform 0.5s ease;
+}
+
+.character-display img {
+    width: 30vw;
+    height: auto;
+}
+
+label {
+    color: #ffff;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+    font-size: 1rem;
+    padding: 3px;
+}
+h1 {
+    color: #ffff;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+h2 {
+    font-size: 1rem;
+    color: #c0c0c0;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+
+h3 {
+    color: #f39c12;
+    text-shadow: 1px 1px 2px #000;
+    font-size: 1.3rem;
+    margin: 10px 0;
+}
+
+h4 {
+    margin: 15px 0;
+}
+
+.stat-bar {
+    background-color: #1a1d23;
+    border: 2px solid #b85c38;
+    height: 15px;
+    overflow: hidden;
+}
+.stat-bar-fill {
+    background-color: #f39c12;
+    height: 100%;
+}
+
+.selected-character {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-character button {
+    margin-top: 10px;
+}
+.arrow-button {
+    background-color: #1c242c;
+    color: white;
+    border: 2px solid #1c242c;
+    text-shadow: 1px 1px 2px #000;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: color 0.3s;
+    font-size: 30px;
+}
+
+.arrow-button:hover {
+    color: #f39c12;
+}
+
+.start-button,
+.return-button,
+.bonus-button,
+.dice-button {
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.4s;
+}
+
+.start-button *,
+.return-button *,
+.bonus-button *,
+.dice-button * {
+    cursor: pointer;
+}
+
+.start-button:hover,
+.return-button:hover {
+    background-color: #3b3f46;
+    border: 3px solid #202020;
+}
+
+.bonus-button:hover,
+.dice-button:hover {
+    background-color: #afaca9;
+    border: 3px solid #202020;
+}
+
+.character-list {
+    display: grid;
+    padding: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-right: 20px;
+}
+
+.character-box {
+    background-color: #3b3f46;
+    border: 2px solid #b5651d;
+    text-align: center;
+    cursor: pointer;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.character-box img {
+    width: 10vw;
+    aspect-ratio: 1 / 1;
+    max-width: 140px;
+    height: auto;
+}
+
+.character-box:hover {
+    border: 2px solid #f39c12;
+    box-shadow: 0px 0px 20px 5px rgba(243, 156, 18, 0.6);
+    transform: scale(1.1);
+}
+
+.character-box.selected-character {
+    background-color: #f39c12;
+    border: 2px solid #f39c12;
+    box-shadow: 0px 0px 20px 5px #f39c12;
+}
+
+.return-to-previous-page {
+    position: absolute;
+    top: 25px;
+    left: 35px;
+}
+
+.stat-label {
+    position: relative;
+    cursor: pointer;
+}
+
+.stat-label[data-title] {
+    position: relative;
+}
+
+.stat-label[data-title]::after {
+    content: attr(data-title);
+    position: absolute;
+    background-color: rgb(56, 54, 54);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    top: 110%;
+    left: 0;
+    left: 40%;
+    margin-left: -50px;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.3s ease,
+        top 0.3s ease;
+}
+
+.stat-label:hover[data-title]::after {
+    display: block;
+    opacity: 1;
+    top: 100%;
+}
+
+.character-name-input {
+    font-size: 1rem;
+    width: 80%;
+    color: #f0f0f0;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #f39c12;
+    margin-right: 10px;
+    font-family: 'Press Start 2P', sans-serif;
+}
+
+.edit-icon {
+    background: none;
+    border: none;
+    color: #f39c12;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.edit-icon:hover {
+    color: #fff;
+}
+
+.bonus-buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.dice-buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.bonus-text {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.dice-and-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dice-icon {
+    font-size: 30px;
+}
+
+.error-message {
+    color: red;
+}

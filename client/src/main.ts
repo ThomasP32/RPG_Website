@@ -3,10 +3,13 @@ import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter } from '@angular/router';
-import { AppComponent } from '@app/pages/app/app.component';
-import { MainPageComponent } from '@app/pages/main-page/main-page.component';
-// import { CreateGameComponent } from '@app/pages/create-game-page/create-game-page.component';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
+import { AppComponent } from '@app/pages/app/app.component';
+import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
+import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
+import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
+import { HomePageComponent } from '@app/pages/home-page/home-page.component';
+import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { environment } from './environments/environment';
 
 if (environment.production) {
@@ -14,14 +17,19 @@ if (environment.production) {
 }
 
 const routes: Routes = [
-    { path: '', redirectTo: '/home', pathMatch: 'full' },
-    { path: 'home', component: MainPageComponent },
-    // { path: 'createGame', component: CreateGameComponent },
+    { path: '', redirectTo: '/main-menu', pathMatch: 'full' },
+    { path: 'main-menu', component: HomePageComponent },
+    { path: 'creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'edition/:id', component: GameCreationPageComponent },
+    { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
-    { path: '**', redirectTo: '/home' },
+    { path: 'create-character', component: CharacterFormPageComponent },
+    { path: 'create-character/:id', component: CharacterFormPageComponent },
+    { path: 'waiting-room', component: WaitingRoomPageComponent },
+    { path: 'waiting-room/:id', component: WaitingRoomPageComponent },
+    { path: '**', redirectTo: '/main-menu' },
 ];
-
 
 bootstrapApplication(AppComponent, {
     providers: [provideHttpClient(), provideRouter(routes), provideAnimations()],
-})
+});
