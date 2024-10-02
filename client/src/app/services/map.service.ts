@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
-
+/* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',
 })

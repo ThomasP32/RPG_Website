@@ -6,7 +6,7 @@ import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
-
+/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-toolbar',
     standalone: true,

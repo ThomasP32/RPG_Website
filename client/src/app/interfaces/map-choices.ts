@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const SMALL_MAP_SIZE = 10;
 const MEDIUM_MAP_SIZE = 15;
 const LARGE_MAP_SIZE = 20;

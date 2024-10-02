@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import html2canvas from 'html2canvas';
 import { firstValueFrom } from 'rxjs';
-
+/* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',
 })

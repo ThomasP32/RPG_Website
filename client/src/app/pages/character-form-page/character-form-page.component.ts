@@ -7,7 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
-
+/* eslint-disable no-unused-vars */
 const defaultHp = 4;
 const defaultSpeed = 4;
 const defaultAttack = 4;

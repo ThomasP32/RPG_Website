@@ -8,7 +8,7 @@ import { MapService } from '@app/services/map.service';
 import { Map } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
+/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-game-creation-page',
     standalone: true,
