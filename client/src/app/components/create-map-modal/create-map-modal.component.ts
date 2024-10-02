@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ModesComponent } from '@app/components/modes/modes.component';
-
+/* eslint-disable no-unused-vars */
 const SMALL_MAP_SIZE = 10;
 const MEDIUM_MAP_SIZE = 15;
 const LARGE_MAP_SIZE = 20;
