@@ -156,11 +156,14 @@
         border-color: #bdbdbd;
     }
 
-    .map-img {
-        width: 20vw;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border: 1px solid #202020;
+    .map-image-container {
+        position: relative;
+
+        .map-img {
+            width: 20vw;
+            object-fit: cover;
+            border: 1px solid #202020;
+        }
     }
 
     .map-details {
@@ -169,31 +172,29 @@
         padding: 10px;
         text-align: center;
         color: #c0c0c0;
+        z-index: 2;
 
         h2 {
             font-size: 1.5rem;
             margin: 0;
             line-height: 1.5em;
             text-overflow: ellipsis;
-            overflow: hidden; /* Truncate if too long */
-            white-space: nowrap; /* Prevent line breaks */
+            overflow: hidden;
+            white-space: nowrap;
             transition: transform 0.3s ease;
         }
 
-        .description {
-            opacity: 0;
-            transition:
-                opacity 0.3s ease,
-                transform 0.3s ease;
-            font-size: 0.9rem;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap; /* Prevent line breaks */
+        .mode,
+        .size {
+            font-size: 0.8rem;
+            margin: 5px 0;
+            text-align: center;
+            overflow: visible;
+            white-space: normal;
             width: 100%;
+            cursor: pointer;
         }
 
-        .mode,
-        .size,
         .visibility {
             font-size: 0.8rem;
             margin: 5px 0;
@@ -202,6 +203,12 @@
             white-space: normal;
             width: 100%;
             cursor: pointer;
+            z-index: 3;
+
+            &:hover {
+                color: #ffffff;
+                transform: scale(1.1);
+            }
         }
 
         .lastModified {
@@ -246,6 +253,33 @@
             background-color: #3b3f46;
         }
     }
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+
+    .overlay-content {
+        color: #c0c0c0;
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        padding: 120px;
+        text-align: center;
+    }
+}
+
+.overlay:hover {
+    opacity: 1;
 }
 
 .map-card:hover .map-details .description,
@@ -367,7 +401,7 @@
 }
 
 .footer {
-    height: 10vh; /* Réserve une hauteur fixe pour le pied de page */
+    height: 10vh;
     width: 100%;
     display: flex;
     justify-content: center;

@@ -26,7 +26,14 @@
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
                 <div class="map-card">
-                    <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                    <div class="map-image-container">
+                        <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                        <div class="overlay">
+                            <div class="overlay-content">
+                                <p class="description">{{ map.description }}</p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="map-details">
                         <div class="map-details">
                             <h2 class="name">{{ map.name }}</h2>

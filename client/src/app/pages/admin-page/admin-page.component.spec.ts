@@ -47,7 +47,6 @@ describe('AdminPageComponent', () => {
     ];
 
     beforeEach(async () => {
-        // Create a spy for CommunicationMapService
         const communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet', 'basicDelete', 'basicPatch']);
 
         await TestBed.configureTestingModule({
@@ -70,7 +69,7 @@ describe('AdminPageComponent', () => {
         communicationMapService.basicDelete.and.returnValue(of(mockResponse));
         communicationMapService.basicPatch.and.returnValue(of(mockResponse));
 
-        fixture.detectChanges(); // Trigger initial data binding and ngOnInit
+        fixture.detectChanges();
     });
 
     it('should create the component', () => {
