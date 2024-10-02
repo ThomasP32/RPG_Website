@@ -68,7 +68,7 @@ export class MapAreaComponent implements OnInit {
         } else if (this.router.url.includes('edition')) {
             this.map = this.mapGetService.map;
             this.convertedMapSize = this.map.mapSize.x;
-            this.convertedMode = this.mode;
+            this.mode = this.map.mode;
             this.loadMap(this.map);
         }
 
