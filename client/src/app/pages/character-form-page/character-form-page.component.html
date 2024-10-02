@@ -124,6 +124,9 @@
                     </div>
                 </div>
             </div>
+            <div class="hover-explanation">
+                <span>Placez votre souris sur chacun des attributs pour voir leur description.</span>
+            </div>
         </div>
 
         <div class="character-display">
@@ -136,7 +139,11 @@
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
                 @if (showErrorMessage.characterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>
-                } @else if (showErrorMessage.selectionError) {
+                } @if (showErrorMessage.bonusError) {
+                <div class="error-message">Ajoutez le bonus (+2 Vie ou Rapidité)</div>
+                } @if (showErrorMessage.diceError) {
+                <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
+                } @if (showErrorMessage.selectionError) {
                 <div class="error-message">Le jeu selectionné n'est plus disponible. Vous serez bientôt redirigé.</div>
                 }
             </div>
@@ -144,14 +151,11 @@
         </div>
 
         <div class="character-list">
-            <div
-                class="character-box"
-                *ngFor="let character of characters"
-                (click)="selectCharacter(character)"
-                [ngClass]="{ 'selected-character': character === selectedCharacter }"
-            >
+            @for(character of characters; track character) {
+            <div class="character-box" (click)="selectCharacter(character)" [ngClass]="{ 'selected-character': character === selectedCharacter }">
                 <img [src]="character.preview" alt="{{ character.name }}" />
             </div>
+            }
         </div>
     </div>
 </div>
