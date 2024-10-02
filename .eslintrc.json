@@ -249,7 +249,8 @@
                     }
                 ],
                 "use-isnan": "error",
-                "valid-typeof": "off"
+                "valid-typeof": "off",
+                "no-unused-vars": "off"
             }
         }
     ],
