@@ -185,16 +185,4 @@ describe('ToolbarComponent', () => {
         component.ngOnInit();
         expect(mapCounterServiceSpy.startingPointCounter).toBe(5);
     });
-
-    it('should update random item counter on subscription', () => {
-        mapCounterServiceSpy.randomItemCounter$ = of(5);
-        component.ngOnInit();
-        expect(mapCounterServiceSpy.randomItemCounter$).toBeTruthy();
-    });
-
-    it('should update items counter on subscription', () => {
-        mapCounterServiceSpy.itemsCounter$ = of(5);
-        component.ngOnInit();
-        expect(mapCounterServiceSpy.itemsCounter$).toBeTruthy();
-    });
 });

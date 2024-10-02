@@ -145,12 +145,10 @@ describe('MapAreaComponent', () => {
 
     it('should subscribe to counter observables', () => {
         mapCounterServiceSpy.startingPointCounter$ = of(5);
-        mapCounterServiceSpy.itemsCounter$ = of(10);
 
         component.initMap();
 
         expect(component.startingPointCounter).toBe(5);
-        expect(component.itemsCounter).toBe(10);
     });
 
     it('should subscribe to map title and description observables', () => {
@@ -271,23 +269,6 @@ describe('MapAreaComponent', () => {
         expect(mapData.doorTiles).toEqual([{ coordinate: { x: 0, y: 0 }, isOpened: false }]);
         expect(mapData.items).toEqual([{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Key }]);
         expect(mapData.startTiles).toEqual([{ coordinate: { x: 1, y: 0 } }]);
-    });
-
-    it('should set counters based on map size', () => {
-        component.setCountersBasedOnMapSize(10);
-        expect(mapCounterServiceSpy.updateRandomItemCounter).toHaveBeenCalledWith(2);
-        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(2);
-        expect(mapCounterServiceSpy.updateItemsCounter).toHaveBeenCalledWith(10);
-
-        component.setCountersBasedOnMapSize(15);
-        expect(mapCounterServiceSpy.updateRandomItemCounter).toHaveBeenCalledWith(4);
-        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(4);
-        expect(mapCounterServiceSpy.updateItemsCounter).toHaveBeenCalledWith(14);
-
-        component.setCountersBasedOnMapSize(20);
-        expect(mapCounterServiceSpy.updateRandomItemCounter).toHaveBeenCalledWith(6);
-        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(6);
-        expect(mapCounterServiceSpy.updateItemsCounter).toHaveBeenCalledWith(18);
     });
 
     it('should reset map to default in creation mode', () => {

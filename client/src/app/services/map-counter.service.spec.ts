@@ -28,26 +28,11 @@ describe('MapCounterService', () => {
         expect(counter).toBe(0);
     });
 
-    it('should update random item counter', () => {
-        let counter = 0;
-        service.randomItemCounter$.subscribe((value) => (counter = value));
-
-        service.updateCounters('random', 'add');
-        expect(counter).toBe(1);
-
-        service.updateCounters('random', 'remove');
-        expect(counter).toBe(0);
-    });
-
     it('should update items counter', () => {
         let counter = 0;
 
         spyOn(service, 'updateCounters').and.callThrough();
         spyOn(service, 'updateStartingPointCounter');
-        spyOn(service, 'updateRandomItemCounter');
-        spyOn(service, 'updateItemsCounter');
-
-        service.itemsCounter$.subscribe((value) => (counter = value));
 
         service.updateCounters('acidgun', 'add');
         expect(counter).toBe(1);
@@ -58,13 +43,9 @@ describe('MapCounterService', () => {
 
     it('should not update any counter if item is undefined', () => {
         spyOn(service, 'updateStartingPointCounter');
-        spyOn(service, 'updateRandomItemCounter');
-        spyOn(service, 'updateItemsCounter');
 
         service.updateCounters(undefined, 'add');
 
         expect(service.updateStartingPointCounter).not.toHaveBeenCalled();
-        expect(service.updateRandomItemCounter).not.toHaveBeenCalled();
-        expect(service.updateItemsCounter).not.toHaveBeenCalled();
     });
 });

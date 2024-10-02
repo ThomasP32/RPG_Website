@@ -60,27 +60,24 @@ export class MapAreaComponent implements OnInit {
     }
 
     initMap() {
+        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
+            this.startingPointCounter = counter;
+        });
         if (this.router.url.includes('creation')) {
             this.getUrlParams();
             this.urlConverter();
             this.createMap(this.convertedMapSize);
             this.setCellSize();
+            this.setCountersBasedOnMapSize(this.convertedMapSize);
         } else if (this.router.url.includes('edition')) {
             this.map = this.mapGetService.map;
             this.convertedMapSize = this.map.mapSize.x;
             this.mode = this.map.mode;
+            this.setCountersBasedOnMapSize(this.convertedMapSize);
+            this.startingPointCounter = this.startingPointCounter - this.map.startTiles.length;
+            this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
             this.loadMap(this.map);
         }
-
-        this.setCountersBasedOnMapSize(this.convertedMapSize);
-
-        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
-            this.startingPointCounter = counter;
-        });
-
-        this.mapCounterService.itemsCounter$.subscribe((counter) => {
-            this.itemsCounter = counter;
-        });
 
         this.mapService.mapTitle$.subscribe((title) => {
             this.mapTitle = title;
@@ -281,9 +278,8 @@ export class MapAreaComponent implements OnInit {
             this.startingPointCounter = 6;
             this.itemsCounter = 18;
         }
-        this.mapCounterService.updateRandomItemCounter(this.randomItemCounter);
+
         this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
-        this.mapCounterService.updateItemsCounter(this.itemsCounter);
     }
     getUrlParams() {
         this.route.queryParams.subscribe((params) => {

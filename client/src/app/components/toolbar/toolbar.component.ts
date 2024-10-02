@@ -57,12 +57,6 @@ export class ToolbarComponent implements OnInit {
         this.mapCounterService.startingPointCounter$.subscribe((counter) => {
             this.mapCounterService.startingPointCounter = counter;
         });
-        this.mapCounterService.randomItemCounter$.subscribe((counter) => {
-            this.mapCounterService.randomItemCounter = counter;
-        });
-        this.mapCounterService.itemsCounter$.subscribe((counter) => {
-            this.mapCounterService.itemsCounter = counter;
-        });
     }
 
     toggleTiles() {
