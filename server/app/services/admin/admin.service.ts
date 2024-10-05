@@ -149,7 +149,8 @@ export class AdminService {
 
     private isBelowHalf(doors: DoorTileDto[], tiles: TileDto[], mapSize: CoordinateDto): boolean {
         const totalTiles: number = mapSize.x * mapSize.y;
-        const occupiedTiles: number = doors.length + tiles.length;
+        const wallTiles = tiles.filter((tile) => tile.category === TileCategory.Wall);
+        const occupiedTiles: number = doors.length + wallTiles.length;
         return occupiedTiles < HALF * totalTiles;
     }
 
