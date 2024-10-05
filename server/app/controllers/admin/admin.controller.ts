@@ -1,14 +1,14 @@
 import { MapDto } from '@app/model/dto/map/map.dto';
 import { Map } from '@app/model/schemas/map.schema';
 import { AdminService } from '@app/services/admin/admin.service';
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 @ApiTags('Admin') // to attach a controller to a specific tag
 @Controller('admin') // marque la classe comme un contrôleur pour les routes qui commence avec map donc reponde au requete http faites vers l'url /map
 export class AdminController {
-    constructor(private readonly adminService: AdminService) {} // créé une instance de la classe avec un service de cours
+    @Inject(AdminService) private readonly adminService: AdminService; // créé une instance de la classe avec un service de cours
 
     @ApiOkResponse({
         description: 'Returns all maps',
