@@ -1,6 +1,5 @@
 import { MapDocument, mapSchema } from '@app/model/schemas/map.schema';
 import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
-import { Logger } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -28,7 +27,6 @@ describe('MapService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 MapService,
-                Logger,
                 {
                     provide: getModelToken(Map.name),
                     useValue: mapModel,
@@ -41,20 +39,6 @@ describe('MapService', () => {
 
     it('should be defined', () => {
         expect(service).toBeDefined();
-    });
-
-    it('database should be populated when there is no data', async () => {
-        jest.spyOn(mapModel, 'countDocuments').mockResolvedValue(0);
-        const spyPopulateDB = jest.spyOn(service, 'populateDB');
-        await service.start();
-        expect(spyPopulateDB).toHaveBeenCalled();
-    });
-
-    it('database should not be populated when there is some data', async () => {
-        jest.spyOn(mapModel, 'countDocuments').mockResolvedValue(1);
-        const spyPopulateDB = jest.spyOn(service, 'populateDB');
-        await service.start();
-        expect(spyPopulateDB).not.toHaveBeenCalled();
     });
 });
 
@@ -75,7 +59,7 @@ describe('MapServiceEndToEnd', () => {
                 }),
                 MongooseModule.forFeature([{ name: Map.name, schema: mapSchema }]),
             ],
-            providers: [MapService, Logger],
+            providers: [MapService],
         }).compile();
 
         service = module.get<MapService>(MapService);
@@ -95,20 +79,6 @@ describe('MapServiceEndToEnd', () => {
     it('should be defined', () => {
         expect(service).toBeDefined();
         expect(mapModel).toBeDefined();
-    });
-
-    it('start() should populate the database when there is no data', async () => {
-        const spyPopulateDB = jest.spyOn(service, 'populateDB');
-        await mapModel.deleteMany({});
-        await service.start();
-        expect(spyPopulateDB).toHaveBeenCalled();
-    });
-
-    it('populateDB() should add 1 new map', async () => {
-        const eltCountsBefore = await mapModel.countDocuments();
-        await service.populateDB();
-        const eltCountsAfter = await mapModel.countDocuments();
-        expect(eltCountsAfter).toBeGreaterThan(eltCountsBefore);
     });
 
     it('getAllVisibleMaps() return only visible maps in database', async () => {

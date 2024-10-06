@@ -25,7 +25,7 @@ export class AdminService {
         { x: 1, y: 0 },
     ];
 
-    constructor(@InjectModel(Map.name) public mapModel: Model<MapDocument>) {}
+    @InjectModel(Map.name) public mapModel: Model<MapDocument>;
 
     async getAllMaps(): Promise<Map[]> {
         return await this.mapModel.find({});
@@ -209,7 +209,7 @@ export class AdminService {
         return tileOutOfBounds || startTileOutOfBounds || doorTileOutOfBounds || itemOutOfBounds;
     }
 
-    private areDoorsFree(doors: DoorTileDto[], tiles: TileDto[]): boolean {
+    areDoorsFree(doors: DoorTileDto[], tiles: TileDto[]): boolean {
         const walls = tiles.filter((tile) => tile.category === TileCategory.Wall);
         for (const door of doors) {
             const hasWallsHorizontally =
@@ -221,12 +221,18 @@ export class AdminService {
                 walls.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1);
 
             const isBlockedHorizontally =
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x + 1 && tile.coordinate.y === door.coordinate.y) ||
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x - 1 && tile.coordinate.y === door.coordinate.y);
+                tiles.some((tile) => tile.coordinate.x === door.coordinate.x + 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall) ||
+                tiles.some((tile) => tile.coordinate.x === door.coordinate.x - 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall) ||
+                doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x + 1 && otherDoor.coordinate.y === door.coordinate.y) ||
+                doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x - 1 && otherDoor.coordinate.y === door.coordinate.y);
+
 
             const isBlockedVertically =
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y + 1) ||
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1);
+                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y + 1 && tile.category === TileCategory.Wall) ||
+                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1 && tile.category === TileCategory.Wall) || 
+                doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x && otherDoor.coordinate.y === door.coordinate.y + 1) ||
+                doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x && otherDoor.coordinate.y === door.coordinate.y - 1);
+
 
             const isValidDoor = (hasWallsHorizontally && !isBlockedVertically) || (hasWallsVertically && !isBlockedHorizontally);
 
