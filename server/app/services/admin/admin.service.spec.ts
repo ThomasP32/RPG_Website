@@ -170,9 +170,10 @@ describe('AdminServiceEndToEnd', () => {
     });
 
     it('should throw error when doors are not free', async () => {
-        await expect(service.addMap(getFakeInvalidMapDto2())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.areDoorsFree(getFakeInvalidMapDto2().doorTiles, getFakeInvalidMapDto2().tiles)).toBe(true);
         await expect(service.addMap(getFakeInvalidMapDto22())).rejects.toThrow('Toutes les portes doivent être libérées');
-        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto2())).rejects.toThrow(
+        await expect(service.addMap(getFakeInvalidMapDto23())).rejects.toThrow('Toutes les portes doivent être libérées');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto22())).rejects.toThrow(
             'Toutes les portes doivent être libérées',
         );
     });
@@ -272,10 +273,8 @@ describe('AdminServiceEndToEnd', () => {
         items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 3 }, category: TileCategory.Ice },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
             { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
             { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
         ],
         doorTiles: [
@@ -295,10 +294,29 @@ describe('AdminServiceEndToEnd', () => {
         items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
         tiles: [
             { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 0 }, category: TileCategory.Ice },
             { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 1 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }],
+        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }, { coordinate: { x: 4, y: 2 }, isOpened: false }],
+    });
+
+
+    const getFakeInvalidMapDto23 = (): MapDto => ({
+        name: getRandomString(),
+        description: getRandomString(),
+        imagePreview: getRandomString(),
+        mode: getRandomEnumValue(Mode),
+        mapSize: { x: 10, y: 10 },
+        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
+        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        tiles: [
+            { coordinate: { x: 3, y: 2 }, category: TileCategory.Wall },
+            { coordinate: { x: 3, y: 0 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 2 }, category: TileCategory.Wall },
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall }
+        ],
+        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }, { coordinate: { x: 3, y: 1 }, isOpened: false }],
     });
 
     // out of bounds
