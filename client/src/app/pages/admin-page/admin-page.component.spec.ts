@@ -145,4 +145,16 @@ describe('AdminPageComponent', () => {
         component.navigateToMain();
         expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
     });
+
+    it('should navigate to the map edition page', () => {
+        spyOn(router, 'navigate');
+        component.editMap(mockMaps[0]);
+        expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
+    });
+
+    it('should format the date correctly', () => {
+        const date = new Date();
+        const formattedDate = component.formatDate(date);
+        expect(formattedDate).toBe(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+    });
 });
