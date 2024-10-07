@@ -86,31 +86,25 @@
 }
 
 .scrollable-container {
-    display: flex;
-    flex-direction: row;
-    max-width: 100vw;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    padding: 0 20px;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: max-content;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
 }
 
 .map-cards {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 0 10px;
-    padding: 5px;
-    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
     overflow-x: auto;
     overflow-y: hidden;
 }
+
 .map-cards::-webkit-scrollbar {
-    height: 12px;
+    width: 12px;
 }
 
 .map-cards::-webkit-scrollbar-thumb {
@@ -131,9 +125,10 @@
 .map-card {
     position: relative;
     flex: 0 0 auto;
-    width: 25vw;
+    width: 24vw;
     height: calc(80vh - 40px);
     display: flex;
+    overflow: hidden;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -153,6 +148,7 @@
 
     .map-image-container {
         position: relative;
+        flex-shrink: 0;
 
         .map-img {
             width: 20vw;
@@ -176,6 +172,9 @@
             overflow: hidden;
             line-height: 1.5em;
             transition: transform 0.3s ease;
+            word-wrap: break-word;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .mode,
