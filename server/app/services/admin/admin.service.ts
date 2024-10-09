@@ -61,8 +61,10 @@ export class AdminService {
     async addMap(map: MapDto): Promise<void> {
         await this.verifyMap(map);
         try {
+            console.log(map);
             await this.mapModel.create(map);
         } catch (error) {
+            console.log('Error : ', error);
             throw new Error('La création du jeu a échoué');
         }
     }

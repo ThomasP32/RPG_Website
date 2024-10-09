@@ -56,10 +56,10 @@ export class MapService {
         this.updateSelectedTileSource.next(value);
     }
 
-    async saveNewMap(map: Map): Promise<string> {
+    async saveNewMap(): Promise<string> {
         try {
-            console.log('creating map');
-            await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', map));
+            console.log(this.map);
+            await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
@@ -82,10 +82,11 @@ export class MapService {
         return 'Votre jeu a été sauvegardé avec succès!';
     }
 
-    async updateMap(map: Map, mapId: string): Promise<string> {
+    async updateMap(mapId: string): Promise<string> {
         try {
-            console.log('updating map');
-            await firstValueFrom(this.communicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, map));
+            console.log(this.map);
+            const cleanedMap = this.cleanMapForSave(this.map);
+            await firstValueFrom(this.communicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, cleanedMap));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
@@ -105,5 +106,10 @@ export class MapService {
             }
         }
         return 'Votre jeu a été sauvegardé avec succès!';
+    }
+
+    cleanMapForSave(map: any): Map {
+        const { _id, isVisible, lastModified, __v, ...cleanedMap } = map;
+        return cleanedMap;
     }
 }

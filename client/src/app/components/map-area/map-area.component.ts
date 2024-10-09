@@ -6,7 +6,7 @@ import { MapCounterService } from '@app/services/map-counter.service';
 import { MapService } from '@app/services/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
-import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
+import { ItemCategory, Map, TileCategory } from '@common/map.types';
 /* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-map-area',
@@ -18,7 +18,6 @@ import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 export class MapAreaComponent implements OnInit {
     selectedTile: string;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
-    imagePreviewUrl: string = '';
 
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
@@ -27,11 +26,6 @@ export class MapAreaComponent implements OnInit {
     currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
 
     defaultTile = 'floor';
-    mapSize: string;
-    mode: Mode;
-    convertedCellSize: number;
-    convertedMode: string;
-
     randomItemCounter: number;
     startingPointCounter: number;
     itemsCounter: number;
@@ -45,40 +39,38 @@ export class MapAreaComponent implements OnInit {
         private router: Router,
         private screenshotService: ScreenShotService,
     ) {}
-
-    mapTitle: string = '';
-    mapDescription: string;
-
     ngOnInit() {
         this.initMap();
     }
 
     initMap() {
-        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
-            this.startingPointCounter = counter;
-        });
-        if (this.router.url.includes('creation')) {
-            console.log('creation');
-            this.createMap(this.mapService.map.mapSize.x);
-            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
-        } else if (this.router.url.includes('edition')) {
-            this.mode = this.mapService.map.mode;
-            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
-            this.startingPointCounter = this.startingPointCounter - this.mapService.map.startTiles.length;
-            this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
-            this.loadMap(this.mapService.map);
+        this.mapCounterService.startingPointCounter$.subscribe((counter) => (this.startingPointCounter = counter));
+        if (this.isCreationMode()) {
+            this.initializeCreationMode();
+        } else if (this.isEditionMode()) {
+            this.initializeEditionMode();
         }
+        this.mapService.updateSelectedTile$.subscribe((tile) => (this.selectedTile = tile));
+    }
 
-        this.mapService.mapTitle$.subscribe((title) => {
-            this.mapTitle = title;
-        });
+    isCreationMode(): boolean {
+        return this.router.url.includes('creation');
+    }
 
-        this.mapService.mapDescription$.subscribe((description) => {
-            this.mapDescription = description;
-        });
-        this.mapService.updateSelectedTile$.subscribe((tile) => {
-            this.selectedTile = tile;
-        });
+    isEditionMode(): boolean {
+        return this.router.url.includes('edition');
+    }
+
+    initializeCreationMode() {
+        this.createMap(this.mapService.map.mapSize.x);
+        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+    }
+
+    initializeEditionMode() {
+        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+        this.startingPointCounter -= this.mapService.map.startTiles.length;
+        this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
+        this.loadMap(this.mapService.map);
     }
 
     createMap(mapSize: number) {
@@ -187,21 +179,11 @@ export class MapAreaComponent implements OnInit {
         }
     }
 
-    generateMapData(): Map {
-        const mapData: Map = {
-            name: this.mapService.map.name,
-            description: this.mapService.map.description,
-            imagePreview: this.mapService.map.imagePreview,
-            mode: this.mapService.map.mode,
-            mapSize: {
-                x: this.mapService.map.mapSize.x,
-                y: this.mapService.map.mapSize.x,
-            },
-            tiles: [] as { coordinate: { x: number; y: number }; category: TileCategory }[],
-            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
-            items: [] as { coordinate: { x: number; y: number }; category: ItemCategory }[],
-            startTiles: [] as { coordinate: { x: number; y: number } }[],
-        };
+    generateMap() {
+        this.mapService.map.doorTiles = [];
+        this.mapService.map.tiles = [];
+        this.mapService.map.items = [];
+        this.mapService.map.startTiles = [];
 
         for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
             for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
@@ -210,34 +192,32 @@ export class MapAreaComponent implements OnInit {
 
                 if (cell && cell.value) {
                     if (cell.value === 'door') {
-                        mapData.doorTiles.push({
+                        this.mapService.map.doorTiles.push({
                             coordinate,
                             isOpened: cell.doorState === 'open',
                         });
                     } else if (['water', 'ice', 'wall'].includes(cell.value)) {
-                        mapData.tiles.push({
+                        this.mapService.map.tiles.push({
                             coordinate,
                             category: cell.value as TileCategory,
                         });
                     }
 
                     if (cell.item && cell.item !== '' && cell.item !== 'starting-point') {
-                        mapData.items.push({
+                        this.mapService.map.items.push({
                             coordinate,
                             category: cell.item as ItemCategory,
                         });
                     }
 
                     if (cell.item === 'starting-point') {
-                        mapData.startTiles.push({
+                        this.mapService.map.startTiles.push({
                             coordinate,
                         });
                     }
                 }
             }
         }
-
-        return mapData;
     }
 
     getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
@@ -249,26 +229,25 @@ export class MapAreaComponent implements OnInit {
     }
 
     setCountersBasedOnMapSize(mapSize: number) {
-        if (mapSize === 10) {
-            this.randomItemCounter = 2;
-            this.startingPointCounter = 2;
-            this.itemsCounter = 10;
-        } else if (mapSize === 15) {
-            this.randomItemCounter = 4;
-            this.startingPointCounter = 4;
-            this.itemsCounter = 14;
-        } else if (mapSize === 20) {
-            this.randomItemCounter = 6;
-            this.startingPointCounter = 6;
-            this.itemsCounter = 18;
-        }
-
+        const counters = this.getCountersForMapSize(mapSize);
+        this.randomItemCounter = counters.randomItemCounter;
+        this.startingPointCounter = counters.startingPointCounter;
+        this.itemsCounter = counters.itemsCounter;
         this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
+    }
+
+    getCountersForMapSize(mapSize: number) {
+        const sizeToCounters: Record<10 | 15 | 20, { randomItemCounter: number; startingPointCounter: number; itemsCounter: number }> = {
+            10: { randomItemCounter: 2, startingPointCounter: 2, itemsCounter: 10 },
+            15: { randomItemCounter: 4, startingPointCounter: 4, itemsCounter: 14 },
+            20: { randomItemCounter: 6, startingPointCounter: 6, itemsCounter: 18 },
+        };
+        return sizeToCounters[mapSize as 10 | 15 | 20] || { randomItemCounter: 0, startingPointCounter: 0, itemsCounter: 0 };
     }
 
     async screenMap() {
         await this.screenshotService.captureAndUpload('screenshot-container').then((result: string) => {
-            this.imagePreviewUrl = result;
+            this.mapService.map.imagePreview = result;
         });
     }
 
