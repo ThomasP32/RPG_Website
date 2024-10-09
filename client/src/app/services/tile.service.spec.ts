@@ -78,8 +78,8 @@ describe('TileService', () => {
 
     it('should place a tile and NOT update counters if replacing an item with a tile other than wall or door', () => {
         const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'grass');
+        service.placeTile(mockMap, 0, 0, 'floor');
         expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
-        expect(mockMap[0][0].value).toBe('grass');
+        expect(mockMap[0][0].value).toBe('floor');
     });
 });

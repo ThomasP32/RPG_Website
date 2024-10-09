@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
@@ -18,7 +17,6 @@ import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 })
 export class MapAreaComponent implements OnInit {
     selectedTile: string;
-    map!: Map;
     Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
     imagePreviewUrl: string = '';
 
@@ -31,7 +29,6 @@ export class MapAreaComponent implements OnInit {
     defaultTile = 'floor';
     mapSize: string;
     mode: Mode;
-    convertedMapSize: number;
     convertedCellSize: number;
     convertedMode: string;
 
@@ -42,10 +39,7 @@ export class MapAreaComponent implements OnInit {
     constructor(
         private tileService: TileService,
         private route: ActivatedRoute,
-        private renderer: Renderer2,
-        private cdRef: ChangeDetectorRef,
         private mapService: MapService,
-        private mapGetService: MapGetService,
         private mapCounterService: MapCounterService,
         private imageService: ImageService,
         private router: Router,
@@ -64,19 +58,15 @@ export class MapAreaComponent implements OnInit {
             this.startingPointCounter = counter;
         });
         if (this.router.url.includes('creation')) {
-            this.getUrlParams();
-            this.urlConverter();
-            this.createMap(this.convertedMapSize);
-            this.setCellSize();
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
+            console.log('creation');
+            this.createMap(this.mapService.map.mapSize.x);
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
         } else if (this.router.url.includes('edition')) {
-            this.map = this.mapGetService.map;
-            this.convertedMapSize = this.map.mapSize.x;
-            this.mode = this.map.mode;
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
-            this.startingPointCounter = this.startingPointCounter - this.map.startTiles.length;
+            this.mode = this.mapService.map.mode;
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+            this.startingPointCounter = this.startingPointCounter - this.mapService.map.startTiles.length;
             this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
-            this.loadMap(this.map);
+            this.loadMap(this.mapService.map);
         }
 
         this.mapService.mapTitle$.subscribe((title) => {
@@ -101,12 +91,6 @@ export class MapAreaComponent implements OnInit {
             }
             this.Map.push(row);
         }
-    }
-
-    setCellSize() {
-        const root = document.querySelector(':root') as HTMLElement;
-        this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-        this.cdRef.detectChanges();
     }
 
     selectTile(tile: string) {
@@ -197,21 +181,21 @@ export class MapAreaComponent implements OnInit {
                     this.Map[i][j].item = undefined;
                 }
             }
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
         } else {
-            this.loadMap(this.map);
+            this.loadMap(this.mapService.map);
         }
     }
 
     generateMapData(): Map {
         const mapData: Map = {
-            name: this.mapTitle,
-            description: this.mapDescription,
-            imagePreview: this.imagePreviewUrl,
-            mode: this.mode,
+            name: this.mapService.map.name,
+            description: this.mapService.map.description,
+            imagePreview: this.mapService.map.imagePreview,
+            mode: this.mapService.map.mode,
             mapSize: {
-                x: this.convertedMapSize,
-                y: this.convertedMapSize,
+                x: this.mapService.map.mapSize.x,
+                y: this.mapService.map.mapSize.x,
             },
             tiles: [] as { coordinate: { x: number; y: number }; category: TileCategory }[],
             doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
@@ -280,23 +264,6 @@ export class MapAreaComponent implements OnInit {
         }
 
         this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
-    }
-    getUrlParams() {
-        this.route.queryParams.subscribe((params) => {
-            this.mapSize = this.route.snapshot.params['size'];
-            this.mode = this.route.snapshot.params['mode'];
-        });
-    }
-
-    urlConverter() {
-        this.convertedMode = this.mode.split('=')[1];
-        this.convertedMapSize = parseInt(this.mapSize.split('=')[1]);
-
-        if (this.convertedMode === 'classic') {
-            this.mode = Mode.Classic;
-        } else {
-            this.mode = Mode.Ctf;
-        }
     }
 
     async screenMap() {
