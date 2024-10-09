@@ -1,13 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 /* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',
 })
 export class MapService {
+    map!: Map;
+
     resetMapSource = new Subject<void>();
     resetMap$ = this.resetMapSource.asObservable();
 
@@ -23,14 +25,23 @@ export class MapService {
     private mapDescriptionSource = new BehaviorSubject<string>('');
     mapDescription$ = this.mapDescriptionSource.asObservable();
 
-    constructor(private CommunicationMapService: CommunicationMapService) {}
+    constructor(private communicationMapService: CommunicationMapService) {}
 
-    setMapTitle(title: string): void {
-        this.mapTitleSource.next(title);
+    async getMap(id: string): Promise<void> {
+        this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
     }
-
-    setMapDescription(description: string): void {
-        this.mapDescriptionSource.next(description);
+    createMap(mode: Mode, size: number): void {
+        this.map = {
+            name: '',
+            description: '',
+            imagePreview: '',
+            mode: mode,
+            mapSize: { x: size, y: size },
+            startTiles: [],
+            items: [],
+            doorTiles: [],
+            tiles: [],
+        };
     }
 
     generateMapData() {
@@ -48,7 +59,7 @@ export class MapService {
     async saveNewMap(map: Map): Promise<string> {
         try {
             console.log('creating map');
-            await firstValueFrom(this.CommunicationMapService.basicPost<Map>('admin/creation', map));
+            await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
@@ -74,7 +85,7 @@ export class MapService {
     async updateMap(map: Map, mapId: string): Promise<string> {
         try {
             console.log('updating map');
-            await firstValueFrom(this.CommunicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, map));
+            await firstValueFrom(this.communicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';

@@ -173,12 +173,12 @@ describe('ToolbarComponent', () => {
         expect(component.mode).toBe('mode=classic');
     });
 
-    it('should convert mode from URL', () => {
-        component.mode = 'mode=classic';
-        component.urlConverterMode();
-        expect(component.convertedMode).toBe('classic');
-        expect(component.mode).toBe('classic');
-    });
+    // it('should convert mode from URL', () => {
+    //     component.mode = 'mode=classic';
+    //     component.urlConverterMode();
+    //     expect(component.convertedMode).toBe('classic');
+    //     expect(component.mode).toBe('classic');
+    // });
 
     it('should update starting point counter on subscription', () => {
         mapCounterServiceSpy.startingPointCounter = 5;

@@ -56,6 +56,7 @@ describe('GameCreationPageComponent', () => {
         component.ngOnInit();
 
         expect(component.isCreationPage).toBe(true);
+        expect(mapServiceSpy.getMap).not.toHaveBeenCalled();
     });
 
     it('should initialize in edition mode', async () => {

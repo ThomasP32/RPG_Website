@@ -1,11 +1,10 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
 import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 /* eslint-disable no-unused-vars */
@@ -24,21 +23,24 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
     isCreationPage = false;
     map!: Map;
     mapId: string = '';
+    mapSize: number;
+    mode: Mode;
     private unsubscribe$ = new Subject<void>(); // Used to manage unsubscriptions
 
     constructor(
         private mapService: MapService,
         private route: ActivatedRoute,
-        private mapGetService: MapGetService,
+        private router: Router,
     ) {}
 
     async ngOnInit(): Promise<void> {
-        if (this.route.snapshot.params['id']) {
-            this.getUrlParams();
-            await this.mapGetService.getMap(this.mapId);
-            this.map = this.mapGetService.map;
+        this.getUrlParams();
+        if (this.router.url.includes('edition')) {
+            await this.mapService.getMap(this.mapId);
+            this.map = this.mapService.map;
             this.isCreationPage = false;
         } else {
+            this.mapService.createMap(this.mode, this.mapSize);
             this.isCreationPage = true;
         }
 
@@ -71,6 +73,19 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
     }
 
     getUrlParams(): void {
-        this.mapId = this.route.snapshot.params['id'];
+        if (this.route.snapshot.params['id']) {
+            this.mapId = this.route.snapshot.params['id'];
+        }
+        if (this.route.snapshot.params['size']) {
+            this.mapSize = parseInt(this.route.snapshot.params['size'].split('=')[1]);
+        }
+        if (this.route.snapshot.params['mode']) {
+            const mode = this.route.snapshot.params['mode'].split('=')[1];
+            if (mode === 'classic') {
+                this.mode = Mode.Classic;
+            } else {
+                this.mode = Mode.Ctf;
+            }
+        }
     }
 }
