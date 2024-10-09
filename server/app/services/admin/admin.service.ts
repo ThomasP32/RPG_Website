@@ -8,6 +8,8 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+/* eslint-disable no-unused-vars */
+
 const HALF = 0.5;
 const SMALL_MAP_SIZE = 10;
 const MEDIUM_MAP_SIZE = 15;

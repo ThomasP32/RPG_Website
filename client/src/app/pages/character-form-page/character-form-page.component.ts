@@ -107,6 +107,7 @@ export class CharacterFormPageComponent {
 
     stopEditing() {
         this.isEditing = false;
+        this.characterName = this.characterName.trim();
         if (!this.characterName) {
             this.characterName = 'Choisis ton nom';
         }
