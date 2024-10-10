@@ -1,7 +1,7 @@
 import { MapDto } from '@app/model/dto/map/map.dto';
 import { Map } from '@app/model/schemas/map.schema';
 import { AdminService } from '@app/services/admin/admin.service';
-import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Put, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -71,7 +71,7 @@ export class AdminController {
     @ApiNotFoundResponse({
         description: 'Return NOT_FOUND http status when request fails',
     })
-    @Patch('/edition/:mapId')
+    @Put('/edition/:mapId')
     async modifyMap(@Param('mapId') mapId: string, @Body() mapDto: MapDto, @Res() response: Response) {
         try {
             const updatedMap = await this.adminService.modifyMap(mapId, mapDto);
