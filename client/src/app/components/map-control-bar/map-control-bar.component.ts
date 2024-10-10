@@ -15,7 +15,6 @@ const timeLimit = 2000;
 })
 export class MapControlBarComponent implements OnInit {
     mode: string;
-    numberOfPlayers: number = 0;
     id: string;
     message: string;
 
@@ -68,7 +67,7 @@ export class MapControlBarComponent implements OnInit {
 
         this.mapService.map.name = this.title;
         this.mapService.map.description = this.description;
-        this.mapService.generateMapData();
+        this.mapService.generateMap();
     }
 
     back() {

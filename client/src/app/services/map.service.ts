@@ -10,6 +10,8 @@ import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 export class MapService {
     map!: Map;
 
+    selectedTile: string;
+
     resetMapSource = new Subject<void>();
     resetMap$ = this.resetMapSource.asObservable();
 
@@ -19,17 +21,12 @@ export class MapService {
     updateSelectedTileSource = new BehaviorSubject<string>('');
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
-    private mapTitleSource = new BehaviorSubject<string>('');
-    mapTitle$ = this.mapTitleSource.asObservable();
-
-    private mapDescriptionSource = new BehaviorSubject<string>('');
-    mapDescription$ = this.mapDescriptionSource.asObservable();
-
     constructor(private communicationMapService: CommunicationMapService) {}
 
     async getMap(id: string): Promise<void> {
         this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
     }
+    
     createMap(mode: Mode, size: number): void {
         this.map = {
             name: '',
@@ -44,7 +41,7 @@ export class MapService {
         };
     }
 
-    generateMapData() {
+    generateMap() {
         this.generateMapSource.next();
     }
 
@@ -58,7 +55,6 @@ export class MapService {
 
     async saveNewMap(): Promise<string> {
         try {
-            console.log(this.map);
             await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
@@ -84,7 +80,6 @@ export class MapService {
 
     async updateMap(mapId: string): Promise<string> {
         try {
-            console.log(this.map);
             const cleanedMap = this.cleanMapForSave(this.map);
             await firstValueFrom(this.communicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, cleanedMap));
         } catch (error) {
