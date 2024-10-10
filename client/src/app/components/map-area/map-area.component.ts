@@ -252,6 +252,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     loadMap(map: Map) {
+        this.Map = [];
         this.createMap(map.mapSize.x);
 
         map.tiles.forEach((tile) => {
