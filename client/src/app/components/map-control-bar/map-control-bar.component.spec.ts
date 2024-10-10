@@ -93,7 +93,7 @@ describe('MapControlBarComponent', () => {
 
         expect(mapServiceSpy.map.name).toBe('New Map');
         expect(mapServiceSpy.map.description).toBe('New Description');
-        expect(mapServiceSpy.generateMapData).toHaveBeenCalled();
+        expect(mapServiceSpy.generateMap).toHaveBeenCalled();
     });
 
     it('should show error message if title or description is empty', () => {

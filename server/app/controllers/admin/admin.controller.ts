@@ -53,12 +53,10 @@ export class AdminController {
     })
     @Post('/creation')
     async addMap(@Body() mapDto: MapDto, @Res() response: Response) {
-        console.log(mapDto);
         try {
             await this.adminService.addMap(mapDto);
             response.status(HttpStatus.CREATED).send();
         } catch (error) {
-            console.log(error);
             return response.status(error.status || HttpStatus.BAD_REQUEST).json({
                 status: error.status || HttpStatus.BAD_REQUEST,
                 message: error.message || 'La création du jeu a échoué',
