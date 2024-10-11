@@ -20,11 +20,6 @@ export enum Bonus {
     D6 = 6,
 }
 
-export interface PlayerPosition {
-    player: Player;
-    coordinate: Coordinate;
-}
-
 export interface Specs {
     life: number;
     speed: number;
