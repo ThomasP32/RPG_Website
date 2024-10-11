@@ -33,6 +33,18 @@ describe('TileService', () => {
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
+    it('should toggle doorState between open and closed', () => {
+        const mockMap: Array<{ value: string; doorState?: 'open' | 'closed'; item: undefined }>[] = [
+            [{ value: 'door', doorState: 'closed', item: undefined }],
+            [{ value: 'floor', item: undefined }],
+        ];
+
+        service.placeTile(mockMap, 0, 0, 'door');
+        expect(mockMap[0][0].doorState).toBe('open');
+        service.placeTile(mockMap, 0, 0, 'door');
+        expect(mockMap[0][0].doorState).toBe('closed');
+    });
+
     it('should erase a tile', () => {
         const mockMap = [[{ value: 'wall', item: 'item1' }], [{ value: 'floor', item: undefined }]];
         service.eraseTile(mockMap, 0, 0, 'floor');
@@ -78,8 +90,8 @@ describe('TileService', () => {
 
     it('should place a tile and NOT update counters if replacing an item with a tile other than wall or door', () => {
         const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'grass');
+        service.placeTile(mockMap, 0, 0, 'floor');
         expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
-        expect(mockMap[0][0].value).toBe('grass');
+        expect(mockMap[0][0].value).toBe('floor');
     });
 });

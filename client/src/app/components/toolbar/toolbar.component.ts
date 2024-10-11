@@ -1,11 +1,9 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
+import { Mode } from '@common/map.types';
 /* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-toolbar',
@@ -21,12 +19,6 @@ export class ToolbarComponent implements OnInit {
 
     @Output() itemSelected = new EventEmitter<string>();
 
-    mode: string;
-    convertedMode: string;
-    mapId: string;
-
-    map!: Map;
-
     isTilesVisible: boolean = true;
     isItemsVisible: boolean = true;
     isFlagVisible: boolean = true;
@@ -35,21 +27,14 @@ export class ToolbarComponent implements OnInit {
     itemsUsable: boolean = false;
 
     constructor(
-        private route: ActivatedRoute,
-        private mapService: MapService,
-        private mapGetService: MapGetService,
+        public mapService: MapService,
         public mapCounterService: MapCounterService,
         public imageService: ImageService,
     ) {}
 
+    mode: string;
     async ngOnInit() {
-        if (this.route.snapshot.params['mode']) {
-            this.getUrlParams();
-            this.urlConverterMode();
-        } else {
-            this.map = this.mapGetService.map;
-            this.mode = this.map.mode;
-        }
+        this.setMode();
         this.mapService.updateSelectedTile$.subscribe((tile) => {
             this.selectedTile = tile;
         });
@@ -121,14 +106,11 @@ export class ToolbarComponent implements OnInit {
         return this.imageService.getItemImage(item);
     }
 
-    getUrlParams(): void {
-        this.route.queryParams.subscribe(() => {
-            this.mode = this.route.snapshot.params['mode'];
-        });
-    }
-
-    urlConverterMode(): void {
-        this.convertedMode = this.mode.split('=')[1];
-        this.mode = this.convertedMode;
+    setMode() {
+        if (this.mapService.map.mode === Mode.Classic) {
+            this.mode = 'classic';
+        } else {
+            this.mode = 'ctf';
+        }
     }
 }

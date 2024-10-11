@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MapComponent } from '@app/components/create-map-modal/create-map-modal.component';
+import { CreateMapModalComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
@@ -11,11 +11,11 @@ import { DBMap as Map } from '@common/map.types';
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, ErrorMessageComponent, MapComponent],
+    imports: [RouterLink, ErrorMessageComponent, CreateMapModalComponent],
 })
 export class AdminPageComponent implements OnInit {
     @Input() mapId: string = '';
-    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
+    @ViewChild(CreateMapModalComponent, { static: false }) createMapModalComponent!: CreateMapModalComponent;
     @ViewChild(ErrorMessageComponent, { static: false }) errorMessageModal: ErrorMessageComponent;
     maps: Map[] = [];
     currentMapId: string | null = null;
