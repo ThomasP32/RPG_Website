@@ -2,39 +2,21 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { Mode } from '@common/map.types';
+import { BehaviorSubject, of } from 'rxjs';
 import { ToolbarComponent } from './toolbar.component';
 
 describe('ToolbarComponent', () => {
     let component: ToolbarComponent;
     let fixture: ComponentFixture<ToolbarComponent>;
     let mapServiceSpy: jasmine.SpyObj<MapService>;
-    let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
-    const mockMap: Map = {
-        _id: '1',
-        name: 'Test Map',
-        isVisible: true,
-        mapSize: { x: 10, y: 10 },
-        startTiles: [],
-        items: [],
-        doorTiles: [],
-        tiles: [],
-        mode: Mode.Ctf,
-        lastModified: new Date(),
-        description: '',
-        imagePreview: '',
-    };
-
     beforeEach(async () => {
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$']);
-        mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
             'startingPointCounter$',
             'randomItemCounter$',
@@ -49,7 +31,6 @@ describe('ToolbarComponent', () => {
             imports: [ToolbarComponent],
             providers: [
                 { provide: MapService, useValue: mapServiceSpy },
-                { provide: MapGetService, useValue: mapGetServiceSpy },
                 { provide: MapCounterService, useValue: mapCounterServiceSpy },
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
@@ -67,18 +48,38 @@ describe('ToolbarComponent', () => {
     it('should initialize in creation mode', () => {
         activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
         activatedRouteSpy.queryParams = of({});
+        mapServiceSpy.map = { mode: Mode.Classic } as any;
         component.ngOnInit();
 
         expect(component.mode).toBe('classic');
     });
 
     it('should initialize in edition mode', () => {
-        activatedRouteSpy.snapshot.params = { id: '123' };
-        mapGetServiceSpy.map = mockMap;
+        activatedRouteSpy.snapshot.params = { id: '1' };
+        mapServiceSpy.map = { mode: Mode.Ctf } as any;
+        component.ngOnInit();
+        expect(component.mode).toBe('ctf');
+    });
 
+    it('should set mode and subscribe to updateSelectedTile$ and startingPointCounter$', () => {
+        const mockSelectedTile = 'floor';
+        const mockCounter = 3;
+
+        const updateSelectedTileSubject = new BehaviorSubject<string>(mockSelectedTile);
+        const startingPointCounterSubject = new BehaviorSubject<number>(mockCounter);
+
+        mapServiceSpy.updateSelectedTile$ = updateSelectedTileSubject.asObservable();
+        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
+
+        activatedRouteSpy.snapshot.params = { mode: 'classic' };
+        mapServiceSpy.map = { mode: Mode.Classic } as any;
         component.ngOnInit();
 
-        expect(component.mode).toBe(Mode.Ctf);
+        expect(component.mode).toBe('classic');
+
+        expect(component.selectedTile).toBe(mockSelectedTile);
+
+        expect(mapCounterServiceSpy.startingPointCounter).toBe(mockCounter);
     });
 
     it('should toggle tiles visibility', () => {
@@ -116,7 +117,7 @@ describe('ToolbarComponent', () => {
     });
 
     it('should unselect tile', () => {
-        mapServiceSpy.updateSelectedTile$ = of('wall');
+        component.selectedTile = 'wall';
         component.ngOnInit();
         component.selectTile('wall');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
@@ -164,20 +165,6 @@ describe('ToolbarComponent', () => {
     it('should get item image', () => {
         component.getItemImage('item1');
         expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith('item1');
-    });
-
-    it('should get URL parameters', () => {
-        activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
-        activatedRouteSpy.queryParams = of({});
-        component.getUrlParams();
-        expect(component.mode).toBe('mode=classic');
-    });
-
-    it('should convert mode from URL', () => {
-        component.mode = 'mode=classic';
-        component.urlConverterMode();
-        expect(component.convertedMode).toBe('classic');
-        expect(component.mode).toBe('classic');
     });
 
     it('should update starting point counter on subscription', () => {

@@ -5,6 +5,7 @@ import { Html2CanvasWrapperService } from './html2canvaswrapper.service';
     providedIn: 'root',
 })
 export class ScreenShotService {
+    // eslint-disable-next-line no-unused-vars
     constructor(private html2CanvasWrapper: Html2CanvasWrapperService) {}
 
     async captureAndConvert(mapContainerId: string): Promise<string> {
@@ -18,6 +19,6 @@ export class ScreenShotService {
     }
 
     convertCanvasToBase64(canvas: HTMLCanvasElement): string {
-        return canvas.toDataURL('image/jpeg', 0.1);
+        return canvas.toDataURL('image/jpeg', 0.09);
     }
 }
