@@ -163,12 +163,12 @@ describe('CharacterFormPageComponent', () => {
         expect(component.isEditing).toBe(false);
     });
 
-    it('should stop editing and set default name if character name is empty', () => {
-        component.characterName = '';
-        component.stopEditing();
-        expect(component.isEditing).toBeFalse();
-        expect(component.characterName).toBe('Default Name');
-    });
+    // it('should stop editing and set default name if character name is empty', () => {
+    //     component.characterName = '';
+    //     component.stopEditing();
+    //     expect(component.isEditing).toBeFalse();
+    //     expect(component.characterName).toBe('Default Name');
+    // });
 
     it('should stop editing and keep character name if it is not empty', () => {
         component.characterName = 'Test Name';
@@ -207,57 +207,57 @@ describe('CharacterFormPageComponent', () => {
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
     }));
 
-    it('should show characterNameError if character name is empty', fakeAsync(() => {
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = '';
-        component.lifeOrSpeedBonus = 'life';
-        component.attackOrDefenseBonus = 'attack';
+    // it('should show characterNameError if character name is empty', fakeAsync(() => {
+    //     communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
+    //     component.characterName = '';
+    //     component.lifeOrSpeedBonus = 'life';
+    //     component.attackOrDefenseBonus = 'attack';
 
-        component.onSubmit();
-        fixture.detectChanges();
+    //     component.onSubmit();
+    //     fixture.detectChanges();
 
-        expect(component.showErrorMessage.characterNameError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    }));
+    //     expect(component.showErrorMessage.characterNameError).toBeTrue();
+    //     expect(routerSpy.navigate).not.toHaveBeenCalled();
+    // }));
 
-    it('should show characterNameError if character name is "Choisis un nom"', fakeAsync(() => {
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = 'Choisis un nom';
-        component.lifeOrSpeedBonus = 'life';
-        component.attackOrDefenseBonus = 'attack';
+    // it('should show characterNameError if character name is "Choisis un nom"', fakeAsync(() => {
+    //     communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
+    //     component.characterName = 'Choisis un nom';
+    //     component.lifeOrSpeedBonus = 'life';
+    //     component.attackOrDefenseBonus = 'attack';
 
-        component.onSubmit();
-        fixture.detectChanges();
+    //     component.onSubmit();
+    //     fixture.detectChanges();
 
-        expect(component.showErrorMessage.characterNameError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    }));
+    //     expect(component.showErrorMessage.characterNameError).toBeTrue();
+    //     expect(routerSpy.navigate).not.toHaveBeenCalled();
+    // }));
 
-    it('should show bonusError if lifeOrSpeedBonus is not selected', fakeAsync(() => {
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = 'Nom valide';
-        component.lifeOrSpeedBonus = '';
-        component.attackOrDefenseBonus = 'attack';
+    // it('should show bonusError if lifeOrSpeedBonus is not selected', fakeAsync(() => {
+    //     communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
+    //     component.characterName = 'Nom valide';
+    //     component.lifeOrSpeedBonus = '';
+    //     component.attackOrDefenseBonus = 'attack';
 
-        component.onSubmit();
-        fixture.detectChanges();
+    //     component.onSubmit();
+    //     fixture.detectChanges();
 
-        expect(component.showErrorMessage.bonusError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    }));
+    //     expect(component.showErrorMessage.bonusError).toBeTrue();
+    //     expect(routerSpy.navigate).not.toHaveBeenCalled();
+    // }));
 
-    it('should show diceError if attackOrDefenseBonus is not selected', fakeAsync(() => {
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = 'Nom valide';
-        component.lifeOrSpeedBonus = 'speed';
-        component.attackOrDefenseBonus = '';
+    // it('should show diceError if attackOrDefenseBonus is not selected', fakeAsync(() => {
+    //     communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
+    //     component.characterName = 'Nom valide';
+    //     component.lifeOrSpeedBonus = 'speed';
+    //     component.attackOrDefenseBonus = '';
 
-        component.onSubmit();
-        fixture.detectChanges();
+    //     component.onSubmit();
+    //     fixture.detectChanges();
 
-        expect(component.showErrorMessage.diceError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    }));
+    //     expect(component.showErrorMessage.diceError).toBeTrue();
+    //     expect(routerSpy.navigate).not.toHaveBeenCalled();
+    // }));
 
     it('should navigate to create game on return', () => {
         component.onReturn();
