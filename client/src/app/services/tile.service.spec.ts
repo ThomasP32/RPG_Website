@@ -33,6 +33,18 @@ describe('TileService', () => {
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
+    it('should toggle doorState between open and closed', () => {
+        const mockMap: Array<{ value: string; doorState?: 'open' | 'closed'; item: undefined }>[] = [
+            [{ value: 'door', doorState: 'closed', item: undefined }],
+            [{ value: 'floor', item: undefined }],
+        ];
+
+        service.placeTile(mockMap, 0, 0, 'door');
+        expect(mockMap[0][0].doorState).toBe('open');
+        service.placeTile(mockMap, 0, 0, 'door');
+        expect(mockMap[0][0].doorState).toBe('closed');
+    });
+
     it('should erase a tile', () => {
         const mockMap = [[{ value: 'wall', item: 'item1' }], [{ value: 'floor', item: undefined }]];
         service.eraseTile(mockMap, 0, 0, 'floor');

@@ -73,6 +73,43 @@ describe('MapAreaComponent', () => {
         expect(component.initializeCreationMode).toHaveBeenCalled();
     });
 
+    it('should initialize map in edition mode', () => {
+        spyOn(component, 'initializeEditionMode');
+        spyOn(component, 'isEditionMode').and.returnValue(true);
+        spyOn(component, 'isCreationMode').and.returnValue(false);
+
+        component.initMap();
+
+        expect(component.initializeEditionMode).toHaveBeenCalled();
+    });
+
+    it('should initialize edition mode correctly', () => {
+        const mapSize = 10;
+        const startTilesLength = 3;
+        spyOn(component, 'setCountersBasedOnMapSize');
+        spyOn(component, 'loadMap');
+
+        mapServiceSpy.map = {
+            name: 'Test Map',
+            description: 'This is a test map',
+            mode: Mode.Classic,
+            imagePreview: '',
+            mapSize: { x: mapSize, y: mapSize },
+            tiles: [],
+            doorTiles: [],
+            items: [],
+            startTiles: new Array(startTilesLength),
+        };
+        component.startingPointCounter = 5;
+
+        component.initializeEditionMode();
+
+        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapSize);
+        expect(component.startingPointCounter).toBe(5 - startTilesLength);
+        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(5 - startTilesLength);
+        expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
+    });
+
     it('should initialize creation mode', () => {
         spyOn(component, 'createMap');
         spyOn(component, 'setCountersBasedOnMapSize');
@@ -82,7 +119,6 @@ describe('MapAreaComponent', () => {
     });
 
     it('should set counters based on map size', () => {
-        spyOn(mapCounterServiceSpy, 'updateStartingPointCounter');
         component.setCountersBasedOnMapSize(10);
         expect(component.randomItemCounter).toBe(2);
         expect(component.startingPointCounter).toBe(2);
@@ -264,6 +300,44 @@ describe('MapAreaComponent', () => {
 
         component.onDrop(event, 1, 1);
         expect(tileServiceSpy.setItem).toHaveBeenCalledWith(component.Map, 'starting-point', { rowIndex: 1, colIndex: 1 });
+    });
+
+    it('should set currentDraggedItem and add item to dataTransfer on startDrag', () => {
+        const event = new DragEvent('dragstart');
+        Object.defineProperty(event, 'dataTransfer', {
+            value: {
+                setData: jasmine.createSpy('setData'),
+            },
+        });
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.Map = [[{ value: 'floor', isHovered: false, item: 'test-item' }]];
+
+        component.startDrag(event, rowIndex, colIndex);
+
+        expect(component.currentDraggedItem).toEqual({ rowIndex, colIndex });
+        expect(event.dataTransfer?.setData).toHaveBeenCalledWith('item', 'test-item');
+    });
+
+    it('should prevent default if no item is present on startDrag', () => {
+        const event = new DragEvent('dragstart');
+        spyOn(event, 'preventDefault');
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.Map = [[{ value: 'floor', isHovered: false }]];
+
+        component.startDrag(event, rowIndex, colIndex);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should call preventDefault on allowDrop', () => {
+        const event = new DragEvent('dragover');
+        spyOn(event, 'preventDefault');
+
+        component.allowDrop(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
     });
 
     it('should call getItemImage with the correct item', () => {
