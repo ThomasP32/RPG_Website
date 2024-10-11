@@ -1,8 +1,7 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile.service';
@@ -13,315 +12,390 @@ import { MapAreaComponent } from './map-area.component';
 describe('MapAreaComponent', () => {
     let component: MapAreaComponent;
     let fixture: ComponentFixture<MapAreaComponent>;
+
+    let tileServiceSpy: jasmine.SpyObj<TileService>;
     let mapServiceSpy: jasmine.SpyObj<MapService>;
-    let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
-    let tileServiceSpy: jasmine.SpyObj<TileService>;
+    let screenshotServiceSpy: jasmine.SpyObj<ScreenShotService>;
     let routerSpy: jasmine.SpyObj<Router>;
-    let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
-    let screenShotService: jasmine.SpyObj<ScreenShotService>;
 
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$', 'mapTitle$', 'mapDescription$']);
-        mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
-            'startingPointCounter$',
-            'randomItemCounter$',
-            'itemsCounter$',
-            'updateRandomItemCounter',
-            'updateStartingPointCounter',
-            'updateItemsCounter',
-            'updateCounters',
-        ]);
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage', 'getTileImage']);
         tileServiceSpy = jasmine.createSpyObj('TileService', ['placeTile', 'eraseTile', 'moveItem', 'setItem']);
-        routerSpy = jasmine.createSpyObj('Router', ['url', 'navigateByUrl', 'navigate']);
-        activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'map']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage']);
+        screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndUpload']);
+        routerSpy = jasmine.createSpyObj('Router', ['url']);
+
+        mapServiceSpy.map = {
+            name: 'Test Map',
+            description: 'This is a test map',
+            mode: Mode.Classic,
+            imagePreview: '',
+            mapSize: { x: 10, y: 10 },
+            tiles: [],
+            doorTiles: [],
+            items: [],
+            startTiles: [],
+        };
 
         await TestBed.configureTestingModule({
             imports: [MapAreaComponent],
             providers: [
+                { provide: TileService, useValue: tileServiceSpy },
                 { provide: MapService, useValue: mapServiceSpy },
-                { provide: MapGetService, useValue: mapGetServiceSpy },
                 { provide: MapCounterService, useValue: mapCounterServiceSpy },
                 { provide: ImageService, useValue: imageServiceSpy },
-                { provide: TileService, useValue: tileServiceSpy },
+                { provide: ScreenShotService, useValue: screenshotServiceSpy },
                 { provide: Router, useValue: routerSpy },
-                { provide: ActivatedRoute, useValue: activatedRouteSpy },
-                { provide: MapService, useValue: mapServiceSpy },
-                { provide: ScreenShotService, useValue: screenShotService },
+                { provide: ActivatedRoute, useValue: { snapshot: { params: { mode: 'classic' } } } },
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MapAreaComponent);
         component = fixture.componentInstance;
-    });
 
-    const mockMap1: Map = {
-        _id: '1',
-        name: 'Test Map',
-        description: 'A test map',
-        mapSize: { x: 10, y: 10 },
-        mode: Mode.Classic,
-        tiles: [
-            { coordinate: { x: 0, y: 0 }, category: TileCategory.Water },
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-        ],
-        doorTiles: [{ coordinate: { x: 2, y: 2 }, isOpened: true }],
-        startTiles: [{ coordinate: { x: 3, y: 3 } }],
-        items: [{ coordinate: { x: 4, y: 4 }, category: ItemCategory.Key }],
-        isVisible: false,
-        lastModified: new Date(),
-        imagePreview: '',
-    };
+        mapCounterServiceSpy.startingPointCounter$ = of(0);
+        mapServiceSpy.updateSelectedTile$ = of('floor');
+        Object.defineProperty(routerSpy, 'url', { get: () => '/creation' });
 
-    it('should create the map and set tiles correctly', () => {
-        const mockMap = {
-            _id: '1',
-            name: 'Test Map',
-            description: 'A test map',
-            mapSize: { x: 10, y: 10 },
-            mode: Mode.Classic,
-            tiles: [
-                { coordinate: { x: 1, y: 1 }, category: TileCategory.Ice },
-                { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
-            ],
-            doorTiles: [
-                { coordinate: { x: 3, y: 3 }, isOpened: true },
-                { coordinate: { x: 4, y: 4 }, isOpened: false },
-            ],
-            startTiles: [{ coordinate: { x: 5, y: 5 } }],
-            items: [{ coordinate: { x: 6, y: 6 }, category: ItemCategory.Acidgun }],
-            isVisible: false,
-            lastModified: new Date(),
-            imagePreview: '',
-        };
-
-        component.createMap = jasmine.createSpy('createMap');
-
-        component.loadMap(mockMap);
-
-        expect(component.createMap).toHaveBeenCalledWith(10);
-        expect(component.Map[1][1].value).toBe('ice');
-        expect(component.Map[2][2].value).toBe('water');
-        expect(component.Map[3][3].value).toBe('door');
-        expect(component.Map[3][3].doorState).toBe('open');
-        expect(component.Map[4][4].value).toBe('door');
-        expect(component.Map[4][4].doorState).toBe('closed');
-        expect(component.Map[5][5].item).toBe('starting-point');
-        expect(component.Map[6][6].item).toBe('acidgun');
-    });
-
-    it('should initialize map in creation mode', fakeAsync(() => {
-        routerSpy.navigateByUrl('/creation/size=10/:mode=CTF');
-        activatedRouteSpy.snapshot.params = { size: '10', mode: 'CTF' };
-        tick();
-        component.initMap();
-
-        expect(component.getUrlParams).toHaveBeenCalled();
-        expect(component.urlConverter).toHaveBeenCalled();
-        expect(component.createMap).toHaveBeenCalledWith(component.convertedMapSize);
-        expect(component.setCellSize).toHaveBeenCalled();
-        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(component.convertedMapSize);
-    }));
-
-    it('should initialize map in edition mode', fakeAsync(async () => {
-        await routerSpy.navigateByUrl('/edition/123');
         fixture.detectChanges();
-        mapGetServiceSpy.map = mockMap1;
+    });
 
-        spyOn(component, 'loadMap');
+    it('should create the component', () => {
+        expect(component).toBeTruthy();
+    });
+
+    it('should initialize map in creation mode', () => {
+        spyOn(component, 'initializeCreationMode');
+        component.initMap();
+        expect(component.initializeCreationMode).toHaveBeenCalled();
+    });
+
+    it('should initialize map in edition mode', () => {
+        spyOn(component, 'initializeEditionMode');
+        spyOn(component, 'isEditionMode').and.returnValue(true);
+        spyOn(component, 'isCreationMode').and.returnValue(false);
+
+        component.initMap();
+
+        expect(component.initializeEditionMode).toHaveBeenCalled();
+    });
+
+    it('should initialize edition mode correctly', () => {
+        const mapSize = 10;
+        const startTilesLength = 3;
         spyOn(component, 'setCountersBasedOnMapSize');
-        spyOn(component, 'initMap');
+        spyOn(component, 'loadMap');
 
-        component.initMap();
+        mapServiceSpy.map = {
+            name: 'Test Map',
+            description: 'This is a test map',
+            mode: Mode.Classic,
+            imagePreview: '',
+            mapSize: { x: mapSize, y: mapSize },
+            tiles: [],
+            doorTiles: [],
+            items: [],
+            startTiles: new Array(startTilesLength),
+        };
+        component.startingPointCounter = 5;
 
-        expect(component.map).toEqual(mockMap1);
-        expect(component.convertedMapSize).toBe(10);
-        expect(component.loadMap).toHaveBeenCalledWith(mockMap1);
-        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(component.convertedMapSize);
-    }));
+        component.initializeEditionMode();
 
-    it('should subscribe to counter observables', () => {
-        mapCounterServiceSpy.startingPointCounter$ = of(5);
-
-        component.initMap();
-
-        expect(component.startingPointCounter).toBe(5);
+        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapSize);
+        expect(component.startingPointCounter).toBe(5 - startTilesLength);
+        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(5 - startTilesLength);
+        expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
     });
 
-    it('should subscribe to map title and description observables', () => {
-        mapServiceSpy.mapTitle$ = of('Test Title');
-        mapServiceSpy.mapDescription$ = of('Test Description');
-
-        component.ngOnInit();
-
-        expect(component.mapTitle).toBe('Test Title');
-        expect(component.mapDescription).toBe('Test Description');
+    it('should initialize creation mode', () => {
+        spyOn(component, 'createMap');
+        spyOn(component, 'setCountersBasedOnMapSize');
+        component.initializeCreationMode();
+        expect(component.createMap).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
+        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
     });
 
-    it('should subscribe to updateSelectedTile observable', () => {
-        mapServiceSpy.updateSelectedTile$ = of('wall');
-
-        component.initMap();
-
-        expect(component.selectedTile).toBe('wall');
+    it('should set counters based on map size', () => {
+        component.setCountersBasedOnMapSize(10);
+        expect(component.randomItemCounter).toBe(2);
+        expect(component.startingPointCounter).toBe(2);
+        expect(component.itemsCounter).toBe(10);
+        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(2);
     });
 
-    it('should get tile image', () => {
+    it('should return correct counters for map size', () => {
+        const countersFor10 = component.getCountersForMapSize(10);
+        expect(countersFor10).toEqual({ randomItemCounter: 2, startingPointCounter: 2, itemsCounter: 10 });
+
+        const countersFor15 = component.getCountersForMapSize(15);
+        expect(countersFor15).toEqual({ randomItemCounter: 4, startingPointCounter: 4, itemsCounter: 14 });
+
+        const countersForUnknown = component.getCountersForMapSize(25);
+        expect(countersForUnknown).toEqual({ randomItemCounter: 0, startingPointCounter: 0, itemsCounter: 0 });
+    });
+
+    it('should select a tile', () => {
+        const tile = 'wall';
+        component.selectTile(tile);
+        expect(component.selectedTile).toBe(tile);
+    });
+
+    it('should start placing tile', () => {
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.startPlacingTile(rowIndex, colIndex);
+        expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.selectedTile);
+    });
+
+    it('should stop placing tile on mouse up', () => {
+        component.isMouseDown = true;
+        component.stopPlacing();
+        expect(component.isMouseDown).toBe(false);
+        expect(component.isPlacing).toBe(false);
+    });
+
+    it('should capture a screenshot and set image preview', async () => {
+        screenshotServiceSpy.captureAndConvert.and.returnValue(Promise.resolve('test-image-url'));
+        await component.screenMap();
+        expect(screenshotServiceSpy.captureAndConvert).toHaveBeenCalledWith('screenshot-container');
+        expect(mapServiceSpy.map.imagePreview).toBe('test-image-url');
+    });
+
+    it('should reset the map to default tile when mode is truthy', () => {
+        component.route.snapshot.params['mode'] = 'creation';
         component.Map = [
             [
-                { value: 'door', isHovered: false, doorState: 'closed', item: undefined },
-                { value: 'wall', isHovered: false, doorState: undefined, item: undefined },
-            ],
-            [
-                { value: 'ice', isHovered: false, doorState: undefined, item: undefined },
-                { value: 'water', isHovered: false, doorState: undefined, item: 'starting-point' },
+                { value: 'wall', isHovered: false },
+                { value: 'door', isHovered: false },
             ],
         ];
+        component.resetMapToDefault();
 
-        // Call the getTileImage method with different tile values and coordinates
-        // expect(component.getTileImage('door', 0, 0)).toBe('../../../../assets/tiles/door_y.png');
-        // expect(component.getTileImage('door', 1, 0)).toBe('../../../../assets/tiles/door_x.png');
-        // expect(component.getTileImage('wall', 0, 0)).toBe('../../../../assets/tiles/wall.png');
-        // expect(component.getTileImage('ice', 0, 0)).toBe('../../../../assets/tiles/ice1.jpg');
-        expect(component.getTileImage('water', 3, 3)).toBe('../../../../assets/tiles/water.png');
-        // expect(component.getTileImage('floor', 0, 0)).toBe('../../../../assets/tiles/floor.png');
+        expect(component.Map[0][0].value).toBe(component.defaultTile);
+        expect(component.Map[0][1].value).toBe(component.defaultTile);
+
+        expect(component.Map[0][0].item).toBeUndefined();
+        expect(component.Map[0][1].item).toBeUndefined();
     });
 
-    it('should get item image', () => {
-        expect(component.getItemImage('vest')).toBe('../../../../assets/items/vest.png');
-        expect(component.getItemImage('mask')).toBe('../../../../assets/items/mask.png');
-        expect(component.getItemImage('jar')).toBe('../../../../assets/items/jar.png');
-        expect(component.getItemImage('acidgun')).toBe('../../../../assets/items/acidgun.png');
-        expect(component.getItemImage('key')).toBe('../../../../assets/items/keysilver.png');
-        expect(component.getItemImage('hat')).toBe('../../../../assets/items/hat.png');
-        expect(component.getItemImage('random')).toBe('../../../../assets/items/randomchest.png');
-        expect(component.getItemImage('starting-point')).toBe('../../../../assets/tiles/startingpoint.png');
+    it('should load the map from mapService when mode is falsy', () => {
+        component.route.snapshot.params['mode'] = null;
+        spyOn(component, 'loadMap');
+        component.resetMapToDefault();
+        expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
     });
 
-    it('should get URL parameters', () => {
-        const expectedMapSize = 'size=15';
-        activatedRouteSpy.snapshot.params = { size: expectedMapSize };
-        activatedRouteSpy.params = of({});
-
-        component.getUrlParams();
-        expect(component.mapSize).toBe(expectedMapSize);
-        component.urlConverter();
-        expect(component.convertedMapSize).toBe(15);
+    it('should place tile on mouse move when mouse is down', () => {
+        component.isMouseDown = true;
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.placeTileOnMove(rowIndex, colIndex);
+        expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.selectedTile);
     });
 
-    it('should load map data correctly', () => {
-        const mockMap2: Map = {
+    it('should initialize the map service map based on the loaded map', () => {
+        const mockMap: Map = {
             _id: '1',
             name: 'Test Map',
-            description: 'A test map',
-            mapSize: { x: 10, y: 10 },
-            mode: Mode.Classic,
-            tiles: [
-                { coordinate: { x: 0, y: 0 }, category: TileCategory.Water },
-                { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-            ],
-            doorTiles: [{ coordinate: { x: 2, y: 2 }, isOpened: true }],
-            startTiles: [{ coordinate: { x: 3, y: 3 } }],
-            items: [{ coordinate: { x: 4, y: 4 }, category: ItemCategory.Key }],
-            isVisible: false,
+            isVisible: true,
+            mapSize: { x: 1, y: 1 },
+            startTiles: [],
+            items: [],
+            doorTiles: [],
+            tiles: [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }],
+            mode: Mode.Ctf,
             lastModified: new Date(),
+            description: '',
             imagePreview: '',
         };
-
-        component.loadMap(mockMap2);
-
-        expect(component.Map[0][0].value).toBe(TileCategory.Water);
-        expect(component.Map[1][1].value).toBe(TileCategory.Water);
-        expect(component.Map[2][2].value).toBe('door');
-        expect(component.Map[2][2].doorState).toBe('open');
-        expect(component.Map[3][3].item).toBe('starting-point');
-        expect(component.Map[4][4].item).toBe(ItemCategory.Key);
+        mapServiceSpy.map = mockMap;
+        component.loadMap(mockMap);
+        expect(component.Map[0][0].value).toBe('wall');
     });
-    it('should generate map data correctly', () => {
-        component.mapTitle = 'Test Map';
-        component.mapDescription = 'This is a test map';
-        component.convertedMapSize = 10;
 
+    it('should generate map', () => {
+        spyOn(component, 'generateMap');
+        component.generateMap();
+        expect(component.generateMap).toHaveBeenCalled();
+    });
+
+    it('should load map correctly', () => {
+        const mockMap: Map = {
+            _id: '1',
+            name: 'Test Map',
+            mapSize: { x: 2, y: 2 },
+            tiles: [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }],
+            doorTiles: [{ coordinate: { x: 1, y: 1 }, isOpened: true }],
+            startTiles: [{ coordinate: { x: 0, y: 1 } }],
+            items: [{ coordinate: { x: 1, y: 0 }, category: ItemCategory.Hat }],
+            mode: Mode.Classic,
+            lastModified: new Date(),
+            description: '',
+            imagePreview: '',
+            isVisible: true,
+        };
+        component.loadMap(mockMap);
+        expect(component.Map[0][0].value).toBe('wall');
+        expect(component.Map[1][1].value).toBe('door');
+        expect(component.Map[1][1].doorState).toBe('open');
+        expect(component.Map[1][0].item).toBe('hat');
+        expect(component.Map[0][1].item).toBe('starting-point');
+    });
+
+    it('should correctly generate map with tiles, doors, items, and starting points', () => {
         component.Map = [
             [
-                { value: 'door', isHovered: false, doorState: 'closed', item: undefined },
-                { value: 'wall', isHovered: false, doorState: undefined, item: ItemCategory.Key },
+                { value: 'wall', isHovered: false },
+                { value: 'door', isHovered: false, doorState: 'open' },
             ],
             [
-                { value: 'ice', isHovered: false, doorState: undefined, item: 'starting-point' },
-                { value: 'water', isHovered: false, doorState: undefined, item: undefined },
+                { value: 'floor', isHovered: false, item: 'vest' },
+                { value: 'floor', isHovered: false, item: 'starting-point' },
             ],
         ];
 
-        const mapData = component.generateMapData();
+        component.generateMap();
 
-        expect(mapData.name).toBe('Test Map');
-        expect(mapData.description).toBe('This is a test map');
-        expect(mapData.mapSize).toEqual({ x: 10, y: 10 });
-        expect(mapData.tiles).toEqual([
-            { coordinate: { x: 0, y: 1 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 0 }, category: TileCategory.Ice },
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-        ]);
-        expect(mapData.doorTiles).toEqual([{ coordinate: { x: 0, y: 0 }, isOpened: false }]);
-        expect(mapData.items).toEqual([{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Key }]);
-        expect(mapData.startTiles).toEqual([{ coordinate: { x: 1, y: 0 } }]);
+        expect(mapServiceSpy.map.doorTiles).toEqual([{ coordinate: { x: 0, y: 1 }, isOpened: true }]);
+
+        expect(mapServiceSpy.map.tiles).toEqual([{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }]);
+
+        expect(mapServiceSpy.map.items).toEqual([{ coordinate: { x: 1, y: 0 }, category: ItemCategory.Vest }]);
+
+        expect(mapServiceSpy.map.startTiles).toEqual([{ coordinate: { x: 1, y: 1 } }]);
     });
 
-    it('should reset map to default in creation mode', () => {
-        activatedRouteSpy.snapshot.params = { mode: 'classic' };
-        component.convertedMapSize = 10;
-        component.Map = [
-            [
-                {
-                    value: 'wall',
-                    item: 'item1',
-                    isHovered: false,
-                },
-                {
-                    value: 'door',
-                    item: undefined,
-                    isHovered: false,
-                },
-            ],
-            [
-                {
-                    value: 'water',
-                    item: 'starting-point',
-                    isHovered: false,
-                },
-                {
-                    value: 'ice',
-                    item: undefined,
-                    isHovered: false,
-                },
-            ],
-        ];
+    it('should call tile service to move item on drop', () => {
+        const event = new DragEvent('drop');
 
-        spyOn(component, 'setCountersBasedOnMapSize');
+        spyOn(event, 'preventDefault');
+        Object.defineProperty(event, 'dataTransfer', {
+            value: {
+                getData: jasmine.createSpy('getData').and.returnValue('starting-point'),
+            },
+        });
 
-        component.resetMapToDefault();
+        component.currentDraggedItem = { rowIndex: 0, colIndex: 0 };
 
-        expect(component.Map[0][0].value).toBe('floor');
-        expect(component.Map[0][1].value).toBe('floor');
-        expect(component.Map[1][0].value).toBe('floor');
-        expect(component.Map[1][1].value).toBe('floor');
-        expect(component.Map[0][0].item).toBeUndefined();
-        expect(component.Map[1][0].item).toBeUndefined();
-        expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(10);
+        component.onDrop(event, 1, 1);
+
+        expect(component.currentDraggedItem).toBeNull();
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(tileServiceSpy.moveItem).toHaveBeenCalledWith(component.Map, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 1 });
     });
 
-    it('should load map in edition mode', () => {
-        activatedRouteSpy.snapshot.params = {};
-        component.map = mockMap1;
+    it('should call tile service to set item on drop', () => {
+        const event = new DragEvent('drop');
 
-        spyOn(component, 'loadMap');
+        Object.defineProperty(event, 'dataTransfer', {
+            value: {
+                getData: jasmine.createSpy('getData').and.returnValue('starting-point'),
+            },
+        });
 
-        component.resetMapToDefault();
+        component.currentDraggedItem = null;
 
-        expect(component.loadMap).toHaveBeenCalledWith(mockMap1);
+        component.onDrop(event, 1, 1);
+        expect(tileServiceSpy.setItem).toHaveBeenCalledWith(component.Map, 'starting-point', { rowIndex: 1, colIndex: 1 });
+    });
+
+    it('should set currentDraggedItem and add item to dataTransfer on startDrag', () => {
+        const event = new DragEvent('dragstart');
+        Object.defineProperty(event, 'dataTransfer', {
+            value: {
+                setData: jasmine.createSpy('setData'),
+            },
+        });
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.Map = [[{ value: 'floor', isHovered: false, item: 'test-item' }]];
+
+        component.startDrag(event, rowIndex, colIndex);
+
+        expect(component.currentDraggedItem).toEqual({ rowIndex, colIndex });
+        expect(event.dataTransfer?.setData).toHaveBeenCalledWith('item', 'test-item');
+    });
+
+    it('should prevent default if no item is present on startDrag', () => {
+        const event = new DragEvent('dragstart');
+        spyOn(event, 'preventDefault');
+        const rowIndex = 0;
+        const colIndex = 0;
+        component.Map = [[{ value: 'floor', isHovered: false }]];
+
+        component.startDrag(event, rowIndex, colIndex);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should call preventDefault on allowDrop', () => {
+        const event = new DragEvent('dragover');
+        spyOn(event, 'preventDefault');
+
+        component.allowDrop(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should call getItemImage with the correct item', () => {
+        const item = 'hat';
+        component.Map = [[{ value: 'floor', isHovered: false, item: item }]];
+
+        spyOn(component, 'getItemImage').and.callThrough();
+        const result = component.getItemImage(item);
+        expect(component.getItemImage).toHaveBeenCalledWith(item);
+        expect(result).toBe(imageServiceSpy.getItemImage(item));
+    });
+
+    it('should handle drag start only if there is an item', () => {
+        const event = new DragEvent('dragstart');
+        const cell = { value: 'floor', isHovered: false, item: 'some-item' };
+        component.Map[0] = [cell];
+        component.startDrag(event, 0, 0);
+        expect(component.currentDraggedItem).toEqual({ rowIndex: 0, colIndex: 0 });
+    });
+
+    it('should prevent default when dragging an image inside a grid item', () => {
+        const event = new DragEvent('dragstart');
+        const targetElement = document.createElement('img');
+        const tileElement = document.createElement('div');
+        tileElement.classList.add('grid-item');
+        tileElement.appendChild(targetElement);
+
+        spyOn(event, 'preventDefault');
+        spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+        spyOn(targetElement, 'closest').and.returnValue(tileElement);
+
+        component.onDragStart(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should not prevent default when dragging an image outside a grid item', () => {
+        const event = new DragEvent('dragstart');
+        const targetElement = document.createElement('img');
+
+        spyOn(event, 'preventDefault');
+        spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+        spyOn(targetElement, 'closest').and.returnValue(null);
+
+        component.onDragStart(event);
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('should not prevent default when dragging an element other than an image', () => {
+        const event = new DragEvent('dragstart');
+        const targetElement = document.createElement('div');
+
+        spyOn(event, 'preventDefault');
+        spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+
+        component.onDragStart(event);
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
     });
 });

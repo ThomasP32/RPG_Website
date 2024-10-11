@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
+
 /* eslint-disable no-unused-vars */
 const timeLimit = 2000;
 @Component({
@@ -15,58 +14,36 @@ const timeLimit = 2000;
     imports: [CommonModule, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
-    mapTitle: string = '';
-    mapDescription: string = '';
-
-    isEditingTitle: boolean = false;
-    isEditingDescription: boolean = false;
-
-    mode: string;
-    numberOfPlayers: number = 0;
     id: string;
-
-    map: Map;
     message: string;
-
-    // showErrorMessage: { entryError: boolean; nameError: boolean } = {
-    //     entryError: false,
-    //     nameError: false,
-    // };
 
     constructor(
         private route: ActivatedRoute,
-        private mapService: MapService,
-        private mapGetService: MapGetService,
+        public mapService: MapService,
         private router: Router,
     ) {}
 
     ngOnInit(): void {
-        this.mapTitle = '';
-        this.mapDescription = '';
         if (this.route.snapshot.params['mode']) {
-            this.getUrlMode();
+            this.title = '';
+            this.description = '';
         } else {
             this.getUrlId();
-            this.map = this.mapGetService.map;
-            this.mapTitle = this.map.name;
-            this.mapDescription = this.map.description;
+            this.editMode = false;
+            this.title = this.mapService.map.name;
+            this.description = this.mapService.map.description;
         }
     }
+    title: string = '';
+    description: string = '';
+    editMode: boolean = true;
 
-    toggleEditTitle(): void {
-        this.isEditingTitle = !this.isEditingTitle;
-    }
-
-    toggleEditDescription(): void {
-        this.isEditingDescription = !this.isEditingDescription;
+    toggleEditing() {
+        this.editMode = !this.editMode;
     }
 
     resetMap(): void {
         this.mapService.resetMap();
-    }
-
-    getUrlMode() {
-        this.mode = this.route.snapshot.params['mode'];
     }
 
     getUrlId() {
@@ -74,15 +51,21 @@ export class MapControlBarComponent implements OnInit {
     }
 
     saveMap(): void {
-        if (this.route.snapshot.params['mode']) {
-            this.mapService.setMapTitle(this.mapTitle);
-            this.mapService.setMapDescription(this.mapDescription);
-            this.mapService.generateMapData();
-        } else if (this.route.snapshot.params['id']) {
-            this.mapService.setMapTitle(this.mapTitle);
-            this.mapService.setMapDescription(this.mapDescription);
-            this.mapService.generateMapData();
+        const trimmedTitle = this.title.trim();
+        const trimmedDescription = this.description.trim();
+
+        if (!trimmedTitle || !trimmedDescription) {
+            this.message = "Le titre et la description ne peuvent pas être vides ou composés uniquement d'espaces.";
+            return;
         }
+
+        this.mapService.map.name = this.title;
+        this.mapService.map.description = this.description;
+        this.mapService.generateMap();
+    }
+
+    back() {
+        this.router.navigate(['/admin-page']);
     }
 
     showError(message: string) {
