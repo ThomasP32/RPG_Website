@@ -145,8 +145,13 @@ h4 {
 
 .bonus-button:hover,
 .dice-button:hover {
-    background-color: #afaca9;
+    background-color: grey;
     border: 3px solid #202020;
+}
+
+.bonus-button.selected,
+.dice-button.selected {
+    background-color: grey;
 }
 
 .character-list {

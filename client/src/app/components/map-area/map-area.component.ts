@@ -246,7 +246,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     async screenMap() {
-        await this.screenshotService.captureAndUpload('screenshot-container').then((result: string) => {
+        await this.screenshotService.captureAndConvert('screenshot-container').then((result: string) => {
             this.mapService.map.imagePreview = result;
         });
     }

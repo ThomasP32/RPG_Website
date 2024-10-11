@@ -5,6 +5,7 @@ import { ErrorMessageComponent } from '@app/components/error-message-component/e
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DBMap as Map } from '@common/map.types';
 /* eslint-disable no-unused-vars */
+
 @Component({
     selector: 'app-admin-page',
     standalone: true,
@@ -26,20 +27,20 @@ export class AdminPageComponent implements OnInit {
         private communicationMapService: CommunicationMapService,
     ) {}
 
+    navigateToMain(): void {
+        this.router.navigate(['/main-menu']);
+    }
+    
+    ngOnInit(): void {
+        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
+    }
+
     toggleGameCreationModalVisibility(): void {
         this.isCreateMapModalVisible = true;
     }
 
     onCloseModal(): void {
         this.isCreateMapModalVisible = false;
-    }
-
-    ngOnInit(): void {
-        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
-    }
-
-    navigateToMain(): void {
-        this.router.navigate(['/main-menu']);
     }
 
     editMap(map: Map): void {
