@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
 import { DBMap as Map, Mode } from '@common/map.types';
 import { Subject } from 'rxjs';
@@ -10,7 +9,6 @@ describe('GameCreationPageComponent', () => {
     let component: GameCreationPageComponent;
     let fixture: ComponentFixture<GameCreationPageComponent>;
     let mapServiceSpy: jasmine.SpyObj<MapService>;
-    let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
     const mockMap: Map = {
@@ -34,14 +32,12 @@ describe('GameCreationPageComponent', () => {
             generateMap$: new Subject<void>(),
         });
 
-        mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['getMap', 'map']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
 
         await TestBed.configureTestingModule({
             imports: [GameCreationPageComponent],
             providers: [
                 { provide: MapService, useValue: mapServiceSpy },
-                { provide: MapGetService, useValue: mapGetServiceSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
             ],
         }).compileComponents();
@@ -69,14 +65,14 @@ describe('GameCreationPageComponent', () => {
 
     it('should initialize in edition mode', async () => {
         activatedRouteSpy.snapshot.params = { id: '1' };
-        mapGetServiceSpy.map = mockMap;
+        mapServiceSpy.map = mockMap;
         const getMapPromise = Promise.resolve();
-        mapGetServiceSpy.getMap.and.returnValue(getMapPromise);
+        mapServiceSpy.getMap.and.returnValue(getMapPromise);
 
         await component.ngOnInit();
 
         expect(component.getUrlParams).toHaveBeenCalled();
-        expect(mapGetServiceSpy.getMap).toHaveBeenCalledWith('1');
+        expect(mapServiceSpy.getMap).toHaveBeenCalledWith('1');
         expect(component.map).toEqual(mockMap);
         expect(component.isCreationPage).toBe(false);
     });

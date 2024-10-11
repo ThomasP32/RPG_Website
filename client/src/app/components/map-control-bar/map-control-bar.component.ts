@@ -14,7 +14,6 @@ const timeLimit = 2000;
     imports: [CommonModule, FormsModule],
 })
 export class MapControlBarComponent implements OnInit {
-    mode: string;
     id: string;
     message: string;
 
@@ -28,7 +27,6 @@ export class MapControlBarComponent implements OnInit {
         if (this.route.snapshot.params['mode']) {
             this.title = '';
             this.description = '';
-            this.getUrlMode();
         } else {
             this.getUrlId();
             this.editMode = false;
@@ -46,10 +44,6 @@ export class MapControlBarComponent implements OnInit {
 
     resetMap(): void {
         this.mapService.resetMap();
-    }
-
-    getUrlMode() {
-        this.mode = this.route.snapshot.params['mode'].split('=')[1];
     }
 
     getUrlId() {

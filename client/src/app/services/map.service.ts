@@ -26,7 +26,7 @@ export class MapService {
     async getMap(id: string): Promise<void> {
         this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
     }
-    
+
     createMap(mode: Mode, size: number): void {
         this.map = {
             name: '',
@@ -58,17 +58,20 @@ export class MapService {
             await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
-                let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
+                let errorMessage = 'Erreur inattendue, veuillez réessayer plus tard...';
                 if (error.error) {
-                    const errorObj = JSON.parse(error.error);
-                    if (typeof errorObj.message === 'string') {
-                        errorMessage = errorObj.message;
-                    } else {
-                        const message: string = errorObj.message.join('');
-                        errorMessage = message;
+                    try {
+                        const errorObj = JSON.parse(error.error);
+                        if (typeof errorObj.message === 'string') {
+                            errorMessage = errorObj.message;
+                        } else {
+                            const message: string = errorObj.message.join(' ');
+                            errorMessage = message;
+                        }
+                    } catch (e) {
+                        errorMessage = error.error;
                     }
                 }
-
                 return errorMessage;
             } else {
                 console.error('Erreur inattendue:', error);
@@ -86,18 +89,22 @@ export class MapService {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
                 if (error.error) {
-                    const errorObj = JSON.parse(error.error);
-                    if (typeof errorObj.message === 'string') {
-                        errorMessage = errorObj.message;
-                    } else {
-                        const message: string = errorObj.message.join('');
-                        errorMessage = message;
+                    try {
+                        const errorObj = JSON.parse(error.error);
+                        if (typeof errorObj.message === 'string') {
+                            errorMessage = errorObj.message;
+                        } else {
+                            const message: string = errorObj.message.join('');
+                            errorMessage = message;
+                        }
+                    } catch (e) {
+                        errorMessage = error.error;
                     }
                 }
                 return errorMessage;
             } else {
-                console.error('Erreur inattendue:', error);
-                return 'Erreur innattendue, veuillez réessayer plus tard...';
+                console.error('Erreur inconnue:', error);
+                return 'Erreur inconnue, veuillez réessayer plus tard...';
             }
         }
         return 'Votre jeu a été sauvegardé avec succès!';
