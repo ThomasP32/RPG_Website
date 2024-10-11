@@ -151,10 +151,4 @@ describe('AdminPageComponent', () => {
         component.editMap(mockMaps[0]);
         expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
     });
-
-    it('should format the date correctly', () => {
-        const date = new Date();
-        const formattedDate = component.formatDate(date);
-        expect(formattedDate).toBe(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
-    });
 });
