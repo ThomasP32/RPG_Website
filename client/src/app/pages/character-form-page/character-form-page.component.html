@@ -58,7 +58,7 @@
                     <label>Ajoutes un bonus +2: </label>
                 </div>
                 <div class="bonus-buttons-container">
-                    <div class="bonus-button">
+                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }">
                         <input
                             type="radio"
                             id="life"
@@ -70,7 +70,7 @@
                         />
                         <label for="life">Vie</label>
                     </div>
-                    <div class="bonus-button">
+                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }">
                         <input
                             type="radio"
                             id="speed"
@@ -86,7 +86,7 @@
                 <label>Attribues un dé à 6 faces: </label>
                 <div class="dice-buttons-container">
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button">
+                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'attack' }">
                             <input
                                 type="radio"
                                 id="attack"
@@ -104,7 +104,7 @@
                         </div>
                     </div>
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button">
+                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'defense' }">
                             <input
                                 type="radio"
                                 id="defense"
@@ -133,8 +133,6 @@
             <div class="selected-character">
                 <h1>CHOISIS TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
-                <h4>Avatar selectionné :</h4>
-                <h3>{{ selectedCharacter.name }}</h3>
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
                 @if (showErrorMessage.characterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>

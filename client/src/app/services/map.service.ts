@@ -55,7 +55,8 @@ export class MapService {
 
     async saveNewMap(): Promise<string> {
         try {
-            await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
+            console.log('creating map');
+            await firstValueFrom(this.communicationMapService.basicPut<Map>('admin/creation', map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur inattendue, veuillez réessayer plus tard...';
@@ -83,8 +84,8 @@ export class MapService {
 
     async updateMap(mapId: string): Promise<string> {
         try {
-            const cleanedMap = this.cleanMapForSave(this.map);
-            await firstValueFrom(this.communicationMapService.basicPatch<Map>(`admin/edition/${mapId}`, cleanedMap));
+            console.log('updating map');
+            await firstValueFrom(this.communicationMapService.basicPut<Map>(`admin/edition/${mapId}`, map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
