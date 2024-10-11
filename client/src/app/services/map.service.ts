@@ -1,13 +1,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 /* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',
 })
 export class MapService {
+    map!: Map;
+
+    selectedTile: string;
+
     resetMapSource = new Subject<void>();
     resetMap$ = this.resetMapSource.asObservable();
 
@@ -17,23 +21,27 @@ export class MapService {
     updateSelectedTileSource = new BehaviorSubject<string>('');
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
-    private mapTitleSource = new BehaviorSubject<string>('');
-    mapTitle$ = this.mapTitleSource.asObservable();
+    constructor(private communicationMapService: CommunicationMapService) {}
 
-    private mapDescriptionSource = new BehaviorSubject<string>('');
-    mapDescription$ = this.mapDescriptionSource.asObservable();
-
-    constructor(private CommunicationMapService: CommunicationMapService) {}
-
-    setMapTitle(title: string): void {
-        this.mapTitleSource.next(title);
+    async getMap(id: string): Promise<void> {
+        this.map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`admin/${id}`));
     }
 
-    setMapDescription(description: string): void {
-        this.mapDescriptionSource.next(description);
+    createMap(mode: Mode, size: number): void {
+        this.map = {
+            name: '',
+            description: '',
+            imagePreview: '',
+            mode: mode,
+            mapSize: { x: size, y: size },
+            startTiles: [],
+            items: [],
+            doorTiles: [],
+            tiles: [],
+        };
     }
 
-    generateMapData() {
+    generateMap() {
         this.generateMapSource.next();
     }
 
@@ -45,23 +53,25 @@ export class MapService {
         this.updateSelectedTileSource.next(value);
     }
 
-    async saveNewMap(map: Map): Promise<string> {
+    async saveNewMap(): Promise<string> {
         try {
-            console.log('creating map');
-            await firstValueFrom(this.CommunicationMapService.basicPut<Map>('admin/creation', map));
+            await firstValueFrom(this.communicationMapService.basicPut<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
-                let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
+                let errorMessage = 'Erreur inattendue, veuillez réessayer plus tard...';
                 if (error.error) {
-                    const errorObj = JSON.parse(error.error);
-                    if (typeof errorObj.message === 'string') {
-                        errorMessage = errorObj.message;
-                    } else {
-                        const message: string = errorObj.message.join('');
-                        errorMessage = message;
+                    try {
+                        const errorObj = JSON.parse(error.error);
+                        if (typeof errorObj.message === 'string') {
+                            errorMessage = errorObj.message;
+                        } else {
+                            const message: string = errorObj.message.join(' ');
+                            errorMessage = message;
+                        }
+                    } catch (e) {
+                        errorMessage = error.error;
                     }
                 }
-
                 return errorMessage;
             } else {
                 console.error('Erreur inattendue:', error);
@@ -71,28 +81,36 @@ export class MapService {
         return 'Votre jeu a été sauvegardé avec succès!';
     }
 
-    async updateMap(map: Map, mapId: string): Promise<string> {
+    async updateMap(mapId: string): Promise<string> {
         try {
-            console.log('updating map');
-            await firstValueFrom(this.CommunicationMapService.basicPut<Map>(`admin/edition/${mapId}`, map));
+            await firstValueFrom(this.communicationMapService.basicPut<Map>(`admin/edition/${mapId}`, this.cleanMapForSave(this.map)));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur innatendue, veuillez réessayer plus tard...';
                 if (error.error) {
-                    const errorObj = JSON.parse(error.error);
-                    if (typeof errorObj.message === 'string') {
-                        errorMessage = errorObj.message;
-                    } else {
-                        const message: string = errorObj.message.join('');
-                        errorMessage = message;
+                    try {
+                        const errorObj = JSON.parse(error.error);
+                        if (typeof errorObj.message === 'string') {
+                            errorMessage = errorObj.message;
+                        } else {
+                            const message: string = errorObj.message.join('');
+                            errorMessage = message;
+                        }
+                    } catch (e) {
+                        errorMessage = error.error;
                     }
                 }
                 return errorMessage;
             } else {
-                console.error('Erreur inattendue:', error);
+                console.error('Erreur inconnue:', error);
                 return 'Erreur inconnue, veuillez réessayer plus tard...';
             }
         }
         return 'Votre jeu a été sauvegardé avec succès!';
+    }
+
+    cleanMapForSave(map: any): Map {
+        const { _id, isVisible, lastModified, __v, ...cleanedMap } = map;
+        return cleanedMap;
     }
 }
