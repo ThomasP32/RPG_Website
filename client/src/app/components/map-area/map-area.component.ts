@@ -32,7 +32,7 @@ export class MapAreaComponent implements OnInit {
 
     constructor(
         private tileService: TileService,
-        private route: ActivatedRoute,
+        public route: ActivatedRoute,
         private mapService: MapService,
         private mapCounterService: MapCounterService,
         private imageService: ImageService,

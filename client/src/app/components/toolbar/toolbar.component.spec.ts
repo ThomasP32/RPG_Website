@@ -4,7 +4,7 @@ import { ImageService } from '@app/services/image.service';
 import { MapCounterService } from '@app/services/map-counter.service';
 import { MapGetService } from '@app/services/map-get.service';
 import { MapService } from '@app/services/map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { Mode } from '@common/map.types';
 import { of } from 'rxjs';
 import { ToolbarComponent } from './toolbar.component';
 
@@ -16,21 +16,6 @@ describe('ToolbarComponent', () => {
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
-
-    const mockMap: Map = {
-        _id: '1',
-        name: 'Test Map',
-        isVisible: true,
-        mapSize: { x: 10, y: 10 },
-        startTiles: [],
-        items: [],
-        doorTiles: [],
-        tiles: [],
-        mode: Mode.Ctf,
-        lastModified: new Date(),
-        description: '',
-        imagePreview: '',
-    };
 
     beforeEach(async () => {
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$']);
@@ -67,18 +52,17 @@ describe('ToolbarComponent', () => {
     it('should initialize in creation mode', () => {
         activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
         activatedRouteSpy.queryParams = of({});
+        mapServiceSpy.map = { mode: Mode.Classic } as any;
         component.ngOnInit();
 
         expect(component.mode).toBe('classic');
     });
 
     it('should initialize in edition mode', () => {
-        activatedRouteSpy.snapshot.params = { id: '123' };
-        mapGetServiceSpy.map = mockMap;
-
+        activatedRouteSpy.snapshot.params = { id: '1' };
+        mapServiceSpy.map = { mode: Mode.Ctf } as any;
         component.ngOnInit();
-
-        expect(component.mode).toBe(Mode.Ctf);
+        expect(component.mode).toBe('ctf');
     });
 
     it('should toggle tiles visibility', () => {
@@ -116,7 +100,7 @@ describe('ToolbarComponent', () => {
     });
 
     it('should unselect tile', () => {
-        mapServiceSpy.updateSelectedTile$ = of('wall');
+        component.selectedTile = 'wall';
         component.ngOnInit();
         component.selectTile('wall');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');

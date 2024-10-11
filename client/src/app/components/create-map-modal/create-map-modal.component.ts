@@ -30,7 +30,7 @@ export enum NbItems {
     templateUrl: './create-map-modal.component.html',
     styleUrls: ['./create-map-modal.component.scss'],
 })
-export class MapComponent {
+export class CreateMapModalComponent {
     size: 'small' | 'medium' | 'large';
     mapSize: MapSize;
     mapSizeType: typeof MapSize = MapSize;
