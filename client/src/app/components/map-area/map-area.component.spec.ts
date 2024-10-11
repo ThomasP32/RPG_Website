@@ -158,9 +158,9 @@ describe('MapAreaComponent', () => {
     });
 
     it('should capture a screenshot and set image preview', async () => {
-        screenshotServiceSpy.captureAndUpload.and.returnValue(Promise.resolve('test-image-url'));
+        screenshotServiceSpy.captureAndConvert.and.returnValue(Promise.resolve('test-image-url'));
         await component.screenMap();
-        expect(screenshotServiceSpy.captureAndUpload).toHaveBeenCalledWith('screenshot-container');
+        expect(screenshotServiceSpy.captureAndConvert).toHaveBeenCalledWith('screenshot-container');
         expect(mapServiceSpy.map.imagePreview).toBe('test-image-url');
     });
 

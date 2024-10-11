@@ -26,7 +26,7 @@ describe('MapService', () => {
             lastModified: new Date(),
         };
 
-        communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPost', 'basicPatch', 'basicGet']);
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPut', 'basicGet']);
         TestBed.configureTestingModule({
             providers: [MapService, { provide: CommunicationMapService, useValue: communicationServiceSpy }],
         });
@@ -103,11 +103,11 @@ describe('MapService', () => {
 
     // Tests for saveNewMap
     it('should save new map', () => {
-        communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse({ body: 'response' })));
+        communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
         service.map = mockMap;
         service.saveNewMap();
 
-        expect(communicationServiceSpy.basicPost).toHaveBeenCalledOnceWith('admin/creation', mockMap);
+        expect(communicationServiceSpy.basicPut).toHaveBeenCalledOnceWith('admin/creation', mockMap);
     });
 
     it('should handle HttpErrorResponse with JSON error body for saveNewMap', async () => {
@@ -116,7 +116,7 @@ describe('MapService', () => {
             error: JSON.stringify({ message: 'Test error message' }),
         });
 
-        communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.saveNewMap();
         expect(result).toBe('Test error message');
     });
@@ -127,7 +127,7 @@ describe('MapService', () => {
             error: 'Non-JSON error message',
         });
 
-        communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.saveNewMap();
         expect(result).toBe('Non-JSON error message');
     });
@@ -135,13 +135,13 @@ describe('MapService', () => {
     it('should handle unknown error type for saveNewMap', async () => {
         const unknownError = new Error('Unknown error');
 
-        communicationServiceSpy.basicPost.and.returnValue(throwError(() => unknownError));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => unknownError));
         const result = await service.saveNewMap();
         expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
     });
 
     it('should save new map successfully', async () => {
-        communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse({ body: 'response' })));
+        communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
         const result = await service.saveNewMap();
         expect(result).toBe('Votre jeu a été sauvegardé avec succès!');
     });
@@ -152,7 +152,7 @@ describe('MapService', () => {
             error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
         });
 
-        communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.saveNewMap();
 
         expect(result).toBe('Error part 1 and error part 2');
@@ -173,11 +173,11 @@ describe('MapService', () => {
             mode: 'classique',
         };
 
-        communicationServiceSpy.basicPatch.and.returnValue(of(new HttpResponse({ body: 'response' })));
+        communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
         service.map = mockMap;
         service.updateMap(id);
 
-        expect(communicationServiceSpy.basicPatch).toHaveBeenCalledOnceWith(`admin/edition/${id}`, cleanedMap);
+        expect(communicationServiceSpy.basicPut).toHaveBeenCalledOnceWith(`admin/edition/${id}`, cleanedMap);
     });
 
     it('should handle HttpErrorResponse with JSON error body for updateMap', async () => {
@@ -186,7 +186,7 @@ describe('MapService', () => {
             error: JSON.stringify({ message: 'Test error message' }),
         });
 
-        communicationServiceSpy.basicPatch.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.updateMap('1');
         expect(result).toBe('Test error message');
     });
@@ -197,7 +197,7 @@ describe('MapService', () => {
             error: 'Non-JSON error message',
         });
 
-        communicationServiceSpy.basicPatch.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.updateMap('1');
         expect(result).toBe('Non-JSON error message');
     });
@@ -205,7 +205,7 @@ describe('MapService', () => {
     it('should handle unknown error type for updateMap', async () => {
         const unknownError = new Error('Unknown error');
 
-        communicationServiceSpy.basicPatch.and.returnValue(throwError(() => unknownError));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => unknownError));
         const result = await service.updateMap('1');
         expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
     });
@@ -216,14 +216,14 @@ describe('MapService', () => {
             error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
         });
 
-        communicationServiceSpy.basicPatch.and.returnValue(throwError(() => errorResponse));
+        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
         const result = await service.updateMap('1');
 
         expect(result).toBe('Error part 1 and error part 2');
     });
 
     it('should update map successfully', async () => {
-        communicationServiceSpy.basicPatch.and.returnValue(of(new HttpResponse({ body: 'response' })));
+        communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
         const result = await service.updateMap('1');
         expect(result).toBe('Votre jeu a été sauvegardé avec succès!');
     });
