@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    serverUrl: 'http://localhost:3000/api',
+    serverUrl: 'http://polytechnique-montr-al.gitlab.io/log2990/20243/equipe-109/LOG2990-109/api',
 };
 
 /*
