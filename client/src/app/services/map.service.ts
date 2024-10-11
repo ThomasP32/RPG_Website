@@ -97,7 +97,7 @@ export class MapService {
                 return errorMessage;
             } else {
                 console.error('Erreur inattendue:', error);
-                return 'Erreur inconnue, veuillez réessayer plus tard...';
+                return 'Erreur innattendue, veuillez réessayer plus tard...';
             }
         }
         return 'Votre jeu a été sauvegardé avec succès!';

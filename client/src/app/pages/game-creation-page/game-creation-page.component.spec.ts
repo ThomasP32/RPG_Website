@@ -29,7 +29,11 @@ describe('GameCreationPageComponent', () => {
     };
 
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['resetMap', 'saveNewMap'], { resetMap$: new Subject<void>() });
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['resetMap', 'saveNewMap', 'updateSelectedTile', 'createMap', 'updateMap'], {
+            resetMap$: new Subject<void>(),
+            generateMap$: new Subject<void>(),
+        });
+
         mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['getMap', 'map']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
 
@@ -45,16 +49,20 @@ describe('GameCreationPageComponent', () => {
         fixture = TestBed.createComponent(GameCreationPageComponent);
         component = fixture.componentInstance;
     });
+    afterEach(() => {
+        mapServiceSpy.resetMap.calls.reset();
+        mapServiceSpy.saveNewMap.calls.reset();
+        mapServiceSpy.updateSelectedTile.calls.reset();
+        mapServiceSpy.updateMap.calls.reset();
+    });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
     it('should initialize in creation mode', () => {
-        activatedRouteSpy.snapshot.params = {};
-
+        activatedRouteSpy.snapshot.params = { mode: 'classic', size: '10' };
         component.ngOnInit();
-
         expect(component.isCreationPage).toBe(true);
         expect(mapServiceSpy.getMap).not.toHaveBeenCalled();
     });
@@ -76,24 +84,57 @@ describe('GameCreationPageComponent', () => {
     it('should handle reset map event', () => {
         const mapAreaComponent = jasmine.createSpyObj('MapAreaComponent', ['resetMapToDefault']);
         component.mapAreaComponent = mapAreaComponent;
+
         spyOn(mapServiceSpy.resetMap$, 'subscribe').and.callThrough();
-        spyOn(mapServiceSpy, 'updateSelectedTile').and.callThrough();
         spyOn(mapAreaComponent, 'resetMapToDefault');
 
         component.ngOnInit();
-
         (mapServiceSpy.resetMap$ as Subject<void>).next();
 
         expect(mapAreaComponent.resetMapToDefault).toHaveBeenCalled();
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
     });
 
+    it('should handle generate map event', async () => {
+        const mapAreaComponent = jasmine.createSpyObj('MapAreaComponent', ['screenMap', 'generateMap']);
+        component.mapAreaComponent = mapAreaComponent;
+
+        spyOn(mapServiceSpy.generateMap$, 'subscribe').and.callThrough();
+        spyOn(mapServiceSpy, 'saveNewMap').and.returnValue(Promise.resolve('some-error-message'));
+        spyOn(mapAreaComponent, 'screenMap');
+        spyOn(mapAreaComponent, 'generateMap');
+
+        component.ngOnInit();
+
+        (mapServiceSpy.generateMap$ as Subject<void>).next();
+        await mapServiceSpy.saveNewMap();
+
+        expect(mapAreaComponent.screenMap).toHaveBeenCalled();
+        expect(mapAreaComponent.generateMap).toHaveBeenCalled();
+        expect(mapServiceSpy.saveNewMap).toHaveBeenCalled();
+    });
+
+    it('should handle generate map event in edition mode', async () => {
+        const mapAreaComponent = jasmine.createSpyObj('MapAreaComponent', ['screenMap', 'generateMap']);
+        component.mapAreaComponent = mapAreaComponent;
+
+        spyOn(mapServiceSpy, 'updateMap').and.returnValue(Promise.resolve('some-error-message'));
+        spyOn(mapAreaComponent, 'screenMap');
+        spyOn(mapAreaComponent, 'generateMap');
+
+        component.ngOnInit();
+
+        (mapServiceSpy.generateMap$ as Subject<void>).next();
+        await mapServiceSpy.updateMap('1');
+
+        expect(mapAreaComponent.screenMap).toHaveBeenCalled();
+        expect(mapAreaComponent.generateMap).toHaveBeenCalled();
+        expect(mapServiceSpy.updateMap).toHaveBeenCalledWith('1');
+    });
+
     it('should get url params', () => {
-        const mockId = '1';
-        activatedRouteSpy.snapshot.queryParams = { id: mockId };
-
+        activatedRouteSpy.snapshot.params = { id: '1' };
         component.getUrlParams();
-
-        expect(component.mapId).toBe(mockId);
+        expect(component.mapId).toBe('1');
     });
 });

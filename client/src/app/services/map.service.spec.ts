@@ -162,7 +162,7 @@ describe('MapService', () => {
 
         communicationServiceSpy.basicPatch.and.returnValue(throwError(() => unknownError));
         const result = await service.updateMap('1');
-        expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
+        expect(result).toBe('Erreur innatendue, veuillez réessayer plus tard...');
     });
 
     it('should handle HttpErrorResponse with array of messages for saveNewMap', async () => {

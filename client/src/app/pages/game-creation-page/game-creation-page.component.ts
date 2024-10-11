@@ -25,7 +25,7 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
     mapId: string = '';
     mapSize: number;
     mode: Mode;
-    private unsubscribe$ = new Subject<void>(); // Used to manage unsubscriptions
+    private unsubscribe$ = new Subject<void>();
 
     constructor(
         private mapService: MapService,

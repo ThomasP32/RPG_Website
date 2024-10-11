@@ -82,7 +82,6 @@ describe('MapAreaComponent', () => {
     });
 
     it('should set counters based on map size', () => {
-        mapCounterServiceSpy.updateStartingPointCounter.calls.reset();
         spyOn(mapCounterServiceSpy, 'updateStartingPointCounter');
         component.setCountersBasedOnMapSize(10);
         expect(component.randomItemCounter).toBe(2);
@@ -129,10 +128,28 @@ describe('MapAreaComponent', () => {
         expect(mapServiceSpy.map.imagePreview).toBe('test-image-url');
     });
 
-    it('should reset the map to default', () => {
-        component.Map = [[{ value: 'wall', isHovered: false }]];
+    it('should reset the map to default tile when mode is truthy', () => {
+        component.route.snapshot.params['mode'] = 'creation';
+        component.Map = [
+            [
+                { value: 'wall', isHovered: false },
+                { value: 'door', isHovered: false },
+            ],
+        ];
         component.resetMapToDefault();
+
         expect(component.Map[0][0].value).toBe(component.defaultTile);
+        expect(component.Map[0][1].value).toBe(component.defaultTile);
+
+        expect(component.Map[0][0].item).toBeUndefined();
+        expect(component.Map[0][1].item).toBeUndefined();
+    });
+
+    it('should load the map from mapService when mode is falsy', () => {
+        component.route.snapshot.params['mode'] = null;
+        spyOn(component, 'loadMap');
+        component.resetMapToDefault();
+        expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
     });
 
     it('should place tile on mouse move when mouse is down', () => {
@@ -192,6 +209,29 @@ describe('MapAreaComponent', () => {
         expect(component.Map[0][1].item).toBe('starting-point');
     });
 
+    it('should correctly generate map with tiles, doors, items, and starting points', () => {
+        component.Map = [
+            [
+                { value: 'wall', isHovered: false },
+                { value: 'door', isHovered: false, doorState: 'open' },
+            ],
+            [
+                { value: 'floor', isHovered: false, item: 'vest' },
+                { value: 'floor', isHovered: false, item: 'starting-point' },
+            ],
+        ];
+
+        component.generateMap();
+
+        expect(mapServiceSpy.map.doorTiles).toEqual([{ coordinate: { x: 0, y: 1 }, isOpened: true }]);
+
+        expect(mapServiceSpy.map.tiles).toEqual([{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }]);
+
+        expect(mapServiceSpy.map.items).toEqual([{ coordinate: { x: 1, y: 0 }, category: ItemCategory.Vest }]);
+
+        expect(mapServiceSpy.map.startTiles).toEqual([{ coordinate: { x: 1, y: 1 } }]);
+    });
+
     it('should call tile service to move item on drop', () => {
         const event = new DragEvent('drop');
 
@@ -206,9 +246,34 @@ describe('MapAreaComponent', () => {
 
         component.onDrop(event, 1, 1);
 
-        expect(tileServiceSpy.moveItem).toHaveBeenCalledWith(component.Map, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 1 });
-
+        expect(component.currentDraggedItem).toBeNull();
         expect(event.preventDefault).toHaveBeenCalled();
+        expect(tileServiceSpy.moveItem).toHaveBeenCalledWith(component.Map, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 1 });
+    });
+
+    it('should call tile service to set item on drop', () => {
+        const event = new DragEvent('drop');
+
+        Object.defineProperty(event, 'dataTransfer', {
+            value: {
+                getData: jasmine.createSpy('getData').and.returnValue('starting-point'),
+            },
+        });
+
+        component.currentDraggedItem = null;
+
+        component.onDrop(event, 1, 1);
+        expect(tileServiceSpy.setItem).toHaveBeenCalledWith(component.Map, 'starting-point', { rowIndex: 1, colIndex: 1 });
+    });
+
+    it('should call getItemImage with the correct item', () => {
+        const item = 'hat';
+        component.Map = [[{ value: 'floor', isHovered: false, item: item }]];
+
+        spyOn(component, 'getItemImage').and.callThrough();
+        const result = component.getItemImage(item);
+        expect(component.getItemImage).toHaveBeenCalledWith(item);
+        expect(result).toBe(imageServiceSpy.getItemImage(item));
     });
 
     it('should handle drag start only if there is an item', () => {
