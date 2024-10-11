@@ -2,9 +2,9 @@ import { Mode } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { CoordinateDto, StartTileDto } from './coordinate.dto';
-import { DoorTileDto } from './door.dto';
-import { ItemDto, TileDto } from './tiles.dto';
+import { CoordinateDto, StartTileDto } from '@app/http/model/dto/map/coordinate.dto';
+import { DoorTileDto } from '@app/http/model/dto/map/door.dto';
+import { ItemDto, TileDto } from '@app/http/model/dto/map/tiles.dto';
 
 export class MapDto {
     @ApiProperty()

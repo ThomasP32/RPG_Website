@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MapController } from './map.controller';
-import { MapService } from '@app/services/map/map.service';
+import { MapController } from '@app/http/controllers/map/map.controller';
+import { MapService } from '@app/http/services/map/map.service';
 import { INestApplication, NotFoundException } from '@nestjs/common';
 import * as request from 'supertest';
 

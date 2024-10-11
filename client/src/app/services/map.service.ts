@@ -55,7 +55,8 @@ export class MapService {
 
     async saveNewMap(): Promise<string> {
         try {
-            await firstValueFrom(this.communicationMapService.basicPut<Map>('admin/creation', this.map));
+            console.log('creating map');
+            await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 let errorMessage = 'Erreur inattendue, veuillez réessayer plus tard...';

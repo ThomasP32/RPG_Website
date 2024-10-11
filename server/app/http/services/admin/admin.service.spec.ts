@@ -1,5 +1,5 @@
-import { MapDto } from '@app/model/dto/map/map.dto';
-import { Map, MapDocument, mapSchema } from '@app/model/schemas/map.schema';
+import { MapDto } from '@app/http/model/dto/map/map.dto';
+import { Map, MapDocument, mapSchema } from '@app/http/model/schemas/map/map.schema';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { getConnectionToken, getModelToken, MongooseModule } from '@nestjs/mongoose';
@@ -298,9 +298,11 @@ describe('AdminServiceEndToEnd', () => {
             { coordinate: { x: 4, y: 1 }, category: TileCategory.Wall },
             { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }, { coordinate: { x: 4, y: 2 }, isOpened: false }],
+        doorTiles: [
+            { coordinate: { x: 4, y: 1 }, isOpened: true },
+            { coordinate: { x: 4, y: 2 }, isOpened: false },
+        ],
     });
-
 
     const getFakeInvalidMapDto23 = (): MapDto => ({
         name: getRandomString(),
@@ -314,9 +316,12 @@ describe('AdminServiceEndToEnd', () => {
             { coordinate: { x: 3, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 3, y: 0 }, category: TileCategory.Wall },
             { coordinate: { x: 4, y: 2 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall }
+            { coordinate: { x: 4, y: 0 }, category: TileCategory.Wall },
         ],
-        doorTiles: [{ coordinate: { x: 4, y: 1 }, isOpened: true }, { coordinate: { x: 3, y: 1 }, isOpened: false }],
+        doorTiles: [
+            { coordinate: { x: 4, y: 1 }, isOpened: true },
+            { coordinate: { x: 3, y: 1 }, isOpened: false },
+        ],
     });
 
     // out of bounds

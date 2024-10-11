@@ -2,8 +2,8 @@ import { ItemCategory, Item as ItemType, DBMap as MapType, Mode } from '@common/
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, Types } from 'mongoose';
-import { Coordinate, coordinateSchema, StartTile, startTileSchema } from './coordinate.schema';
-import { DoorTile, doorTileSchema, Tile, tileSchema } from './tiles.schema';
+import { Coordinate, coordinateSchema, StartTile, startTileSchema } from '@app/http/model/schemas/map/coordinate.schema';
+import { DoorTile, doorTileSchema, Tile, tileSchema } from '@app/http/model/schemas/map/tiles.schema';
 
 export type MapDocument = Map & Document;
 

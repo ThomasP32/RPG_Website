@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, ValidateNested } from 'class-validator';
-import { CoordinateDto } from './coordinate.dto';
+import { CoordinateDto } from '@app/http/model/dto/map/coordinate.dto';
 
 export class DoorTileDto {
     @ApiProperty({ type: CoordinateDto })

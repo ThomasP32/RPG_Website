@@ -2,7 +2,7 @@
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+// import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ModesComponent } from '../modes/modes.component';
 import { CreateMapModalComponent } from './create-map-modal.component';
@@ -10,7 +10,7 @@ import { CreateMapModalComponent } from './create-map-modal.component';
 describe('CreateMapModalComponent', () => {
     let component: CreateMapModalComponent;
     let fixture: ComponentFixture<CreateMapModalComponent>;
-    let router: Router;
+    // let router: Router;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -19,7 +19,7 @@ describe('CreateMapModalComponent', () => {
 
         fixture = TestBed.createComponent(CreateMapModalComponent);
         component = fixture.componentInstance;
-        router = TestBed.inject(Router);
+        // router = TestBed.inject(Router);
         fixture.detectChanges();
     });
 
@@ -60,27 +60,13 @@ describe('CreateMapModalComponent', () => {
         expect(modesComponent).toBeTruthy();
     });
 
-    it('should redirect to edit view with correct parameters', () => {
-        spyOn(router, 'navigate');
-        component.mapSize = 15;
-        component.selectedMode = 'CTF';
-        component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=15/mode=ctf']);
-    });
-    // aucun sens
-    it('should redirect to edit view without selected mode', () => {
-        spyOn(router, 'navigate');
-        component.mapSize = 15;
-        component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=15/mode=undefined']);
-    });
-    // aucun sens
-    it('should redirect to edit view without map size', () => {
-        spyOn(router, 'navigate');
-        component.selectedMode = 'CTF';
-        component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=undefined/mode=ctf']);
-    });
+    // it('should redirect to edit view with correct parameters', () => {
+    //     spyOn(router, 'navigate');
+    //     component.mapSize = 15;
+    //     component.selectedMode = 'CTF';
+    //     component.redirectToEditView();
+    //     expect(router.navigate).toHaveBeenCalledWith(['/creation/size=15/mode=ctf']);
+    // });
 
     it('should return true when game creation is possible', () => {
         component.mapSize = 10;

@@ -1,14 +1,12 @@
-import { CoordinateDto, StartTileDto } from '@app/model/dto/map/coordinate.dto';
-import { DoorTileDto } from '@app/model/dto/map/door.dto';
-import { MapDto } from '@app/model/dto/map/map.dto';
-import { ItemDto, TileDto } from '@app/model/dto/map/tiles.dto';
-import { MapDocument } from '@app/model/schemas/map.schema';
+import { CoordinateDto, StartTileDto } from '@app/http/model/dto/map/coordinate.dto';
+import { DoorTileDto } from '@app/http/model/dto/map/door.dto';
+import { MapDto } from '@app/http/model/dto/map/map.dto';
+import { ItemDto, TileDto } from '@app/http/model/dto/map/tiles.dto';
+import { MapDocument } from '@app/http/model/schemas/map/map.schema';
 import { Coordinate, DBMap, Map, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-
-/* eslint-disable no-unused-vars */
 
 const HALF = 0.5;
 const SMALL_MAP_SIZE = 10;
@@ -223,18 +221,28 @@ export class AdminService {
                 walls.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1);
 
             const isBlockedHorizontally =
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x + 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall) ||
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x - 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall) ||
+                tiles.some(
+                    (tile) =>
+                        tile.coordinate.x === door.coordinate.x + 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall,
+                ) ||
+                tiles.some(
+                    (tile) =>
+                        tile.coordinate.x === door.coordinate.x - 1 && tile.coordinate.y === door.coordinate.y && tile.category === TileCategory.Wall,
+                ) ||
                 doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x + 1 && otherDoor.coordinate.y === door.coordinate.y) ||
                 doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x - 1 && otherDoor.coordinate.y === door.coordinate.y);
 
-
             const isBlockedVertically =
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y + 1 && tile.category === TileCategory.Wall) ||
-                tiles.some((tile) => tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1 && tile.category === TileCategory.Wall) || 
+                tiles.some(
+                    (tile) =>
+                        tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y + 1 && tile.category === TileCategory.Wall,
+                ) ||
+                tiles.some(
+                    (tile) =>
+                        tile.coordinate.x === door.coordinate.x && tile.coordinate.y === door.coordinate.y - 1 && tile.category === TileCategory.Wall,
+                ) ||
                 doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x && otherDoor.coordinate.y === door.coordinate.y + 1) ||
                 doors.some((otherDoor) => otherDoor.coordinate.x === door.coordinate.x && otherDoor.coordinate.y === door.coordinate.y - 1);
-
 
             const isValidDoor = (hasWallsHorizontally && !isBlockedVertically) || (hasWallsVertically && !isBlockedHorizontally);
 
