@@ -1,15 +1,14 @@
-import { Map } from '@app/model/schemas/map.schema';
-import { MapService } from '@app/services/map/map.service';
+import { Map } from '@app/http/model/schemas/map/map.schema';
+import { MapService } from '@app/http/services/map/map.service';
 import { Controller, Get, HttpStatus, Inject, Param, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-/* eslint-disable no-unused-vars */
 
 @ApiTags('Map') // to attach a controller to a specific tag
 @Controller('map') // marque la classe comme un contrôleur pour les routes qui commence avec map donc reponde au requete http faites vers l'url /map
 export class MapController {
-    @Inject(MapService)private readonly mapService: MapService; // créé une instance de la classe avec un service de cours
+    @Inject(MapService) private readonly mapService: MapService; 
 
     @ApiOkResponse({
         description: 'Returns all maps',
@@ -22,8 +21,8 @@ export class MapController {
     @Get('/')
     async allMaps(@Res() response: Response) {
         try {
-            const allCourses = await this.mapService.getAllVisibleMaps();
-            response.status(HttpStatus.OK).json(allCourses);
+            const maps = await this.mapService.getAllVisibleMaps();
+            response.status(HttpStatus.OK).json(maps);
         } catch (error) {
             response.status(HttpStatus.NOT_FOUND).send(error.message);
         }

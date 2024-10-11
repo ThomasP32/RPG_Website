@@ -1,6 +1,6 @@
-import { MapDto } from '@app/model/dto/map/map.dto';
-import { Map } from '@app/model/schemas/map.schema';
-import { AdminService } from '@app/services/admin/admin.service';
+import { MapDto } from '@app/http/model/dto/map/map.dto';
+import { Map } from '@app/http/model/schemas/map/map.schema';
+import { AdminService } from '@app/http/services/admin/admin.service';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Put, Res } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';

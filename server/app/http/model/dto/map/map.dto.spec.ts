@@ -2,7 +2,7 @@ import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Types } from 'mongoose';
-import { MapDto } from './map.dto';
+import { MapDto } from '@app/http/model/dto/map/map.dto';
 
 describe('MapDto', () => {
     it('should validate successfully for a valid MapDto', async () => {

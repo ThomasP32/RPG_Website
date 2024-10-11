@@ -2,7 +2,7 @@ import { ItemCategory, TileCategory } from '@common/map.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, ValidateNested } from 'class-validator';
-import { CoordinateDto } from './coordinate.dto';
+import { CoordinateDto } from '@app/http/model/dto/map/coordinate.dto';
 
 export class TileDto {
     @ApiProperty({ type: CoordinateDto })

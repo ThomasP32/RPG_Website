@@ -82,6 +82,16 @@ describe('CommunicationMapService', () => {
         req.flush('Success', { status: 200, statusText: 'OK' });
     });
 
+    it('should perform a PUT request', () => {
+        service.basicPut('map', mockResponse).subscribe((response) => {
+            expect(response.body).toBe('Success');
+        });
+
+        const req = httpMock.expectOne(`${environment.serverUrl}/map`);
+        expect(req.request.method).toBe('PUT');
+        req.flush('Success', { status: 200, statusText: 'OK' });
+    });
+
     it('should perform a DELETE request', () => {
         service.basicDelete('map/test').subscribe((response) => {
             expect(response.body).toBe('Success');

@@ -38,7 +38,6 @@ describe('ScreenShotService', () => {
 
         const base64Image = await service.captureAndConvert('capture-zone');
 
-        // Verify that getCanvas was called with the correct element
         expect(html2CanvasWrapperSpy.getCanvas).toHaveBeenCalledWith(fakeElement);
         expect(base64Image).toMatch(/^data:image\/jpeg;base64,/);
 

@@ -1,7 +1,7 @@
 import { DoorTile as DoorTileType, TileCategory, Tile as TileType } from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Coordinate, coordinateSchema } from './coordinate.schema';
+import { Coordinate, coordinateSchema } from '@app/http/model/schemas/map/coordinate.schema';
 
 export
 @Schema({ _id: false })

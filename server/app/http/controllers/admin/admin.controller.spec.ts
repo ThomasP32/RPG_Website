@@ -1,5 +1,5 @@
-import { MapDocument } from '@app/model/schemas/map.schema';
-import { AdminService } from '@app/services/admin/admin.service';
+import { MapDocument } from '@app/http/model/schemas/map/map.schema';
+import { AdminService } from '@app/http/services/admin/admin.service';
 import { DBMap, Mode } from '@common/map.types';
 import { ConflictException, ForbiddenException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
