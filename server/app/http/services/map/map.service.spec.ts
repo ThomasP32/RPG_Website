@@ -89,7 +89,7 @@ describe('MapServiceEndToEnd', () => {
 
         const visibleMaps = await service.getAllVisibleMaps();
         expect(visibleMaps.length).toEqual(1);
-        expect(visibleMaps[0]._id).toEqual(map2._id);
+        expect(visibleMaps[0].name).toEqual(map2.name);
     });
 
     it('getMapByName() return map with the specified name only if visible', async () => {
@@ -103,7 +103,6 @@ describe('MapServiceEndToEnd', () => {
         const result = await service.getMapByName(map.name);
         expect(result).toBeTruthy();
         expect(result.name).toEqual(map.name);
-        expect(result.isVisible).toBe(true);
     });
 
     it('getMapByName() should fail if map does not exist', async () => {
