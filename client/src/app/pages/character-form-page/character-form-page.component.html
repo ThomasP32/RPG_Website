@@ -20,8 +20,7 @@
                     }
 
                     <button class="edit-icon" (click)="toggleEditing()">
-                        @if(!isEditing){
-                        <i class="fas fa-pencil-alt"></i>} @if(isEditing){<i class="fas fa-save"></i>}
+                        @if(isEditing) {<i class="fas fa-save"></i>} @else { <i class="fas fa-pencil-alt"></i>}
                     </button>
                 </h2>
                 <div class="stats">

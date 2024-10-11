@@ -19,7 +19,7 @@ export class ScreenShotService {
     }
 
     convertCanvasToBase64(canvas: HTMLCanvasElement): string {
-        return canvas.toDataURL('image/jpeg', 0.1);
+        return canvas.toDataURL('image/jpeg', 0.09);
     }
 
 }
