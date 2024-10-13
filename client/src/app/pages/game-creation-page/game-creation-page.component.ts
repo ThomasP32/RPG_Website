@@ -34,12 +34,13 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
     ) {}
 
     async ngOnInit(): Promise<void> {
-        this.getUrlParams();
         if (this.router.url.includes('edition')) {
+            this.getUrlParams();
             await this.mapService.getMap(this.mapId);
             this.map = this.mapService.map;
             this.isCreationPage = false;
         } else {
+            this.getUrlQueryParams();
             this.mapService.createMap(this.mode, this.mapSize);
             this.isCreationPage = true;
         }
@@ -55,12 +56,14 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
             if (this.mapAreaComponent) {
                 await this.mapAreaComponent.screenMap();
                 this.mapAreaComponent.generateMap();
-                if (this.route.snapshot.params['mode']) {
-                    const errorMessage = await this.mapService.saveNewMap();
+                console.log('la recherche de id ', this.route.snapshot.params['id']);
+                if (this.route.snapshot.params['id']) {
+                    const id = this.route.snapshot.params['id'];
+                    console.log('le id de la map est : ', id);
+                    const errorMessage = await this.mapService.updateMap(id);
                     this.mapControlBarComponent.showError(errorMessage);
                 } else {
-                    const id = this.route.snapshot.params['id'];
-                    const errorMessage = await this.mapService.updateMap(id);
+                    const errorMessage = await this.mapService.saveNewMap();
                     this.mapControlBarComponent.showError(errorMessage);
                 }
             }
@@ -76,11 +79,16 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
         if (this.route.snapshot.params['id']) {
             this.mapId = this.route.snapshot.params['id'];
         }
-        if (this.route.snapshot.params['size']) {
-            this.mapSize = parseInt(this.route.snapshot.params['size']);
+    }
+
+    getUrlQueryParams(): void {
+        const queryParams = this.route.snapshot.queryParams;
+
+        if (queryParams['size']) {
+            this.mapSize = parseInt(queryParams['size']);
         }
-        if (this.route.snapshot.params['mode']) {
-            const mode = this.route.snapshot.params['mode'];
+        if (queryParams['mode']) {
+            const mode = queryParams['mode'];
             if (mode === 'classique') {
                 this.mode = Mode.Classic;
             } else {

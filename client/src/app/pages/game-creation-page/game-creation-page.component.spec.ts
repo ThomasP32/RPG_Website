@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapService } from '@app/services/map/map.service';
-// import { Mode } from '@common/map.types';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
 import { Mode } from '@common/map.types';
@@ -33,7 +32,8 @@ describe('GameCreationPageComponent in creation mode', () => {
         mapServiceSpy.generateMap$ = generateMapSubject.asObservable();
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
-                params: { id: '123', mode: 'classique', size: '10' },
+                queryParams: { mode: 'classique', size: '10' }, 
+                params: {}
             },
         });
 
@@ -69,18 +69,19 @@ describe('GameCreationPageComponent in creation mode', () => {
     });
 
     it('should initialize in creation mode', async () => {
-        activatedRouteSpy.snapshot.params = { mode: 'mode=classique', size: 'size=10' };
-        spyOn(component, 'getUrlParams').and.callThrough();
+        activatedRouteSpy.snapshot.queryParams = { mode: 'classique', size: '10' };
+        spyOn(component, 'getUrlQueryParams').and.callThrough();
 
         await component.ngOnInit();
 
         expect(component.isCreationPage).toBe(true);
         expect(mapServiceSpy.createMap).toHaveBeenCalledWith(component.mode, component.mapSize);
         expect(mapServiceSpy.getMap).not.toHaveBeenCalled();
-        expect(component.getUrlParams).toHaveBeenCalled();
+        expect(component.getUrlQueryParams).toHaveBeenCalled();
     });
 
     it('should handle reset map event', () => {
+        activatedRouteSpy.snapshot.queryParams = { mode: 'ctf', size: '10' };
         component.ngOnInit();
         resetMapSubject.next();
         expect(mapAreaComponentSpy.resetMapToDefault).toHaveBeenCalled();
@@ -97,12 +98,6 @@ describe('GameCreationPageComponent in creation mode', () => {
         expect(mapAreaComponentSpy.screenMap).toHaveBeenCalled();
         expect(mapAreaComponentSpy.generateMap).toHaveBeenCalled();
         expect(mapServiceSpy.saveNewMap).toHaveBeenCalled();
-    });
-
-    it('should get url params', () => {
-        activatedRouteSpy.snapshot.params = { id: '1' };
-        component.getUrlParams();
-        expect(component.mapId).toBe('1');
     });
 });
 
@@ -131,8 +126,9 @@ describe('GameCreationPageComponent in edition mode', () => {
         mapServiceSpy.generateMap$ = generateMapSubject.asObservable();
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
-                params: { id: '1' },
-            },
+                params: { id: '1' }, 
+                queryParams: {}
+            }
         });
 
         routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: 'edition' });
