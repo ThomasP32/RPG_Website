@@ -35,7 +35,7 @@ describe('AdminPageComponent', () => {
             isVisible: true,
             name: 'Map2',
             description: 'Description2',
-            imagePreview: 'image2.png',
+            imagePreview: '',
             mode: Mode.Classic,
             mapSize: { x: 2, y: 2 },
             lastModified: new Date(),
