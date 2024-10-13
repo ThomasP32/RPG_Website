@@ -15,17 +15,26 @@ describe('ToolbarComponent', () => {
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
+    let updateSelectedTileSubject: BehaviorSubject<string>;
+    let startingPointCounterSubject: BehaviorSubject<number>;
+
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$']);
+        updateSelectedTileSubject = new BehaviorSubject<string>('');
+        startingPointCounterSubject = new BehaviorSubject<number>(0);
+
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile']);
+        mapServiceSpy.updateSelectedTile$ = updateSelectedTileSubject.asObservable();
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
             'startingPointCounter$',
             'randomItemCounter$',
             'itemsCounter$',
             'updateStartingPointCounter',
-            'startingPointCounter',
         ]);
+        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
+
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot'], { snapshot: { params: {} } });
+        mapServiceSpy.map = { mode: Mode.Classic } as any;
 
         await TestBed.configureTestingModule({
             imports: [ToolbarComponent],
@@ -46,12 +55,11 @@ describe('ToolbarComponent', () => {
     });
 
     it('should initialize in creation mode', () => {
-        activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
+        activatedRouteSpy.snapshot.params = { mode: 'mode=classique' };
         activatedRouteSpy.queryParams = of({});
-        mapServiceSpy.map = { mode: Mode.Classic } as any;
         component.ngOnInit();
 
-        expect(component.mode).toBe('classic');
+        expect(component.mode).toBe('classique');
     });
 
     it('should initialize in edition mode', () => {
@@ -65,17 +73,13 @@ describe('ToolbarComponent', () => {
         const mockSelectedTile = 'floor';
         const mockCounter = 3;
 
-        const updateSelectedTileSubject = new BehaviorSubject<string>(mockSelectedTile);
-        const startingPointCounterSubject = new BehaviorSubject<number>(mockCounter);
+        updateSelectedTileSubject.next(mockSelectedTile);
+        startingPointCounterSubject.next(mockCounter);
 
-        mapServiceSpy.updateSelectedTile$ = updateSelectedTileSubject.asObservable();
-        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
-
-        activatedRouteSpy.snapshot.params = { mode: 'classic' };
-        mapServiceSpy.map = { mode: Mode.Classic } as any;
+        activatedRouteSpy.snapshot.params = { mode: 'classique' };
         component.ngOnInit();
 
-        expect(component.mode).toBe('classic');
+        expect(component.mode).toBe('classique');
 
         expect(component.selectedTile).toBe(mockSelectedTile);
 
@@ -118,7 +122,6 @@ describe('ToolbarComponent', () => {
 
     it('should unselect tile', () => {
         component.selectedTile = 'wall';
-        component.ngOnInit();
         component.selectTile('wall');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
     });
@@ -168,8 +171,13 @@ describe('ToolbarComponent', () => {
     });
 
     it('should update starting point counter on subscription', () => {
-        mapCounterServiceSpy.startingPointCounter = 5;
+        const startingPointCounterSubject = new BehaviorSubject<number>(0);
+        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
+
         component.ngOnInit();
+
+        startingPointCounterSubject.next(5);
+
         expect(mapCounterServiceSpy.startingPointCounter).toBe(5);
     });
 });
