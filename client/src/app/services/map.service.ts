@@ -21,11 +21,11 @@ export class MapService {
     updateSelectedTileSource = new BehaviorSubject<string>('');
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
+    /* eslint-disable no-unused-vars */
     constructor(private communicationMapService: CommunicationMapService) {}
 
     async getMap(id: string): Promise<void> {
-        const map = await firstValueFrom(this.communicationMapService.basicGet<DBMap>(`admin/${id}`));
-        const { _id, isVisible, lastModified, ...restOfMap } = map;
+        const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(this.communicationMapService.basicGet<DBMap>(`admin/${id}`));
         this.map = { ...restOfMap };
     }
 
