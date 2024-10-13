@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ModesComponent } from '../modes/modes.component';
 import { CreateMapModalComponent } from './create-map-modal.component';
 import SpyObj = jasmine.SpyObj;
+import { Mode } from '@common/map.types';
 
 
 describe('CreateMapModalComponent', () => {
@@ -63,9 +64,9 @@ describe('CreateMapModalComponent', () => {
 
     it('should redirect to the edit view with the correct mapSize and mode', () => {
         component.mapSize = 15;
-        component.selectedMode = 'Classic';
+        component.selectedMode = Mode.Classic;
         component.redirectToEditView();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/creation/size=15/mode=Classic']);
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/creation'], {queryParams: {size: component.mapSize, mode: component.selectedMode}});
     });
 
     it('should return true when game creation is possible', () => {

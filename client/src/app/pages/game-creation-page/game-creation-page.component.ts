@@ -77,11 +77,11 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
             this.mapId = this.route.snapshot.params['id'];
         }
         if (this.route.snapshot.params['size']) {
-            this.mapSize = parseInt(this.route.snapshot.params['size'].split('=')[1]);
+            this.mapSize = parseInt(this.route.snapshot.params['size']);
         }
         if (this.route.snapshot.params['mode']) {
-            const mode = this.route.snapshot.params['mode'].split('=')[1];
-            if (mode === 'classic') {
+            const mode = this.route.snapshot.params['mode'];
+            if (mode === 'classique') {
                 this.mode = Mode.Classic;
             } else {
                 this.mode = Mode.Ctf;
