@@ -32,7 +32,7 @@ export class ToolbarComponent implements OnInit {
         public imageService: ImageService,
     ) {}
 
-    mode: string;
+    mode: Mode;
     async ngOnInit() {
         this.setMode();
         this.mapService.updateSelectedTile$.subscribe((tile) => {
@@ -108,9 +108,9 @@ export class ToolbarComponent implements OnInit {
 
     setMode() {
         if (this.mapService.map.mode === Mode.Classic) {
-            this.mode = 'classic';
+            this.mode = Mode.Classic;
         } else {
-            this.mode = 'ctf';
+            this.mode = Mode.Ctf;
         }
     }
 }
