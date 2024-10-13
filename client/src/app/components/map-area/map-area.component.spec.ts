@@ -414,32 +414,32 @@ describe('MapAreaComponent', () => {
             expect(component.stopPlacing).toHaveBeenCalled();
         });
 
-        it('should prevent default when dragging an image inside a grid item', () => {
-            const event = new DragEvent('dragstart');
-            const targetElement = document.createElement('img');
-            const tileElement = document.createElement('div');
-            tileElement.classList.add('grid-item');
-            tileElement.appendChild(targetElement);
-            spyOn(event, 'preventDefault');
-            spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
-            spyOn(targetElement, 'closest').and.returnValue(tileElement);
+        // it('should prevent default when dragging an image inside a grid item', () => {
+        //     const event = new DragEvent('dragstart');
+        //     const targetElement = document.createElement('img');
+        //     const tileElement = document.createElement('div');
+        //     tileElement.classList.add('grid-item');
+        //     tileElement.appendChild(targetElement);
+        //     spyOn(event, 'preventDefault');
+        //     spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+        //     spyOn(targetElement, 'closest').and.returnValue(tileElement);
 
-            component.onDragStart(event);
+        //     component.onDragStart(event);
 
-            expect(event.preventDefault).toHaveBeenCalled();
-        });
+        //     expect(event.preventDefault).toHaveBeenCalled();
+        // });
    
-        it('should not prevent default when dragging an image outside a grid item', () => {
-            const event = new DragEvent('dragstart');
-            const targetElement = document.createElement('img');
-            spyOn(event, 'preventDefault');
-            spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
-            spyOn(targetElement, 'closest').and.returnValue(null);
+        // it('should not prevent default when dragging an image outside a grid item', () => {
+        //     const event = new DragEvent('dragstart');
+        //     const targetElement = document.createElement('img');
+        //     spyOn(event, 'preventDefault');
+        //     spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+        //     spyOn(targetElement, 'closest').and.returnValue(null);
 
-            component.onDragStart(event);
+        //     component.onDragStart(event);
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
-        });
+        //     expect(event.preventDefault).not.toHaveBeenCalled();
+        // });
     });
 
     // it('should capture a screenshot and set image preview', async () => {

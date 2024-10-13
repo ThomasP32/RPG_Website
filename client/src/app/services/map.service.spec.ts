@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { of, throwError } from 'rxjs';
 import { MapService } from './map.service';
 
@@ -20,13 +20,10 @@ describe('MapService', () => {
             tiles: [],
             description: '',
             imagePreview: '',
-            mode: Mode.Classic,
-            _id: '1',
-            isVisible: false,
-            lastModified: new Date(),
+            mode: Mode.Classic
         };
 
-        communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPut', 'basicGet']);
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPost', 'basicGet']);
         TestBed.configureTestingModule({
             providers: [MapService, { provide: CommunicationMapService, useValue: communicationServiceSpy }],
         });
@@ -90,140 +87,130 @@ describe('MapService', () => {
             description: '',
             imagePreview: '',
             mode: Mode.Classic,
-            _id: '2',
-            isVisible: false,
-            lastModified: new Date(),
         };
 
-        communicationServiceSpy.basicGet.and.returnValue(of(mockMap2));
+        communicationServiceSpy.basicGet.and.returnValue(of({...mockMap2, _id: '2', isVisible: false, lastModified: new Date() }));
         await service.getMap('2');
         expect(service.map).toEqual(mockMap2);
         expect(communicationServiceSpy.basicGet).toHaveBeenCalledOnceWith('admin/2');
     });
 
-    // Tests for saveNewMap
-    // it('should save new map', () => {
-    //     communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
-    //     service.map = mockMap;
-    //     service.saveNewMap();
+    describe('SaveNewMap', () => {
+        it('should save new map', async () => {
+            communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse({ body: 'response' })));
+            service.map = mockMap;
+            const result = await service.saveNewMap();
 
-    //     expect(communicationServiceSpy.basicPut).toHaveBeenCalledOnceWith('admin/creation', mockMap);
-    // });
-
-    // it('should handle HttpErrorResponse with JSON error body for saveNewMap', async () => {
-    //     const errorResponse = new HttpErrorResponse({
-    //         status: 400,
-    //         error: JSON.stringify({ message: 'Test error message' }),
-    //     });
-
-    //     communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-    //     const result = await service.saveNewMap();
-    //     expect(result).toBe('Test error message');
-    // });
-
-    // it('should handle HttpErrorResponse with non-JSON error body for saveNewMap', async () => {
-    //     const errorResponse = new HttpErrorResponse({
-    //         status: 400,
-    //         error: 'Non-JSON error message',
-    //     });
-
-    //     communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-    //     const result = await service.saveNewMap();
-    //     expect(result).toBe('Non-JSON error message');
-    // });
-
-    it('should handle unknown error type for saveNewMap', async () => {
-        const unknownError = new Error('Unknown error');
-
-        communicationServiceSpy.basicPut.and.returnValue(throwError(() => unknownError));
-        const result = await service.saveNewMap();
-        expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
-    });
-
-    // it('should save new map successfully', async () => {
-    //     communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
-    //     const result = await service.saveNewMap();
-    //     expect(result).toBe('Votre jeu a été sauvegardé avec succès!');
-    // });
-
-    // it('should handle HttpErrorResponse with array of messages for saveNewMap', async () => {
-    //     const errorResponse = new HttpErrorResponse({
-    //         status: 400,
-    //         error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
-    //     });
-
-    //     communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-    //     const result = await service.saveNewMap();
-
-    //     expect(result).toBe('Error part 1 and error part 2');
-    // });
-
-    // Tests for updateMap
-    it('should update existing map', () => {
-        const id = '1';
-        const cleanedMap = {
-            name: 'Test Map',
-            mapSize: { x: 10, y: 10 },
-            startTiles: [],
-            items: [],
-            doorTiles: [],
-            tiles: [],
-            description: '',
-            imagePreview: '',
-            mode: 'classique',
-        };
-
-        communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
-        service.map = mockMap;
-        service.updateMap(id);
-
-        expect(communicationServiceSpy.basicPut).toHaveBeenCalledOnceWith(`admin/edition/${id}`, cleanedMap);
-    });
-
-    // it('should handle HttpErrorResponse with JSON error body for updateMap', async () => {
-    //     const errorResponse = new HttpErrorResponse({
-    //         status: 400,
-    //         error: JSON.stringify({ message: 'Erreur inconnue, veuillez réessayer plus tard...' }),
-    //     });
-    //     communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-    //     const result = await service.updateMap('1');
-    //     expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
-    // });
-
-    it('should handle HttpErrorResponse with non-JSON error body for updateMap', async () => {
-        const errorResponse = new HttpErrorResponse({
-            status: 400,
-            error: 'Erreur inconnue, veuillez réessayer plus tard...',
+            expect(communicationServiceSpy.basicPost).toHaveBeenCalledOnceWith('admin/creation', mockMap);
+            expect(result).toBe('Votre jeu a été sauvegardé avec succès!');
         });
 
-        communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-        const result = await service.updateMap('1');
-        expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
+        it('should handle HttpErrorResponse with JSON error body for saveNewMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: JSON.stringify({ message: 'Test error message' }),
+            });
+
+            communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+            const result = await service.saveNewMap();
+            expect(result).toBe('Test error message');
+        });
+
+        it('should handle HttpErrorResponse with non-JSON error body for saveNewMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: 'Non-JSON error message',
+            });
+
+            communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+            const result = await service.saveNewMap();
+            expect(result).toBe('Erreur inattendue, veuillez réessayer plus tard...');
+        });
+
+        it('should handle unknown error type for saveNewMap', async () => {
+            const unknownError = new Error('Unknown error');
+
+            communicationServiceSpy.basicPost.and.returnValue(throwError(() => unknownError));
+            const result = await service.saveNewMap();
+            expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
+        });
+
+        it('should handle HttpErrorResponse with array of messages for saveNewMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
+            });
+
+            communicationServiceSpy.basicPost.and.returnValue(throwError(() => errorResponse));
+            const result = await service.saveNewMap();
+
+            expect(result).toBe('Error part 1 and error part 2');
+        });
     });
 
-    it('should handle unknown error type for updateMap', async () => {
-        const unknownError = new Error('Unknown error');
+    describe('UpdateMap', () => {
+        it('should update existing map', () => {
+            const id = '1';
+            const map = {
+                name: 'Test Map updated',
+                mapSize: { x: 10, y: 10 },
+                startTiles: [],
+                items: [],
+                doorTiles: [],
+                tiles: [],
+                description: '',
+                imagePreview: '',
+                mode: Mode.Classic,
+            };
 
-        communicationServiceSpy.basicPut.and.returnValue(throwError(() => unknownError));
-        const result = await service.updateMap('1');
-        expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
+            communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
+            service.map = map;
+            service.updateMap(id);
+
+            expect(communicationServiceSpy.basicPut).toHaveBeenCalledOnceWith(`admin/edition/${id}`, map);
+        });
+
+        it('should handle HttpErrorResponse with non-JSON error body for updateNewMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: 'Non-JSON error message',
+            });
+
+            communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
+            const result = await service.updateMap('1');
+            expect(result).toBe('Erreur inattendue, veuillez réessayer plus tard...');
+        });
+
+        it('should handle unknown error type for updateMap', async () => {
+            const unknownError = new Error('Unknown error');
+
+            communicationServiceSpy.basicPut.and.returnValue(throwError(() => unknownError));
+            const result = await service.updateMap('1');
+            expect(result).toBe('Erreur inconnue, veuillez réessayer plus tard...');
+        });
+
+        it('should handle HttpErrorResponse with array of messages for updateMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
+            });
+
+            communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
+            const result = await service.updateMap('1');
+
+            expect(result).toBe('Error part 1 and error part 2');
+        });
+
+        it('should handle HttpErrorResponse with string message for updateMap', async () => {
+            const errorResponse = new HttpErrorResponse({
+                status: 400,
+                error: JSON.stringify({ message: 'JSON string message' }),
+            });
+
+            communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
+            const result = await service.updateMap('1');
+
+            expect(result).toBe('JSON string message');
+        });
     });
-
-    // it('should handle HttpErrorResponse with array of messages for updateNewMap', async () => {
-    //     const errorResponse = new HttpErrorResponse({
-    //         status: 400,
-    //         error: JSON.stringify({ message: ['Error part 1', 'and error part 2'] }),
-    //     });
-
-    //     communicationServiceSpy.basicPut.and.returnValue(throwError(() => errorResponse));
-    //     const result = await service.updateMap('1');
-
-    //     expect(result).toBe('Error part 1 and error part 2');
-    // });
-
-    // it('should update map successfully', async () => {
-    //     communicationServiceSpy.basicPut.and.returnValue(of(new HttpResponse({ body: 'response' })));
-    //     const result = await service.updateMap('1');
-    //     expect(result).toBe('Votre jeu a été sauvegardé avec succès!');
-    // }); 
 });
