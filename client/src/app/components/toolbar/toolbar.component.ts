@@ -1,8 +1,8 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapService } from '@app/services/map.service';
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
 import { Mode } from '@common/map.types';
 /* eslint-disable no-unused-vars */
 @Component({

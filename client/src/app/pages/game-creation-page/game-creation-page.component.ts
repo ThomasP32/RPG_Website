@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
 import { ToolbarComponent } from '@app/components/toolbar/toolbar.component';
-import { MapService } from '@app/services/map.service';
+import { MapService } from '@app/services/map/map.service';
 import { Map, Mode } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MapService } from '@app/services/map.service';
+import { MapService } from '@app/services/map/map.service';
 // import { Mode } from '@common/map.types';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
@@ -153,7 +153,6 @@ describe('GameCreationPageComponent in edition mode', () => {
 
         component.mapAreaComponent = mapAreaComponentSpy;
         component.mapControlBarComponent = mapControlBarComponentSpy;
-
     });
 
     afterEach(() => {
@@ -191,12 +190,11 @@ describe('GameCreationPageComponent in edition mode', () => {
         await component.ngOnInit();
 
         generateMapSubject.next();
-        
+
         await fixture.whenStable();
 
         expect(mapAreaComponentSpy.screenMap).toHaveBeenCalled();
         expect(mapAreaComponentSpy.generateMap).toHaveBeenCalled();
         expect(mapServiceSpy.updateMap).toHaveBeenCalledWith('1');
-
     });
 });
