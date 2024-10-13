@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapService } from '@app/services/map.service';
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
-import { TileService } from '@app/services/tile.service';
+import { TileService } from '@app/services/tile/tile.service';
 import { ItemCategory, DBMap as Map, Mode, TileCategory } from '@common/map.types';
 import { of } from 'rxjs';
 import { MapAreaComponent } from './map-area.component';

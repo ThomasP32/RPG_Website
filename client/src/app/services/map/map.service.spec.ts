@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Map, Mode } from '@common/map.types';
 import { of, throwError } from 'rxjs';
-import { MapService } from './map.service';
+import { MapService } from '@app/services/map/map.service';
 
 describe('MapService', () => {
     let service: MapService;
@@ -20,7 +20,7 @@ describe('MapService', () => {
             tiles: [],
             description: '',
             imagePreview: '',
-            mode: Mode.Classic
+            mode: Mode.Classic,
         };
 
         communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPost', 'basicGet']);
@@ -67,7 +67,7 @@ describe('MapService', () => {
 
     it('should update selected tile', () => {
         let selectedTile = '';
-        service.updateSelectedTileSource.subscribe((tile) => (selectedTile = tile));
+        service.updateSelectedTileSource.subscribe((tile: string) => (selectedTile = tile));
 
         service.updateSelectedTile('wall');
         expect(selectedTile).toBe('wall');
@@ -89,7 +89,7 @@ describe('MapService', () => {
             mode: Mode.Classic,
         };
 
-        communicationServiceSpy.basicGet.and.returnValue(of({...mockMap2, _id: '2', isVisible: false, lastModified: new Date() }));
+        communicationServiceSpy.basicGet.and.returnValue(of({ ...mockMap2, _id: '2', isVisible: false, lastModified: new Date() }));
         await service.getMap('2');
         expect(service.map).toEqual(mockMap2);
         expect(communicationServiceSpy.basicGet).toHaveBeenCalledOnceWith('admin/2');

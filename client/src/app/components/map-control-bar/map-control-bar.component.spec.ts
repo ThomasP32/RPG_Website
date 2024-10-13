@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MapService } from '@app/services/map.service';
+import { MapService } from '@app/services/map/map.service';
 import { DBMap as Map, Mode } from '@common/map.types';
 import { Types } from 'mongoose';
 import { MapControlBarComponent } from './map-control-bar.component';
