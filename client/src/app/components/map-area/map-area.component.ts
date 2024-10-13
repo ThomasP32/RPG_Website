@@ -117,7 +117,6 @@ export class MapAreaComponent implements OnInit {
 
         if (targetElement.tagName === 'IMG') {
             const tileElement = targetElement.closest('.grid-item');
-
             if (!tileElement) {
                 event.preventDefault();
             }

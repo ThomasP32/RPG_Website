@@ -57,7 +57,6 @@ export class MapService {
 
     async saveNewMap(): Promise<string> {
         try {
-            console.log('creating map');
             await firstValueFrom(this.communicationMapService.basicPost<Map>('admin/creation', this.map));
         } catch (error) {
             if (error instanceof HttpErrorResponse) {

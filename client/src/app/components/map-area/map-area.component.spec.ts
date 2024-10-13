@@ -25,7 +25,7 @@ describe('MapAreaComponent', () => {
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'map']);
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage']);
-        screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndUpload']);
+        screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
         routerSpy = jasmine.createSpyObj('Router', ['url']);
 
         mapServiceSpy.map = {
@@ -62,6 +62,7 @@ describe('MapAreaComponent', () => {
 
         fixture.detectChanges();
     });
+
     // Groupe 1: Tests liés à l'initialisation de la carte
     describe('Map Initialization', () => {
         it('should create the component', () => {
@@ -255,6 +256,47 @@ describe('MapAreaComponent', () => {
             expect(component.getItemImage).toHaveBeenCalledWith(item);
             expect(result).toBe(imageServiceSpy.getItemImage(item));
         });
+
+        it('should prevent default when dragging an image outside a grid-item', () => {
+            const event = new DragEvent('dragstart');
+            const targetElement = document.createElement('img');
+
+            spyOn(event, 'preventDefault');
+            spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+            spyOn(targetElement, 'closest').and.returnValue(null);
+
+            component.onDragStart(event);
+
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should not prevent default when dragging an image inside a grid-item', () => {
+            const event = new DragEvent('dragstart');
+            const targetElement = document.createElement('img');
+            const gridItemElement = document.createElement('div');
+            gridItemElement.classList.add('grid-item');
+            gridItemElement.appendChild(targetElement);
+
+            spyOn(event, 'preventDefault');
+            spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+            spyOn(targetElement, 'closest').and.returnValue(gridItemElement);
+
+            component.onDragStart(event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+        });
+
+        it('should not prevent default when dragging a non-image element', () => {
+            const event = new DragEvent('dragstart');
+            const targetElement = document.createElement('div');
+
+            spyOn(event, 'preventDefault');
+            spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
+
+            component.onDragStart(event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+        });
     });
 
     describe('Map interactions', () => {
@@ -376,6 +418,19 @@ describe('MapAreaComponent', () => {
 
             expect(event.preventDefault).not.toHaveBeenCalled();
         });
+
+        it('should call eraseTile when isMouseDown and isRightClickDown are true', () => {
+            component.isMouseDown = true;
+            component.isRightClickDown = true;
+
+            const rowIndex = 0;
+            const colIndex = 0;
+
+            component.placeTileOnMove(rowIndex, colIndex);
+
+            expect(tileServiceSpy.eraseTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.defaultTile);
+            expect(tileServiceSpy.placeTile).not.toHaveBeenCalled();
+        });
     });
 
     describe('Map counters', () => {
@@ -413,39 +468,19 @@ describe('MapAreaComponent', () => {
             component.onMouseUp(event);
             expect(component.stopPlacing).toHaveBeenCalled();
         });
-
-        // it('should prevent default when dragging an image inside a grid item', () => {
-        //     const event = new DragEvent('dragstart');
-        //     const targetElement = document.createElement('img');
-        //     const tileElement = document.createElement('div');
-        //     tileElement.classList.add('grid-item');
-        //     tileElement.appendChild(targetElement);
-        //     spyOn(event, 'preventDefault');
-        //     spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
-        //     spyOn(targetElement, 'closest').and.returnValue(tileElement);
-
-        //     component.onDragStart(event);
-
-        //     expect(event.preventDefault).toHaveBeenCalled();
-        // });
-   
-        // it('should not prevent default when dragging an image outside a grid item', () => {
-        //     const event = new DragEvent('dragstart');
-        //     const targetElement = document.createElement('img');
-        //     spyOn(event, 'preventDefault');
-        //     spyOnProperty(event, 'target', 'get').and.returnValue(targetElement);
-        //     spyOn(targetElement, 'closest').and.returnValue(null);
-
-        //     component.onDragStart(event);
-
-        //     expect(event.preventDefault).not.toHaveBeenCalled();
-        // });
     });
 
-    // it('should capture a screenshot and set image preview', async () => {
-    //     screenshotServiceSpy.captureAndConvert.and.returnValue(Promise.resolve('test-image-url'));
-    //     await component.screenMap();
-    //     expect(screenshotServiceSpy.captureAndConvert).toHaveBeenCalledWith('screenshot-container');
-    //     expect(mapServiceSpy.map.imagePreview).toBe('test-image-url');
-    // });
+    describe('Map screenshot', () => {
+        it('should capture a screenshot and set imagePreview', async () => {
+            const mockImageUrl = 'test-image-url';
+
+            screenshotServiceSpy.captureAndConvert.and.returnValue(Promise.resolve(mockImageUrl));
+
+            await component.screenMap();
+
+            expect(screenshotServiceSpy.captureAndConvert).toHaveBeenCalledWith('screenshot-container');
+
+            expect(mapServiceSpy.map.imagePreview).toBe(mockImageUrl);
+        });
+    });
 });
