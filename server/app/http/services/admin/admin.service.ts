@@ -33,7 +33,7 @@ export class AdminService {
 
     async getMapById(mapId: string): Promise<DBMap> {
         const objectId = new Types.ObjectId(mapId);
-        const map = await this.mapModel.findOne({ _id: objectId });
+        const map = await this.mapModel.findOne({ _id: objectId }, { __v: 0 });
         if (!map) {
             throw new NotFoundException(mapId);
         }
