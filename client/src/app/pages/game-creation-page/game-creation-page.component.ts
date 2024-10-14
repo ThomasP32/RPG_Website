@@ -83,14 +83,21 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
         const queryParams = this.route.snapshot.queryParams;
 
         if (queryParams['size']) {
-            this.mapSize = parseInt(queryParams['size']);
+            const mapSize = parseInt(queryParams['size']);
+            if (mapSize === 10 || mapSize === 15 || mapSize === 20) {
+                this.mapSize = mapSize;
+            } else {
+                this.router.navigate(['/']);
+            }
         }
         if (queryParams['mode']) {
             const mode = queryParams['mode'];
             if (mode === 'classique') {
                 this.mode = Mode.Classic;
-            } else {
+            } else if (mode === 'ctf') {
                 this.mode = Mode.Ctf;
+            } else {
+                this.router.navigate(['/']);
             }
         }
     }
