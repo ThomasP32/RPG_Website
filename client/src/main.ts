@@ -19,7 +19,7 @@ if (environment.production) {
 const routes: Routes = [
     { path: '', redirectTo: '/main-menu', pathMatch: 'full' },
     { path: 'main-menu', component: HomePageComponent },
-    { path: 'creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'creation', component: GameCreationPageComponent },
     { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },

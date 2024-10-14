@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { TileCategory } from '@common/map.types';
-import { MapCounterService } from './map-counter.service';
+import { MapCounterService } from '../map-counter/map-counter.service';
 import { TileService } from './tile.service';
 
 describe('TileService', () => {

@@ -67,7 +67,7 @@ export class CreateMapModalComponent {
         if (this.selectedMode !== undefined) {
             params.set('mode', this.selectedMode);
         }
-        this.router.navigate([`/creation/size=${this.mapSize}/mode=${this.selectedMode}`]);
+        this.router.navigate(['/creation'], { queryParams: { size: this.mapSize, mode: this.selectedMode } });
     }
 
     canCreateGame(): boolean {
