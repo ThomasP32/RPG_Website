@@ -1,21 +1,20 @@
 .map-container {
     border: 3px solid #202020;
-    // box-shadow: 0 0 10px #B7410E;
 }
 .map {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 50vw;
+    width: 40vw;
     aspect-ratio: 1 / 1;
     box-sizing: border-box;
     border: 2px solid #3b3b3b;
-    // background-color: #3B3B3B;
 }
 .map-row {
     display: flex;
     flex: 1;
+    width: 100%;
 }
 
 .map-cell {
@@ -23,7 +22,6 @@
     text-align: center;
     line-height: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #3b3b3b;
     background-color: #3b3b3b;
     cursor: pointer;
     position: relative;
