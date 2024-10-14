@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MapService } from '@app/services/map/map.service';
 import { MapAreaComponent } from '@app/components/map-area/map-area.component';
 import { MapControlBarComponent } from '@app/components/map-control-bar/map-control-bar.component';
+import { MapService } from '@app/services/map/map.service';
 import { Mode } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { GameCreationPageComponent } from './game-creation-page.component';
@@ -32,8 +32,8 @@ describe('GameCreationPageComponent in creation mode', () => {
         mapServiceSpy.generateMap$ = generateMapSubject.asObservable();
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
-                queryParams: { mode: 'classique', size: '10' }, 
-                params: {}
+                queryParams: { mode: 'classique', size: '10' },
+                params: {},
             },
         });
 
@@ -78,6 +78,22 @@ describe('GameCreationPageComponent in creation mode', () => {
         expect(mapServiceSpy.createMap).toHaveBeenCalledWith(component.mode, component.mapSize);
         expect(mapServiceSpy.getMap).not.toHaveBeenCalled();
         expect(component.getUrlQueryParams).toHaveBeenCalled();
+    });
+
+    it('shouldnt initialize in creation mode when mode is invalid', async () => {
+        activatedRouteSpy.snapshot.queryParams = { mode: 'invalidmode', size: '10' };
+
+        await component.ngOnInit();
+
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
+    });
+
+    it('shouldnt initialize in creation mode when size is invalid', async () => {
+        activatedRouteSpy.snapshot.queryParams = { mode: 'classique', size: '5' };
+
+        await component.ngOnInit();
+
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should handle reset map event', () => {
@@ -126,9 +142,9 @@ describe('GameCreationPageComponent in edition mode', () => {
         mapServiceSpy.generateMap$ = generateMapSubject.asObservable();
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
-                params: { id: '1' }, 
-                queryParams: {}
-            }
+                params: { id: '1' },
+                queryParams: {},
+            },
         });
 
         routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: 'edition' });
