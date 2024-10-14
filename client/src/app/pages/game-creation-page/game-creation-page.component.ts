@@ -56,10 +56,8 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
             if (this.mapAreaComponent) {
                 await this.mapAreaComponent.screenMap();
                 this.mapAreaComponent.generateMap();
-                console.log('la recherche de id ', this.route.snapshot.params['id']);
                 if (this.route.snapshot.params['id']) {
                     const id = this.route.snapshot.params['id'];
-                    console.log('le id de la map est : ', id);
                     const errorMessage = await this.mapService.updateMap(id);
                     this.mapControlBarComponent.showError(errorMessage);
                 } else {
