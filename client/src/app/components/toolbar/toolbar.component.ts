@@ -1,8 +1,8 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapService } from '@app/services/map.service';
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
 import { Mode } from '@common/map.types';
 /* eslint-disable no-unused-vars */
 @Component({
@@ -32,7 +32,7 @@ export class ToolbarComponent implements OnInit {
         public imageService: ImageService,
     ) {}
 
-    mode: string;
+    mode: Mode;
     async ngOnInit() {
         this.setMode();
         this.mapService.updateSelectedTile$.subscribe((tile) => {
@@ -108,9 +108,9 @@ export class ToolbarComponent implements OnInit {
 
     setMode() {
         if (this.mapService.map.mode === Mode.Classic) {
-            this.mode = 'classic';
+            this.mode = Mode.Classic;
         } else {
-            this.mode = 'ctf';
+            this.mode = Mode.Ctf;
         }
     }
 }

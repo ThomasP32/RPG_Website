@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MapCounterService } from './map-counter.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 /* eslint-disable no-unused-vars */
 @Injectable({
     providedIn: 'root',

@@ -10,7 +10,7 @@ const mockMaps: Map[] = [
     {
         name: 'Map1',
         description: 'Description1',
-        imagePreview: 'image1.png',
+        imagePreview: '',
         mode: Mode.Ctf,
         mapSize: { x: 1, y: 1 },
         startTiles: [],
