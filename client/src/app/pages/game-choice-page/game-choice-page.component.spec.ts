@@ -78,7 +78,7 @@ describe('GameChoicePageComponent', () => {
         component.selectedMap = 'Map1';
         component.next();
 
-        expect(router.navigate).toHaveBeenCalledWith(['/create-character'], { queryParams: { name: 'Map1' } });
+        expect(router.navigate).toHaveBeenCalledWith([`create-game/Map1/create-character`]);
     });
 
     it('should set error message if no map selected', () => {

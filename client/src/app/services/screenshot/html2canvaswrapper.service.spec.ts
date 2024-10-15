@@ -22,9 +22,9 @@ describe('Html2CanvasWrapperService', () => {
     });
 
     it('should call html2canvas and return a canvas without premature timeout', async () => {
-        
         const mockElement = document.createElement('div');
         document.body.appendChild(mockElement);
+        
 
         const canvas = await service.getCanvas(mockElement);
         expect(canvas).toBeInstanceOf(HTMLCanvasElement);
