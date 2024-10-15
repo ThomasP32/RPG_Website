@@ -4,11 +4,13 @@ import { CommunicationMapService } from '@app/services/communication/communicati
 import { Map, Mode } from '@common/map.types';
 import { of, throwError } from 'rxjs';
 import { MapService } from '@app/services/map/map.service';
+import { Router } from '@angular/router';
 
 describe('MapService', () => {
     let service: MapService;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationMapService>;
     let mockMap: Map;
+    let routerSpy: jasmine.SpyObj<Router>;
 
     beforeEach(() => {
         mockMap = {
@@ -24,8 +26,10 @@ describe('MapService', () => {
         };
 
         communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPost', 'basicGet']);
+        routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         TestBed.configureTestingModule({
-            providers: [MapService, { provide: CommunicationMapService, useValue: communicationServiceSpy }],
+            providers: [MapService, { provide: CommunicationMapService, useValue: communicationServiceSpy}, { provide: Router, useValue: routerSpy }],
+
         });
         service = TestBed.inject(MapService);
     });
@@ -51,6 +55,18 @@ describe('MapService', () => {
             doorTiles: [],
             tiles: [],
         });
+    });
+
+    it('should redirect to / when an error occurs during getMap', async () => {
+        const errorResponse = new HttpErrorResponse({
+            status: 404,
+            error: 'Map not found'
+        });
+        communicationServiceSpy.basicGet.and.returnValue(throwError(() => errorResponse));
+        
+        await service.getMap('invalid-id');
+        
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should trigger generate map', () => {
