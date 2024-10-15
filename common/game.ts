@@ -29,6 +29,12 @@ export interface Specs {
     defenseBonus: Bonus;
     movePoints: number;
     actions: number;
+    nVictories: number;
+    nDefeats: number;
+    nCombats: number;
+    nEvasions: number;
+    nLifeTaken: number;
+    nLifeLost: number;
 }
 
 export interface Player {
@@ -40,15 +46,9 @@ export interface Player {
     inventory: ItemCategory[];
     position: Coordinate;
     turn: number;
-    nVictories: number;
-    nDefeats: number;
-    nCombats: number;
-    nEvasions: number;
-    nLifeTaken: number;
-    nLifeLost: number;
 }
 
-export interface GameRoom extends Map {
+export interface Game extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
@@ -61,6 +61,6 @@ export interface GameRoom extends Map {
     debug: boolean;
 }
 
-export interface GameRoomCtf extends GameRoom {
+export interface GameCtf extends Game {
     nPlayersCtf: number;
 }
