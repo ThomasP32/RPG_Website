@@ -27,6 +27,7 @@ export class CharacterFormPageComponent {
     characterName: string = 'Choisis un nom';
     isEditing: boolean = false;
 
+    player: Player;
     lifeOrSpeedBonus = '';
     attackOrDefenseBonus = '';
     attackBonus: Bonus;
@@ -139,6 +140,24 @@ export class CharacterFormPageComponent {
             return;
         }
 
+        this.createPlayer();
+
+        if (this.router.url.includes('create-game')) {
+            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
+            if (!chosenMap) {
+                this.showErrorMessage.selectionError = true;
+                setTimeout(() => {
+                    this.router.navigate(['/create-game']);
+                }, timeLimit);
+            } else {
+                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
+            }
+        } else {
+            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
+        }
+    }
+    
+    createPlayer() {
         const playerSpecs: Specs = {
             life: this.life,
             speed: this.speed,
@@ -165,20 +184,7 @@ export class CharacterFormPageComponent {
             position: { x: 0, y: 0 },
             turn: 0,
         };
-
-        if (this.router.url.includes('create-game')) {
-            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
-            if (!chosenMap) {
-                this.showErrorMessage.selectionError = true;
-                setTimeout(() => {
-                    this.router.navigate(['/create-game']);
-                }, timeLimit);
-            } else {
-                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: player } });
-            }
-        } else {
-            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: player } });
-        }
+        this.player = player;
     }
 
     onReturn() {
