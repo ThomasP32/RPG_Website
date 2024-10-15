@@ -34,7 +34,7 @@ export class GameChoicePageComponent implements OnInit {
 
     next() {
         if (this.selectedMap) {
-            this.router.navigate(['/create-character'], { queryParams: { name: this.selectedMap } });
+            this.router.navigate([`create-game/${this.selectedMap}/create-character`]);
         } else {
             this.showErrorMessage.userError = true;
         }
