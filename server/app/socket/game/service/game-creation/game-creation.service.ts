@@ -11,6 +11,10 @@ export class GameCreationService {
         console.log(this.gameRooms[0]);
     }
 
+    doesGameExist(gameId: string): boolean {
+        return !!this.gameRooms[gameId];
+    }
+
     addPlayerToGame(player: Player, gameId: string): Game {
         const game = this.gameRooms[gameId];
         const existingPlayers = game.players.filter((existingPlayer) => {
@@ -48,7 +52,11 @@ export class GameCreationService {
         }
     }
 
-    deleteRoom(gameId: string): void {
+    getGamebyId(gameId: string): Game {
+        return this.gameRooms[gameId];
+    }
+
+    deleteGame(gameId: string): void {
         delete this.gameRooms[gameId];
     }
 }

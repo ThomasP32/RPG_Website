@@ -6,14 +6,20 @@ import { io, Socket } from 'socket.io-client';
     providedIn: 'root',
 })
 export class SocketService {
-    private socket: Socket;
+    public socket: Socket;
 
-    constructor() {
+    constructor() {}
+
+    connect() {
         this.socket = io('http://localhost:3000/game', { transports: ['websocket'] });
     }
 
+    isSocketAlive() {
+        return this.socket && this.socket.connected;
+    }
+
     sendMessage<T>(event: string, data: T): void {
-        console.log('sending message');
+        console.log('sending message', event, data);
         this.socket.emit(event, data);
     }
 
