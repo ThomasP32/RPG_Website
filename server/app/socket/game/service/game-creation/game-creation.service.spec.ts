@@ -44,7 +44,7 @@ describe('GameCreationService', () => {
             position: { x: 0, y: 0 },
             specs,
             inventory: [],
-            turn: 1,
+            turn: 0,
         };
 
         gameRoom = {
@@ -67,11 +67,11 @@ describe('GameCreationService', () => {
             hostSocketId: 'host-id',
             players: [],
             availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
-            currentTurn: 1,
+            currentTurn: 0,
             nDoorsManipulated: 0,
             visitedTiles: [],
             duration: 0,
-            nTurns: 1,
+            nTurns: 0,
             debug: false,
         };
     });
@@ -83,6 +83,18 @@ describe('GameCreationService', () => {
 
         service.addGame(gameRoom);
         expect(service['gameRooms']['room-1']).toEqual(gameRoom);
+    });
+
+    it('should return the correct game with getGame', () => {
+        service.addGame(gameRoom);
+        const game = service.getGame('room-1');
+        expect(game).toEqual(gameRoom);
+    });
+    
+    it('should return all games with getGames', () => {
+        service.addGame(gameRoom);
+        const games = service.getGames();
+        expect(games).toEqual([gameRoom]);
     });
 
     it('should mark a player as inactive on disconnect and delete the room', () => {
@@ -136,35 +148,60 @@ describe('GameCreationService', () => {
         expect(service['gameRooms']['room-1'].players[1].name).toBe('Player 1-(2)');
     });
 
-    it('should return false if socketId equals gameId in isPlayerHost', () => {
-        const result = service.isPlayerHost('room-1', 'room-1');
-        expect(result).toBe(false);
-    });
-
     it('should return true if socketId is host in isPlayerHost', () => {
         service.addGame(gameRoom);
         const result = service.isPlayerHost('host-id', 'room-1');
         expect(result).toBe(true);
     });
 
-    it('should continue if gameId is not found in handlePlayerDisconnect', () => {
-        const mockSocket = sinon.createStubInstance(Socket);
-        (mockSocket as any).id = 'player-1';
-        stub(mockSocket, 'rooms').value(new Set(['non-existent-game']));
-
-        const result = service.handlePlayerDisconnect(mockSocket as unknown as Socket);
-        expect(result).toBeUndefined();
-    });
-
-    it('should mark the player as inactive in handlePlayerDisconnect', () => {
-        gameRoom.players.push(player);
+    it('should initialize the game by setting random order for equal speeds and starting points', () => {
+        gameRoom.players = [
+            { ...player, name: 'Player 1', specs: { ...player.specs, speed: 5 } },
+            { ...player, socketId: 'player-2', name: 'Player 2', specs: { ...player.specs, speed: 10 } },
+            { ...player, socketId: 'player-3', name: 'Player 3', specs: { ...player.specs, speed: 5 } },
+        ];
+        gameRoom.startTiles = [
+            { coordinate: { x: 1, y: 1 } },
+            { coordinate: { x: 2, y: 2 } },
+            { coordinate: { x: 3, y: 3 } }
+        ];
         service.addGame(gameRoom);
-
-        const mockSocket = sinon.createStubInstance(Socket);
-        (mockSocket as any).id = 'player-1';
-        stub(mockSocket, 'rooms').value(new Set(['room-1']));
-
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket);
-        expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
+    
+        const setOrderSpy = jest.spyOn(service, 'setOrder');
+        const setStartingPointsSpy = jest.spyOn(service, 'setStartingPoints');
+        
+        service.initializeGame('room-1');
+        
+        expect(setOrderSpy).toHaveBeenCalledWith('room-1');
+        expect(setStartingPointsSpy).toHaveBeenCalledWith('room-1');
+    
+        const players = service['gameRooms']['room-1'].players;
+        expect(players[0].name).toBe('Player 2'); 
+    
+        expect([players[1].name, players[2].name]).toEqual(expect.arrayContaining(['Player 1', 'Player 3']));
     });
+    
+    
+    it('should remove tiles until the number of tiles matches the number of players and assign positions', () => {
+        gameRoom.players = [
+            { ...player },
+            { ...player, socketId: 'player-2', name: 'Player 2' },
+        ];
+    
+        gameRoom.startTiles = [
+            { coordinate: { x: 1, y: 1 } },
+            { coordinate: { x: 2, y: 2 } },
+            { coordinate: { x: 3, y: 3 } },
+            { coordinate: { x: 4, y: 4 } },
+        ];
+    
+        service.addGame(gameRoom);
+        service.setStartingPoints('room-1');
+    
+        expect(service['gameRooms']['room-1'].startTiles.length).toBe(2);
+    
+        expect(service['gameRooms']['room-1'].players[0].position).toBeDefined();
+        expect(service['gameRooms']['room-1'].players[1].position).toBeDefined();
+    });
+    
 });

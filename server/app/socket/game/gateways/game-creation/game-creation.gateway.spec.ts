@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Game, Player } from '@common/game';
+import { Avatar, Bonus, Game, Player } from '@common/game';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -12,6 +13,62 @@ describe('GameGateway', () => {
     let socket: SinonStubbedInstance<Socket>;
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let serverStub: SinonStubbedInstance<Server>;
+
+    let specs = {
+        life: 100,
+        speed: 10,
+        attack: 15,
+        defense: 5,
+        attackBonus: Bonus.D4,
+        defenseBonus: Bonus.D6,
+        movePoints: 3,
+        actions: 2,
+        nVictories: 0,
+        nDefeats: 0,
+        nCombats: 0,
+        nEvasions: 0,
+        nLifeTaken: 0,
+        nLifeLost: 0,
+    };
+
+    let player = {
+        socketId: 'player-1',
+        name: 'Player 1',
+        avatar: Avatar.Avatar1,
+        isActive: true,
+        position: { x: 0, y: 0 },
+        specs,
+        inventory: [],
+        turn: 0,
+    };
+
+    let gameRoom = {
+        id: 'room-1',
+        name: 'Test Room',
+        description: 'A test game room',
+        imagePreview: 'some-image-url',
+        mode: Mode.Ctf,
+        mapSize: { x: 20, y: 20 },
+        startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
+        items: [
+            { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
+            { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+        ],
+        doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
+        tiles: [
+            { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
+            { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
+        ],
+        hostSocketId: 'host-id',
+        players: [player],
+        availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
+        currentTurn: 0,
+        nDoorsManipulated: 0,
+        visitedTiles: [],
+        duration: 0,
+        nTurns: 0,
+        debug: false,
+    };
 
     beforeEach(async () => {
         logger = createStubInstance(Logger);
@@ -96,6 +153,29 @@ describe('GameGateway', () => {
 
             expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameId)).toBeTruthy();
             expect(gameCreationService.handlePlayerDisconnect.calledWith(socket)).toBeTruthy();
+        });
+    });
+
+    describe('handleInitGame', () => {
+        it('should initialize the game and emit gameInitialized if the game exists and the client is the host', () => {
+            const roomId = 'room-1';
+            gameRoom.hostSocketId = socket.id;
+
+            gameCreationService.getGame.returns(gameRoom);
+
+            gateway.handleInitGame(socket, roomId);
+
+            expect(gameCreationService.initializeGame.calledWith(roomId)).toBeTruthy();
+        });
+
+        it('shouldnt initialize the game if the game doesnt exists', () => {
+            const roomId = 'room-1';
+
+            gameCreationService.getGame.returns(undefined);
+
+            gateway.handleInitGame(socket, roomId);
+
+            expect(gameCreationService.initializeGame.calledWith(roomId)).toBeFalsy();
         });
     });
 });
