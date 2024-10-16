@@ -26,6 +26,15 @@ export class GameGateway implements OnGatewayDisconnect {
         this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
     }
 
+    @SubscribeMessage('initializeGame')
+    handleInitGame(client: Socket, roomId: string): void {
+        const game = this.gameCreationService.getGame(roomId);
+        if(game && client.id === game.hostSocketId) {
+            this.gameCreationService.initializeGame(roomId);
+            this.server.to(roomId).emit('gameInitialized', { game: game });
+        }
+    }
+
     handleDisconnect(client: Socket): void {
         const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
         for (const gameId of gameRooms) {
