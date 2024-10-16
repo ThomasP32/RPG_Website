@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { Bonus, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 /* eslint-disable no-unused-vars */
@@ -22,13 +23,15 @@ const timeLimit = 5000;
     styleUrls: ['./character-form-page.component.scss'],
 })
 export class CharacterFormPageComponent {
+    Bonus = Bonus;
     characterName: string = 'Choisis un nom';
     isEditing: boolean = false;
 
+    player: Player;
     lifeOrSpeedBonus = '';
     attackOrDefenseBonus = '';
-    attackBonus = '';
-    defenseBonus = '';
+    attackBonus: Bonus;
+    defenseBonus: Bonus;
 
     selectedCharacter: Character;
     characters: Character[] = [];
@@ -39,7 +42,7 @@ export class CharacterFormPageComponent {
     speed = defaultSpeed;
     attack = defaultAttack;
     defense = defaultDefense;
-
+    gameId: string | null = null;
     mapName: string | null = null;
     maps: Map[] = [];
     // map: Map;
@@ -55,15 +58,15 @@ export class CharacterFormPageComponent {
     private readonly route: ActivatedRoute = inject(ActivatedRoute);
 
     constructor(private communicationMapService: CommunicationMapService) {
-        // Assume characters are fetched from a service
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
-            this.selectedCharacter = this.characters[0]; // Initialize with the first character
+            this.selectedCharacter = this.characters[0];
         });
 
-        this.route.queryParams.subscribe((params) => {
-            this.mapName = params['name'];
-        });
+        this.mapName = this.route.snapshot.params['mapName'];
+        if (!this.router.url.includes('create-game')) {
+            this.gameId = this.route.snapshot.params['gameId'];
+        }
     }
 
     selectCharacter(character: Character) {
@@ -92,11 +95,11 @@ export class CharacterFormPageComponent {
 
     assignDice() {
         if (this.attackOrDefenseBonus === 'attack') {
-            this.attackBonus = 'D6';
-            this.defenseBonus = 'D4';
+            this.attackBonus = Bonus.D6;
+            this.defenseBonus = Bonus.D4;
         } else if (this.attackOrDefenseBonus === 'defense') {
-            this.attackBonus = 'D4';
-            this.defenseBonus = 'D6';
+            this.attackBonus = Bonus.D4;
+            this.defenseBonus = Bonus.D6;
         }
     }
 
@@ -107,13 +110,13 @@ export class CharacterFormPageComponent {
 
     stopEditing() {
         this.isEditing = false;
+        this.characterName = this.characterName.trim();
         if (!this.characterName) {
             this.characterName = 'Choisis ton nom';
         }
     }
 
     async onSubmit() {
-        const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
 
         this.showErrorMessage = {
             selectionError: false,
@@ -137,14 +140,51 @@ export class CharacterFormPageComponent {
             return;
         }
 
-        if (!chosenMap) {
-            this.showErrorMessage.selectionError = true;
-            setTimeout(() => {
-                this.router.navigate(['/create-game']);
-            }, timeLimit);
+        this.createPlayer();
+
+        if (this.router.url.includes('create-game')) {
+            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
+            if (!chosenMap) {
+                this.showErrorMessage.selectionError = true;
+                setTimeout(() => {
+                    this.router.navigate(['/create-game']);
+                }, timeLimit);
+            } else {
+                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
+            }
         } else {
-            this.router.navigate(['/waiting-room'], { queryParams: { name: chosenMap.name } });
+            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
         }
+    }
+    
+    createPlayer() {
+        const playerSpecs: Specs = {
+            life: this.life,
+            speed: this.speed,
+            attack: this.attack,
+            defense: this.defense,
+            attackBonus: this.attackBonus,
+            defenseBonus: this.defenseBonus,
+            movePoints: 0,
+            actions: 0,
+            nVictories: 0,
+            nDefeats: 0,
+            nCombats: 0,
+            nEvasions: 0,
+            nLifeTaken: 0,
+            nLifeLost: 0,
+        };
+        const player: Player = {
+            name: this.characterName,
+            socketId: '',
+            isActive: true,
+            avatar: this.selectedCharacter.id,
+            specs: playerSpecs,
+            inventory: [],
+            position: { x: 0, y: 0 },
+            turn: 0,
+        };
+        this.player = player;
     }
 
     onReturn() {

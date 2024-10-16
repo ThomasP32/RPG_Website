@@ -19,14 +19,14 @@ if (environment.production) {
 const routes: Routes = [
     { path: '', redirectTo: '/main-menu', pathMatch: 'full' },
     { path: 'main-menu', component: HomePageComponent },
-    { path: 'creation/:size/:mode', component: GameCreationPageComponent },
+    { path: 'creation', component: GameCreationPageComponent },
     { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
-    { path: 'create-character', component: CharacterFormPageComponent },
-    { path: 'create-character/:id', component: CharacterFormPageComponent },
-    { path: 'waiting-room', component: WaitingRoomPageComponent },
-    { path: 'waiting-room/:id', component: WaitingRoomPageComponent },
+    { path: 'join-game/create-character', component: CharacterFormPageComponent },
+    { path: 'create-game/:mapName/create-character', component: CharacterFormPageComponent },
+    { path: 'create-game/:mapName/waiting-room', component: WaitingRoomPageComponent },
+    { path: 'join-game/:gameId/:mapName/waiting-room', component: WaitingRoomPageComponent },
     { path: '**', redirectTo: '/main-menu' },
 ];
 

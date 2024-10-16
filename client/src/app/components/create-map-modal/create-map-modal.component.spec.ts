@@ -3,23 +3,25 @@ import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ModesComponent } from '../modes/modes.component';
-import { MapComponent } from './create-map-modal.component';
+import { CreateMapModalComponent } from './create-map-modal.component';
+import SpyObj = jasmine.SpyObj;
+import { Mode } from '@common/map.types';
 
-describe('MapComponent', () => {
-    let component: MapComponent;
-    let fixture: ComponentFixture<MapComponent>;
-    let router: Router;
+
+describe('CreateMapModalComponent', () => {
+    let component: CreateMapModalComponent;
+    let fixture: ComponentFixture<CreateMapModalComponent>;
+    let routerSpy: SpyObj<Router> = jasmine.createSpyObj('Router', ['navigate']);
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [MapComponent, ModesComponent, NgClass, NgForOf, NgIf, RouterTestingModule], // Import ModesComponent ici au lieu de l'ajouter dans les declarations
+            imports: [CreateMapModalComponent, ModesComponent, NgClass, NgForOf, NgIf],
+            providers: [{ provide: Router, useValue: routerSpy }],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(MapComponent);
+        fixture = TestBed.createComponent(CreateMapModalComponent);
         component = fixture.componentInstance;
-        router = TestBed.inject(Router);
         fixture.detectChanges();
     });
 
@@ -60,26 +62,11 @@ describe('MapComponent', () => {
         expect(modesComponent).toBeTruthy();
     });
 
-    it('should redirect to edit view with correct parameters', () => {
-        spyOn(router, 'navigate');
+    it('should redirect to the edit view with the correct mapSize and mode', () => {
         component.mapSize = 15;
-        component.selectedMode = 'CTF';
+        component.selectedMode = Mode.Classic;
         component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=15/:mode=CTF']);
-    });
-
-    it('should redirect to edit view without selected mode', () => {
-        spyOn(router, 'navigate');
-        component.mapSize = 15;
-        component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=15/:mode=undefined']);
-    });
-
-    it('should redirect to edit view without map size', () => {
-        spyOn(router, 'navigate');
-        component.selectedMode = 'CTF';
-        component.redirectToEditView();
-        expect(router.navigate).toHaveBeenCalledWith(['/creation/size=undefined/:mode=CTF']);
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/creation'], {queryParams: {size: component.mapSize, mode: component.selectedMode}});
     });
 
     it('should return true when game creation is possible', () => {
@@ -97,5 +84,4 @@ describe('MapComponent', () => {
         component.mapSize = 10;
         expect(component.canCreateGame()).toBeFalse();
     });
-
 });

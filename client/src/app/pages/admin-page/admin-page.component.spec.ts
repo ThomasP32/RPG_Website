@@ -21,7 +21,7 @@ describe('AdminPageComponent', () => {
             isVisible: true,
             name: 'Map1',
             description: 'Description1',
-            imagePreview: 'image1.png',
+            imagePreview: '',
             mode: Mode.Ctf,
             mapSize: { x: 1, y: 1 },
             lastModified: new Date(),
@@ -35,7 +35,7 @@ describe('AdminPageComponent', () => {
             isVisible: true,
             name: 'Map2',
             description: 'Description2',
-            imagePreview: 'image2.png',
+            imagePreview: '',
             mode: Mode.Classic,
             mapSize: { x: 2, y: 2 },
             lastModified: new Date(),
@@ -144,5 +144,11 @@ describe('AdminPageComponent', () => {
         spyOn(router, 'navigate');
         component.navigateToMain();
         expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should navigate to the map edition page', () => {
+        spyOn(router, 'navigate');
+        component.editMap(mockMaps[0]);
+        expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
     });
 });
