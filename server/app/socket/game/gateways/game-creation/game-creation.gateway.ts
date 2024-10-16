@@ -40,7 +40,7 @@ export class GameGateway implements OnGatewayDisconnect {
             }
             client.emit('gameAccessed');
         } else {
-            client.emit('gameNotFound', { reason: "La partie n'existe pas, veuillez réessayer." });
+            client.emit('gameNotFound', { reason: "Le code est invalide, veuillez réessayer." });
         }
     }
 
@@ -53,7 +53,7 @@ export class GameGateway implements OnGatewayDisconnect {
         for (const gameId of gameRooms) {
             if (this.gameCreationService.isPlayerHost(client.id, gameId)) {
                 this.server.to(gameId).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                this.gameCreationService.deleteGame(gameId);
+                this.gameCreationService.deleteRoom(gameId);
                 this.server.socketsLeave(gameId);
             } else {
                 const updatedGame = this.gameCreationService.handlePlayerDisconnect(client);

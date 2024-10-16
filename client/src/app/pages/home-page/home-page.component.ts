@@ -22,7 +22,7 @@ export class HomePageComponent {
     ) {}
 
     get socketId() {
-        return this.socketService.socket.id ? this.socketService.socket.id : '';
+        return this.socketService.socket && this.socketService.socket.id ? this.socketService.socket.id : '';
     }
 
     ngOnInit(): void {
@@ -32,7 +32,6 @@ export class HomePageComponent {
     connect() {
         if (!this.socketService.isSocketAlive()) {
             this.socketService.connect();
-            console.log(`Connexion par WebSocket établie avec l'identifiant ${this.socketId}`);
         }
     }
 
