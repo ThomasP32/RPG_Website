@@ -31,10 +31,17 @@ export class CommunicationMapService {
         });
     }
 
+    basicPut<T>(url: string, data?: T): Observable<HttpResponse<string>> {
+        return this.http.put(`${this.baseUrl}/${url}`, data, {
+            observe: 'response',
+            responseType: 'text',
+        });
+    }
+
     basicDelete(url: string): Observable<HttpResponse<string>> {
         return this.http.delete(`${this.baseUrl}/${url}`, {
             observe: 'response',
-            responseType: 'text', // Le type de réponse est défini comme "text"
+            responseType: 'text',
         });
     }
 

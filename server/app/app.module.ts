@@ -1,11 +1,13 @@
-import { MapController } from '@app/controllers/map/map.controller';
-import { Map, mapSchema } from '@app/model/schemas/map.schema';
-import { MapService } from '@app/services/map/map.service';
+import { MapController } from '@app/http/controllers/map/map.controller';
+import { Map, mapSchema } from '@app/http/model/schemas/map/map.schema';
+import { MapService } from '@app/http/services/map/map.service';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AdminController } from './controllers/admin/admin.controller';
-import { AdminService } from './services/admin/admin.service';
+import { AdminController } from '@app/http/controllers/admin/admin.controller';
+import { AdminService } from '@app/http/services/admin/admin.service';
+import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
+import { GameGateway } from '@app/socket/game/gateways/game-creation/game-creation.gateway';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -19,9 +21,11 @@ import { AdminService } from './services/admin/admin.service';
                 uri: config.get<string>('DATABASE_CONNECTION_STRING'), // Loaded from .env
             }),
         }),
-        MongooseModule.forFeature([{ name: Map.name, schema: mapSchema }]),
+        MongooseModule.forFeature([
+            { name: Map.name, schema: mapSchema },
+        ]),
     ],
     controllers: [MapController, AdminController],
-    providers: [MapService, AdminService, Logger],
+    providers: [MapService, AdminService, GameCreationService, GameGateway, Logger],
 })
 export class AppModule {}

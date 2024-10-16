@@ -1,8 +1,17 @@
 <div class="homePage-container">
     <img class="game-logo" src="./assets/mainmenu/SteamSteel.png" alt="game-logo" />
 
+    @if(isJoinGameModalVisible) {
+    <div class="modal-overlay">
+        <div class="modal">
+            <span class="close-button" (click)="onCloseModal()">×</span>
+            <app-join-game-modal (close)="onCloseModal()"></app-join-game-modal>
+        </div>
+    </div>
+    }
+
     <div class="button-section">
-        <button class="disabled" disabled>Rejoindre une partie</button>
+        <button class="create-game-button" (click)="toggleJoinGameVisibility()">Rejoindre une partie</button>
         <button class="button" (click)="navigateToCreateGame()">Commencer une nouvelle partie</button>
         <button class="button" (click)="navigateToAdmin()">Administration des jeux</button>
     </div>
