@@ -28,15 +28,14 @@ export class JoinGameModalComponent {
         const input = event.target;
         const value = input.value.replace(/[^0-9]/g, '');
         input.value = value;
-    
+
         if (value.length === 1 && index < 4) {
             const nextInput = document.querySelectorAll('input')[index];
             if (nextInput) {
                 (nextInput as HTMLElement).focus();
             }
         }
-    
-        // Move to the previous input field when backspace is pressed
+
         if (event.inputType === 'deleteContentBackward' && index > 0) {
             const prevInput = document.querySelectorAll('input')[index - 1];
             if (prevInput) {
@@ -60,11 +59,15 @@ export class JoinGameModalComponent {
         });
 
         this.socketService.listen('gameNotFound').subscribe((data: any) => {
-            this.errorMessage = data.reason;
+            if (data && data.reason) {
+                this.errorMessage = data.reason;
+            }
         });
 
         this.socketService.listen('gameLocked').subscribe((data: any) => {
-            this.errorMessage = data.reason;
+            if (data && data.reason) {
+                this.errorMessage = data.reason;
+            }
         });
     }
 }

@@ -56,7 +56,7 @@ export class GameCreationService {
         return this.gameRooms[gameId];
     }
 
-    deleteGame(gameId: string): void {
+    deleteRoom(gameId: string): void {
         delete this.gameRooms[gameId];
     }
 }

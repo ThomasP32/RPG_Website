@@ -3,6 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Routes, provideRouter } from '@angular/router';
 import { HomePageComponent } from '@app/pages/home-page/home-page.component';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { of } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
@@ -12,9 +13,11 @@ const routes: Routes = [];
 describe('HomePageComponent', () => {
     let component: HomePageComponent;
     let fixture: ComponentFixture<HomePageComponent>;
+    let mockSocketService: SpyObj<SocketService>;
     let communicationServiceSpy: SpyObj<CommunicationMapService>;
 
     beforeEach(async () => {
+        mockSocketService = jasmine.createSpyObj('SocketService', ['connect', 'isSocketAlive']);
         communicationServiceSpy = jasmine.createSpyObj('CommunicationService', ['basicGet', 'basicPost']);
         communicationServiceSpy.basicGet.and.returnValue(of({ title: '', body: '' }));
         communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse<string>({ status: 201, statusText: 'Created' })));
@@ -26,6 +29,7 @@ describe('HomePageComponent', () => {
                     provide: CommunicationMapService,
                     useValue: communicationServiceSpy,
                 },
+                { provide: SocketService, useValue: mockSocketService },
                 provideHttpClientTesting(),
                 provideRouter(routes),
             ],
@@ -57,11 +61,31 @@ describe('HomePageComponent', () => {
         expect(developersElement.textContent).toContain(component.developers.join(', '));
     });
 
-    it('should display a disabled "Rejoindre une Partie" button', () => {
-        const joinGameButton = fixture.debugElement.nativeElement.querySelector('.disabled');
-        expect(joinGameButton).toBeTruthy();
-        expect(joinGameButton.disabled).toBeTrue();
+    it('should return the socket ID when socket is connected', () => {
+        component.socketService.socket = { id: 'socket123' } as any;
+        expect(component.socketId).toBe('socket123');
     });
+
+    it('should return an empty string when socket is not connected', () => {
+        component.socketService.socket = { id: null } as any;
+        expect(component.socketId).toBe('');
+    });
+
+    it('should call connect method on ngOnInit', () => {
+        spyOn(component, 'connect');
+        component.ngOnInit();
+        expect(component.connect).toHaveBeenCalled();
+    });
+
+    // it('should establish a socket connection if not alive', () => {
+    //     component.connect();
+    //     expect(component.socketService.connect).toHaveBeenCalled();
+    // });
+
+    // it('should not establish a socket connection if already alive', () => {
+    //     component.connect();
+    //     expect(component.socketService.connect).not.toHaveBeenCalled();
+    // });
 
     it('should navigate to the create game view when navigateToCreateGame is called', () => {
         const routerSpy = spyOn(component['router'], 'navigate');
@@ -87,5 +111,16 @@ describe('HomePageComponent', () => {
         const adminButton = fixture.debugElement.nativeElement.querySelectorAll('.button')[1];
         adminButton.click();
         expect(component.navigateToAdmin).toHaveBeenCalled();
+    });
+
+    it('should show the join game modal when toggleJoinGameVisibility is called', () => {
+        component.toggleJoinGameVisibility();
+        expect(component.isJoinGameModalVisible).toBeTrue();
+    });
+
+    it('should hide the join game modal when onCloseModal is called', () => {
+        component.isJoinGameModalVisible = true;
+        component.onCloseModal();
+        expect(component.isJoinGameModalVisible).toBeFalse();
     });
 });
