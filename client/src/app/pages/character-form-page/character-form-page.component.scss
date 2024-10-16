@@ -33,10 +33,6 @@
     position: relative;
 }
 
-.character-display:hover img {
-    transform: rotateY(360deg);
-}
-
 .selected-character {
     text-align: center;
     transition: transform 0.3s ease-in-out;

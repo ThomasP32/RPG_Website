@@ -21,9 +21,31 @@ export class GameGateway implements OnGatewayDisconnect {
 
     @SubscribeMessage('joinGame')
     handleJoinGame(client: Socket, data: { player: Player; gameId: string }): void {
-        client.join(data.gameId);
-        const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-        this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
+        if (this.gameCreationService.doesGameExist(data.gameId)) {
+            client.join(data.gameId);
+            const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
+        } else {
+            client.emit('gameNotFound');
+        }
+    }
+
+    @SubscribeMessage('accessGame')
+    handleAccessGame(client: Socket, gameId: string): void {
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            const game = this.gameCreationService.getGame(gameId);
+            if (game.isLocked) {
+                client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
+                return;
+            }
+            client.emit('gameAccessed');
+        } else {
+            client.emit('gameNotFound', { reason: "Le code est invalide, veuillez réessayer." });
+        }
+    }
+
+    handleConnection(client: Socket): void {
+        console.log(`Connexion par l'utilisateur avec id : ${client.id}`);
     }
 
     @SubscribeMessage('initializeGame')

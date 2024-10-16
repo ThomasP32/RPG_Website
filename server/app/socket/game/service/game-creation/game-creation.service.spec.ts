@@ -49,6 +49,7 @@ describe('GameCreationService', () => {
 
         gameRoom = {
             id: 'room-1',
+            isLocked: false,
             name: 'Test Room',
             description: 'A test game room',
             imagePreview: 'some-image-url',
@@ -74,6 +75,12 @@ describe('GameCreationService', () => {
             nTurns: 0,
             debug: false,
         };
+    });
+
+    it('should get a game by id', () => {
+        service.addGame(gameRoom);
+        const result = service.getGamebyId('room-1');
+        expect(result).toEqual(gameRoom);
     });
 
     it('should create a game room and add a player with unique avatar', () => {
