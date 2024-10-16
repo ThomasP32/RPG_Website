@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -10,13 +10,15 @@ import { SocketService } from '@app/services/communication-socket/communication-
     templateUrl: './join-game-modal.component.html',
     styleUrl: './join-game-modal.component.scss',
 })
-export class JoinGameModalComponent {
+export class JoinGameModalComponent implements OnInit {
     code: string[] = ['', '', '', ''];
     gameId: string | null = null;
     errorMessage: string | null = null;
 
     constructor(
+        // eslint-disable-next-line no-unused-vars
         private socketService: SocketService,
+        // eslint-disable-next-line no-unused-vars
         private router: Router,
     ) {}
 
