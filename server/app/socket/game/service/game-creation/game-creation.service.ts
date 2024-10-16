@@ -18,6 +18,10 @@ export class GameCreationService {
         this.gameRooms[game.id] = game;
     }
 
+    doesGameExist(gameId: string): boolean {
+        return !!this.gameRooms[gameId];
+    }
+
     addPlayerToGame(player: Player, gameId: string): Game {
         const game = this.getGame(gameId);
         const existingPlayers = game.players.filter((existingPlayer) => {

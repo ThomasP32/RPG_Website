@@ -1,5 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Avatar, Bonus, Game, Player } from '@common/game';
+import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -14,7 +14,7 @@ describe('GameGateway', () => {
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let serverStub: SinonStubbedInstance<Server>;
 
-    let specs = {
+    let specs : Specs = {
         life: 100,
         speed: 10,
         attack: 15,
@@ -31,7 +31,7 @@ describe('GameGateway', () => {
         nLifeLost: 0,
     };
 
-    let player = {
+    let player : Player = {
         socketId: 'player-1',
         name: 'Player 1',
         avatar: Avatar.Avatar1,
@@ -42,7 +42,7 @@ describe('GameGateway', () => {
         turn: 0,
     };
 
-    let gameRoom = {
+    let gameRoom: Game = {
         id: 'room-1',
         name: 'Test Room',
         description: 'A test game room',
@@ -103,6 +103,47 @@ describe('GameGateway', () => {
         expect(gateway).toBeDefined();
     });
 
+    describe('handleAccessGame', () => {
+        it('should emit gameAccessed if the game exists and is not locked', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: false } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameAccessed')).toBeTruthy();
+        });
+
+        it('should emit gameLocked if the game exists and is locked', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: true } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' })).toBeTruthy();
+        });
+
+        it('should emit gameNotFound if the game does not exist', () => {
+            const gameId = 'game-id';
+
+            gameCreationService.doesGameExist.returns(false);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
+        });
+    });
+
     describe('handleStartGame', () => {
         it('should start the game and call addGame on GameCreationService', () => {
             const newGame: Game = { id: '1234', hostSocketId: '', players: [] } as Game;
@@ -119,12 +160,10 @@ describe('GameGateway', () => {
         it('should add player to game and call addPlayerToGame on GameCreationService', () => {
             const player: Player = { name: 'Player1', socketId: 'socket-id', isActive: true } as Player;
             const gameId = 'game-id';
-            const updatedGame: Game = { id: gameId, players: [player] } as Game;
-
+            gameRoom.players.push(player);
+            const updatedGame : Game = { ...gameRoom };
             gameCreationService.addPlayerToGame.returns(updatedGame);
-
             gateway.handleJoinGame(socket, { player, gameId });
-
             expect(socket.join.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.addPlayerToGame.calledWith(player, gameId)).toBeTruthy();
         });
