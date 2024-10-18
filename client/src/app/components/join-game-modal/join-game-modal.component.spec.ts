@@ -90,7 +90,7 @@ describe('JoinGameModalComponent', () => {
     it('should send game code via socket on joinGame', () => {
         component.code = ['1', '2', '3', '4'];
         component.joinGame();
-        expect(mockSocketService.sendMessage).toHaveBeenCalledWith('accessGame', '1234');
+        expect(mockSocketService.sendMessage).toHaveBeenCalledWith('joinGame', '1234');
     });
 
     it('should reset the code array after calling joinGame', () => {
