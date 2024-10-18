@@ -1,15 +1,34 @@
 <body>
     <div class="waiting-room-container">
-        <div class="code-display">
-            <h1>Le code de votre partie est :</h1>
-            <p id="game-code">{{ waitingRoomCode }}</p>
-        </div>
-        <div class="gear-animation">
-            <img src="assets/gear.png" alt="Gear Animation" />
+        <div class="player-avatar">
+            <img src="assets/your-avatar.png" alt="Player Avatar" />
+            <p>character</p>
         </div>
 
-        <div class="player-waiting">
-            <h2>En attente de joueurs...</h2>
+        <div class="exit-button">
+            <button (click)="exitGame()">Quitter la partie</button>
+        </div>
+
+        <div class="game">
+            <div class="game-details">
+                <div class="game-code">
+                    <p>Code:</p>
+                    <h1>{{ waitingRoomCode }}</h1>
+                </div>
+                <div class="game-map">
+                    <p>Carte:</p>
+                    <h1>{{ mapName }}</h1>
+                </div>
+            </div>
+            <div class="players-list">
+                <app-players-list></app-players-list>
+            </div>
+            <div class="player-waiting">
+                <h2>En attente d'autres joueurs...</h2>
+                <div class="gear-animation">
+                    <img src="assets/gear.png" alt="Gear Animation" />
+                </div>
+            </div>
         </div>
     </div>
 </body>
