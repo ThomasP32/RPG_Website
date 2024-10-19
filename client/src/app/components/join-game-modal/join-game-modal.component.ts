@@ -50,14 +50,15 @@ export class JoinGameModalComponent implements OnInit {
         const gameCode = this.code.join('');
         this.gameId = gameCode;
 
-        this.socketService.sendMessage('accessGame', gameCode);
+        this.socketService.sendMessage('joinGame', gameCode);
 
         this.code = ['', '', '', ''];
     }
 
     configureJoinGameSocketFeatures(): void {
-        this.socketService.listen('gameAccessed').subscribe(() => {
-            this.router.navigate(['/create-character']);
+        this.socketService.listen('gameJoined').subscribe(() => {
+            console.log('gameJoined');
+            this.router.navigate([`/${this.gameId}/choose-character`]);
         });
 
         this.socketService.listen('gameNotFound').subscribe((data: any) => {

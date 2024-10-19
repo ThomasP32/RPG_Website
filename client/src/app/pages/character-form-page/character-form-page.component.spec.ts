@@ -4,25 +4,99 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Character } from '@app/interfaces/character';
+import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Bonus } from '@common/game';
+import { Avatar, Bonus } from '@common/game';
 import { DBMap as Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
 
 const mockCharacters: Character[] = [
-    { id: 1, name: 'Alistair Clockhaven', image: '../../assets/characters/1.png', preview: '../../assets/previewcharacters/1.png' },
-    { id: 2, name: 'Arachnoform', image: '../../assets/characters/2.png', preview: '../../assets/previewcharacters/2.png' },
-    { id: 3, name: 'Archibald Light', image: '../../assets/characters/3.png', preview: '../../assets/previewcharacters/3.png' },
-    { id: 4, name: 'Archpriest Mechanohr', image: '../../assets/characters/4.png', preview: '../../assets/previewcharacters/4.png' },
-    { id: 5, name: 'Cyron Vex', image: '../../assets/characters/5.png', preview: '../../assets/previewcharacters/5.png' },
-    { id: 6, name: 'Magnus Brassguard', image: '../../assets/characters/6.png', preview: '../../assets/previewcharacters/6.png' },
-    { id: 7, name: 'Professor Quicksprocket', image: '../../assets/characters/7.png', preview: '../../assets/previewcharacters/7.png' },
-    { id: 8, name: 'Reginald Gearwhisle', image: '../../assets/characters/8.png', preview: '../../assets/previewcharacters/8.png' },
-    { id: 9, name: 'Vance Steelstrike', image: '../../assets/characters/9.png', preview: '../../assets/previewcharacters/9.png' },
-    { id: 10, name: 'Zephyr Gearwind', image: '../../assets/characters/10.png', preview: '../../assets/previewcharacters/10.png' },
-    { id: 11, name: 'Dr. Veselius', image: '../../assets/characters/11.png', preview: '../../assets/previewcharacters/11.png' },
-    { id: 12, name: 'Grimmauld Ironfist', image: '../../assets/characters/12.png', preview: '../../assets/previewcharacters/12.png' },
+    {
+        avatar: Avatar.Avatar1,
+        name: 'Alistair Clockhaven',
+        image: '../../assets/characters/1.png',
+        preview: '../../assets/previewcharacters/1.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar2,
+        name: 'Arachnoform',
+        image: '../../assets/characters/2.png',
+        preview: '../../assets/previewcharacters/2.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar3,
+        name: 'Archibald Light',
+        image: '../../assets/characters/3.png',
+        preview: '../../assets/previewcharacters/3.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar4,
+        name: 'Archpriest Mechanohr',
+        image: '../../assets/characters/4.png',
+        preview: '../../assets/previewcharacters/4.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar5,
+        name: 'Cyron Vex',
+        image: '../../assets/characters/5.png',
+        preview: '../../assets/previewcharacters/5.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar6,
+        name: 'Magnus Brassguard',
+        image: '../../assets/characters/6.png',
+        preview: '../../assets/previewcharacters/6.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar7,
+        name: 'Professor Quicksprocket',
+        image: '../../assets/characters/7.png',
+        preview: '../../assets/previewcharacters/7.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar8,
+        name: 'Reginald Gearwhisle',
+        image: '../../assets/characters/8.png',
+        preview: '../../assets/previewcharacters/8.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar9,
+        name: 'Vance Steelstrike',
+        image: '../../assets/characters/9.png',
+        preview: '../../assets/previewcharacters/9.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar10,
+        name: 'Zephyr Gearwind',
+        image: '../../assets/characters/10.png',
+        preview: '../../assets/previewcharacters/10.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar11,
+        name: 'Dr. Veselius',
+        image: '../../assets/characters/11.png',
+        preview: '../../assets/previewcharacters/11.png',
+        available: true,
+    },
+    {
+        avatar: Avatar.Avatar12,
+        name: 'Grimmauld Ironfist',
+        image: '../../assets/characters/12.png',
+        preview: '../../assets/previewcharacters/12.png',
+        available: true,
+    },
 ];
 
 const mockMaps: Map[] = [
@@ -61,24 +135,34 @@ import SpyObj = jasmine.SpyObj;
 describe('CharacterFormPageComponent', () => {
     let component: CharacterFormPageComponent;
     let fixture: ComponentFixture<CharacterFormPageComponent>;
-    let CommunicationMapServiceSpy: SpyObj<CommunicationMapService>;
-    let routerSpy: SpyObj<Router>;
-    let activatedRouteSpy: SpyObj<ActivatedRoute>;
+    let characterServiceSpy: jasmine.SpyObj<CharacterService>;
+    let socketServiceSpy: jasmine.SpyObj<SocketService>;
+    let communicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
+    let routerSpy: jasmine.SpyObj<Router>;
+    let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
+    let avatarSubject: Subject<any>;
 
     beforeEach(async () => {
-        CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
-        routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
+        avatarSubject = new Subject<any>();
 
-        CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'setDisabledAvatars']);
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'isSocketAlive']);
+
+        communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
                 params: { mapName: 'Map1' },
             },
         });
+
+        socketServiceSpy.listen.and.returnValue(avatarSubject.asObservable());
+        characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
         await TestBed.configureTestingModule({
             imports: [CharacterFormPageComponent, CommonModule, FormsModule],
             providers: [
-                { provide: CommunicationMapService, useValue: CommunicationMapServiceSpy },
+                { provide: CommunicationMapService, useValue: communicationMapServiceSpy },
                 { provide: Router, useValue: routerSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
             ],
@@ -92,10 +176,52 @@ describe('CharacterFormPageComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize characters and select the first character', () => {
-        expect(component.characters).toEqual(mockCharacters);
+    it('should initialize characters and select the first available character', () => {
+        expect(characterServiceSpy.getCharacters).toHaveBeenCalled();
+        expect(component.characters.length).toBe(mockCharacters.length);
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
+
+    it('should update currentIndex when selecting a character', () => {
+        component.selectCharacter(mockCharacters[3]);
+        expect(component.currentIndex).toBe(3);
+        expect(component.selectedCharacter).toBe(mockCharacters[3]);
+    });
+
+    it('should disable characters when receiving avatarsSet event', fakeAsync(() => {
+        const disabledAvatars = [Avatar.Avatar3, Avatar.Avatar5];
+        avatarSubject.next({ avatars: disabledAvatars });
+
+        tick();
+        fixture.detectChanges();
+
+        expect(characterServiceSpy.setDisabledAvatars).toHaveBeenCalledWith(disabledAvatars);
+    }));
+
+    it('should cycle to the next available character', () => {
+        mockCharacters[1].available = false;
+
+        component.currentIndex = 0;
+        component.nextCharacter();
+        expect(component.selectedCharacter).toEqual(mockCharacters[2]);
+    });
+
+    it('should cycle to the previous available character', () => {
+        mockCharacters[1].available = false;
+        component.currentIndex = 2;
+        component.previousCharacter();
+        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
+    });
+
+    it('should handle avatarSelected event', fakeAsync(() => {
+        const avatar = Avatar.Avatar4;
+        avatarSubject.next({ avatar });
+
+        tick();
+        fixture.detectChanges();
+
+        expect(socketServiceSpy.listen).toHaveBeenCalledWith('avatarSelected');
+    }));
 
     it('should set map name from query params', () => {
         expect(component.mapName).toBe('Map1');
@@ -104,30 +230,6 @@ describe('CharacterFormPageComponent', () => {
     it('should select a character', () => {
         component.selectCharacter(mockCharacters[0]);
         expect(component.selectedCharacter).toBe(mockCharacters[0]);
-    });
-
-    it('should select the previous character', () => {
-        component.currentIndex = 1;
-        component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
-    });
-
-    it('should select the next character', () => {
-        component.currentIndex = 0;
-        component.nextCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[1]);
-    });
-
-    it('should select the last character when selecting previous character from the first', () => {
-        component.currentIndex = 0;
-        component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[mockCharacters.length - 1]);
-    });
-
-    it('should select the first character when selecting next character from the last', () => {
-        component.currentIndex = mockCharacters.length - 1;
-        component.nextCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
     it('should add life bonus', () => {
@@ -182,7 +284,7 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should show characterNameError if character name is empty', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
+        communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
         component.characterName = '';
         component.lifeOrSpeedBonus = 'life';
         component.attackOrDefenseBonus = 'attack';
@@ -197,7 +299,7 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should show bonusError if lifeOrSpeedBonus is not selected', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
+        communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
         component.characterName = 'Nom valide';
         component.lifeOrSpeedBonus = '';
         component.attackOrDefenseBonus = 'attack';
@@ -212,7 +314,7 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should show diceError if attackOrDefenseBonus is not selected', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
+        communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
         component.characterName = 'Nom valide';
         component.lifeOrSpeedBonus = 'speed';
         component.attackOrDefenseBonus = '';
@@ -236,7 +338,7 @@ describe('CharacterFormPageComponent', () => {
 
     describe('when creating game', () => {
         it('should handle onSubmit correctly when map is not found', fakeAsync(async () => {
-            CommunicationMapServiceSpy.basicGet.and.returnValue(of(undefined));
+            communicationMapServiceSpy.basicGet.and.returnValue(of(undefined));
             component.characterName = 'Nom valide';
             component.lifeOrSpeedBonus = 'life';
             component.attackOrDefenseBonus = 'attack';
@@ -248,7 +350,7 @@ describe('CharacterFormPageComponent', () => {
         }));
 
         it('should handle onSubmit correctly when map is found', async () => {
-            CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
+            communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
             component.characterName = 'Nom valide';
             component.lifeOrSpeedBonus = 'life';
             component.attackOrDefenseBonus = 'attack';
@@ -257,7 +359,7 @@ describe('CharacterFormPageComponent', () => {
             await fixture.whenStable();
             fixture.detectChanges();
             expect(routerSpy.navigate).toHaveBeenCalledWith([`create-game/${mockMaps[0].name}/waiting-room`], {
-                state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].id }) },
+                state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].avatar }) },
             });
         });
     });
@@ -303,7 +405,7 @@ describe('CharacterFormPage when joining game', () => {
         await fixture.whenStable();
         fixture.detectChanges();
         expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/${mockMaps[1].name}/waiting-room`], {
-            state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].id }) },
+            state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].avatar }) },
         });
     });
 });

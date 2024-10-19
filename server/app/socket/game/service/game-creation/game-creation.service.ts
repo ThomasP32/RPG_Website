@@ -9,7 +9,7 @@ export class GameCreationService {
 
     addGame(game: Game): void {
         this.gameRooms[game.id] = game;
-        console.log(this.gameRooms[game.id]);
+        console.log('room', game.id, ' has been added to the game rooms.');
     }
 
     doesGameExist(gameId: string): boolean {
@@ -75,7 +75,7 @@ export class GameCreationService {
                 ],
                 hostSocketId: 'host-id',
                 players: [],
-                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
+                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2, Avatar.Avatar3, Avatar.Avatar12, Avatar.Avatar6],
                 currentTurn: 1,
                 nDoorsManipulated: 0,
                 visitedTiles: [],

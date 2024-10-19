@@ -149,7 +149,11 @@
 
         <div class="character-list">
             @for(character of characters; track character) {
-            <div class="character-box" (click)="selectCharacter(character)" [ngClass]="{ 'selected-character': character === selectedCharacter }">
+            <div
+                class="character-box"
+                (click)="selectCharacter(character)"
+                [ngClass]="{ 'selected-character': character === selectedCharacter, 'disabled-character': !character.available }"
+            >
                 <img [src]="character.preview" alt="{{ character.name }}" />
             </div>
             }

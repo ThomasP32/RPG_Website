@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Bonus, Player, Specs } from '@common/game';
+import { Avatar, Bonus, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 /* eslint-disable no-unused-vars */
@@ -45,41 +46,60 @@ export class CharacterFormPageComponent {
     gameId: string | null = null;
     mapName: string | null = null;
     maps: Map[] = [];
-    // map: Map;
+
     showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean } = {
         selectionError: false,
         characterNameError: false,
         bonusError: false,
         diceError: false,
     };
+    
 
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
     private readonly route: ActivatedRoute = inject(ActivatedRoute);
 
-    constructor(private communicationMapService: CommunicationMapService) {
+    constructor(
+        private communicationMapService: CommunicationMapService,
+        private socketService: SocketService,
+    ) {
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
-            this.selectedCharacter = this.characters[0];
         });
-
+        this.configureSockets();
         this.mapName = this.route.snapshot.params['mapName'];
-        if (!this.router.url.includes('create-game')) {
+        if (!this.router.url.includes('gameId')) {
             this.gameId = this.route.snapshot.params['gameId'];
+            console.log('entrer dans la map : ', this.gameId);
+            if (this.socketService.isSocketAlive()) {
+                this.socketService.sendMessage('setAvatars', { gameId: this.gameId });
+            } else {
+                console.log('Socket not connected.');
+            }
         }
     }
 
     selectCharacter(character: Character) {
         this.selectedCharacter = character;
+        const avatar = character.avatar;
+        this.currentIndex = this.characters.findIndex((c) => c === character);
+        console.log('avatar', avatar);
+        this.socketService.sendMessage('avatarSelected', avatar);
     }
 
     previousCharacter() {
-        this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        do {
+            this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        } while (!this.characters[this.currentIndex].available);
+
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
     nextCharacter() {
-        this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        do {
+            this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        } while (!this.characters[this.currentIndex].available);
+
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
@@ -117,7 +137,6 @@ export class CharacterFormPageComponent {
     }
 
     async onSubmit() {
-
         this.showErrorMessage = {
             selectionError: false,
             characterNameError: false,
@@ -156,7 +175,26 @@ export class CharacterFormPageComponent {
             this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
         }
     }
-    
+
+    async configureSockets() {
+        this.socketService.listen('avatarsSet').subscribe((data) => {
+            const parsedData = data as { avatars: Avatar[] };
+            const avatars = parsedData.avatars;
+            console.log('avatar set', avatars);
+            this.characterService.setDisabledAvatars(avatars);
+            const firstAvailableCharacter = this.characters.find((character) => character.available);
+            this.selectedCharacter = firstAvailableCharacter || this.characters[0];
+        });
+
+        this.socketService.listen('avatarSelected').subscribe((avatar) => {
+            console.log('avatar selected', avatar);
+        });
+
+        this.socketService.listen('avatarDeselected').subscribe((avatar) => {
+            console.log('avatar deselected', avatar);
+        });
+    }
+
     createPlayer() {
         const playerSpecs: Specs = {
             life: this.life,
@@ -178,7 +216,7 @@ export class CharacterFormPageComponent {
             name: this.characterName,
             socketId: '',
             isActive: true,
-            avatar: this.selectedCharacter.id,
+            avatar: this.selectedCharacter.avatar,
             specs: playerSpecs,
             inventory: [],
             position: { x: 0, y: 0 },
@@ -188,6 +226,10 @@ export class CharacterFormPageComponent {
     }
 
     onReturn() {
-        this.router.navigate(['/create-game']);
+        if (this.router.url.includes('choose-character')) {
+            this.router.navigate(['/main-menu']);
+        } else {
+            this.router.navigate(['/create-game']);
+        }
     }
 }
