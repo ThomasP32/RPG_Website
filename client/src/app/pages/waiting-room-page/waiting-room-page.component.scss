@@ -4,9 +4,6 @@ body {
     color: #e6e6e6;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
 }
 
@@ -14,33 +11,108 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    background: linear-gradient(135deg, #3b3f46 30%, #282c34 100%);
-    border: 5px solid #b5651d;
     padding: 20px;
-    width: 600px;
-    box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.8);
+    position: relative;
 }
 
-.code-display h1 {
-    color: #f39c12;
-    font-size: 1.5rem;
+.player-avatar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 10vw;
 }
 
-#game-code {
-    font-size: 2rem;
-    color: #fff;
+.player-avatar img {
+    border-radius: 50%;
+    border: 3px solid #f39c12;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.exit-button {
+    position: absolute;
+    bottom: -10px;
+}
+
+.exit-button button {
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
     padding: 10px 20px;
-    letter-spacing: 5px;
-    margin-top: 10px;
-    text-shadow: 1px 1px 2px #000;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.4s;
+    cursor: pointer;
+    width: 100%;
+}
+
+.game {
+    margin-top: 5vw;
+    width: 50vw;
+    text-align: center;
+}
+
+.game-details {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.8);
+}
+
+.game-code,
+.game-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3b3f46 30%, #282c34 100%);
+    padding: 10px;
+    flex: 1;
+    border-top: 4px solid #b5651d;
+}
+
+.game-code {
+    border-left: 4px solid #b5651d;
+    border-right: 2px solid #b5651d;
+}
+
+.game-map {
+    border-right: 4px solid #b5651d;
+    border-left: 2px solid #b5651d;
+}
+
+.game-code p,
+.game-map p {
+    margin: 0;
+    font-size: 18px;
+}
+
+.game-code h1,
+.game-map h1 {
+    margin: 5px 0;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.player-waiting {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .gear-animation img {
-    width: 150px;
-    height: 150px;
-    margin: 20px 0;
+    width: 5vw;
+    aspect-ratio: 1/1;
+    margin-left: 10px;
     animation: rotate-gear 6s infinite linear;
 }
 
@@ -55,6 +127,6 @@ body {
 
 .player-waiting h2 {
     color: #f39c12;
-    font-size: 1.5rem;
-    margin-top: 20px;
+    font-size: 1.2rem;
+    margin: 0;
 }
