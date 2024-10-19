@@ -1,5 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Avatar, Game } from '@common/game';
+import { Avatar, Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -47,16 +47,21 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
 
-    @SubscribeMessage('setAvatars')
+    @SubscribeMessage('addPlayerToGame')
+    handleAddPlayerToGame(client: Socket, data: { player: Player; gameId: string }): void {
+        const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+        client.to(data.gameId).emit('playerJoined', { game: game });
+    }
+    @SubscribeMessage('characterInit')
     handleSettingAvatars(client: Socket, data: { gameId: string }): void {
         const game = this.gameCreationService.getGamebyId(data.gameId);
         console.log(game.availableAvatars);
         if (game.availableAvatars.length > 0) {
-            console.log('avatarsSet');
+            console.log('characterInitialized');
             const avatars = game.availableAvatars;
-            client.emit('avatarsSet', { avatars: avatars });
+            client.emit('characterInitialized', { avatars: avatars, gameName: game.name });
         } else {
-            client.emit('avatarsSet', { avatars: [] });
+            client.emit('characterInitialized', { avatars: [], gameName: game.name });
         }
     }
 

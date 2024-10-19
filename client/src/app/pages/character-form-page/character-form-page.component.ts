@@ -53,7 +53,6 @@ export class CharacterFormPageComponent {
         bonusError: false,
         diceError: false,
     };
-    
 
     private readonly characterService: CharacterService = inject(CharacterService);
     private readonly router: Router = inject(Router);
@@ -72,7 +71,7 @@ export class CharacterFormPageComponent {
             this.gameId = this.route.snapshot.params['gameId'];
             console.log('entrer dans la map : ', this.gameId);
             if (this.socketService.isSocketAlive()) {
-                this.socketService.sendMessage('setAvatars', { gameId: this.gameId });
+                this.socketService.sendMessage('characterInit', { gameId: this.gameId });
             } else {
                 console.log('Socket not connected.');
             }
@@ -80,14 +79,15 @@ export class CharacterFormPageComponent {
     }
 
     selectCharacter(character: Character) {
+        if (!this.characters || this.characters.length === 0) return;
         this.selectedCharacter = character;
         const avatar = character.avatar;
         this.currentIndex = this.characters.findIndex((c) => c === character);
         console.log('avatar', avatar);
         this.socketService.sendMessage('avatarSelected', avatar);
     }
-
     previousCharacter() {
+        if (!this.characters || this.characters.length === 0) return;
         do {
             this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
         } while (!this.characters[this.currentIndex].available);
@@ -96,6 +96,7 @@ export class CharacterFormPageComponent {
     }
 
     nextCharacter() {
+        if (!this.characters || this.characters.length === 0) return;
         do {
             this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
         } while (!this.characters[this.currentIndex].available);
@@ -172,18 +173,21 @@ export class CharacterFormPageComponent {
                 this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
             }
         } else {
-            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
+            this.router.navigate([`/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
         }
     }
 
     async configureSockets() {
-        this.socketService.listen('avatarsSet').subscribe((data) => {
-            const parsedData = data as { avatars: Avatar[] };
+        this.socketService.listen('characterInitialized').subscribe((data) => {
+            const parsedData = data as { avatars: Avatar[]; gameName: string };
             const avatars = parsedData.avatars;
+            const gameName = parsedData.gameName;
             console.log('avatar set', avatars);
             this.characterService.setDisabledAvatars(avatars);
+            this.mapName = gameName;
+            console.log('Map Name:', gameName);
             const firstAvailableCharacter = this.characters.find((character) => character.available);
-            this.selectedCharacter = firstAvailableCharacter || this.characters[0];
+            this.selectedCharacter = firstAvailableCharacter || this.characters[0] || null;
         });
 
         this.socketService.listen('avatarSelected').subscribe((avatar) => {
@@ -192,6 +196,10 @@ export class CharacterFormPageComponent {
 
         this.socketService.listen('avatarDeselected').subscribe((avatar) => {
             console.log('avatar deselected', avatar);
+        });
+        this.socketService.listen('playerCreated').subscribe((data) => {
+            console.log('playerCreated', data);
+            this.router.navigate([`/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
         });
     }
 
