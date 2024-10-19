@@ -17,7 +17,7 @@ describe('HomePageComponent', () => {
     let communicationServiceSpy: SpyObj<CommunicationMapService>;
 
     beforeEach(async () => {
-        mockSocketService = jasmine.createSpyObj('SocketService', ['connect', 'isSocketAlive']);
+        mockSocketService = jasmine.createSpyObj('SocketService', ['connect', 'isSocketAlive', 'sendMessage']);
         communicationServiceSpy = jasmine.createSpyObj('CommunicationService', ['basicGet', 'basicPost']);
         communicationServiceSpy.basicGet.and.returnValue(of({ title: '', body: '' }));
         communicationServiceSpy.basicPost.and.returnValue(of(new HttpResponse<string>({ status: 201, statusText: 'Created' })));

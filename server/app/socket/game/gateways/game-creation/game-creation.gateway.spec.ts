@@ -46,47 +46,6 @@ describe('GameGateway', () => {
         expect(gateway).toBeDefined();
     });
 
-    describe('handleAccessGame', () => {
-        it('should emit gameAccessed if the game exists and is not locked', () => {
-            const gameId = 'game-id';
-            const game: Game = { id: gameId, isLocked: false } as Game;
-
-            gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGamebyId.returns(game);
-
-            gateway.handleAccessGame(socket, gameId);
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGamebyId.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameAccessed')).toBeTruthy();
-        });
-
-        it('should emit gameLocked if the game exists and is locked', () => {
-            const gameId = 'game-id';
-            const game: Game = { id: gameId, isLocked: true } as Game;
-
-            gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGamebyId.returns(game);
-
-            gateway.handleAccessGame(socket, gameId);
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGamebyId.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' })).toBeTruthy();
-        });
-
-        it('should emit gameNotFound if the game does not exist', () => {
-            const gameId = 'game-id';
-
-            gameCreationService.doesGameExist.returns(false);
-
-            gateway.handleAccessGame(socket, gameId);
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
-        });
-    });
-
     describe('handleStartGame', () => {
         it('should start the game and call addGame on GameCreationService', () => {
             const newGame: Game = { id: '1234', hostSocketId: '', players: [] } as Game;

@@ -1,5 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Game } from '@common/game';
+import { Avatar, Game } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -27,21 +27,51 @@ export class GameGateway implements OnGatewayDisconnect {
     }
 
     @SubscribeMessage('joinGame')
-    handleJoinGame(client: Socket, data: string): void {
-        console.log(data);
-        console.log(data);
-        if (this.gameCreationService.doesGameExist(data)) {
-            const game = this.gameCreationService.getGamebyId(data);
+    handleJoinGame(client: Socket, gameId: string): void {
+        console.log(gameId);
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            console.log('la partie existe');
+            const game = this.gameCreationService.getGamebyId(gameId);
             if (game.isLocked) {
+                console.log('la partie est verrouillée');
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
             }
-            client.join(data);
+            console.log('va creer ton perso');
+            client.emit('gameJoined');
+            client.join(gameId);
             // this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            this.server.to(data).emit('playerJoined', { game: game });
+            this.server.to(gameId).emit('playerJoined', { game: game });
         } else {
             client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
+    }
+
+    @SubscribeMessage('setAvatars')
+    handleSettingAvatars(client: Socket, data: { gameId: string }): void {
+        const game = this.gameCreationService.getGamebyId(data.gameId);
+        console.log(game.availableAvatars);
+        if (game.availableAvatars.length > 0) {
+            console.log('avatarsSet');
+            const avatars = game.availableAvatars;
+            client.emit('avatarsSet', { avatars: avatars });
+        } else {
+            client.emit('avatarsSet', { avatars: [] });
+        }
+    }
+
+    @SubscribeMessage('selectAvatar')
+    handleSelectAvatar(client: Socket, data: { avatar: Avatar }): void {
+        const gameId = Array.from(client.rooms).find((roomId) => roomId !== client.id);
+        const game = this.gameCreationService.getGamebyId(gameId);
+        game.availableAvatars.push(data.avatar);
+        client.to(gameId).emit('avatarSelected', { avatar: data.avatar });
+    }
+
+    @SubscribeMessage('deselectAvatar')
+    handleDeselectAvatar(client: Socket, data: { avatar: Avatar }): void {
+        const gameId = Array.from(client.rooms).find((roomId) => roomId !== client.id);
+        client.to(gameId).emit('avatarDeselected', { avatar: data.avatar });
     }
 
     handleConnection(client: Socket): void {

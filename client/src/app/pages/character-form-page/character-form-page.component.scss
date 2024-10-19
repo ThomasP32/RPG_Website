@@ -158,6 +158,11 @@ h4 {
     margin-right: 20px;
 }
 
+.disabled-character {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 .character-box {
     background-color: #3b3f46;
     border: 2px solid #b5651d;

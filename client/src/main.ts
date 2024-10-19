@@ -23,7 +23,7 @@ const routes: Routes = [
     { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
-    { path: 'join-game/create-character', component: CharacterFormPageComponent },
+    { path: ':gameId/choose-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/create-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/waiting-room', component: WaitingRoomPageComponent },
     { path: 'join-game/:gameId/:mapName/waiting-room', component: WaitingRoomPageComponent },
