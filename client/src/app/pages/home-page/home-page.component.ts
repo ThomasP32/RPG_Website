@@ -32,6 +32,7 @@ export class HomePageComponent implements OnInit {
     connect() {
         if (!this.socketService.isSocketAlive()) {
             this.socketService.connect();
+            this.socketService.sendMessage('createMockGames', this.socketId);
         }
     }
 
@@ -49,5 +50,13 @@ export class HomePageComponent implements OnInit {
 
     navigateToAdmin(): void {
         this.router.navigate(['/admin-page']);
+    }
+
+    setSocketFeature(): void {
+        this.socketService.listen('mockGamesCreated').subscribe((data: any) => {
+            if (data && data.reason) {
+                console.log(data.reason);
+            }
+        });
     }
 }

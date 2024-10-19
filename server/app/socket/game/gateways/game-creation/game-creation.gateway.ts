@@ -1,5 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Game, Player } from '@common/game';
+import { Game } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -19,28 +19,28 @@ export class GameGateway implements OnGatewayDisconnect {
         this.server.to(newGame.id).emit('gameStarted', { game: newGame });
     }
 
-    @SubscribeMessage('joinGame')
-    handleJoinGame(client: Socket, data: { player: Player; gameId: string }): void {
-        if (this.gameCreationService.doesGameExist(data.gameId)) {
-            client.join(data.gameId);
-            const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
-        } else {
-            client.emit('gameNotFound');
-        }
+    @SubscribeMessage('createMockGames')
+    handleCreateMockGames(client: Socket): void {
+        this.gameCreationService.createMockGames();
+        client.emit('mockGamesCreated', { reason: 'Mock games created' });
+        console.log('Mock games created');
     }
 
-    @SubscribeMessage('accessGame')
-    handleAccessGame(client: Socket, gameId: string): void {
-        if (this.gameCreationService.doesGameExist(gameId)) {
-            const game = this.gameCreationService.getGamebyId(gameId);
+    @SubscribeMessage('joinGame')
+    handleJoinGame(client: Socket, data: string): void {
+        console.log(data);
+        console.log(data);
+        if (this.gameCreationService.doesGameExist(data)) {
+            const game = this.gameCreationService.getGamebyId(data);
             if (game.isLocked) {
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
             }
-            client.emit('gameAccessed');
+            client.join(data);
+            // this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            this.server.to(data).emit('playerJoined', { game: game });
         } else {
-            client.emit('gameNotFound', { reason: "Le code est invalide, veuillez réessayer." });
+            client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
     }
 

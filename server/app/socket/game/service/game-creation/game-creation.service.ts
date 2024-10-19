@@ -1,4 +1,5 @@
-import { Game, Player } from '@common/game';
+import { Avatar, Game, Player } from '@common/game';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
@@ -8,7 +9,7 @@ export class GameCreationService {
 
     addGame(game: Game): void {
         this.gameRooms[game.id] = game;
-        console.log(this.gameRooms[0]);
+        console.log(this.gameRooms[game.id]);
     }
 
     doesGameExist(gameId: string): boolean {
@@ -52,8 +53,105 @@ export class GameCreationService {
         }
     }
 
+    createMockGames(): void {
+        const mockGames: Game[] = [
+            {
+                id: '1234',
+                isLocked: false,
+                name: 'Test Room',
+                description: 'A test game room',
+                imagePreview: 'some-image-url',
+                mode: Mode.Ctf,
+                mapSize: { x: 20, y: 20 },
+                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
+                items: [
+                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
+                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+                ],
+                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
+                tiles: [
+                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
+                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
+                ],
+                hostSocketId: 'host-id',
+                players: [],
+                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
+                currentTurn: 1,
+                nDoorsManipulated: 0,
+                visitedTiles: [],
+                duration: 0,
+                nTurns: 1,
+                debug: false,
+            },
+            {
+                id: '4000',
+                isLocked: false,
+                name: 'Ice Room',
+                description: 'A test game room',
+                imagePreview: 'some-image-url',
+                mode: Mode.Ctf,
+                mapSize: { x: 20, y: 20 },
+                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
+                items: [
+                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
+                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+                ],
+                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
+                tiles: [
+                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
+                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
+                ],
+                hostSocketId: 'host-id',
+                players: [],
+                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
+                currentTurn: 1,
+                nDoorsManipulated: 0,
+                visitedTiles: [],
+                duration: 0,
+                nTurns: 1,
+                debug: false,
+            },
+            {
+                id: '3564',
+                isLocked: false,
+                name: 'Lava Room',
+                description: 'A test game room',
+                imagePreview: 'some-image-url',
+                mode: Mode.Ctf,
+                mapSize: { x: 20, y: 20 },
+                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
+                items: [
+                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
+                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+                ],
+                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
+                tiles: [
+                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
+                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
+                ],
+                hostSocketId: 'host-id',
+                players: [],
+                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
+                currentTurn: 1,
+                nDoorsManipulated: 0,
+                visitedTiles: [],
+                duration: 0,
+                nTurns: 1,
+                debug: false,
+            },
+        ];
+        for (const game of mockGames) {
+            this.addGame(game);
+        }
+    }
+
     getGamebyId(gameId: string): Game {
-        return this.gameRooms[gameId];
+        const game = this.gameRooms[gameId];
+        if (!game) {
+            console.log(`Game with ID ${gameId} not found.`);
+            return null;
+        }
+        return game;
     }
 
     deleteRoom(gameId: string): void {
