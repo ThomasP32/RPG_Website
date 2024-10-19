@@ -16,7 +16,7 @@ export class GameCreationService {
         return !!this.gameRooms[gameId];
     }
 
-    addPlayerToGame(player: Player, gameId: string): Game {
+    addPlayerToGame(player: Player, gameId: string): void {
         const game = this.gameRooms[gameId];
         const existingPlayers = game.players.filter((existingPlayer) => {
             const baseName = existingPlayer.name.split('-')[0];
@@ -26,7 +26,7 @@ export class GameCreationService {
             player.name = `${player.name}-(${existingPlayers.length + 1})`;
         }
         this.gameRooms[gameId].players.push(player);
-        return game;
+        return;
     }
 
     isPlayerHost(socketId: string, gameId: string): boolean {

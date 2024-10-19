@@ -236,7 +236,10 @@ describe('WaitingRoomPageComponent when joining a game', () => {
         playerJoinedSubject.next({ player: { name: 'Player2' } });
         expect(console.log).toHaveBeenCalledWith('A new player joined the game:', { player: { name: 'Player2' } });
     });
-
+    it('should navigate to the root URL when exitGame is called', () => {
+        component.exitGame();
+        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/']);
+    });
     afterEach(() => {
         playerJoinedSubject.complete();
     });

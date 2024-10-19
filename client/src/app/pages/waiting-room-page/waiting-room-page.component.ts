@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Game, Player } from '@common/game';
@@ -12,7 +13,7 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [],
+    imports: [PlayersListComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -72,6 +73,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     async joinGame(): Promise<void> {
         console.log('joining a game');
         this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
+    }
+
+    exitGame(): void {
+        this.router.navigate(['/']);
     }
 
     getMapName(): void {

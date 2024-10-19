@@ -2,10 +2,10 @@
     <div class="game-code-container">
         <h2>Veuillez entrer le code de la partie</h2>
         <div class="input-container">
-            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[0]" (input)="moveToNext($event, 1)" #input1 />
-            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[1]" (input)="moveToNext($event, 2)" #input2 />
-            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[2]" (input)="moveToNext($event, 3)" #input3 />
-            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]" (input)="moveToNext($event, 4)" #input4 />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[0]" (input)="moveToNext($event, 1)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[1]" (input)="moveToNext($event, 2)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[2]" (input)="moveToNext($event, 3)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]" (input)="moveToNext($event, 4)" #codeInput />
         </div>
         <h3 class="error-message">{{ errorMessage }}</h3>
     </div>
