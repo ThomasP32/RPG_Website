@@ -14,7 +14,7 @@ describe('GameGateway', () => {
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let serverStub: SinonStubbedInstance<Server>;
 
-    let specs : Specs = {
+    let specs: Specs = {
         life: 100,
         speed: 10,
         attack: 15,
@@ -31,7 +31,7 @@ describe('GameGateway', () => {
         nLifeLost: 0,
     };
 
-    let player : Player = {
+    let player: Player = {
         socketId: 'player-1',
         name: 'Player 1',
         avatar: Avatar.Avatar1,
@@ -68,6 +68,7 @@ describe('GameGateway', () => {
         duration: 0,
         nTurns: 0,
         debug: false,
+        isLocked: false,
     };
 
     beforeEach(async () => {
@@ -161,11 +162,59 @@ describe('GameGateway', () => {
             const player: Player = { name: 'Player1', socketId: 'socket-id', isActive: true } as Player;
             const gameId = 'game-id';
             gameRoom.players.push(player);
-            const updatedGame : Game = { ...gameRoom };
+            const updatedGame: Game = { ...gameRoom };
+            gameCreationService.doesGameExist.returns(true);
             gameCreationService.addPlayerToGame.returns(updatedGame);
-            gateway.handleJoinGame(socket, { player, gameId });
+            gateway.handleJoinGame(socket, { player: player, gameId: gameId });
             expect(socket.join.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.addPlayerToGame.calledWith(player, gameId)).toBeTruthy();
+        });
+        it('should not add player to game and call addPlayerToGame on GameCreationService when game does not exist', () => {
+            gameCreationService.doesGameExist.returns(false);
+            gateway.handleJoinGame(socket, { player: player, gameId: gameRoom.id });
+            expect(socket.join.calledWith(gameRoom.id)).toBeFalsy();
+            expect(socket.emit.calledWith('gameNotFound')).toBeTruthy();
+        });
+    });
+
+    describe('handleAccessGame', () => {
+        it('should emit gameAccessed if the game exists and is not locked', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: false } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameAccessed')).toBeTruthy();
+        });
+
+        it('should emit gameLocked if the game exists and is locked', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: true } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' })).toBeTruthy();
+        });
+
+        it('should emit gameNotFound if the game does not exist', () => {
+            const gameId = 'game-id';
+
+            gameCreationService.doesGameExist.returns(false);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
         });
     });
 
@@ -199,7 +248,7 @@ describe('GameGateway', () => {
         it('should initialize the game and emit gameInitialized if the game exists and the client is the host', () => {
             const roomId = 'room-1';
             gameRoom.hostSocketId = socket.id;
-
+            gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGame.returns(gameRoom);
 
             gateway.handleInitGame(socket, roomId);

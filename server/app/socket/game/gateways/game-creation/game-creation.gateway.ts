@@ -40,20 +40,20 @@ export class GameGateway implements OnGatewayDisconnect {
             }
             client.emit('gameAccessed');
         } else {
-            client.emit('gameNotFound', { reason: "Le code est invalide, veuillez réessayer." });
+            client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
-    }
-
-    handleConnection(client: Socket): void {
-        console.log(`Connexion par l'utilisateur avec id : ${client.id}`);
     }
 
     @SubscribeMessage('initializeGame')
     handleInitGame(client: Socket, roomId: string): void {
-        const game = this.gameCreationService.getGame(roomId);
-        if(game && client.id === game.hostSocketId) {
-            this.gameCreationService.initializeGame(roomId);
-            this.server.to(roomId).emit('gameInitialized', { game: game });
+        if (this.gameCreationService.doesGameExist(roomId)) {
+            const game = this.gameCreationService.getGame(roomId);
+            if (game && client.id === game.hostSocketId) {
+                this.gameCreationService.initializeGame(roomId);
+                this.server.to(roomId).emit('gameInitialized', { game: game });
+            }
+        } else {
+            client.emit('gameNotFound');
         }
     }
 

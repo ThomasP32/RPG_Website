@@ -1,4 +1,4 @@
-import { Avatar, Bonus, Game, Player } from '@common/game';
+import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as sinon from 'sinon';
@@ -9,7 +9,7 @@ import { GameCreationService } from './game-creation.service';
 describe('GameCreationService', () => {
     let service: GameCreationService;
     let player: Player;
-    let specs: any;
+    let specs: Specs;
     let gameRoom: Game;
 
     beforeEach(async () => {
@@ -75,12 +75,6 @@ describe('GameCreationService', () => {
             nTurns: 0,
             debug: false,
         };
-    });
-
-    it('should get a game by id', () => {
-        service.addGame(gameRoom);
-        const result = service.getGamebyId('room-1');
-        expect(result).toEqual(gameRoom);
     });
 
     it('should create a game room and add a player with unique avatar', () => {
@@ -211,4 +205,15 @@ describe('GameCreationService', () => {
         expect(service['gameRooms']['room-1'].players[1].position).toBeDefined();
     });
     
+    it('should return true if the game exists in gameRooms', () => {
+        service['gameRooms'] = { 'room-1': gameRoom };
+        const result = service.doesGameExist('room-1');
+        expect(result).toBe(true);
+    });
+
+    it('should return false if the game does not exist in gameRooms', () => {
+        service['gameRooms'] = {};
+        const result = service.doesGameExist('room-1');
+        expect(result).toBe(false);
+    });
 });
