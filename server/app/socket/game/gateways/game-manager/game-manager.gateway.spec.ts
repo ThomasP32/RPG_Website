@@ -198,7 +198,7 @@ describe('GameManagerGateway', () => {
             expect(gameManagerService.updatePosition.calledWith(gameId, 'Player1', position)).toBeTruthy();
             const emitStub = serverStub.to(gameId).emit as SinonStub;
             expect(emitStub.calledWith('playerMoved', { playerName: 'Player1', position })).toBeTruthy();
-            expect(emitStub.calledWith('playerFinishedMoving', { finalPosition: { x: 2, y: 3 } })).toBeTruthy();
+            expect(emitStub.calledWith('playerFinishedMoving', { game: gameRoom })).toBeTruthy();
         });
     });
 });

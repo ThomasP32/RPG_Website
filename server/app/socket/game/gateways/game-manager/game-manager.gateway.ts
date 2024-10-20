@@ -51,6 +51,7 @@ export class GameManagerGateway {
             this.gameManagerService.updatePosition(data.gameId, data.playerName, move);
             this.server.to(data.gameId).emit('playerMoved', { playerName: data.playerName, position: move });
         });
-        this.server.to(data.gameId).emit('playerFinishedMoving', { finalPosition: moves[moves.length - 1] });
+        this.gameManagerService.updateTurnCounter(data.gameId);
+        this.server.to(data.gameId).emit('playerFinishedMoving', { game: this.gameCreationService.getGame(data.gameId) });
     }
 }
