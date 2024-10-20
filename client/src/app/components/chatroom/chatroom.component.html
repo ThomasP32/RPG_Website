@@ -6,7 +6,7 @@
         <div id="messageArea" class="message-area">
             <ul id="messageList">
                 <li *ngFor="let message of filteredMessages">
-                    <strong>{{ message.author }}:</strong>
+                    <strong class="author">{{ message.author }}:</strong>
                     {{ message.text }}
                     <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
                 </li>
