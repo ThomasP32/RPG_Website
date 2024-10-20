@@ -1,0 +1,6 @@
+<div class="players-list">
+    <div class="player" *ngFor="let player of players">
+        <img [src]="player.avatar" alt="{{ player.name }}" />
+        <span>{{ player.name }} ({{ player.status }})</span>
+    </div>
+</div>
