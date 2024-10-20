@@ -130,3 +130,14 @@ body {
     font-size: 1.2rem;
     margin: 0;
 }
+
+.chat-container {
+    position: absolute;
+    right: 0;
+    top: 40%;
+    transform: translateY(-50%) rotate(270deg);
+    transform-origin: top right;
+    width: 350px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background-color: #1c242c;
+}

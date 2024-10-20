@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
@@ -13,7 +14,7 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [PlayersListComponent],
+    imports: [PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })

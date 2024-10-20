@@ -1,0 +1,20 @@
+<mat-expansion-panel class="chat-container" (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+    <mat-expansion-panel-header>
+        <mat-panel-title> Chat: {{ player.name }}</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <section>
+        <div id="messageArea" class="message-area">
+            <ul id="messageList">
+                <li *ngFor="let message of filteredMessages">
+                    <strong>{{ message.author }}:</strong>
+                    {{ message.text }}
+                    <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <input id="messageInput" placeholder="Your message" [(ngModel)]="messageText" (keydown.enter)="sendMessage()" maxlength="200" type="text" />
+        <button class="send-message-button" (click)="sendMessage()" [disabled]="!canChat">Envoyer</button>
+    </section>
+</mat-expansion-panel>
