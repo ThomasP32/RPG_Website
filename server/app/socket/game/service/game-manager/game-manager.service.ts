@@ -1,11 +1,18 @@
-// import { Direction, Game, Specs } from '@common/game';
-import { Coordinate } from '@common/map.types';
+import { Game } from '@common/game';
+import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+
+    private directions = [
+        { x: 0, y: -1 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
+        { x: 1, y: 0 },
+    ];
 
     updatePosition(gameId: string, playerName: string, position: { x: number; y: number }): void {
         const game = this.gameCreationService.getGame(gameId);
@@ -14,20 +21,6 @@ export class GameManagerService {
                 player.position = position;
             }
         });
-    }
-
-    getMovements(gameId: string, playerName: string): Coordinate[] {
-        const game = this.gameCreationService.getGame(gameId);
-        let movements: Coordinate[] = [];
-        game.players.forEach((player) => {
-            if (player.name === playerName) {
-                // movements.push(...this.getMovement(Direction.Left, player.position, player.specs, game));
-                // movements.push(...this.getMovement(Direction.Right, player.position, player.specs, game));
-                // movements.push(...this.getMovement(Direction.Up, player.position, player.specs, game));
-                // movements.push(...this.getMovement(Direction.Down, player.position, player.specs, game));
-            }
-        });
-        return movements;
     }
 
     updateTurnCounter(gameId: string): void {
@@ -39,67 +32,159 @@ export class GameManagerService {
         }
     }
 
-    // getMovement(direction: Direction, position: Coordinate, specs: Specs, game: Game): Coordinate[] {
-    //     let start = 1;
-    //     let end = direction === Direction.Up || direction === Direction.Down ? game.mapSize.y : game.mapSize.x;
+    getMoves(gameId: string, playerName: string): Coordinate[] {
+        const game = this.gameCreationService.getGame(gameId);
+        const player = game.players.find((p) => p.name === playerName);
 
-    //     const initialPosition = { x: position.x, y: position.y };
-    //     let moveWeight = 0;
-    //     let movements: Coordinate[] = [];
+        if (!player || !player.isActive) {
+            return [];
+        }
 
-    //     if (direction === Direction.Left || direction === Direction.Down) {
-    //         start = -end;
-    //         end = 0;
-    //     }
+        const moves = this.runDijkstra(player.position, game, player.specs.speed);
+        const accessibleMoves: Coordinate[] = [];
+        moves.forEach((value, key) => {
+            const [x, y] = key.split(',').map(Number);
+            accessibleMoves.push({ x: x, y: y });
+        });
+        return accessibleMoves;
+    }
 
-    //     const isHorizontal = direction === Direction.Left || direction === Direction.Right;
-        
-    //     for (
-    //         let i = start;
-    //         isHorizontal
-    //             ? direction === Direction.Right
-    //                 ? initialPosition.x + i < end
-    //                 : initialPosition.x + i >= 0
-    //             : direction === Direction.Up
-    //             ? initialPosition.y + i < end
-    //             : initialPosition.y + i >= 0;
-    //         i++
-    //     ) {
-    //         let isUnreachable = false;
-    //         let tileWeight = 1;
+    getMove(gameId: string, playerName: string, destination: Coordinate, isPreviewMode: boolean): Coordinate[] {
+        const game = this.gameCreationService.getGame(gameId);
+        const player = game.players.find((p) => p.name === playerName);
+        let shortestPath: Coordinate[];
 
-    //         const xPosition = isHorizontal ? initialPosition.x + i : initialPosition.x;
-    //         const yPosition = isHorizontal ? initialPosition.y : initialPosition.y + i;
+        if (!player || !player.isActive) {
+            return [];
+        }
 
-    //         for (let tile of game.tiles) {
-    //             if (tile.coordinate.x === xPosition && tile.coordinate.y === yPosition) {
-    //                 if (tile.category === TileCategory.Water) {
-    //                     tileWeight = 2;
-    //                 } else if (tile.category === TileCategory.Ice) {
-    //                     tileWeight = 0;
-    //                 } else if (tile.category === TileCategory.Wall) {
-    //                     isUnreachable = true;
-    //                 }
-    //             }
-    //         }
+        const shortestPaths = this.runDijkstra(player.position, game, player.specs.life);
 
-    //         for (let door of game.doorTiles) {
-    //             if (door.coordinate.x === xPosition && door.coordinate.y === yPosition) {
-    //                 if (!door.isOpened) {
-    //                     isUnreachable = true;
-    //                 }
-    //             }
-    //         }
+        shortestPaths.forEach((value) => {
+            const lastPosition = value.path[value.path.length - 1];
+            if (lastPosition.x === destination.x && lastPosition.y === destination.y) {
+                shortestPath = value.path;
+            }
+        });
 
-    //         if (isUnreachable || moveWeight + tileWeight > specs.movePoints) {
-    //             break;
-    //         }
+        if (!shortestPath) {
+            return [];
+        } else {
+            if (isPreviewMode) {
+                return shortestPath;
+            }
 
-    //         moveWeight += tileWeight;
-    //         movements.push({ x: xPosition, y: yPosition });
-    //     }
+            const finalPath: Coordinate[] = [];
 
-    //     return movements;
-    // }
+            for (const position of shortestPath) {
+                if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
+                    finalPath.push(position);
+                    break;
+                }
 
+                finalPath.push(position);
+            }
+
+            return finalPath;
+        }
+    }
+
+    runDijkstra(start: Coordinate, game: Game, playerPoints: number): Map<string, { path: Coordinate[]; weight: number }> {
+        const shortestPaths = new Map<string, { path: Coordinate[]; weight: number }>();
+        const visited = new Set<string>();
+        const startKey = this.coordinateToKey(start);
+
+        shortestPaths.set(startKey, { path: [start], weight: 0 });
+
+        let toVisit = [{ point: start, weight: 0 }];
+
+        while (toVisit.length > 0) {
+            toVisit.sort((a, b) => a.weight - b.weight);
+            const { point: currentPoint, weight: currentWeight } = toVisit.shift();
+            const currentKey = this.coordinateToKey(currentPoint);
+
+            if (visited.has(currentKey)) {
+                continue;
+            }
+
+            visited.add(currentKey);
+
+            if (currentWeight > playerPoints) {
+                continue;
+            }
+
+            const neighbors = this.getNeighbors(currentPoint, game);
+
+            for (const neighbor of neighbors) {
+                const neighborKey = this.coordinateToKey(neighbor);
+                
+                if (visited.has(neighborKey)) {
+                    continue;
+                }
+
+                const neighborWeight = currentWeight + this.getTileWeight(neighbor, game);
+
+                if (neighborWeight <= playerPoints) {
+                    if (!shortestPaths.has(neighborKey)) {
+                        shortestPaths.set(neighborKey, {
+                            path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
+                            weight: neighborWeight,
+                        });
+                    } else if (neighborWeight < shortestPaths.get(neighborKey).weight) {
+                        shortestPaths.set(neighborKey, {
+                            path: [...(shortestPaths.get(currentKey).path), neighbor],
+                            weight: neighborWeight,
+                        });
+                    }
+
+                    toVisit.push({ point: neighbor, weight: neighborWeight });
+                }
+            }
+        }
+
+        return shortestPaths;
+    }
+
+    coordinateToKey(coord: Coordinate): string {
+        return `${coord.x},${coord.y}`;
+    }
+
+    private getNeighbors(pos: Coordinate, game: Game): Coordinate[] {
+        const neighbors: Coordinate[] = [];
+        this.directions.forEach((dir) => {
+            const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
+            if (!this.isOutOfMap(neighbor, game.mapSize) && this.isReachableTile(neighbor, game)) {
+                neighbors.push(neighbor);
+            }
+        });
+        return neighbors;
+    }
+
+    private isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
+        return pos.x < 0 || pos.y < 0 || pos.x >= mapSize.x || pos.y >= mapSize.y;
+    }
+
+    isReachableTile(pos: Coordinate, game: Game): boolean {
+        for (const tile of game.tiles) {
+            if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
+                if (tile.category === TileCategory.Wall) return false;
+            }
+        }
+        for (const door of game.doorTiles) {
+            if (door.coordinate.x === pos.x && door.coordinate.y === pos.y && !door.isOpened) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private getTileWeight(pos: Coordinate, game: Game): number {
+        for (const tile of game.tiles) {
+            if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
+                if (tile.category === TileCategory.Water) return 2;
+                if (tile.category === TileCategory.Ice) return 0;
+            }
+        }
+        return 1;
+    }
 }

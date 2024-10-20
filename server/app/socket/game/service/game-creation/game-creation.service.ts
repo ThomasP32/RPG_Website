@@ -19,7 +19,7 @@ export class GameCreationService {
     }
 
     doesGameExist(gameId: string): boolean {
-        return !!this.gameRooms[gameId];
+        return gameId in this.gameRooms;
     }
 
     addPlayerToGame(player: Player, gameId: string): Game {
