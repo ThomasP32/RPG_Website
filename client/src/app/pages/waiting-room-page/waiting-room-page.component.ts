@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Game, Player } from '@common/game';
@@ -21,6 +22,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
+        private characterService: CharacterService,
         private socketService: SocketService,
         private route: ActivatedRoute,
         private router: Router,
@@ -31,10 +33,14 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     player: Player;
     socketSubscription: Subscription = new Subscription();
     isCreatingGame: boolean = false;
+    playerPreview: string;
+    playerName: string;
 
     async ngOnInit(): Promise<void> {
         this.getMapName();
         this.player = history.state.player;
+        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+        this.playerName = this.player.name;
         this.listenToSocketMessages();
         if (this.router.url.includes('create-game')) {
             this.isCreatingGame = true;
@@ -96,11 +102,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 }),
             );
         }
-        this.socketSubscription.add(
-            this.socketService.listen('playerJoined').subscribe((message) => {
-                console.log('A new player joined the game:', message);
-            }),
-        );
     }
 
     ngOnDestroy(): void {

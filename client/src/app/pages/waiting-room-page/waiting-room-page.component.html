@@ -1,8 +1,12 @@
 <body>
     <div class="waiting-room-container">
-        <div class="player-avatar">
-            <img src="assets/your-avatar.png" alt="Player Avatar" />
-            <p>character</p>
+        <div class="player">
+            <div class="avatar-container">
+                <img [src]="playerPreview" alt="Player Avatar" />
+            </div>
+            <div class="player-name">
+                <h1>{{ playerName }}</h1>
+            </div>
         </div>
 
         <div class="exit-button">

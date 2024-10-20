@@ -8,8 +8,11 @@ export class GameCreationService {
     private gameRooms: Record<string, Game> = {};
 
     addGame(game: Game): void {
+        if (this.doesGameExist(game.id)) {
+            return;
+        }
         this.gameRooms[game.id] = game;
-        console.log('room', game.id, ' has been added to the game rooms.');
+        console.log('Room', game.id, 'has been added to the game rooms.');
     }
 
     doesGameExist(gameId: string): boolean {
@@ -17,7 +20,7 @@ export class GameCreationService {
     }
 
     addPlayerToGame(player: Player, gameId: string): void {
-        const game = this.gameRooms[gameId];
+        const game = this.getGamebyId(gameId);
         const existingPlayers = game.players.filter((existingPlayer) => {
             const baseName = existingPlayer.name.split('-')[0];
             return baseName === player.name.split('-')[0];
@@ -26,6 +29,8 @@ export class GameCreationService {
             player.name = `${player.name}-(${existingPlayers.length + 1})`;
         }
         this.gameRooms[gameId].players.push(player);
+        console.log('Player', player.name, 'has been added to the game', gameId);
+        console.log(this.gameRooms[gameId].players);
         return;
     }
 
@@ -146,6 +151,8 @@ export class GameCreationService {
     }
 
     getGamebyId(gameId: string): Game {
+        console.log(`Searching for game with ID: "${gameId}"`);
+
         const game = this.gameRooms[gameId];
         if (!game) {
             console.log(`Game with ID ${gameId} not found.`);

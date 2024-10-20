@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
@@ -23,7 +23,7 @@ const timeLimit = 5000;
     templateUrl: './character-form-page.component.html',
     styleUrls: ['./character-form-page.component.scss'],
 })
-export class CharacterFormPageComponent {
+export class CharacterFormPageComponent implements OnInit {
     Bonus = Bonus;
     characterName: string = 'Choisis un nom';
     isEditing: boolean = false;
@@ -34,9 +34,8 @@ export class CharacterFormPageComponent {
     attackBonus: Bonus;
     defenseBonus: Bonus;
 
-    selectedCharacter: Character;
     characters: Character[] = [];
-
+    selectedCharacter: Character;
     currentIndex: number = 0;
 
     life = defaultHp;
@@ -61,20 +60,26 @@ export class CharacterFormPageComponent {
     constructor(
         private communicationMapService: CommunicationMapService,
         private socketService: SocketService,
-    ) {
+    ) {}
+    ngOnInit(): void {
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
+            if (this.characters.length > 0) {
+                this.selectedCharacter = this.characters[0];
+            }
         });
+
         this.configureSockets();
+
         this.mapName = this.route.snapshot.params['mapName'];
-        if (!this.router.url.includes('gameId')) {
+        if (this.router.url.includes('choose-character')) {
             this.gameId = this.route.snapshot.params['gameId'];
-            console.log('entrer dans la map : ', this.gameId);
+            console.log('Entering map: ', this.gameId);
             if (this.socketService.isSocketAlive()) {
                 this.socketService.sendMessage('characterInit', { gameId: this.gameId });
-            } else {
-                console.log('Socket not connected.');
             }
+        } else {
+            this.selectedCharacter = this.characters[0];
         }
     }
 
@@ -172,8 +177,10 @@ export class CharacterFormPageComponent {
             } else {
                 this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
             }
-        } else {
-            this.router.navigate([`/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
+        }
+
+        if (this.router.url.includes('choose-character')) {
+            this.socketService.sendMessage('addPlayerToGame', { player: this.player, gameId: this.gameId });
         }
     }
 
@@ -192,6 +199,10 @@ export class CharacterFormPageComponent {
 
         this.socketService.listen('avatarSelected').subscribe((avatar) => {
             console.log('avatar selected', avatar);
+        });
+        this.socketService.listen('playerAdded').subscribe((data) => {
+            console.log('playerAdded', data);
+            this.router.navigate([`/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
         });
 
         this.socketService.listen('avatarDeselected').subscribe((avatar) => {

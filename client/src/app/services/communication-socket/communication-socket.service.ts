@@ -7,11 +7,12 @@ import { io, Socket } from 'socket.io-client';
 })
 export class SocketService {
     public socket: Socket;
+    private readonly socketUrl = 'http://localhost:3000/game';
 
     constructor() {}
 
     connect() {
-        this.socket = io('http://localhost:3000/game', { transports: ['websocket'] });
+        this.socket = io(this.socketUrl, { transports: ['websocket'] });
     }
 
     isSocketAlive() {
@@ -23,9 +24,9 @@ export class SocketService {
         this.socket.emit(event, data);
     }
 
-    listen(event: string) {
-        return new Observable((subscriber) => {
-            this.socket.on(event, (data) => {
+    listen<T>(event: string): Observable<T> {
+        return new Observable<T>((subscriber) => {
+            this.socket.on(event, (data: T) => {
                 subscriber.next(data);
             });
         });
