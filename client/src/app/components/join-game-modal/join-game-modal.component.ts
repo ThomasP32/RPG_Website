@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -11,6 +11,8 @@ import { SocketService } from '@app/services/communication-socket/communication-
     styleUrl: './join-game-modal.component.scss',
 })
 export class JoinGameModalComponent implements OnInit {
+    @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
+
     code: string[] = ['', '', '', ''];
     gameId: string | null = null;
     errorMessage: string | null = null;
@@ -32,16 +34,16 @@ export class JoinGameModalComponent implements OnInit {
         input.value = value;
 
         if (value.length === 1 && index < 4) {
-            const nextInput = document.querySelectorAll('input')[index];
+            const nextInput = this.codeInputs.toArray()[index];
             if (nextInput) {
-                (nextInput as HTMLElement).focus();
+                nextInput.nativeElement.focus();
             }
         }
 
         if (event.inputType === 'deleteContentBackward' && index > 0) {
-            const prevInput = document.querySelectorAll('input')[index - 1];
+            const prevInput = this.codeInputs.toArray()[index - 1];
             if (prevInput) {
-                (prevInput as HTMLElement).focus();
+                prevInput.nativeElement.focus();
             }
         }
     }
@@ -50,13 +52,13 @@ export class JoinGameModalComponent implements OnInit {
         const gameCode = this.code.join('');
         this.gameId = gameCode;
 
-        this.socketService.sendMessage('accessGame', gameCode);
+        this.socketService.sendMessage('joinGame', gameCode);
 
         this.code = ['', '', '', ''];
     }
 
     configureJoinGameSocketFeatures(): void {
-        this.socketService.listen('gameAccessed').subscribe(() => {
+        this.socketService.listen('playerJoined').subscribe(() => {
             this.router.navigate(['/create-character']);
         });
 
