@@ -1,29 +1,32 @@
 .chat-container {
     position: fixed;
     right: 0;
-    top: 40%;
-    transform: translateY(-50%) rotate(270deg);
-    transform-origin: top right;
+    top: 14%;
+    width: 350px;
+    max-height: 500px;
     padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background-color: #1c242c;
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 100vh;
+}
+
+.chat-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
 }
 
 #messageArea {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.mat-expansion-panel {
-    transform: rotate(90deg);
-    width: 100%;
-    transition: width 0.3s ease;
-}
-
 .message-area {
-    max-height: 300px;
+    max-height: 380px;
     overflow-y: auto;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    margin-top: 15px;
     word-wrap: break-word;
     white-space: pre-wrap;
 }
@@ -34,7 +37,7 @@
 }
 
 li {
-    margin: 5px 0;
+    margin: 10px 0;
 }
 
 .timestamp {
