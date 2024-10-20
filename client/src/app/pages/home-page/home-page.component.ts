@@ -29,10 +29,11 @@ export class HomePageComponent implements OnInit {
         return this.socketService.socket && this.socketService.socket.id ? this.socketService.socket.id : '';
     }
 
-    connect() {
+    async connect() {
         if (!this.socketService.isSocketAlive()) {
             this.socketService.connect();
             this.socketService.sendMessage('createMockGames', this.socketId);
+            console.log('this socket:', this.socketId);
         }
     }
 

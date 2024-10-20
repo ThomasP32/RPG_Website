@@ -41,7 +41,7 @@ export class GameGateway implements OnGatewayDisconnect {
             client.emit('gameJoined');
             client.join(gameId);
             // this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            this.server.to(gameId).emit('playerJoined', { game: game });
+            // this.server.to(gameId).emit('playerJoined', { game: game });
         } else {
             client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
@@ -49,9 +49,18 @@ export class GameGateway implements OnGatewayDisconnect {
 
     @SubscribeMessage('addPlayerToGame')
     handleAddPlayerToGame(client: Socket, data: { player: Player; gameId: string }): void {
-        const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-        client.to(data.gameId).emit('playerJoined', { game: game });
+        this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+        client.emit('playerAdded', { gameId: data.gameId });
+        client.to(data.gameId).emit('playerJoined', { game: data.gameId });
     }
+
+    @SubscribeMessage('getPlayers')
+    handleLoadPlayers(client: Socket, gameId: string): void {
+        const game = this.gameCreationService.getGamebyId(gameId);
+        //console.log(game.players);
+        client.emit('playersLoaded', { players: game.players });
+    }
+
     @SubscribeMessage('characterInit')
     handleSettingAvatars(client: Socket, data: { gameId: string }): void {
         const game = this.gameCreationService.getGamebyId(data.gameId);

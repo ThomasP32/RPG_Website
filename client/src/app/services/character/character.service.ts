@@ -94,7 +94,7 @@ export class CharacterService {
     ];
 
     setDisabledAvatars(avatars: Avatar[]): void {
-        console.log('Received avatars:', avatars); 
+        console.log('Received avatars:', avatars);
         this.characters.forEach((character) => {
             if (avatars.includes(character.avatar)) {
                 character.available = false;
@@ -104,5 +104,9 @@ export class CharacterService {
 
     getCharacters(): Observable<Character[]> {
         return of(this.characters);
+    }
+
+    getAvatarPreview(avatar: Avatar): string {
+        return this.characters.find((character) => character.avatar === avatar)?.preview || '';
     }
 }

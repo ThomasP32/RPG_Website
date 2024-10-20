@@ -1,6 +1,10 @@
 <div class="players-list">
-    <div class="player" *ngFor="let player of players">
-        <img [src]="player.avatar" alt="{{ player.name }}" />
-        <span>{{ player.name }} ({{ player.status }})</span>
+    @for (player of playersMock ; track player) {
+    <div class="player">
+        <div class="avatar-container">
+            <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />
+        </div>
+        <span class="player-name">{{ player.name }}</span>
     </div>
+    }
 </div>

@@ -26,7 +26,7 @@ const routes: Routes = [
     { path: ':gameId/choose-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/create-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/waiting-room', component: WaitingRoomPageComponent },
-    { path: 'join-game/:gameId/:mapName/waiting-room', component: WaitingRoomPageComponent },
+    { path: ':gameId/:mapName/waiting-room', component: WaitingRoomPageComponent },
     { path: '**', redirectTo: '/main-menu' },
 ];
 
