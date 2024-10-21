@@ -118,7 +118,7 @@ describe('CharacterFormPageComponent', () => {
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-            if (eventName === 'availableAvatars') {
+            if (eventName === 'currentPlayers') {
                 return availableAvatarsSubject.asObservable() as Observable<T>;
             } else {
                 return of({} as T);
@@ -339,7 +339,7 @@ describe('CharacterFormPage when joining game', () => {
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-            if (eventName === 'availableAvatars') {
+            if (eventName === 'currentPlayers') {
                 return availableAvatarsSubject.asObservable() as Observable<T>;
             } else {
                 return of({} as T);
@@ -372,8 +372,6 @@ describe('CharacterFormPage when joining game', () => {
         component.onSubmit();
         await fixture.whenStable();
         fixture.detectChanges();
-        expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/waiting-room`], {
-            state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].id }) },
-        });
+        expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/waiting-room`]);
     });
 });
