@@ -23,11 +23,27 @@ export class SocketService {
         this.socket.emit(event, data);
     }
 
-    listen(event: string) {
+    // listen(event: string, _callback: (data: { playerName: String; gameId: String }) => void): Observable<any> {
+    //     return new Observable((subscriber) => {
+    //         this.socket.on(event, (data) => {
+    //             subscriber.next(data);
+    //         });
+
+    //         return () => {
+    //             this.socket.off(event);
+    //         };
+    //     });
+    // }
+
+    listen<T>(event: string): Observable<T> {
         return new Observable((subscriber) => {
-            this.socket.on(event, (data) => {
+            this.socket.on(event, (data: T) => {
                 subscriber.next(data);
             });
+
+            return () => {
+                this.socket.off(event);
+            };
         });
     }
 
