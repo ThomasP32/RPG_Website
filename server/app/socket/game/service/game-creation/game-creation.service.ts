@@ -14,7 +14,6 @@ export class GameCreationService {
     }
 
     addGame(game: Game): void {
-        game.availableAvatars = game.availableAvatars.filter((avatar) => game.players.every((player) => player.avatar !== avatar));
         this.gameRooms[game.id] = game;
     }
 
@@ -32,7 +31,6 @@ export class GameCreationService {
             player.name = `${player.name}-(${existingPlayers.length + 1})`;
         }
         this.getGame(gameId).players.push(player);
-        game.availableAvatars = game.availableAvatars.filter((avatar) => avatar !== player.avatar);
         return game;
     }
 

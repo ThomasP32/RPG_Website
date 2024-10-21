@@ -25,17 +25,17 @@ export class GameGateway implements OnGatewayDisconnect {
         if (this.gameCreationService.doesGameExist(data.gameId)) {
             const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
             this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
-            this.server.to(data.gameId).emit('availableAvatars', game.availableAvatars);
+            this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
         }
     }
 
-    @SubscribeMessage('getAvailableAvatars')
+    @SubscribeMessage('getPlayers')
     getAvailableAvatars(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
             const game = this.gameCreationService.getGame(gameId);
-            client.emit('availableAvatars', game.availableAvatars);
+            client.emit('currentPlayers', game.players);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
         }
