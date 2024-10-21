@@ -41,7 +41,6 @@ describe('GameManagerService', () => {
     game2 = {
         id: 'game-1',
         hostSocketId: 'host-1',
-        availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
         name: 'Test Game Moves',
         description: 'A test game',
         imagePreview: 'some-image-url',

@@ -57,7 +57,6 @@ describe('GameGateway', () => {
         ],
         hostSocketId: 'host-id',
         players: [player],
-        availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
         currentTurn: 0,
         nDoorsManipulated: 0,
         visitedTiles: [],
