@@ -204,17 +204,6 @@ describe('WaitingRoomPageComponent when joining a game', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should call joinGame on ngOnInit', async () => {
-        spyOn(component, 'joinGame').and.callThrough();
-        await component.ngOnInit();
-        expect(component.joinGame).toHaveBeenCalled();
-    });
-
-    it('should join an existing game and send join message via socket', async () => {
-        await component.joinGame();
-        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: mockPlayer, gameId: '1234' });
-    });
-
     it('should set mapName if present', () => {
         component.getMapName();
         expect(component.mapName).toBe('Map1');

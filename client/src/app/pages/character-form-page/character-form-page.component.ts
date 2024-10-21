@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Avatar, Bonus, Player, Specs } from '@common/game';
+import { Bonus, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 /* eslint-disable no-unused-vars */
@@ -23,7 +23,7 @@ const timeLimit = 5000;
     templateUrl: './character-form-page.component.html',
     styleUrls: ['./character-form-page.component.scss'],
 })
-export class CharacterFormPageComponent implements OnInit {
+export class CharacterFormPageComponent implements OnInit, OnDestroy {
     socketSubscription: Subscription = new Subscription();
     Bonus = Bonus;
     characterName: string = 'Choisis un nom';
@@ -38,7 +38,7 @@ export class CharacterFormPageComponent implements OnInit {
     selectedCharacter: Character;
     characters: Character[] = [];
 
-    currentIndex: number = 0;
+    currentIndex: number;
 
     life = defaultHp;
     speed = defaultSpeed;
@@ -70,6 +70,7 @@ export class CharacterFormPageComponent implements OnInit {
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = [...characters];
             this.selectedCharacter = this.characters[0];
+            this.currentIndex = 0;
         });
         // mapName est dans le path de l'url seulement si c'est une création
         if (!this.router.url.includes('create-game')) {
@@ -77,7 +78,7 @@ export class CharacterFormPageComponent implements OnInit {
             this.listenToSocketMessages();
             this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
-            this.socketService.sendMessage('getAvailableAvatars', this.gameId);
+            this.socketService.sendMessage('getPlayers', this.gameId);
         } else {
             this.mapName = this.route.snapshot.params['mapName'];
         }
@@ -85,18 +86,20 @@ export class CharacterFormPageComponent implements OnInit {
 
     listenToSocketMessages(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Avatar[]>('availableAvatars').subscribe((avatars: Avatar[]) => {
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 // ca update pour donner juste les avatar disponible
                 this.characters.forEach((character) => {
-                    character.isAvailable = false;
-                    if (avatars.includes(character.id)) {
-                        character.isAvailable = true;
+                    character.isAvailable = true;
+                    if (players.some((player) => player.avatar === character.id)) {
+                        character.isAvailable = false;
                     }
                 });
                 if (!this.selectedCharacter.isAvailable) {
-                    for (let character of this.characters) {
-                        if (character.isAvailable) {
-                            this.selectedCharacter = character;
+                    for (let i = 0; i < this.characters.length; i++) {
+                        if (this.characters[i].isAvailable) {
+                            this.selectedCharacter = this.characters[i];
+                            console.log('setting selected character');
+                            this.currentIndex = i;
                             break;
                         }
                     }
@@ -114,18 +117,31 @@ export class CharacterFormPageComponent implements OnInit {
     }
 
     selectCharacter(character: Character) {
-        if (!character.isAvailable) {
+        if (character.isAvailable) {
             this.selectedCharacter = character;
         }
     }
 
+    @HostListener('window:keydown', ['$event'])
+    handleKeyDown(event: KeyboardEvent): void {
+        if (event.key === 'ArrowLeft') {
+            this.previousCharacter();
+        } else if (event.key === 'ArrowRight') {
+            this.nextCharacter();
+        }
+    }
+
     previousCharacter() {
-        this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        do {
+            this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        } while (!this.characters[this.currentIndex].isAvailable);
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
     nextCharacter() {
-        this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        do {
+            this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        } while (!this.characters[this.currentIndex].isAvailable);
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
@@ -200,11 +216,12 @@ export class CharacterFormPageComponent implements OnInit {
                     this.router.navigate(['/create-game']);
                 }, timeLimit);
             } else {
+                // ici t'es obligé de start-game à la page suivante parce que t'as pas encore le gameId
                 this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
             }
         } else {
-            console.log('joining game');
-            this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: this.player } });
+            this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
+            this.router.navigate([`join-game/${this.gameId}/waiting-room`]);
         }
     }
 
@@ -246,5 +263,9 @@ export class CharacterFormPageComponent implements OnInit {
 
     onQuit() {
         this.router.navigate(['/']);
+    }
+
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }

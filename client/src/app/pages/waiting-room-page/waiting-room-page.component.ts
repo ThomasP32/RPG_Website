@@ -44,7 +44,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.startNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            await this.joinGame();
         }
     }
 
@@ -74,10 +73,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             isLocked: false,
         };
         this.socketService.sendMessage('startGame', newGame);
-    }
-
-    async joinGame(): Promise<void> {
-        this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
     }
 
     exitGame(): void {
@@ -114,6 +109,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         }
     }
 
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie
     @HostListener('window:beforeunload', ['$event'])
     onBeforeUnload(event: Event): void {
         event.preventDefault();
