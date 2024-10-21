@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Bonus, Player, Specs } from '@common/game';
+import { Avatar, Bonus, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 /* eslint-disable no-unused-vars */
 const defaultHp = 4;
 const defaultSpeed = 4;
@@ -22,7 +23,8 @@ const timeLimit = 5000;
     templateUrl: './character-form-page.component.html',
     styleUrls: ['./character-form-page.component.scss'],
 })
-export class CharacterFormPageComponent {
+export class CharacterFormPageComponent implements OnInit {
+    socketSubscription: Subscription = new Subscription();
     Bonus = Bonus;
     characterName: string = 'Choisis un nom';
     isEditing: boolean = false;
@@ -45,7 +47,9 @@ export class CharacterFormPageComponent {
     gameId: string | null = null;
     mapName: string | null = null;
     maps: Map[] = [];
-    // map: Map;
+
+    isJoiningGame: boolean = false;
+
     showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean } = {
         selectionError: false,
         characterNameError: false,
@@ -57,20 +61,62 @@ export class CharacterFormPageComponent {
     private readonly router: Router = inject(Router);
     private readonly route: ActivatedRoute = inject(ActivatedRoute);
 
-    constructor(private communicationMapService: CommunicationMapService) {
+    constructor(
+        private communicationMapService: CommunicationMapService,
+        private socketService: SocketService,
+    ) {}
+
+    async ngOnInit(): Promise<void> {
         this.characterService.getCharacters().subscribe((characters) => {
-            this.characters = characters;
+            this.characters = [...characters];
             this.selectedCharacter = this.characters[0];
         });
-
-        this.mapName = this.route.snapshot.params['mapName'];
+        // mapName est dans le path de l'url seulement si c'est une création
         if (!this.router.url.includes('create-game')) {
+            // si on est dans le cas de rejoindre une partie on doit vérifier les avatars disponibles
+            this.listenToSocketMessages();
+            this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
+            this.socketService.sendMessage('getAvailableAvatars', this.gameId);
+        } else {
+            this.mapName = this.route.snapshot.params['mapName'];
         }
     }
 
+    listenToSocketMessages(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Avatar[]>('availableAvatars').subscribe((avatars: Avatar[]) => {
+                // ca update pour donner juste les avatar disponible
+                this.characters.forEach((character) => {
+                    character.isAvailable = false;
+                    if (avatars.includes(character.id)) {
+                        character.isAvailable = true;
+                    }
+                });
+                if (!this.selectedCharacter.isAvailable) {
+                    for (let character of this.characters) {
+                        if (character.isAvailable) {
+                            this.selectedCharacter = character;
+                            break;
+                        }
+                    }
+                }
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameNotFound').subscribe((data) => {
+                // ici il va falloir handle quand un joueur essaie de join une partie qui a été fermée
+                // entre le temps ou il a mis le id et il choisi son joueur
+                console.log(data.reason);
+            }),
+        );
+    }
+
     selectCharacter(character: Character) {
-        this.selectedCharacter = character;
+        if (!character.isAvailable) {
+            this.selectedCharacter = character;
+        }
     }
 
     previousCharacter() {
@@ -117,7 +163,6 @@ export class CharacterFormPageComponent {
     }
 
     async onSubmit() {
-
         this.showErrorMessage = {
             selectionError: false,
             characterNameError: false,
@@ -140,6 +185,11 @@ export class CharacterFormPageComponent {
             return;
         }
 
+        if (!this.selectedCharacter) {
+            this.showErrorMessage.selectionError = true;
+            return;
+        }
+
         this.createPlayer();
 
         if (this.router.url.includes('create-game')) {
@@ -153,41 +203,48 @@ export class CharacterFormPageComponent {
                 this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
             }
         } else {
-            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
+            console.log('joining game');
+            this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: this.player } });
         }
     }
-    
+
     createPlayer() {
-        const playerSpecs: Specs = {
-            life: this.life,
-            speed: this.speed,
-            attack: this.attack,
-            defense: this.defense,
-            attackBonus: this.attackBonus,
-            defenseBonus: this.defenseBonus,
-            movePoints: 0,
-            actions: 0,
-            nVictories: 0,
-            nDefeats: 0,
-            nCombats: 0,
-            nEvasions: 0,
-            nLifeTaken: 0,
-            nLifeLost: 0,
-        };
-        const player: Player = {
-            name: this.characterName,
-            socketId: '',
-            isActive: true,
-            avatar: this.selectedCharacter.id,
-            specs: playerSpecs,
-            inventory: [],
-            position: { x: 0, y: 0 },
-            turn: 0,
-        };
-        this.player = player;
+        if (this.selectedCharacter) {
+            const playerSpecs: Specs = {
+                life: this.life,
+                speed: this.speed,
+                attack: this.attack,
+                defense: this.defense,
+                attackBonus: this.attackBonus,
+                defenseBonus: this.defenseBonus,
+                movePoints: 0,
+                actions: 0,
+                nVictories: 0,
+                nDefeats: 0,
+                nCombats: 0,
+                nEvasions: 0,
+                nLifeTaken: 0,
+                nLifeLost: 0,
+            };
+            const player: Player = {
+                name: this.characterName,
+                socketId: '',
+                isActive: true,
+                avatar: this.selectedCharacter.id,
+                specs: playerSpecs,
+                inventory: [],
+                position: { x: 0, y: 0 },
+                turn: 0,
+            };
+            this.player = player;
+        }
     }
 
     onReturn() {
         this.router.navigate(['/create-game']);
+    }
+
+    onQuit() {
+        this.router.navigate(['/']);
     }
 }

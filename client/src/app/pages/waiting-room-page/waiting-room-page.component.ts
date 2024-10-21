@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Game, Player } from '@common/game';
+import { Avatar, Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -24,6 +25,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         private socketService: SocketService,
         private route: ActivatedRoute,
         private router: Router,
+        private characterService: CharacterService,
     ) {}
 
     waitingRoomCode: string;
@@ -33,11 +35,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     isCreatingGame: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        this.getMapName();
         this.player = history.state.player;
         this.listenToSocketMessages();
         if (this.router.url.includes('create-game')) {
             this.isCreatingGame = true;
+            this.getMapName();
             this.generateRandomNumber();
             await this.startNewGame(this.mapName);
         } else {
@@ -52,12 +54,17 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     async startNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
+        const availableAvatars: Avatar[] = [];
+        const characters = await firstValueFrom(this.characterService.getCharacters());
+        characters.forEach((character) => {
+            availableAvatars.push(character.id);
+        });
         const newGame: Game = {
             ...map,
             id: this.waitingRoomCode,
             players: [this.player],
             hostSocketId: '',
-            availableAvatars: [],
+            availableAvatars: [...availableAvatars],
             currentTurn: 0,
             nDoorsManipulated: 0,
             visitedTiles: [],
@@ -66,12 +73,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             debug: false,
             isLocked: false,
         };
-        console.log('starting a new game');
         this.socketService.sendMessage('startGame', newGame);
     }
 
     async joinGame(): Promise<void> {
-        console.log('joining a game');
         this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
     }
 
@@ -107,5 +112,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         if (this.socketSubscription) {
             this.socketSubscription.unsubscribe();
         }
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    onBeforeUnload(event: Event): void {
+        event.preventDefault();
     }
 }
