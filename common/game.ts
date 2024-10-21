@@ -52,7 +52,6 @@ export interface Game extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
-    availableAvatars: Avatar[];
     currentTurn: number;
     nDoorsManipulated: number;
     visitedTiles: Coordinate[];
