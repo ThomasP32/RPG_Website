@@ -24,6 +24,10 @@ export class GameGateway implements OnGatewayDisconnect {
     handleJoinGame(client: Socket, data: { player: Player; gameId: string }): void {
         if (this.gameCreationService.doesGameExist(data.gameId)) {
             const game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            if (game.isLocked) {
+                this.server.to(data.gameId).emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
+                return;
+            }
             this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
             this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
@@ -35,7 +39,10 @@ export class GameGateway implements OnGatewayDisconnect {
     getAvailableAvatars(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
             const game = this.gameCreationService.getGame(gameId);
-            client.emit('currentPlayers', game.players);
+            client.emit(
+                'currentPlayers',
+                game.players.filter((player) => player.isActive),
+            );
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
         }
@@ -66,6 +73,22 @@ export class GameGateway implements OnGatewayDisconnect {
             }
         } else {
             client.emit('gameNotFound');
+        }
+    }
+
+    @SubscribeMessage('ifStartable')
+    isStartable(client: Socket, gameId: string): void {
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            const game = this.gameCreationService.getGame(gameId);
+            if (client.id === game.hostSocketId) {
+                if (this.gameCreationService.isGameStartable(gameId)) {
+                    client.emit('isStartable', { game: game });
+                } else {
+                    return;
+                }
+            }
+        } else {
+            client.emit('notStartable');
         }
     }
 

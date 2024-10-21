@@ -48,6 +48,7 @@ describe('GameCreationService', () => {
         };
 
         gameRoom = {
+            hasStarted: false,
             id: 'room-1',
             isLocked: false,
             name: 'Test Room',
@@ -90,14 +91,15 @@ describe('GameCreationService', () => {
         const game = service.getGame('room-1');
         expect(game).toEqual(gameRoom);
     });
-    
+
     it('should return all games with getGames', () => {
         service.addGame(gameRoom);
         const games = service.getGames();
         expect(games).toEqual([gameRoom]);
     });
 
-    it('should mark a player as inactive on disconnect and delete the room', () => {
+    it('should mark a player as inactive on disconnect if the game has started', () => {
+        const player = { socketId: 'player-1', isActive: true } as Player;
         gameRoom.players.push(player);
         service.addGame(gameRoom);
 
@@ -105,28 +107,26 @@ describe('GameCreationService', () => {
         (mockSocket as any).id = 'player-1';
         stub(mockSocket, 'rooms').value(new Set(['room-1']));
 
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket);
-        expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
+        gameRoom.hasStarted = true;
 
-        service.deleteRoom('room-1');
-        expect(service['gameRooms']['room-1']).toBeUndefined();
+        service.handlePlayerDisconnect(mockSocket as unknown as Socket);
+
+        expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
     });
 
-    it('should keep the player unchanged if socketId does not match and delete the room', () => {
-        const player2: Player = { ...player, socketId: 'player-2' };
-        gameRoom.players.push(player, player2);
+    it('should remove a player on disconnect if the game has not started', () => {
+        const player = { socketId: 'player-1', isActive: true } as Player;
+        gameRoom.players.push(player);
         service.addGame(gameRoom);
 
         const mockSocket = sinon.createStubInstance(Socket);
         (mockSocket as any).id = 'player-1';
         stub(mockSocket, 'rooms').value(new Set(['room-1']));
 
+        gameRoom.hasStarted = false;
+
         service.handlePlayerDisconnect(mockSocket as unknown as Socket);
-
-        expect(service['gameRooms']['room-1'].players[1]).toEqual(player2);
-
-        service.deleteRoom('room-1');
-        expect(service['gameRooms']['room-1']).toBeUndefined();
+        expect(service['gameRooms']['room-1'].players.some((p) => p.socketId === 'player-1')).toBe(false);
     });
 
     it('should add a player with a unique name to the game', () => {
@@ -160,50 +160,42 @@ describe('GameCreationService', () => {
             { ...player, socketId: 'player-2', name: 'Player 2', specs: { ...player.specs, speed: 10 } },
             { ...player, socketId: 'player-3', name: 'Player 3', specs: { ...player.specs, speed: 5 } },
         ];
-        gameRoom.startTiles = [
-            { coordinate: { x: 1, y: 1 } },
-            { coordinate: { x: 2, y: 2 } },
-            { coordinate: { x: 3, y: 3 } }
-        ];
+        gameRoom.startTiles = [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 2, y: 2 } }, { coordinate: { x: 3, y: 3 } }];
         service.addGame(gameRoom);
-    
+
         const setOrderSpy = jest.spyOn(service, 'setOrder');
         const setStartingPointsSpy = jest.spyOn(service, 'setStartingPoints');
-        
+
         service.initializeGame('room-1');
-        
+
         expect(setOrderSpy).toHaveBeenCalledWith('room-1');
         expect(setStartingPointsSpy).toHaveBeenCalledWith('room-1');
-    
+
         const players = service['gameRooms']['room-1'].players;
-        expect(players[0].name).toBe('Player 2'); 
-    
+        expect(players[0].name).toBe('Player 2');
+
         expect([players[1].name, players[2].name]).toEqual(expect.arrayContaining(['Player 1', 'Player 3']));
     });
-    
-    
+
     it('should remove tiles until the number of tiles matches the number of players and assign positions', () => {
-        gameRoom.players = [
-            { ...player },
-            { ...player, socketId: 'player-2', name: 'Player 2' },
-        ];
-    
+        gameRoom.players = [{ ...player }, { ...player, socketId: 'player-2', name: 'Player 2' }];
+
         gameRoom.startTiles = [
             { coordinate: { x: 1, y: 1 } },
             { coordinate: { x: 2, y: 2 } },
             { coordinate: { x: 3, y: 3 } },
             { coordinate: { x: 4, y: 4 } },
         ];
-    
+
         service.addGame(gameRoom);
         service.setStartingPoints('room-1');
-    
+
         expect(service['gameRooms']['room-1'].startTiles.length).toBe(2);
-    
+
         expect(service['gameRooms']['room-1'].players[0].position).toBeDefined();
         expect(service['gameRooms']['room-1'].players[1].position).toBeDefined();
     });
-    
+
     it('should return true if the game exists in gameRooms', () => {
         service['gameRooms'] = { 'room-1': gameRoom };
         const result = service.doesGameExist('room-1');

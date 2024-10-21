@@ -43,6 +43,7 @@ describe('GameManagerGateway', () => {
     };
 
     let gameRoom: Game = {
+        hasStarted: true,
         id: 'room-1',
         name: 'Test Room',
         description: 'A test game room',
