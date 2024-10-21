@@ -176,7 +176,7 @@ describe('WaitingRoomPageComponent when joining a game', () => {
             if (eventName === 'playerJoined') {
                 return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({} as T);  // Assurez-vous de retourner un objet typé comme `T`
+                return of({} as T); 
             }
         });
 
