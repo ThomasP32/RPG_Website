@@ -59,6 +59,7 @@ export interface Game extends Map {
     nTurns: number;
     debug: boolean;
     isLocked: boolean;
+    hasStarted: boolean;
 }
 
 export interface GameCtf extends Game {

@@ -39,6 +39,7 @@ describe('GameManagerService', () => {
     };
 
     game2 = {
+        hasStarted: true,
         id: 'game-1',
         hostSocketId: 'host-1',
         name: 'Test Game Moves',

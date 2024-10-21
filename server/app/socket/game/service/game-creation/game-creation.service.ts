@@ -2,6 +2,15 @@ import { Game, Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
+const SMALL_MAP_SIZE = 10;
+const MEDIUM_MAP_SIZE = 15;
+const LARGE_MAP_SIZE = 20;
+const SMALL_MAP_PLAYERS_MIN_MAX = 2;
+const MEDIUM_MAP_PLAYERS_MIN = 2;
+const MEDIUM_MAP_PLAYERS_MAX = 4;
+const LARGE_MAP_PLAYERS_MIN = 2;
+const LARGE_MAP_PLAYERS_MAX = 6;
+
 @Injectable()
 export class GameCreationService {
     private gameRooms: Record<string, Game> = {};
@@ -41,13 +50,20 @@ export class GameCreationService {
     handlePlayerDisconnect(client: Socket): Game {
         const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
         for (const gameId of gameRooms) {
-            this.getGame(gameId).players = this.getGame(gameId).players.map((player) => {
-                if (player.socketId === client.id) {
-                    return { ...player, isActive: false };
-                } else {
-                    return player;
-                }
-            });
+            const game = this.getGame(gameId);
+            if (game.hasStarted) {
+                game.players = game.players.map((player) => {
+                    if (player.socketId === client.id) {
+                        return { ...player, isActive: false };
+                    } else {
+                        return player;
+                    }
+                });
+            } else {
+                game.players = game.players.filter((player) => {
+                    return player.socketId !== client.id;
+                });
+            }
             return this.getGame(gameId);
         }
     }
@@ -55,6 +71,7 @@ export class GameCreationService {
     initializeGame(gameId: string): void {
         this.setOrder(gameId);
         this.setStartingPoints(gameId);
+        this.getGame(gameId).hasStarted = true;
     }
 
     setOrder(gameId: string): void {
@@ -83,6 +100,36 @@ export class GameCreationService {
             player.position.y = startTilesLeft[randomIndex].coordinate.y;
             startTilesLeft.splice(randomIndex, 1);
         });
+    }
+
+    isGameStartable(gameId: string): boolean {
+        const game = this.getGame(gameId);
+        if (game.mapSize.x === SMALL_MAP_SIZE) {
+            return game.players.length === SMALL_MAP_PLAYERS_MIN_MAX;
+        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
+            return game.players.length > MEDIUM_MAP_PLAYERS_MIN && game.players.length < MEDIUM_MAP_PLAYERS_MAX;
+        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
+            return game.players.length > LARGE_MAP_PLAYERS_MIN && game.players.length < LARGE_MAP_PLAYERS_MAX;
+        } else {
+            return false;
+        }
+    }
+
+    isMaxPlayersReached(gameId: string): boolean {
+        const game = this.getGame(gameId);
+        if (game.mapSize.x === SMALL_MAP_SIZE) {
+            return game.players.length === SMALL_MAP_PLAYERS_MIN_MAX;
+        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
+            return game.players.length === MEDIUM_MAP_PLAYERS_MAX;
+        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
+            return game.players.length === LARGE_MAP_PLAYERS_MAX;
+        } else {
+            return false;
+        }
+    }
+
+    lockGame(gameId: string): void {
+        this.gameRooms[gameId].isLocked = true;
     }
 
     deleteRoom(gameId: string): void {
