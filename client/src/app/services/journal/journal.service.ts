@@ -12,9 +12,27 @@ export class JournalService {
     private journalEntriesSubject = new BehaviorSubject<{ message: String; timeStamp: DatePipe }[]>([]);
     journalEntries$ = this.journalEntriesSubject.asObservable();
 
+    //filter pour seulement le joueur impliqué
+    playerJournalEntries$ = this.journalEntriesSubject.asObservable();
+
     ngOnInit(): void {
-        this.socketService.socket.connect();
+        this.socketService.isSocketAlive();
+        this.listenJournalEvents();
+    }
+
+    private listenJournalEvents(): void {
         this.handleAbandonGame();
+        this.handleStartTurn();
+        this.handleStartCombat();
+        this.handleEndCombat();
+        this.handlePickupItem();
+        this.handlePickupFlag();
+        this.handleOpenDoor();
+        this.handleCloseDoor();
+        this.handleEndGame();
+        this.handleDebugMode();
+        this.handleAttack();
+        this.handleEscape();
     }
 
     private handleAbandonGame(): void {
@@ -25,19 +43,19 @@ export class JournalService {
             this.journalEntriesSubject.next([...this.journalEntriesSubject.value, { message, timeStamp }]);
         });
     }
-    //     private handleStartTurn(): void {} // Début de tour
-    //     private handleStartCombat(): void {} // Début de combat
-    //     private handleEndCombat(): void {} // Fin et résultat du combat
-    //     private handlePickupItem(): void {} // Ramassage d'un item
-    //     private handlePickupFlag(): void {} // Ramassage du drapeau
-    //     private handleOpenDoor(): void {} // Ouverture de porte
-    //     private handleCloseDoor(): void {} // Fermeture de porte
-    //     private handleEndGame(): void {} // Fin de partie
-    //     private handleDebugMode(): void {} // Activation ou désactivation du mode de débogage
+    private handleStartTurn(): void {} // Début de tour
+    private handleStartCombat(): void {} // Début de combat
+    private handleEndCombat(): void {} // Fin et résultat du combat
+    private handlePickupItem(): void {} // Ramassage d'un item
+    private handlePickupFlag(): void {} // Ramassage du drapeau
+    private handleOpenDoor(): void {} // Ouverture de porte
+    private handleCloseDoor(): void {} // Fermeture de porte
+    private handleEndGame(): void {} // Fin de partie
+    private handleDebugMode(): void {} // Activation ou désactivation du mode de débogage
 
-    //     //Only for players involved in the combat
-    //     private handleAttack(): void {} // Attaque et résultat
-    //     private handleEscape(): void {} // Tentative d'évasion et résultat
+    //Only for players involved in the combat
+    private handleAttack(): void {} // Attaque et résultat
+    private handleEscape(): void {} // Tentative d'évasion et résultat
     // }
 
     // nouveaux messages au bas, et barre de défilement au besoin.
