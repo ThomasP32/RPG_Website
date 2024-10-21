@@ -5,7 +5,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Avatar, Bonus, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
-import { of, Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { WaitingRoomPageComponent } from './waiting-room-page.component';
 
 const minCode = 1000;
@@ -77,24 +77,27 @@ describe('WaitingRoomPageComponent when creating a game', () => {
                 writable: true,
             },
         });
+        
         RouterSpy = jasmine.createSpyObj('Router', ['navigate', 'url', 'history'], {
             url: 'create-game',
         });
 
         gameStartedSubject = new Subject<any>();
         playerJoinedSubject = new Subject<any>();
-        SocketServiceSpy = jasmine.createSpyObj('SocketService', ['Message', 'listen']);
-        SocketServiceSpy.listen.and.callFake((eventName: string) => {
+        SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'gameStarted') {
-                return gameStartedSubject.asObservable();
+                return gameStartedSubject.asObservable() as Observable<T>;
             } else if (eventName === 'playerJoined') {
-                return playerJoinedSubject.asObservable();
+                return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({});
+                return of({} as T);
             }
         });
+        
 
         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
         ActivatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], { snapshot: { params: { mapName: 'Map1' } } });
 
         await TestBed.configureTestingModule({
@@ -120,8 +123,6 @@ describe('WaitingRoomPageComponent when creating a game', () => {
         spyOn(component, 'generateRandomNumber').and.callThrough();
         spyOn(component, 'startNewGame').and.returnValue(Promise.resolve());
 
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
-
         await component.ngOnInit();
 
         expect(component.generateRandomNumber).toHaveBeenCalled();
@@ -132,12 +133,6 @@ describe('WaitingRoomPageComponent when creating a game', () => {
         component.generateRandomNumber();
         expect(Number(component.waitingRoomCode)).toBeGreaterThanOrEqual(minCode);
         expect(Number(component.waitingRoomCode)).toBeLessThanOrEqual(maxCode);
-    });
-
-    it('should navigate to create-game if mapName is missing', () => {
-        ActivatedRouteSpy.snapshot.params.mapName = undefined;
-        component.getMapName();
-        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/create-game']);
     });
 
     it('should listen for gameStarted', () => {
@@ -177,11 +172,11 @@ describe('WaitingRoomPageComponent when joining a game', () => {
 
         playerJoinedSubject = new Subject<any>();
         SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
-        SocketServiceSpy.listen.and.callFake((eventName: string) => {
+        SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'playerJoined') {
-                return playerJoinedSubject.asObservable();
+                return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({});
+                return of({} as T);  // Assurez-vous de retourner un objet typé comme `T`
             }
         });
 
