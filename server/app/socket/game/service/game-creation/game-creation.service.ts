@@ -5,7 +5,6 @@ import { Socket } from 'socket.io';
 @Injectable()
 export class GameCreationService {
     private gameRooms: Record<string, Game> = {};
-
     getGame(gameId: string): Game {
         return this.gameRooms[gameId];
     }
@@ -15,6 +14,7 @@ export class GameCreationService {
     }
 
     addGame(game: Game): void {
+        game.availableAvatars = game.availableAvatars.filter((avatar) => game.players.every((player) => player.avatar !== avatar));
         this.gameRooms[game.id] = game;
     }
 
