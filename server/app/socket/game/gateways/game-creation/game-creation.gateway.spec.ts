@@ -140,9 +140,9 @@ describe('GameGateway', () => {
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.addPlayerToGame.returns(updatedGame);
             gateway.handleJoinGame(socket, { player: player, gameId: gameId });
-            expect(socket.join.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.addPlayerToGame.calledWith(player, gameId)).toBeTruthy();
         });
+
         it('should not add player to game and call addPlayerToGame on GameCreationService when game does not exist', () => {
             gameCreationService.doesGameExist.returns(false);
             gateway.handleJoinGame(socket, { player: player, gameId: gameRoom.id });
@@ -159,6 +159,7 @@ describe('GameGateway', () => {
             gateway.handleAccessGame(socket, gameId);
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.join.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('gameAccessed')).toBeTruthy();
         });
         it('should emit gameLocked if the game exists and is locked', () => {
@@ -231,4 +232,29 @@ describe('GameGateway', () => {
             expect(gameCreationService.initializeGame.calledWith(roomId)).toBeFalsy();
         });
     });
+
+    describe('getAvailableAvatars', () => {
+        it('should emit availableAvatars if the game exists', () => {
+            const gameId = 'room-1';
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(gameRoom);
+    
+            gateway.getAvailableAvatars(socket, gameId);
+    
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('availableAvatars', gameRoom.availableAvatars)).toBeTruthy();
+        });
+    
+        it('should emit gameNotFound if the game does not exist', () => {
+            const gameId = 'non-existent-room';
+            gameCreationService.doesGameExist.returns(false);
+    
+            gateway.getAvailableAvatars(socket, gameId);
+    
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameNotFound', { reason: 'La partie a été fermée' })).toBeTruthy();
+        });
+    });
+    
 });
