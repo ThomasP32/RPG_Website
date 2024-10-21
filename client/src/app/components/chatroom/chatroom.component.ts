@@ -1,37 +1,44 @@
 import { CommonModule, NgFor } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { ActivatedRoute } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 
 @Component({
     selector: 'app-chatroom',
     standalone: true,
-    imports: [FormsModule, NgFor, MatExpansionModule, CommonModule],
+    imports: [FormsModule, NgFor, CommonModule],
     templateUrl: './chatroom.component.html',
     styleUrl: './chatroom.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatroomComponent {
-    readonly panelOpenState = signal(false);
     messageText: string = '';
     @Input() player: { name: string } = { name: '' };
     allMessages: { author: string; text: string; timestamp: Date; gameId: string }[] = [];
     filteredMessages: { author: string; text: string; timestamp: Date }[] = [];
     currentGameId = '';
     canChat = true;
+    gameId: string;
 
-    constructor(public socketService: SocketService) {}
+    constructor(
+        public route: ActivatedRoute,
+        public socketService: SocketService,
+    ) {}
 
     get socketId() {
         return (this.currentGameId = this.socketService.socket.id ? this.socketService.socket.id : '');
     }
 
     ngOnInit(): void {
-        this.socketService.connect();
+        this.route.queryParams.subscribe((params) => {
+            this.gameId = params['gameId'];
+            this.socketService.connect();
+            this.socketService.sendMessage('joinRoom', this.gameId);
 
-        this.socketService.listen('playerJoined', (data: { name: string }) => {
-            this.player.name = data.name;
+            this.socketService.listen('playerJoined', (data: { name: string }) => {
+                this.player.name = data.name;
+            });
         });
         this.socketService.listen('chatMessage', (msg: { author: string; text: string; timestamp: Date; gameId: string }) => {
             this.allMessages.push(msg);
@@ -54,7 +61,7 @@ export class ChatroomComponent {
                 timestamp: new Date(),
                 gameId: this.currentGameId,
             };
-            this.socketService.sendMessage('roomMessage', message);
+            this.socketService.sendMessage('roomMessage', { roomName: this.gameId, message });
             this.allMessages.push(message);
             this.filterMessages();
             this.messageText = '';
