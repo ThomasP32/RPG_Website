@@ -243,7 +243,7 @@ describe('GameGateway', () => {
     
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('availableAvatars', gameRoom.availableAvatars)).toBeTruthy();
+            expect(socket.emit.calledWith('currentPlayers', gameRoom.players)).toBeTruthy();
         });
     
         it('should emit gameNotFound if the game does not exist', () => {
