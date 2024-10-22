@@ -5,15 +5,17 @@
     <section>
         <div id="messageArea" class="message-area">
             <ul id="messageList">
-                <li *ngFor="let message of filteredMessages">
+                @for (message of messages; track message) {
+                <li>
                     <strong class="author">{{ message.author }}:</strong>
                     {{ message.text }}
                     <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
                 </li>
+                }
             </ul>
         </div>
 
         <input id="messageInput" placeholder="Your message" [(ngModel)]="messageText" (keydown.enter)="sendMessage()" maxlength="200" type="text" />
-        <button class="send-message-button" (click)="sendMessage()" [disabled]="!canChat">Envoyer</button>
+        <button class="send-message-button" (click)="sendMessage()">Envoyer</button>
     </section>
 </div>

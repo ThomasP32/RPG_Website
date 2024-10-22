@@ -11,7 +11,7 @@ export class SocketService {
     constructor() {}
 
     connect() {
-        this.socket = io('http://localhost:5020/game', { transports: ['websocket'] });
+        this.socket = io('http://localhost:3000/game', { transports: ['websocket'] });
     }
 
     isSocketAlive() {
