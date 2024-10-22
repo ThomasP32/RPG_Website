@@ -200,15 +200,18 @@ describe('CharacterFormPageComponent', () => {
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
-    it('should select the previous character', () => {
+    it('should select the previous available character', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
+        mockCharacters[3].isAvailable = false;
         component.characters = [...mockCharacters];
         component.currentIndex = 4;
         component.selectCharacter(mockCharacters[4]);
         component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[3]);
+        expect(component.selectedCharacter).toEqual(mockCharacters[2]);
     });
 
     it('should select the next character', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
         component.characters = [...mockCharacters];
         component.currentIndex = 0;
         component.selectCharacter(mockCharacters[0]);
@@ -217,6 +220,7 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should select the last character when selecting previous character from the first', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
         component.characters = [...mockCharacters];
         component.currentIndex = 0;
         component.selectCharacter(mockCharacters[0]);
@@ -225,6 +229,7 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should select the first character when selecting next character from the last', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
         component.characters = [...mockCharacters];
         component.currentIndex = mockCharacters.length - 1;
         component.selectCharacter(mockCharacters[mockCharacters.length - 1]);
