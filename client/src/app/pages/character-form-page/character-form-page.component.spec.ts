@@ -157,7 +157,9 @@ describe('CharacterFormPageComponent', () => {
 
         availableAvatarsSubject = new Subject<any>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
+            socket: { id: 'host-socket-id' }
+        });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {
@@ -392,7 +394,9 @@ describe('CharacterFormPage when joining game', () => {
 
         availableAvatarsSubject = new Subject<any>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
+            socket: { id: 'mock-socket-id' }
+        });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {

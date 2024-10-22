@@ -57,7 +57,6 @@ describe('GameCreationService', () => {
         };
 
         gameRoom = {
-            connections: ['host-id'],
             hasStarted: false,
             id: 'room-1',
             isLocked: false,
@@ -122,21 +121,6 @@ describe('GameCreationService', () => {
         service.handlePlayerDisconnect(mockSocket as unknown as Socket, gameRoom.id);
 
         expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
-    });
-
-    it('should remove a player on disconnect if the game has not started', () => {
-        const player = { socketId: 'player-1', isActive: true } as Player;
-        gameRoom.players.push(player);
-        service.addGame(gameRoom);
-
-        const mockSocket = sinon.createStubInstance(Socket);
-        (mockSocket as any).id = 'player-1';
-        stub(mockSocket, 'rooms').value(new Set(['room-1']));
-
-        gameRoom.hasStarted = false;
-
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket, gameRoom.id);
-        expect(service['gameRooms']['room-1'].players.some((p) => p.socketId === 'player-1')).toBe(false);
     });
 
     it('should add a player with a unique name to the game', () => {

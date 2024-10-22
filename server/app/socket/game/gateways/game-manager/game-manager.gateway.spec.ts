@@ -43,7 +43,6 @@ describe('GameManagerGateway', () => {
     };
 
     let gameRoom: Game = {
-        connections: ['host-id'],
         hasStarted: true,
         id: 'room-1',
         name: 'Test Room',
