@@ -39,7 +39,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     characters: Character[] = [];
 
     currentIndex: number;
-
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;
@@ -72,6 +71,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.selectedCharacter = this.characters[0];
             this.currentIndex = 0;
         });
+        
         // mapName est dans le path de l'url seulement si c'est une création
         if (!this.router.url.includes('create-game')) {
             // si on est dans le cas de rejoindre une partie on doit vérifier les avatars disponibles
@@ -87,7 +87,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     listenToSocketMessages(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
-                // ca update pour donner juste les avatar disponible
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
@@ -98,7 +97,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     for (let i = 0; i < this.characters.length; i++) {
                         if (this.characters[i].isAvailable) {
                             this.selectedCharacter = this.characters[i];
-                            console.log('setting selected character');
                             this.currentIndex = i;
                             break;
                         }
@@ -108,9 +106,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameNotFound').subscribe((data) => {
-                // ici il va falloir handle quand un joueur essaie de join une partie qui a été fermée
-                // entre le temps ou il a mis le id et il choisi son joueur
+            this.socketService.listen<{ reason: string }>('gameHasStarted').subscribe((data) => {
+                // gerer comment on affiche le message d'erreur d'une partie qui a commencé
                 console.log(data.reason);
             }),
         );
@@ -201,11 +198,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.selectedCharacter) {
-            this.showErrorMessage.selectionError = true;
-            return;
-        }
-
         this.createPlayer();
 
         if (this.router.url.includes('create-game')) {
@@ -245,7 +237,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             };
             const player: Player = {
                 name: this.characterName,
-                socketId: '',
+                socketId: this.socketService.socket.id || '',
                 isActive: true,
                 avatar: this.selectedCharacter.id,
                 specs: playerSpecs,
@@ -262,7 +254,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     onQuit() {
-        this.router.navigate(['/']);
+        // besoin de refresh la page pour fermer le socekt
+        window.location.href = '/';
     }
 
     ngOnDestroy(): void {

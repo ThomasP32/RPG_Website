@@ -7,7 +7,7 @@ import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Avatar, Bonus } from '@common/game';
+import { Avatar, Bonus, Player, Specs } from '@common/game';
 import { DBMap as Map, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
@@ -157,7 +157,9 @@ describe('CharacterFormPageComponent', () => {
 
         availableAvatarsSubject = new Subject<any>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
+            socket: { id: 'host-socket-id' }
+        });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {
@@ -166,6 +168,7 @@ describe('CharacterFormPageComponent', () => {
                 return of({} as T);
             }
         });
+
 
         await TestBed.configureTestingModule({
             imports: [CharacterFormPageComponent, CommonModule, FormsModule],
@@ -199,26 +202,39 @@ describe('CharacterFormPageComponent', () => {
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
-    it('should select the previous character', () => {
-        component.currentIndex = 1;
+    it('should select the previous available character', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
+        mockCharacters[3].isAvailable = false;
+        component.characters = [...mockCharacters];
+        component.currentIndex = 4;
+        component.selectCharacter(mockCharacters[4]);
         component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
+        expect(component.selectedCharacter).toEqual(mockCharacters[2]);
     });
 
     it('should select the next character', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
+        component.characters = [...mockCharacters];
         component.currentIndex = 0;
+        component.selectCharacter(mockCharacters[0]);
         component.nextCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[1]);
     });
 
     it('should select the last character when selecting previous character from the first', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
+        component.characters = [...mockCharacters];
         component.currentIndex = 0;
+        component.selectCharacter(mockCharacters[0]);
         component.previousCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[mockCharacters.length - 1]);
     });
 
     it('should select the first character when selecting next character from the last', () => {
+        mockCharacters.forEach((character) => (character.isAvailable = true));
+        component.characters = [...mockCharacters];
         component.currentIndex = mockCharacters.length - 1;
+        component.selectCharacter(mockCharacters[mockCharacters.length - 1]);
         component.nextCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
@@ -378,7 +394,9 @@ describe('CharacterFormPage when joining game', () => {
 
         availableAvatarsSubject = new Subject<any>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
+            socket: { id: 'mock-socket-id' }
+        });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {
@@ -415,5 +433,109 @@ describe('CharacterFormPage when joining game', () => {
         await fixture.whenStable();
         fixture.detectChanges();
         expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/waiting-room`]);
+    });
+
+    describe('listenToSocketMessages', () => {
+        it('should update character availability based on received players and select a new character if the current one is unavailable', fakeAsync(() => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[0];
+            component.currentIndex = 0;
+            const currentPlayers: Player[] = [
+                {
+                    avatar: Avatar.Avatar1,
+                    name: 'Player 1',
+                    isActive: true,
+                    socketId: 'socket1',
+                    position: { x: 0, y: 0 },
+                    specs: {} as Specs,
+                    inventory: [],
+                    turn: 0,
+                },
+                {
+                    avatar: Avatar.Avatar3,
+                    name: 'Player 3',
+                    isActive: true,
+                    socketId: 'socket3',
+                    position: { x: 0, y: 0 },
+                    specs: {} as Specs,
+                    inventory: [],
+                    turn: 0,
+                },
+            ];
+            availableAvatarsSubject.next(currentPlayers);
+            component.listenToSocketMessages();
+            tick();
+            expect(component.characters[0].isAvailable).toBeFalse();
+            expect(component.characters[2].isAvailable).toBeFalse();
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+
+            expect(component.characters[1].isAvailable).toBeTrue();
+            expect(component.characters[3].isAvailable).toBeTrue();
+        }));
+
+        it('should not change selected character if it remains available', fakeAsync(() => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[1];
+            component.currentIndex = 1;
+
+            const currentPlayers: Player[] = [
+                {
+                    avatar: Avatar.Avatar1,
+                    name: 'Player 1',
+                    isActive: true,
+                    socketId: 'socket1',
+                    position: { x: 0, y: 0 },
+                    specs: {} as Specs,
+                    inventory: [],
+                    turn: 0,
+                },
+                {
+                    avatar: Avatar.Avatar3,
+                    name: 'Player 3',
+                    isActive: true,
+                    socketId: 'socket3',
+                    position: { x: 0, y: 0 },
+                    specs: {} as Specs,
+                    inventory: [],
+                    turn: 0,
+                },
+            ];
+
+            availableAvatarsSubject.next(currentPlayers);
+
+            component.listenToSocketMessages();
+            tick();
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+        }));
+    });
+
+    describe('CharacterFormPageComponent HostListener keydown', () => {
+        it('should navigate to the previous character when ArrowLeft is pressed', () => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[2];
+            component.currentIndex = 2;
+
+            const event = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
+            component.handleKeyDown(event);
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+        });
+
+        it('should navigate to the next character when ArrowRight is pressed', () => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[0];
+            component.currentIndex = 0;
+
+            const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+            component.handleKeyDown(event);
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+        });
     });
 });
