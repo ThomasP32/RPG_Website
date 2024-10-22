@@ -64,4 +64,9 @@ describe('SocketService', () => {
         service.disconnect();
         expect(mockSocket.disconnect).toHaveBeenCalled();
     });
+
+    it('should connect the socket', () => {
+        service.connect();
+        expect(mockSocket.connect).toHaveBeenCalled();
+    });
 });

@@ -113,14 +113,14 @@ describe('AdminServiceEndToEnd', () => {
 
     it('modifyMap() should create a new map successfully if ID does not exist', async () => {
         const updatedMap = getFakeUpdateMap();
-        const mapId = new Types.ObjectId().toString(); // Un identifiant inexistant
+        const mapId = new Types.ObjectId().toString();
 
         const modifiedMap = await service.modifyMap(mapId, updatedMap);
 
         expect(modifiedMap).toMatchObject({
             ...updatedMap,
             isVisible: false,
-            lastModified: expect.any(Date), // Vérifie que lastModified est une date
+            lastModified: expect.any(Date),
         });
     });
 
@@ -140,7 +140,6 @@ describe('AdminServiceEndToEnd', () => {
             doorTiles: [],
         };
 
-        // Vérifier que l'exception est bien lancée
         await expect(service.modifyMap(mapId, updatedMap)).rejects.toThrow("Le jeu n'a pas pu être modifié");
     });
 
