@@ -102,7 +102,6 @@ describe('AdminController', () => {
     });
 
     it('addMap() should return BAD_REQUEST with message if adding the map fails', async () => {
-        // Arrange
         const mapDto = {
             name: 'New Map',
             description: 'Test map',
@@ -115,10 +114,8 @@ describe('AdminController', () => {
             doorTiles: [],
         };
 
-        // Simuler une erreur générique (sans message particulier) dans addMap()
         adminService.addMap.rejects(new Error());
 
-        // Préparer l'objet de réponse simulé
         const res = {} as unknown as Response;
         res.status = (code: number) => {
             expect(code).toEqual(HttpStatus.BAD_REQUEST);
@@ -132,7 +129,6 @@ describe('AdminController', () => {
             return res;
         };
 
-        // Act
         await controller.addMap(mapDto, res);
     });
 

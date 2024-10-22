@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -33,16 +33,15 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     isCreatingGame: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        this.getMapName();
         this.player = history.state.player;
         this.listenToSocketMessages();
         if (this.router.url.includes('create-game')) {
             this.isCreatingGame = true;
+            this.getMapName();
             this.generateRandomNumber();
             await this.startNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            await this.joinGame();
         }
     }
 
@@ -57,7 +56,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             id: this.waitingRoomCode,
             players: [this.player],
             hostSocketId: '',
-            availableAvatars: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
             visitedTiles: [],
@@ -65,14 +63,9 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             nTurns: 0,
             debug: false,
             isLocked: false,
+            hasStarted: false,
         };
-        console.log('starting a new game');
         this.socketService.sendMessage('startGame', newGame);
-    }
-
-    async joinGame(): Promise<void> {
-        console.log('joining a game');
-        this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
     }
 
     exitGame(): void {
@@ -107,5 +100,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         if (this.socketSubscription) {
             this.socketSubscription.unsubscribe();
         }
+    }
+
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie
+    @HostListener('window:beforeunload', ['$event'])
+    onBeforeUnload(event: Event): void {
+        event.preventDefault();
     }
 }
