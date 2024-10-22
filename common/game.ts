@@ -60,7 +60,6 @@ export interface Game extends Map {
     debug: boolean;
     isLocked: boolean;
     hasStarted: boolean;
-    connections: string[];
 }
 
 export interface GameCtf extends Game {

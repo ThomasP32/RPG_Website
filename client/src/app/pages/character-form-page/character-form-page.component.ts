@@ -39,7 +39,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     characters: Character[] = [];
 
     currentIndex: number;
-
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;
@@ -72,6 +71,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.selectedCharacter = this.characters[0];
             this.currentIndex = 0;
         });
+        
         // mapName est dans le path de l'url seulement si c'est une création
         if (!this.router.url.includes('create-game')) {
             // si on est dans le cas de rejoindre une partie on doit vérifier les avatars disponibles
@@ -106,7 +106,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameNotFound').subscribe((data) => {
+            this.socketService.listen<{ reason: string }>('gameHasStarted').subscribe((data) => {
+                // gerer comment on affiche le message d'erreur d'une partie qui a commencé
                 console.log(data.reason);
             }),
         );
@@ -236,7 +237,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             };
             const player: Player = {
                 name: this.characterName,
-                socketId: '',
+                socketId: this.socketService.socket.id || '',
                 isActive: true,
                 avatar: this.selectedCharacter.id,
                 specs: playerSpecs,
@@ -253,7 +254,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     onQuit() {
-        // besoin de refresh la page pour fermer le socekt 
+        // besoin de refresh la page pour fermer le socekt
         window.location.href = '/';
     }
 
