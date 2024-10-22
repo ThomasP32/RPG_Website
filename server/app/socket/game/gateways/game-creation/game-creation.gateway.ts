@@ -15,6 +15,7 @@ export class GameGateway implements OnGatewayDisconnect {
     handleStartGame(client: Socket, newGame: Game): void {
         client.join(newGame.id);
         newGame.hostSocketId = client.id;
+        newGame.connections = [client.id];
         this.gameCreationService.addGame(newGame);
 
         this.server.to(newGame.id).emit('gameStarted', { game: newGame });
@@ -29,7 +30,6 @@ export class GameGateway implements OnGatewayDisconnect {
                 return;
             }
             game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            console.log(game);
             this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
             this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
@@ -54,18 +54,19 @@ export class GameGateway implements OnGatewayDisconnect {
     handleAccessGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
             const game = this.gameCreationService.getGame(gameId);
-            // const numClientsInRoom = this.server.sockets.adapter?.rooms?.get(gameId)?.size || 0;
+
             if (game.hasStarted) {
-                client.emit('gameLocked', { reason: 'La partie a déjà commencé.' });
+                client.emit('gameLocked', { reason: "Vous n'avez pas été assez rapide...\nLa partie a déjà commencé." });
+                return;
+            } else if (this.gameCreationService.isMaxPlayersReached(game.connections, gameId)) {
+                client.emit('gameLocked', { reason: "Vous n'avez pas été assez rapide...\nLa salle d'attente de la partie est déjà pleine." });
                 return;
             } else if (game.isLocked) {
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
             }
-            // else if (this.gameCreationService.isMaxPlayersReached(numClientsInRoom, gameId)) {
-            //     client.emit('gameLocked', { reason: 'Le jeu a atteint un nombre de joueur maximal, essayez plus tard.' });
-            //     return;
-            // } 
+
+            game.connections.push(client.id);
             client.join(gameId);
             client.emit('gameAccessed');
         } else {
@@ -99,17 +100,20 @@ export class GameGateway implements OnGatewayDisconnect {
     }
 
     handleDisconnect(client: Socket): void {
-        const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
-        for (const gameId of gameRooms) {
-            if (this.gameCreationService.isPlayerHost(client.id, gameId)) {
-                this.server.to(gameId).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                this.gameCreationService.deleteRoom(gameId);
-                this.server.socketsLeave(gameId);
+        const games = this.gameCreationService.getGames();
+        games.forEach((game) => {
+            if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
+                this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                this.gameCreationService.deleteRoom(game.id);
+                this.server.socketsLeave(game.id);
+                return;
+            } else if (game.connections.some((connection) => connection === client.id)) {
+                const updatedGame = this.gameCreationService.handlePlayerDisconnect(client, game.id);
+                this.server.to(game.id).emit('updateGame', { game: updatedGame });
+                this.server.to(game.id).emit('playerLeft', { playerId: client.id });
             } else {
-                const updatedGame = this.gameCreationService.handlePlayerDisconnect(client);
-                this.server.to(gameId).emit('updateGame', { game: updatedGame });
-                this.server.to(gameId).emit('playerLeft', { playerId: client.id });
+                return;
             }
-        }
+        });
     }
 }

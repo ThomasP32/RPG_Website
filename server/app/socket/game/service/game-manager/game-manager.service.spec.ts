@@ -39,6 +39,7 @@ describe('GameManagerService', () => {
     };
 
     game2 = {
+        connections: ['host-id'],
         hasStarted: true,
         id: 'game-1',
         hostSocketId: 'host-1',

@@ -14,6 +14,7 @@ const LARGE_MAP_PLAYERS_MAX = 6;
 @Injectable()
 export class GameCreationService {
     private gameRooms: Record<string, Game> = {};
+
     getGame(gameId: string): Game {
         return this.gameRooms[gameId];
     }
@@ -46,32 +47,31 @@ export class GameCreationService {
     isPlayerHost(socketId: string, gameId: string): boolean {
         return this.getGame(gameId).hostSocketId === socketId;
     }
-
-    handlePlayerDisconnect(client: Socket): Game {
-        const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
-        for (const gameId of gameRooms) {
-            const game = this.getGame(gameId);
-            if (game.hasStarted) {
-                game.players = game.players.map((player) => {
-                    if (player.socketId === client.id) {
-                        return { ...player, isActive: false };
-                    } else {
-                        return player;
-                    }
-                });
-            } else {
-                game.players = game.players.filter((player) => {
-                    return player.socketId !== client.id;
-                });
-            }
-            return this.getGame(gameId);
+    handlePlayerDisconnect(client: Socket, gameId: string): Game {
+        const game = this.getGame(gameId);
+        if (game.hasStarted) {
+            game.players = game.players.map((player) => {
+                if (player.socketId === client.id) {
+                    game.connections = game.connections.filter((connection) => connection !== client.id);
+                    return { ...player, isActive: false };
+                } else {
+                    return player;
+                }
+            });
+        } else {
+            game.players = game.players.filter((player) => {
+                return player.socketId !== client.id;
+            });
+            game.connections = game.connections.filter((connection) => connection !== client.id);
         }
+        return this.getGame(gameId);
     }
 
     initializeGame(gameId: string): void {
         this.setOrder(gameId);
         this.setStartingPoints(gameId);
         this.getGame(gameId).hasStarted = true;
+        this.getGame(gameId).isLocked = true;
     }
 
     setOrder(gameId: string): void {
@@ -115,14 +115,14 @@ export class GameCreationService {
         }
     }
 
-    isMaxPlayersReached(numPlayersWaiting: number, gameId: string): boolean {
+    isMaxPlayersReached(connections: string[], gameId: string): boolean {
         const game = this.getGame(gameId);
         if (game.mapSize.x === SMALL_MAP_SIZE) {
-            return numPlayersWaiting === SMALL_MAP_PLAYERS_MIN_MAX;
+            return connections.length === SMALL_MAP_PLAYERS_MIN_MAX;
         } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
-            return numPlayersWaiting === MEDIUM_MAP_PLAYERS_MAX;
+            return connections.length === MEDIUM_MAP_PLAYERS_MAX;
         } else if (game.mapSize.x === LARGE_MAP_SIZE) {
-            return numPlayersWaiting === LARGE_MAP_PLAYERS_MAX;
+            return connections.length === LARGE_MAP_PLAYERS_MAX;
         } else {
             return false;
         }

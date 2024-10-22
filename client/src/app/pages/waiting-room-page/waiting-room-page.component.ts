@@ -64,6 +64,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             debug: false,
             isLocked: false,
             hasStarted: false,
+            connections: [],
         };
         this.socketService.sendMessage('startGame', newGame);
     }
