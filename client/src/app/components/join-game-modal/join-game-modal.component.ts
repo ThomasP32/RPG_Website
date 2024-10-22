@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-join-game-modal',
@@ -16,6 +17,7 @@ export class JoinGameModalComponent implements OnInit {
     code: string[] = ['', '', '', ''];
     gameId: string | null = null;
     errorMessage: string | null = null;
+    socketSubscription: Subscription = new Subscription();
 
     constructor(
         // eslint-disable-next-line no-unused-vars
@@ -52,26 +54,40 @@ export class JoinGameModalComponent implements OnInit {
         const gameCode = this.code.join('');
         this.gameId = gameCode;
 
-        this.socketService.sendMessage('joinGame', gameCode);
+        // accéder au choix de joeur avant de join
+        this.socketService.sendMessage('accessGame', gameCode);
+        // this.socketService.sendMessage('joinGame', gameCode);
 
         this.code = ['', '', '', ''];
     }
 
     configureJoinGameSocketFeatures(): void {
-        this.socketService.listen('playerJoined').subscribe(() => {
-            this.router.navigate(['/create-character']);
-        });
+        this.socketSubscription.add(
+            this.socketService.listen('gameAccessed').subscribe(() => {
+                // quand le jeu a été accédé, on peut accéder au choix de joueur
+                this.router.navigate([`join-game/${this.gameId}/create-character`]);
+            }),
+        );
 
-        this.socketService.listen('gameNotFound').subscribe((data: any) => {
-            if (data && data.reason) {
-                this.errorMessage = data.reason;
-            }
-        });
+        // accéder au choix de joeur avant de join
+        // this.socketService.listen('playerJoined').subscribe(() => {
+        //     this.router.navigate(['/create-character']);
+        // });
 
-        this.socketService.listen('gameLocked').subscribe((data: any) => {
-            if (data && data.reason) {
-                this.errorMessage = data.reason;
-            }
-        });
+        this.socketSubscription.add(
+            this.socketService.listen('gameNotFound').subscribe((data: any) => {
+                if (data && data.reason) {
+                    this.errorMessage = data.reason;
+                }
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen('gameLocked').subscribe((data: any) => {
+                if (data && data.reason) {
+                    this.errorMessage = data.reason;
+                }
+            }),
+        );
     }
 }
