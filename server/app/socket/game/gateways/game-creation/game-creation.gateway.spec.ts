@@ -65,6 +65,7 @@ describe('GameGateway', () => {
         nTurns: 0,
         debug: false,
         isLocked: false,
+        connections: [],
     };
     beforeEach(async () => {
         logger = createStubInstance(Logger);
@@ -119,7 +120,7 @@ describe('GameGateway', () => {
 
         it('should emit gameAccessed if the game exists and is not locked', () => {
             const gameId = 'game-id';
-            const game: Game = { id: gameId, isLocked: false } as Game;
+            const game: Game = { id: gameId, isLocked: false, connections: [] } as Game;
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGame.returns(game);
             gateway.handleAccessGame(socket, gameId);
@@ -144,20 +145,20 @@ describe('GameGateway', () => {
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
         });
-        // it('should emit gameLocked if max players are reached', () => {
-        //     const gameId = 'game-id';
-        //     const game: Game = { id: gameId, isLocked: false, hasStarted: false } as Game;
+        it('should emit gameLocked if max players are reached', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: false, hasStarted: false } as Game;
 
-        //     gameCreationService.doesGameExist.returns(true);
-        //     gameCreationService.getGame.returns(game);
-        //     gameCreationService.isMaxPlayersReached.returns(true);
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+            gameCreationService.isMaxPlayersReached.returns(true);
 
-        //     gateway.handleAccessGame(socket, gameId);
+            gateway.handleAccessGame(socket, gameId);
 
-        //     expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-        //     expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
-        //     expect(socket.emit.calledWith('gameLocked', { reason: 'Le jeu a atteint un nombre de joueur maximal, essayez plus tard.' })).toBeTruthy();
-        // });
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: "Vous n'avez pas été assez rapide...\nLa salle d'attente de la partie est déjà pleine." })).toBeTruthy();
+        });
         it('should emit gameLocked if the game has already started', () => {
             const gameId = 'game-id';
             const game: Game = { id: gameId, isLocked: false, hasStarted: true } as Game;
@@ -169,7 +170,7 @@ describe('GameGateway', () => {
 
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie a déjà commencé.' })).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: "Vous n'avez pas été assez rapide...\nLa partie a déjà commencé." })).toBeTruthy();
         });
     });
     describe('handleStartGame', () => {
@@ -222,26 +223,28 @@ describe('GameGateway', () => {
 
     describe('handleDisconnect', () => {
         it('should call deleteRoom when the player is the host', () => {
-            const gameId = 'game-id';
-            stub(socket, 'rooms').value(new Set([gameId, 'client-id']));
+            stub(socket, 'rooms').value(new Set([gameRoom.id, 'client-id']));
+            gameCreationService.getGames.returns([gameRoom]);
             gameCreationService.isPlayerHost.returns(true);
 
             gateway.handleDisconnect(socket);
 
-            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameId)).toBeTruthy();
-            expect(gameCreationService.deleteRoom.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.deleteRoom.calledWith(gameRoom.id)).toBeTruthy();
         });
 
         it('should call handlePlayerDisconnect when the player is not the host', () => {
             const gameId = 'game-id';
+            gameRoom.connections = [socket.id];
             const updatedGame: Game = { id: gameId, players: [] } as Game;
             stub(socket, 'rooms').value(new Set([gameId, 'client-id']));
+            gameCreationService.getGames.returns([gameRoom]);
             gameCreationService.isPlayerHost.returns(false);
             gameCreationService.handlePlayerDisconnect.returns(updatedGame);
 
             gateway.handleDisconnect(socket);
 
-            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameId)).toBeTruthy();
+            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameRoom.id)).toBeTruthy();
             expect(gameCreationService.handlePlayerDisconnect.calledWith(socket)).toBeTruthy();
         });
     });

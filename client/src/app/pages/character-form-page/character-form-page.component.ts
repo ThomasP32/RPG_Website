@@ -87,7 +87,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     listenToSocketMessages(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
-                // ca update pour donner juste les avatar disponible
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
@@ -98,7 +97,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     for (let i = 0; i < this.characters.length; i++) {
                         if (this.characters[i].isAvailable) {
                             this.selectedCharacter = this.characters[i];
-                            console.log('setting selected character');
                             this.currentIndex = i;
                             break;
                         }
@@ -109,8 +107,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
         this.socketSubscription.add(
             this.socketService.listen<{ reason: string }>('gameNotFound').subscribe((data) => {
-                // ici il va falloir handle quand un joueur essaie de join une partie qui a été fermée
-                // entre le temps ou il a mis le id et il choisi son joueur
                 console.log(data.reason);
             }),
         );
@@ -201,11 +197,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.selectedCharacter) {
-            this.showErrorMessage.selectionError = true;
-            return;
-        }
-
         this.createPlayer();
 
         if (this.router.url.includes('create-game')) {
@@ -262,7 +253,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     onQuit() {
-        this.router.navigate(['/']);
+        // besoin de refresh la page pour fermer le socekt 
+        window.location.href = '/';
     }
 
     ngOnDestroy(): void {
