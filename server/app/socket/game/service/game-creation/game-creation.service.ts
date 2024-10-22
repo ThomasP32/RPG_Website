@@ -115,14 +115,14 @@ export class GameCreationService {
         }
     }
 
-    isMaxPlayersReached(gameId: string): boolean {
+    isMaxPlayersReached(numPlayersWaiting: number, gameId: string): boolean {
         const game = this.getGame(gameId);
         if (game.mapSize.x === SMALL_MAP_SIZE) {
-            return game.players.length === SMALL_MAP_PLAYERS_MIN_MAX;
+            return numPlayersWaiting === SMALL_MAP_PLAYERS_MIN_MAX;
         } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
-            return game.players.length === MEDIUM_MAP_PLAYERS_MAX;
+            return numPlayersWaiting === MEDIUM_MAP_PLAYERS_MAX;
         } else if (game.mapSize.x === LARGE_MAP_SIZE) {
-            return game.players.length === LARGE_MAP_PLAYERS_MAX;
+            return numPlayersWaiting === LARGE_MAP_PLAYERS_MAX;
         } else {
             return false;
         }

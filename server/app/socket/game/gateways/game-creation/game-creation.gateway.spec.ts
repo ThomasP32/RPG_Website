@@ -86,6 +86,18 @@ describe('GameGateway', () => {
         }).compile();
         gateway = module.get<GameGateway>(GameGateway);
         gateway['server'] = serverStub;
+        const rooms = new Map();
+        rooms.set('game-id', { size: 2 });
+
+        const adapterStub = {
+            rooms: rooms,
+        };
+
+        Object.defineProperty(serverStub, 'sockets', {
+            get: () => ({
+                adapter: adapterStub,
+            }),
+        });
         serverStub.to.returns({
             emit: stub(),
         } as any);
@@ -94,6 +106,17 @@ describe('GameGateway', () => {
         expect(gateway).toBeDefined();
     });
     describe('handleAccessGame', () => {
+        it('should emit gameNotFound if the game does not exist', () => {
+            const gameId = 'game-id';
+
+            gameCreationService.doesGameExist.returns(false);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
+        });
+
         it('should emit gameAccessed if the game exists and is not locked', () => {
             const gameId = 'game-id';
             const game: Game = { id: gameId, isLocked: false } as Game;
@@ -120,6 +143,33 @@ describe('GameGateway', () => {
             gateway.handleAccessGame(socket, gameId);
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
+        });
+        // it('should emit gameLocked if max players are reached', () => {
+        //     const gameId = 'game-id';
+        //     const game: Game = { id: gameId, isLocked: false, hasStarted: false } as Game;
+
+        //     gameCreationService.doesGameExist.returns(true);
+        //     gameCreationService.getGame.returns(game);
+        //     gameCreationService.isMaxPlayersReached.returns(true);
+
+        //     gateway.handleAccessGame(socket, gameId);
+
+        //     expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+        //     expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+        //     expect(socket.emit.calledWith('gameLocked', { reason: 'Le jeu a atteint un nombre de joueur maximal, essayez plus tard.' })).toBeTruthy();
+        // });
+        it('should emit gameLocked if the game has already started', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, isLocked: false, hasStarted: true } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+
+            gateway.handleAccessGame(socket, gameId);
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie a déjà commencé.' })).toBeTruthy();
         });
     });
     describe('handleStartGame', () => {
@@ -132,15 +182,34 @@ describe('GameGateway', () => {
         });
     });
     describe('handleJoinGame', () => {
-        it('should add player to game and call addPlayerToGame on GameCreationService', () => {
-            const player: Player = { name: 'Player1', socketId: 'socket-id', isActive: true } as Player;
-            const gameId = 'game-id';
-            gameRoom.players.push(player);
-            const updatedGame: Game = { ...gameRoom };
+        it('should emit gameLocked when trying to join a locked game', () => {
+            gameRoom.isLocked = true;
+
             gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(gameRoom);
+
+            gateway.handleJoinGame(socket, { player: player, gameId: gameRoom.id });
+
+            expect(gameCreationService.doesGameExist.calledWith(gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameRoom.id)).toBeTruthy();
+            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' })).toBeTruthy();
+            expect(gameCreationService.addPlayerToGame.called).toBeFalsy();
+            gameRoom.isLocked = false;
+        });
+
+        it('should add player to game and call addPlayerToGame on GameCreationService', () => {
+            const newPlayer: Player = { name: 'Player1', socketId: 'socket-id', isActive: true } as Player;
+            const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(gameRoom);
             gameCreationService.addPlayerToGame.returns(updatedGame);
-            gateway.handleJoinGame(socket, { player: player, gameId: gameId });
-            expect(gameCreationService.addPlayerToGame.calledWith(player, gameId)).toBeTruthy();
+
+            gateway.handleJoinGame(socket, { player: newPlayer, gameId: gameRoom.id });
+
+            expect(gameCreationService.doesGameExist.calledWith(gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.getGame.calledWith(gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.addPlayerToGame.calledWith(newPlayer, gameRoom.id)).toBeTruthy();
         });
 
         it('should not add player to game and call addPlayerToGame on GameCreationService when game does not exist', () => {
@@ -148,39 +217,6 @@ describe('GameGateway', () => {
             gateway.handleJoinGame(socket, { player: player, gameId: gameRoom.id });
             expect(socket.join.calledWith(gameRoom.id)).toBeFalsy();
             expect(socket.emit.calledWith('gameNotFound')).toBeTruthy();
-        });
-    });
-    describe('handleAccessGame', () => {
-        it('should emit gameAccessed if the game exists and is not locked', () => {
-            const gameId = 'game-id';
-            const game: Game = { id: gameId, isLocked: false } as Game;
-            gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGame.returns(game);
-            gateway.handleAccessGame(socket, gameId);
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
-            expect(socket.join.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameAccessed')).toBeTruthy();
-        });
-        it('should emit gameLocked if the game exists and is locked', () => {
-            const gameId = 'game-id';
-            const game: Game = { id: gameId, isLocked: true } as Game;
-            gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGame.returns(game);
-            gateway.handleAccessGame(socket, gameId);
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' })).toBeTruthy();
-        });
-        it('should emit gameNotFound if the game does not exist', () => {
-            const gameId = 'game-id';
-
-            gameCreationService.doesGameExist.returns(false);
-
-            gateway.handleAccessGame(socket, gameId);
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' })).toBeTruthy();
         });
     });
 
@@ -233,28 +269,55 @@ describe('GameGateway', () => {
         });
     });
 
-    describe('getAvailableAvatars', () => {
-        it('should emit availableAvatars if the game exists', () => {
+    describe('getCurrentPlayers', () => {
+        it('should emit currentPlayers if the game exists', () => {
             const gameId = 'room-1';
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGame.returns(gameRoom);
-    
+
             gateway.getAvailableAvatars(socket, gameId);
-    
+
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('currentPlayers', gameRoom.players)).toBeTruthy();
         });
-    
+
         it('should emit gameNotFound if the game does not exist', () => {
             const gameId = 'non-existent-room';
             gameCreationService.doesGameExist.returns(false);
-    
+
             gateway.getAvailableAvatars(socket, gameId);
-    
+
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('gameNotFound', { reason: 'La partie a été fermée' })).toBeTruthy();
         });
     });
-    
+
+    describe('ifStartable', () => {
+        it('should emit isStartable if the game can start', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, hostSocketId: socket.id } as Game;
+
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGame.returns(game);
+            gameCreationService.isGameStartable.returns(true);
+
+            gateway.isStartable(socket, gameId);
+
+            expect(gameCreationService.isGameStartable.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('isStartable', { game: game })).toBeTruthy();
+        });
+        it('should emit isStartable if the game can start', () => {
+            const gameId = 'game-id';
+            const game: Game = { id: gameId, hostSocketId: socket.id } as Game;
+
+            gameCreationService.getGame.returns(game);
+            gameCreationService.isGameStartable.returns(false);
+
+            gateway.isStartable(socket, gameId);
+
+            expect(gameCreationService.isGameStartable.calledWith(gameId)).toBeTruthy();
+            expect(socket.emit.calledWith('isStartable', { game: game })).toBeFalsy();
+        });
+    });
 });
