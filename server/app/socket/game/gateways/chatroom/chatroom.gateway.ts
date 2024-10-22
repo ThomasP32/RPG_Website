@@ -1,29 +1,34 @@
+import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
 import { Message } from '@common/message';
-import { Injectable } from '@nestjs/common';
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+    ConnectedSocket,
+    MessageBody,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
-@Injectable()
+@WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class ChatRoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
+    constructor(private readonly chatroomService: ChatroomService) {}
+
     @SubscribeMessage('joinRoom')
-    handleJoinRoom(client: Socket, gameId: string): void {
-        client.join(gameId);
-        console.log(`Client ${client.id} joined room ${gameId}`);
+    handleJoinRoom(@MessageBody() roomId: string, @ConnectedSocket() socket: Socket) {
+        socket.join(roomId);
+        const existingMessages = this.chatroomService.getMessages(roomId);
+        socket.emit('previousMessages', existingMessages);
     }
 
-    @SubscribeMessage('sendMessage')
-    handleMessage(socket: Socket, message: Message) {
-        // Seulement un membre de la salle peut envoyer un message aux autres
-        if (socket.rooms.has(message.gameId)) {
-            this.server.to(message.gameId).emit('roomMessage', `${socket.id} : ${message}`);
-        }
-    }
-
-    afterInit() {
-        console.log('ChatRoomGateway initialized');
+    @SubscribeMessage('message')
+    handleMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: { roomName: string; message: Message }) {
+        const { roomName, message } = data;
+        this.chatroomService.addMessage(roomName, message);
+        this.server.to(roomName).emit('message', message);
     }
 
     handleConnection(socket: Socket) {

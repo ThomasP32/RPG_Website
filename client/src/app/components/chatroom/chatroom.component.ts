@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Message } from '@common/message';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-chatroom',
@@ -16,13 +17,15 @@ export class ChatroomComponent {
     @Input() gameId: string;
     messageText: string = '';
     messages: Message[] = [];
+    messageSubscription: Subscription;
 
     constructor(public socketService: SocketService) {}
 
     ngOnInit(): void {
         this.socketService.sendMessage('joinRoom', this.gameId);
-        this.socketService.listen('roomMessage', (msg: { author: string; text: string; timestamp: Date; gameId: string }) => {
-            this.messages.push(msg);
+        this.messageSubscription = this.socketService.listen<Message>('message').subscribe((message) => {
+            this.messages.push(message);
+            this.scrollToBottom();
         });
     }
 
@@ -34,8 +37,24 @@ export class ChatroomComponent {
                 timestamp: new Date(),
                 gameId: this.gameId,
             };
-            this.socketService.sendMessage('roomMessage', { roomName: this.gameId, message });
+            this.socketService.sendMessage('message', { roomName: this.gameId, message });
             this.messageText = '';
+            this.scrollToBottom();
+        }
+    }
+
+    scrollToBottom(): void {
+        setTimeout(() => {
+            const messageArea = document.getElementById('messageArea');
+            if (messageArea) {
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+        }, 5);
+    }
+
+    ngOnDestroy(): void {
+        if (this.messageSubscription) {
+            this.messageSubscription.unsubscribe();
         }
     }
 }

@@ -221,7 +221,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
-            this.router.navigate([`join-game/${this.gameId}/waiting-room`]);
+            this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: this.player } });
         }
     }
 
