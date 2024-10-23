@@ -1,9 +1,9 @@
 import { Avatar } from '@common/game';
 
 export interface Character {
-    avatar: Avatar;
+    id: Avatar;
     name: string;
     image: string;
     preview: string;
-    available: boolean;
+    isAvailable: boolean;
 }

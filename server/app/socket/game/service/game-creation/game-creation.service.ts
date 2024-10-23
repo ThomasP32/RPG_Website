@@ -1,26 +1,46 @@
-import { Avatar, Game, Player } from '@common/game';
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Game, Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
+
+const SMALL_MAP_SIZE = 10;
+const MEDIUM_MAP_SIZE = 15;
+const LARGE_MAP_SIZE = 20;
+const SMALL_MAP_PLAYERS_MIN_MAX = 2;
+const MEDIUM_MAP_PLAYERS_MIN = 2;
+const MEDIUM_MAP_PLAYERS_MAX = 4;
+const LARGE_MAP_PLAYERS_MIN = 2;
+const LARGE_MAP_PLAYERS_MAX = 6;
 
 @Injectable()
 export class GameCreationService {
     private gameRooms: Record<string, Game> = {};
+
+    getGameById(gameId: string): Game {
+        const game = this.gameRooms[gameId];
+        if (!game) {
+            console.log(`Game with ID ${gameId} not found.`);
+            return null;
+        }
+        return game;
+    }
+
+    getGames(): Game[] {
+        return Object.values(this.gameRooms);
+    }
 
     addGame(game: Game): void {
         if (this.doesGameExist(game.id)) {
             return;
         }
         this.gameRooms[game.id] = game;
-        console.log('Room', game.id, 'has been added to the game rooms.');
     }
 
     doesGameExist(gameId: string): boolean {
-        return !!this.gameRooms[gameId];
+        return gameId in this.gameRooms;
     }
 
-    addPlayerToGame(player: Player, gameId: string): void {
-        const game = this.getGamebyId(gameId);
+    addPlayerToGame(player: Player, gameId: string): Game {
+        const game = this.getGameById(gameId);
         const existingPlayers = game.players.filter((existingPlayer) => {
             const baseName = existingPlayer.name.split('-')[0];
             return baseName === player.name.split('-')[0];
@@ -32,133 +52,88 @@ export class GameCreationService {
         console.log('Player', player.name, 'has been added to the game', gameId);
         console.log(this.gameRooms[gameId].players);
         return;
+        // this.getGameById(gameId).players.push(player);
+        // return game;
     }
 
     isPlayerHost(socketId: string, gameId: string): boolean {
-        if (socketId === gameId) {
+        return this.getGameById(gameId).hostSocketId === socketId;
+    }
+
+    handlePlayerDisconnect(client: Socket, gameId: string): Game {
+        const game = this.getGameById(gameId);
+        game.players = game.players.map((player) => {
+            if (player.socketId === client.id) {
+                return { ...player, isActive: false };
+            }
+            return player;
+        });
+        return this.getGameById(gameId);
+    }
+
+    initializeGame(gameId: string): void {
+        this.setOrder(gameId);
+        this.setStartingPoints(gameId);
+        this.getGameById(gameId).hasStarted = true;
+        this.getGameById(gameId).isLocked = true;
+    }
+
+    setOrder(gameId: string): void {
+        const game = this.getGameById(gameId);
+        const updatedPlayers = game.players.sort((player1, player2) => {
+            const speedDifference = player2.specs.speed - player1.specs.speed;
+            if (speedDifference === 0) {
+                return Math.random() - 0.5;
+            }
+            return speedDifference;
+        });
+        game.players = updatedPlayers;
+    }
+
+    setStartingPoints(gameId: string): void {
+        const game = this.getGameById(gameId);
+        const nPlayers = game.players.length;
+        while (game.startTiles.length > nPlayers) {
+            const randomIndex = Math.floor(Math.random() * game.startTiles.length);
+            game.startTiles.splice(randomIndex, 1);
+        }
+        let startTilesLeft = [...game.startTiles];
+        game.players.forEach((player) => {
+            const randomIndex = Math.floor(Math.random() * startTilesLeft.length);
+            player.position.x = startTilesLeft[randomIndex].coordinate.x;
+            player.position.y = startTilesLeft[randomIndex].coordinate.y;
+            startTilesLeft.splice(randomIndex, 1);
+        });
+    }
+
+    isGameStartable(gameId: string): boolean {
+        const game = this.getGameById(gameId);
+        if (game.mapSize.x === SMALL_MAP_SIZE) {
+            return game.players.filter((player) => player.isActive).length === SMALL_MAP_PLAYERS_MIN_MAX;
+        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
+            return game.players.filter((player) => player.isActive).length >= MEDIUM_MAP_PLAYERS_MIN;
+        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
+            return game.players.filter((player) => player.isActive).length >= LARGE_MAP_PLAYERS_MIN;
+        } else {
             return false;
         }
-        return this.gameRooms[gameId].hostSocketId === socketId;
     }
 
-    handlePlayerDisconnect(client: Socket): Game {
-        const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
-        for (const gameId of gameRooms) {
-            if (!this.gameRooms[gameId]) {
-                continue;
-            }
-            this.gameRooms[gameId].players = this.gameRooms[gameId].players.map((player) => {
-                if (player.socketId === client.id) {
-                    return { ...player, isActive: false };
-                } else {
-                    return player;
-                }
-            });
-            return this.gameRooms[gameId];
+    isMaxPlayersReached(players: Player[], gameId: string): boolean {
+        const game = this.getGameById(gameId);
+        if (game.mapSize.x === SMALL_MAP_SIZE) {
+            return players.length === SMALL_MAP_PLAYERS_MIN_MAX;
+        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
+            return players.length === MEDIUM_MAP_PLAYERS_MAX;
+        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
+            return players.length === LARGE_MAP_PLAYERS_MAX;
+        } else {
+            return false;
         }
     }
 
-    createMockGames(): void {
-        const mockGames: Game[] = [
-            {
-                id: '1234',
-                isLocked: false,
-                name: 'Test Room',
-                description: 'A test game room',
-                imagePreview: 'some-image-url',
-                mode: Mode.Ctf,
-                mapSize: { x: 20, y: 20 },
-                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
-                items: [
-                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
-                ],
-                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
-                tiles: [
-                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
-                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-                ],
-                hostSocketId: 'host-id',
-                players: [],
-                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2, Avatar.Avatar3, Avatar.Avatar12, Avatar.Avatar6],
-                currentTurn: 1,
-                nDoorsManipulated: 0,
-                visitedTiles: [],
-                duration: 0,
-                nTurns: 1,
-                debug: false,
-            },
-            {
-                id: '4000',
-                isLocked: false,
-                name: 'Ice Room',
-                description: 'A test game room',
-                imagePreview: 'some-image-url',
-                mode: Mode.Ctf,
-                mapSize: { x: 20, y: 20 },
-                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
-                items: [
-                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
-                ],
-                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
-                tiles: [
-                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
-                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-                ],
-                hostSocketId: 'host-id',
-                players: [],
-                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
-                currentTurn: 1,
-                nDoorsManipulated: 0,
-                visitedTiles: [],
-                duration: 0,
-                nTurns: 1,
-                debug: false,
-            },
-            {
-                id: '3564',
-                isLocked: false,
-                name: 'Lava Room',
-                description: 'A test game room',
-                imagePreview: 'some-image-url',
-                mode: Mode.Ctf,
-                mapSize: { x: 20, y: 20 },
-                startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
-                items: [
-                    { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                    { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
-                ],
-                doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
-                tiles: [
-                    { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
-                    { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-                ],
-                hostSocketId: 'host-id',
-                players: [],
-                availableAvatars: [Avatar.Avatar1, Avatar.Avatar2],
-                currentTurn: 1,
-                nDoorsManipulated: 0,
-                visitedTiles: [],
-                duration: 0,
-                nTurns: 1,
-                debug: false,
-            },
-        ];
-        for (const game of mockGames) {
-            this.addGame(game);
-        }
-    }
-
-    getGamebyId(gameId: string): Game {
-        console.log(`Searching for game with ID: "${gameId}"`);
-
-        const game = this.gameRooms[gameId];
-        if (!game) {
-            console.log(`Game with ID ${gameId} not found.`);
-            return null;
-        }
-        return game;
+    lockGame(gameId: string): void {
+        this.gameRooms[gameId].isLocked = true;
     }
 
     deleteRoom(gameId: string): void {

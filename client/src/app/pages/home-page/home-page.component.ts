@@ -25,6 +25,8 @@ export class HomePageComponent implements OnInit {
         this.connect();
     }
 
+    // TODO:ca normalement ca ne devrait pas être necessaire sinon ca bloque la connexion seulement aux utilisateurs qui
+    // ont accédé au jeu a partir de la page d'acceuil
     get socketId() {
         return this.socketService.socket && this.socketService.socket.id ? this.socketService.socket.id : '';
     }
@@ -32,7 +34,6 @@ export class HomePageComponent implements OnInit {
     async connect() {
         if (!this.socketService.isSocketAlive()) {
             this.socketService.connect();
-            this.socketService.sendMessage('createMockGames', this.socketId);
             console.log('this socket:', this.socketId);
         }
     }
@@ -51,13 +52,5 @@ export class HomePageComponent implements OnInit {
 
     navigateToAdmin(): void {
         this.router.navigate(['/admin-page']);
-    }
-
-    setSocketFeature(): void {
-        this.socketService.listen('mockGamesCreated').subscribe((data: any) => {
-            if (data && data.reason) {
-                console.log(data.reason);
-            }
-        });
     }
 }

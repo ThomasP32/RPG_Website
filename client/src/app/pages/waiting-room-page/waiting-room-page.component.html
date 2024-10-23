@@ -12,6 +12,12 @@
         <div class="exit-button">
             <button (click)="exitGame()">Quitter la partie</button>
         </div>
+        
+        @if (isCreatingGame) {
+        <div class="start-game-button">
+            <button [disabled]="!isStartable">Commencer la partie</button>
+        </div>
+        }
 
         <div class="game">
             <div class="game-details">
