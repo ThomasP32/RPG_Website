@@ -1,5 +1,5 @@
 import { CommonModule, NgFor } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Message } from '@common/message';
@@ -12,13 +12,14 @@ import { Subscription } from 'rxjs';
     templateUrl: './chatroom.component.html',
     styleUrl: './chatroom.component.scss',
 })
-export class ChatroomComponent {
+export class ChatroomComponent implements OnInit, OnDestroy {
     @Input() player: { name: string } = { name: '' };
     @Input() gameId: string;
     messageText: string = '';
     messages: Message[] = [];
     messageSubscription: Subscription;
 
+    //eslint-disable-next-line no-unused-vars
     constructor(public socketService: SocketService) {}
 
     ngOnInit(): void {
