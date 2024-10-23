@@ -40,7 +40,7 @@ export class GameManagerService {
             return [];
         }
 
-        const moves = this.runDijkstra(player.position, game, player.specs.speed);
+        const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
         const accessibleMoves: Coordinate[] = [];
         moves.forEach((value, key) => {
             const [x, y] = key.split(',').map(Number);
@@ -53,7 +53,7 @@ export class GameManagerService {
         const game = this.gameCreationService.getGame(gameId);
         const player = game.players.find((p) => p.name === playerName);
         let shortestPath: Coordinate[];
-        
+
         // si le joueur a pas besoin de jouer 
         if (!player || !player.isActive) {
             return [];
