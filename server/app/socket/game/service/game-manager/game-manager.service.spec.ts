@@ -17,7 +17,7 @@ describe('GameManagerService', () => {
         defense: 5,
         attackBonus: Bonus.D4,
         defenseBonus: Bonus.D6,
-        movePoints: 3,
+        movePoints: 10,
         actions: 2,
         nVictories: 0,
         nDefeats: 0,
@@ -36,6 +36,7 @@ describe('GameManagerService', () => {
         specs,
         inventory: [],
         turn: 0,
+        visitedTiles: [],
     };
 
     game2 = {
@@ -75,7 +76,6 @@ describe('GameManagerService', () => {
         currentTurn: 0,
         nTurns: 0,
         nDoorsManipulated: 0,
-        visitedTiles: [],
         duration: 0,
         debug: false,
         mode: Mode.Classic,
@@ -153,7 +153,7 @@ describe('GameManagerService', () => {
         });
 
         it('should return only current position for player with no move points', () => {
-            const noMovePlayer = { ...player, name: 'joueur sans point de vie', specs: { ...player.specs, speed: 0 } };
+            const noMovePlayer = { ...player, name: 'joueur sans point de vie', specs: { ...player.specs, movePoints: 0 } };
             game2.players.push(noMovePlayer);
 
             const moves = gameManagerService.getMoves(game2.id, noMovePlayer.name);
@@ -187,7 +187,6 @@ describe('GameManagerService', () => {
             const destination: Coordinate = { x: 2, y: 8 };
             const path = gameManagerService.getMove(game2.id, game2.players[0].name, destination, true);
             expect(path).toContainEqual({ x: 2, y: 8 });
-            console.log(path);
             expect(path.length).toBe(5);
         });
 
