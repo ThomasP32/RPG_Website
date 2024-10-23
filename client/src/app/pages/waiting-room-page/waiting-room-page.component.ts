@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { CharacterService } from '@app/services/character/character.service';
@@ -19,6 +19,7 @@ const maxCode = 9999;
     styleUrls: ['./waiting-room-page.component.scss'],
 })
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
+    @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
     /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
@@ -38,11 +39,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     isStartable: boolean = false;
 
     async ngOnInit(): Promise<void> {
+        this.initializeView();
         this.player = history.state.player;
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.playerName = this.player.name;
+
         this.listenToSocketMessages();
-        if (this.router.url.includes('create-game')) {
+        if (this.router.url.includes('host')) {
             this.isCreatingGame = true;
             this.getMapName();
             this.generateRandomNumber();
@@ -50,7 +53,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
         }
+        this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
     }
+
+    initializeView(): void {}
 
     generateRandomNumber(): void {
         this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
@@ -124,6 +130,12 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     );
                 }
                 console.log('A new player joined the game:', message);
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                console.log('currentPlayers:', players);
+                this.appPlayersListComponent.players = players;
             }),
         );
     }

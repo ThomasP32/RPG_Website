@@ -50,10 +50,7 @@ export class GameCreationService {
         }
         this.gameRooms[gameId].players.push(player);
         console.log('Player', player.name, 'has been added to the game', gameId);
-        console.log(this.gameRooms[gameId].players);
-        return;
-        // this.getGameById(gameId).players.push(player);
-        // return game;
+        return game;
     }
 
     isPlayerHost(socketId: string, gameId: string): boolean {
