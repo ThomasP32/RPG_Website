@@ -71,7 +71,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.selectedCharacter = this.characters[0];
             this.currentIndex = 0;
         });
-        
+
         // mapName est dans le path de l'url seulement si c'est une création
         if (!this.router.url.includes('create-game')) {
             // si on est dans le cas de rejoindre une partie on doit vérifier les avatars disponibles
@@ -213,7 +213,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
-            this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: this.player } });
+            this.router.navigate([`join-game/${this.gameId}/waiting-room`]);
         }
     }
 
