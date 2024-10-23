@@ -50,6 +50,16 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
 
+    @SubscribeMessage('combatPlayer')
+    getCombatPlayer(client: Socket, data: { player: Player; gameId: string }): void {
+        if (this.gameCreationService.doesGameExist(data.gameId)) {
+            const game = this.gameCreationService.getGame(data.gameId);
+            client.emit('currentCombatPlayer', { player: data.player, game: game });
+        } else {
+            client.emit('combatPlayerNotFound', { reason: 'Le joueur ayant commencé le combat pas trouvé' });
+        }
+    }
+
     @SubscribeMessage('accessGame')
     handleAccessGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
@@ -65,7 +75,7 @@ export class GameGateway implements OnGatewayDisconnect {
             // else if (this.gameCreationService.isMaxPlayersReached(numClientsInRoom, gameId)) {
             //     client.emit('gameLocked', { reason: 'Le jeu a atteint un nombre de joueur maximal, essayez plus tard.' });
             //     return;
-            // } 
+            // }
             client.join(gameId);
             client.emit('gameAccessed');
         } else {
@@ -97,7 +107,7 @@ export class GameGateway implements OnGatewayDisconnect {
             }
         }
     }
-
+    @SubscribeMessage('playerDisconnected')
     handleDisconnect(client: Socket): void {
         const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
         for (const gameId of gameRooms) {
