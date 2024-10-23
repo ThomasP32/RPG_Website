@@ -87,10 +87,13 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     listenToSocketMessages(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                console.log('currentPlayers:', players);
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
-                    if (players.some((player) => player.avatar === character.id)) {
-                        character.isAvailable = false;
+                    if (Array.isArray(players) && players.length > 0) {
+                        if (players.some((player) => player.avatar === character.id)) {
+                            character.isAvailable = false;
+                        }
                     }
                 });
                 if (!this.selectedCharacter.isAvailable) {
@@ -208,11 +211,11 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                 }, timeLimit);
             } else {
                 // ici t'es obligé de start-game à la page suivante parce que t'as pas encore le gameId
-                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
+                this.router.navigate([`${this.mapName}/waiting-room/host`], { state: { player: this.player } });
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
-            this.router.navigate([`join-game/${this.gameId}/waiting-room`]);
+            this.router.navigate([`${this.gameId}/waiting-room/player`], { state: { player: this.player } });
         }
     }
 
