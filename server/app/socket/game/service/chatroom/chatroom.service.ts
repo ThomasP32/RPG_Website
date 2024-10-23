@@ -1,4 +1,3 @@
-// server/src/services/socketManager.service.ts
 import { Message } from '@common/message';
 import { Injectable } from '@nestjs/common';
 

@@ -1,5 +1,6 @@
 import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
 import { Message } from '@common/message';
+import { Inject } from '@nestjs/common';
 import {
     ConnectedSocket,
     MessageBody,
@@ -15,7 +16,7 @@ import { Server, Socket } from 'socket.io';
 export class ChatRoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
-    constructor(private readonly chatroomService: ChatroomService) {}
+    @Inject(ChatroomService) private chatroomService: ChatroomService;
 
     @SubscribeMessage('joinRoom')
     handleJoinRoom(@MessageBody() roomId: string, @ConnectedSocket() socket: Socket) {

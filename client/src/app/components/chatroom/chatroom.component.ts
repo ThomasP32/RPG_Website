@@ -23,6 +23,12 @@ export class ChatroomComponent {
 
     ngOnInit(): void {
         this.socketService.sendMessage('joinRoom', this.gameId);
+
+        this.messageSubscription = this.socketService.listen<Message[]>('previousMessages').subscribe((messages: Message[]) => {
+            this.messages = messages;
+            this.scrollToBottom();
+        });
+
         this.messageSubscription = this.socketService.listen<Message>('message').subscribe((message) => {
             this.messages.push(message);
             this.scrollToBottom();

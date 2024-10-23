@@ -7,9 +7,11 @@
             <ul id="messageList">
                 @for (message of messages; track message) {
                 <li>
+                    @if (message.author) {
                     <strong class="author">{{ message.author }}:</strong>
                     {{ message.text }}
                     <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
+                    }
                 </li>
                 }
             </ul>
