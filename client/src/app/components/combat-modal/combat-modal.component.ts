@@ -148,22 +148,21 @@ export class CombatModalComponent implements OnInit {
             this.socketService.sendMessage('startEvasion', { player: this.player2, gameId: this.gameId });
         }
     }
+    combatWinStatsUpdate(winner: Player, loser: Player) {
+        winner.specs.nVictories += 1;
+        winner.specs.nCombats += 1;
+        loser.specs.nDefeats += 1;
+        loser.specs.nCombats += 1;
+    }
     combatFinishedNormal() {
         if ((this.startCombatPlayer.specs.life = 0)) {
-            this.player2.specs.nVictories += 1;
-            this.player2.specs.nCombats += 1;
-            this.startCombatPlayer.specs.nDefeats += 1;
-            this.startCombatPlayer.specs.nCombats += 1;
-
+            this.combatWinStatsUpdate(this.player2, this.startCombatPlayer);
             this.socketService.sendMessage('combatFinishedNormal', {
                 gameId: this.gameId,
                 combatWinner: this.player2,
             });
         } else if ((this.player2.specs.life = 0)) {
-            this.startCombatPlayer.specs.nVictories += 1;
-            this.startCombatPlayer.specs.nCombats += 1;
-            this.player2.specs.nDefeats += 1;
-            this.player2.specs.nCombats += 1;
+            this.combatWinStatsUpdate(this.startCombatPlayer, this.player2);
             this.socketService.sendMessage('combatFinishedNormal', {
                 gameId: this.gameId,
                 combatWinner: this.startCombatPlayer,
