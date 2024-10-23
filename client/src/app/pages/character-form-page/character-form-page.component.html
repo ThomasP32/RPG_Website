@@ -1,7 +1,11 @@
 <div class="character-page-container">
     <div class="character-selection-container">
         <div class="return-to-previous-page">
+            @if(isJoiningGame) {
+            <button class="return-button" (click)="onQuit()">Quitter</button>
+            } @else {
             <button class="return-button" (click)="onReturn()">Retour</button>
+            }
         </div>
         <div class="left-side">
             <div class="player-stats">
@@ -133,15 +137,18 @@
             <div class="selected-character">
                 <h1>CHOISIS TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
+                @if(isJoiningGame) {
+                <button class="start-button" (click)="onSubmit()">Rejoindre la partie</button>
+                }@else {
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
-                @if (showErrorMessage.characterNameError) {
+                } @if (showErrorMessage.characterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>
                 } @if (showErrorMessage.bonusError) {
                 <div class="error-message">Ajoutez le bonus (+2 Vie ou Rapidité)</div>
                 } @if (showErrorMessage.diceError) {
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
                 } @if (showErrorMessage.selectionError) {
-                <div class="error-message">Le jeu selectionné n'est plus disponible. Vous serez bientôt redirigé.</div>
+                <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
                 }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
@@ -152,7 +159,10 @@
             <div
                 class="character-box"
                 (click)="selectCharacter(character)"
-                [ngClass]="{ 'selected-character': character === selectedCharacter, 'disabled-character': !character.available }"
+                [ngClass]="{
+                    'disabled-character': !character.isAvailable,
+                    'selected-character': character === selectedCharacter
+                }"
             >
                 <img [src]="character.preview" alt="{{ character.name }}" />
             </div>

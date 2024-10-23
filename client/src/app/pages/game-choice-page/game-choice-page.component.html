@@ -26,11 +26,13 @@
     </div>
 
     <div class="footer">
+        @if (showErrorMessage.userError) {
+        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
+        } @if (showErrorMessage.gameChoiceError) {
+        <div class="error-message">Le jeu n'est plus disponible.</div>
+        }
         <div>
             <button class="next-button" (click)="next()">Suivant</button>
         </div>
-        @if (showErrorMessage.userError) {
-        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
-        }
     </div>
 </div>

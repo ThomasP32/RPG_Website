@@ -1,5 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { Avatar, Game, Player } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -16,94 +16,113 @@ export class GameGateway implements OnGatewayDisconnect {
         client.join(newGame.id);
         newGame.hostSocketId = client.id;
         this.gameCreationService.addGame(newGame);
+
         this.server.to(newGame.id).emit('gameStarted', { game: newGame });
     }
 
-    @SubscribeMessage('createMockGames')
-    handleCreateMockGames(client: Socket): void {
-        this.gameCreationService.createMockGames();
-        client.emit('mockGamesCreated', { reason: 'Mock games created' });
-        console.log('Mock games created');
-    }
-
     @SubscribeMessage('joinGame')
-    handleJoinGame(client: Socket, gameId: string): void {
-        console.log(gameId);
-        if (this.gameCreationService.doesGameExist(gameId)) {
-            console.log('la partie existe');
-            const game = this.gameCreationService.getGamebyId(gameId);
+    handleJoinGame(client: Socket, data: { player: Player; gameId: string }): void {
+        if (this.gameCreationService.doesGameExist(data.gameId)) {
+            let game = this.gameCreationService.getGameById(data.gameId);
             if (game.isLocked) {
                 console.log('la partie est verrouillée');
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
+            } else if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
+                client.emit('gameLocked', { reason: "La salle d'attente de la partie est pleine." });
+                return;
             }
-            console.log('va creer ton perso');
-            client.emit('gameJoined');
+            game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
+            this.server.to(data.gameId).emit('currentPlayers', game.players);
+        } else {
+            client.emit('gameNotFound', { reason: 'La partie a été fermée' });
+        }
+    }
+
+    @SubscribeMessage('getPlayers')
+    getAvailableAvatars(client: Socket, gameId: string): void {
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            const game = this.gameCreationService.getGameById(gameId);
+            client.emit(
+                'currentPlayers',
+                game.players.filter((player) => player.isActive),
+            );
+        } else {
+            client.emit('gameNotFound', { reason: 'La partie a été fermée' });
+        }
+    }
+
+    @SubscribeMessage('accessGame')
+    handleAccessGame(client: Socket, gameId: string): void {
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            const game = this.gameCreationService.getGameById(gameId);
+
+            if (game.hasStarted) {
+                client.emit('gameLocked', { reason: "Vous n'avez pas été assez rapide...\nLa partie a déjà commencé." });
+                return;
+            } else if (game.isLocked) {
+                client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
+                return;
+            }
             client.join(gameId);
-            // this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            // this.server.to(gameId).emit('playerJoined', { game: game });
+            client.emit('gameAccessed');
         } else {
             client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
     }
 
-    @SubscribeMessage('addPlayerToGame')
-    handleAddPlayerToGame(client: Socket, data: { player: Player; gameId: string }): void {
-        this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-        client.emit('playerAdded', { gameId: data.gameId });
-        client.to(data.gameId).emit('playerJoined', { game: data.gameId });
-    }
-
-    @SubscribeMessage('getPlayers')
-    handleLoadPlayers(client: Socket, gameId: string): void {
-        const game = this.gameCreationService.getGamebyId(gameId);
-        //console.log(game.players);
-        client.emit('playersLoaded', { players: game.players });
-    }
-
-    @SubscribeMessage('characterInit')
-    handleSettingAvatars(client: Socket, data: { gameId: string }): void {
-        const game = this.gameCreationService.getGamebyId(data.gameId);
-        console.log(game.availableAvatars);
-        if (game.availableAvatars.length > 0) {
-            console.log('characterInitialized');
-            const avatars = game.availableAvatars;
-            client.emit('characterInitialized', { avatars: avatars, gameName: game.name });
+    @SubscribeMessage('initializeGame')
+    async handleInitGame(client: Socket, roomId: string): Promise<void> {
+        if (this.gameCreationService.doesGameExist(roomId)) {
+            const game = this.gameCreationService.getGameById(roomId);
+            if (game && client.id === game.hostSocketId) {
+                this.gameCreationService.initializeGame(roomId);
+                const sockets = await this.server.in('room1').fetchSockets();
+                sockets.forEach((socket) => {
+                    if (game.players.every((player) => player.socketId !== socket.id)) {
+                        socket.emit('gameAlreadyStarted', { reason: "La partie a commencée. Vous serez redirigé à la page d'acceuil" });
+                        socket.leave(roomId);
+                    }
+                });
+                this.server.to(roomId).emit('gameInitialized', { game: game });
+            }
         } else {
-            client.emit('characterInitialized', { avatars: [], gameName: game.name });
+            client.emit('gameNotFound');
         }
     }
 
-    @SubscribeMessage('selectAvatar')
-    handleSelectAvatar(client: Socket, data: { avatar: Avatar }): void {
-        const gameId = Array.from(client.rooms).find((roomId) => roomId !== client.id);
-        const game = this.gameCreationService.getGamebyId(gameId);
-        game.availableAvatars.push(data.avatar);
-        client.to(gameId).emit('avatarSelected', { avatar: data.avatar });
-    }
-
-    @SubscribeMessage('deselectAvatar')
-    handleDeselectAvatar(client: Socket, data: { avatar: Avatar }): void {
-        const gameId = Array.from(client.rooms).find((roomId) => roomId !== client.id);
-        client.to(gameId).emit('avatarDeselected', { avatar: data.avatar });
-    }
-
-    handleConnection(client: Socket): void {
-        console.log(`Connexion par l'utilisateur avec id : ${client.id}`);
+    @SubscribeMessage('ifStartable')
+    isStartable(client: Socket, gameId: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        console.log('la game a regarder:', game.players);
+        if (client.id === game.hostSocketId) {
+            if (this.gameCreationService.isGameStartable(gameId)) {
+                client.emit('isStartable', { game: game });
+            } else {
+                return;
+            }
+        }
     }
 
     handleDisconnect(client: Socket): void {
-        const gameRooms = Array.from(client.rooms).filter((roomId) => roomId !== client.id);
-        for (const gameId of gameRooms) {
-            if (this.gameCreationService.isPlayerHost(client.id, gameId)) {
-                this.server.to(gameId).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                this.gameCreationService.deleteRoom(gameId);
-                this.server.socketsLeave(gameId);
+        console.log('Client disconnected:', client.id);
+        const games = this.gameCreationService.getGames();
+        console.log('games:', games);
+        games.forEach((game) => {
+            if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
+                this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                this.gameCreationService.deleteRoom(game.id);
+                this.server.socketsLeave(game.id);
+                return;
+            } else if (game.players.some((player) => player.socketId === client.id)) {
+                console.log("c'est un joueur de la partie", game.id);
+                game = this.gameCreationService.handlePlayerDisconnect(client, game.id);
+                this.server.to(game.id).emit('playerLeft', { playerId: client.id });
+                return;
             } else {
-                const updatedGame = this.gameCreationService.handlePlayerDisconnect(client);
-                this.server.to(gameId).emit('updateGame', { game: updatedGame });
-                this.server.to(gameId).emit('playerLeft', { playerId: client.id });
+                return;
             }
-        }
+        });
     }
 }
