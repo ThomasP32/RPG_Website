@@ -35,6 +35,7 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Hat, ItemCategory.Key],
     position: { x: 1, y: 2 },
     turn: 1,
+    visitedTiles: [],
 };
 
 const mockMap = {

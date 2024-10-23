@@ -94,7 +94,6 @@ export class GameGateway implements OnGatewayDisconnect {
     @SubscribeMessage('ifStartable')
     isStartable(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGame(gameId);
-        console.log('la game a regarder:', game.players);
         if (client.id === game.hostSocketId) {
             if (this.gameCreationService.isGameStartable(gameId)) {
                 client.emit('isStartable', { game: game });
@@ -105,9 +104,7 @@ export class GameGateway implements OnGatewayDisconnect {
     }
 
     handleDisconnect(client: Socket): void {
-        console.log('Client disconnected:', client.id);
         const games = this.gameCreationService.getGames();
-        console.log('games:', games);
         games.forEach((game) => {
             if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
                 this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
@@ -115,7 +112,6 @@ export class GameGateway implements OnGatewayDisconnect {
                 this.server.socketsLeave(game.id);
                 return;
             } else if (game.players.some((player) => player.socketId === client.id)) {
-                console.log("c'est un joueur de la partie", game.id);
                 game = this.gameCreationService.handlePlayerDisconnect(client, game.id);
                 this.server.to(game.id).emit('playerLeft', { playerId: client.id });
                 return;
