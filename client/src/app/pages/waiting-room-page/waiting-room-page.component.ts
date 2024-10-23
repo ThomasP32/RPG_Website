@@ -32,6 +32,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     player: Player;
     socketSubscription: Subscription = new Subscription();
     isCreatingGame: boolean = false;
+    isStartable: boolean = false;
 
     async ngOnInit(): Promise<void> {
         this.player = history.state.player;
@@ -92,6 +93,31 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         }
         this.socketSubscription.add(
             this.socketService.listen('playerJoined').subscribe((message) => {
+                if (this.isCreatingGame) {
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketSubscription.add(
+                        this.socketService.listen('isStartable').subscribe((message) => {
+                            console.log('Game is startable:', message);
+                            this.isStartable = true;
+                        }),
+                    );
+                }
+                console.log('A new player joined the game:', message);
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen('playerLeft').subscribe((message) => {
+                if (this.isCreatingGame) {
+                    this.isStartable = false;
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketSubscription.add(
+                        this.socketService.listen('isStartable').subscribe((message) => {
+                            console.log('Game is startable:', message);
+                            this.isStartable = true;
+                        }),
+                    );
+                }
                 console.log('A new player joined the game:', message);
             }),
         );
