@@ -134,7 +134,7 @@ export class GameManagerService {
                         });
                     } else if (neighborWeight < shortestPaths.get(neighborKey).weight) {
                         shortestPaths.set(neighborKey, {
-                            path: [...shortestPaths.get(currentKey).path, neighbor],
+                            path: [...(shortestPaths.get(currentKey).path), neighbor],
                             weight: neighborWeight,
                         });
                     }
