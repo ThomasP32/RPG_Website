@@ -78,7 +78,7 @@ describe('WaitingRoomPageComponent when creating a game', () => {
                 writable: true,
             },
         });
-        
+
         RouterSpy = jasmine.createSpyObj('Router', ['navigate', 'url', 'history'], {
             url: 'create-game',
         });
@@ -92,10 +92,9 @@ describe('WaitingRoomPageComponent when creating a game', () => {
             } else if (eventName === 'playerJoined') {
                 return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({} as T);
+                return of([] as T);
             }
         });
-        
 
         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
@@ -177,7 +176,7 @@ describe('WaitingRoomPageComponent when joining a game', () => {
             if (eventName === 'playerJoined') {
                 return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({} as T); 
+                return of([] as T);
             }
         });
 
