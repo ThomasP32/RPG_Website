@@ -59,7 +59,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             hostSocketId: '',
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,
@@ -91,6 +90,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             );
         }
         this.socketSubscription.add(
+            // seulement a partir du premier joueur qui rejoint qu'on verifie si le game est startable 
             this.socketService.listen('playerJoined').subscribe((message) => {
                 if (this.isCreatingGame) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
@@ -110,12 +110,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 if (this.isCreatingGame) {
                     this.isStartable = false;
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
-                    this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((message) => {
-                            console.log('Game is startable:', message);
-                            this.isStartable = true;
-                        }),
-                    );
                 }
                 console.log('A new player joined the game:', message);
             }),
