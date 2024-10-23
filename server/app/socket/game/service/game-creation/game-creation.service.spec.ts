@@ -54,6 +54,7 @@ describe('GameCreationService', () => {
             specs,
             inventory: [],
             turn: 0,
+            visitedTiles: [],
         };
 
         gameRoom = {
@@ -79,7 +80,6 @@ describe('GameCreationService', () => {
             players: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,

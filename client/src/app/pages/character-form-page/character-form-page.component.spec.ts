@@ -450,6 +450,7 @@ describe('CharacterFormPage when joining game', () => {
                     specs: {} as Specs,
                     inventory: [],
                     turn: 0,
+                    visitedTiles: [],
                 },
                 {
                     avatar: Avatar.Avatar3,
@@ -460,6 +461,7 @@ describe('CharacterFormPage when joining game', () => {
                     specs: {} as Specs,
                     inventory: [],
                     turn: 0,
+                    visitedTiles: [],
                 },
             ];
             availableAvatarsSubject.next(currentPlayers);
@@ -490,6 +492,7 @@ describe('CharacterFormPage when joining game', () => {
                     specs: {} as Specs,
                     inventory: [],
                     turn: 0,
+                    visitedTiles: [],
                 },
                 {
                     avatar: Avatar.Avatar3,
@@ -500,6 +503,7 @@ describe('CharacterFormPage when joining game', () => {
                     specs: {} as Specs,
                     inventory: [],
                     turn: 0,
+                    visitedTiles: [],
                 },
             ];
 
