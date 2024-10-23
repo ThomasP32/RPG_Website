@@ -106,6 +106,7 @@ export class GameManagerGateway {
             player.specs.attack -= 2;
             player.specs.defense -= 2;
         }
+        player.specs.movePoints = player.specs.speed;
         this.gameManagerService.updateTurnCounter(gameId);
         this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGame(gameId) });
     }
@@ -132,6 +133,7 @@ export class GameManagerGateway {
             player.specs.attack += 2;
             player.specs.defense += 2;
         }
+        player.specs.movePoints = player.specs.speed;
         game.players.forEach((player) => {
             if (player.turn === game.currentTurn) {
                 this.server.to(player.socketId).emit('yourTurn');
