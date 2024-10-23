@@ -36,6 +36,7 @@ describe('GameManagerService', () => {
         specs,
         inventory: [],
         turn: 0,
+        visitedTiles: [],
     };
 
     game2 = {
@@ -75,7 +76,6 @@ describe('GameManagerService', () => {
         currentTurn: 0,
         nTurns: 0,
         nDoorsManipulated: 0,
-        visitedTiles: [],
         duration: 0,
         debug: false,
         mode: Mode.Classic,

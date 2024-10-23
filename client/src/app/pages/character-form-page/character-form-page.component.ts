@@ -244,6 +244,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                 inventory: [],
                 position: { x: 0, y: 0 },
                 turn: 0,
+                visitedTiles: [],
             };
             this.player = player;
         }

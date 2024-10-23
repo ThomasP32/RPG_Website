@@ -38,6 +38,7 @@ describe('GameGateway', () => {
         specs,
         inventory: [],
         turn: 0,
+        visitedTiles: [],
     };
     let gameRoom: Game = {
         hasStarted: false,
@@ -61,7 +62,6 @@ describe('GameGateway', () => {
         players: [player],
         currentTurn: 0,
         nDoorsManipulated: 0,
-        visitedTiles: [],
         duration: 0,
         nTurns: 0,
         debug: false,
