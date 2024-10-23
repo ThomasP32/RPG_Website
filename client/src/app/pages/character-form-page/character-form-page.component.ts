@@ -106,6 +106,18 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
+            this.socketService.listen<{ newPlayer: Player }>('youJoined').subscribe((data) => {
+                this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: data.newPlayer } });
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
+                this.gameId = data.gameId;
+            }),
+        );
+
+        this.socketSubscription.add(
             this.socketService.listen<{ reason: string }>('gameHasStarted').subscribe((data) => {
                 // gerer comment on affiche le message d'erreur d'une partie qui a commencé
                 console.log(data.reason);
@@ -213,7 +225,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
-            this.router.navigate([`join-game/${this.gameId}/waiting-room`]);
         }
     }
 

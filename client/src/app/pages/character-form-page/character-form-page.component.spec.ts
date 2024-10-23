@@ -130,6 +130,50 @@ const mockMaps: Map[] = [
     },
 ];
 
+// const mockPlayer: Player = {
+//     socketId: 'player1-socket-id',
+//     name: 'Player1',
+//     avatar: Avatar.Avatar1,
+//     isActive: true,
+//     specs: {
+//         life: 100,
+//         speed: 10,
+//         attack: 15,
+//         defense: 12,
+//         attackBonus: Bonus.D6,
+//         defenseBonus: Bonus.D4,
+//         movePoints: 5,
+//         actions: 2,
+//         nVictories: 3,
+//         nDefeats: 1,
+//         nCombats: 4,
+//         nEvasions: 1,
+//         nLifeTaken: 50,
+//         nLifeLost: 30,
+//     },
+//     inventory: [ItemCategory.Hat, ItemCategory.Key],
+//     position: { x: 1, y: 2 },
+//     turn: 1,
+//     visitedTiles: [],
+// };
+
+// const mockGame: Game = {
+//     ...mockMaps[0],
+//     id: 'game-1',
+//     hostSocketId: 'host-socket-1',
+//     currentTurn: 1,
+//     nDoorsManipulated: 0,
+//     duration: 3600,
+//     nTurns: 10,
+//     debug: false,
+//     isLocked: false,
+//     hasStarted: true,
+//     items: [],
+//     doorTiles: [],
+//     tiles: [],
+//     players: [mockPlayer],
+// };
+
 import SpyObj = jasmine.SpyObj;
 
 describe('CharacterFormPageComponent', () => {
@@ -158,17 +202,22 @@ describe('CharacterFormPageComponent', () => {
         availableAvatarsSubject = new Subject<any>();
 
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
-            socket: { id: 'host-socket-id' }
+            socket: { id: 'host-socket-id' },
         });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {
                 return availableAvatarsSubject.asObservable() as Observable<T>;
+            } else if (eventName === 'playerJoined') {
+                return of({
+                    name: 'nouveau user',
+                    socketId: 'mock-socket-id',
+                    isActive: true,
+                } as T);
             } else {
                 return of({} as T);
             }
         });
-
 
         await TestBed.configureTestingModule({
             imports: [CharacterFormPageComponent, CommonModule, FormsModule],
@@ -362,6 +411,7 @@ describe('CharacterFormPageComponent', () => {
             component.lifeOrSpeedBonus = 'life';
             component.attackOrDefenseBonus = 'attack';
 
+            component.listenToSocketMessages();
             component.onSubmit();
             await fixture.whenStable();
             fixture.detectChanges();
@@ -395,12 +445,18 @@ describe('CharacterFormPage when joining game', () => {
         availableAvatarsSubject = new Subject<any>();
 
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
-            socket: { id: 'mock-socket-id' }
+            socket: { id: 'mock-socket-id' },
         });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'currentPlayers') {
                 return availableAvatarsSubject.asObservable() as Observable<T>;
+            } else if (eventName === 'playerJoined') {
+                return of({
+                    name: 'nouveau user',
+                    socketId: 'mock-socket-id',
+                    isActive: true,
+                } as T);
             } else {
                 return of({} as T);
             }
@@ -424,16 +480,10 @@ describe('CharacterFormPage when joining game', () => {
         component.ngOnInit();
     });
 
-    it('should handle onSubmit correctly when map is found', async () => {
-        component.characterName = 'Nom valide';
-        component.lifeOrSpeedBonus = 'life';
-        component.attackOrDefenseBonus = 'attack';
-
-        component.onSubmit();
-        await fixture.whenStable();
-        fixture.detectChanges();
-        expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/waiting-room`]);
-    });
+    // it('should handle playerJoined correctly', () => {
+    //     component.listenToSocketMessages();
+    //     expect(socketServiceSpy.listen).toHaveBeenCalledWith('playerJoined');
+    // });
 
     describe('listenToSocketMessages', () => {
         it('should update character availability based on received players and select a new character if the current one is unavailable', fakeAsync(() => {
