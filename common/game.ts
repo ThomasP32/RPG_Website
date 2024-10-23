@@ -22,6 +22,7 @@ export enum Bonus {
 
 export interface Specs {
     life: number;
+    //bonuslife: boolean;
     speed: number;
     attack: number;
     defense: number;
@@ -45,6 +46,7 @@ export interface Player {
     specs: Specs;
     inventory: ItemCategory[];
     position: Coordinate;
+    //startPosition: Coordinate;
     turn: number;
 }
 
