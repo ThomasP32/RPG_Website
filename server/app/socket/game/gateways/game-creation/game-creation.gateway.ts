@@ -32,7 +32,9 @@ export class GameGateway implements OnGatewayDisconnect {
                 return;
             }
             game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            this.server.to(data.gameId).emit('playerJoined', { name: data.player.name, game: game });
+            const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
+            client.emit('youJoined', { newPlayer: newPlayer });
+            this.server.to(data.gameId).emit('playerJoined', { name: newPlayer.name, game: game });
             this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
