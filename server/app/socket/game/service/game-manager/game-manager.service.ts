@@ -2,17 +2,11 @@ import { Game } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { DIRECTIONS } from '@common/directions';
 
 @Injectable()
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
-
-    private directions = [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-    ];
 
     updatePosition(gameId: string, playerName: string, position: { x: number; y: number }): void {
         const game = this.gameCreationService.getGame(gameId);
@@ -153,7 +147,7 @@ export class GameManagerService {
 
     private getNeighbors(pos: Coordinate, game: Game): Coordinate[] {
         const neighbors: Coordinate[] = [];
-        this.directions.forEach((dir) => {
+        DIRECTIONS.forEach((dir) => {
             const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
             if (!this.isOutOfMap(neighbor, game.mapSize) && this.isReachableTile(neighbor, game)) {
                 neighbors.push(neighbor);

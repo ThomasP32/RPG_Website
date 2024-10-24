@@ -1,0 +1,10 @@
+export const HALF = 0.5;
+export const SMALL_MAP_SIZE = 10;
+export const MEDIUM_MAP_SIZE = 15;
+export const LARGE_MAP_SIZE = 20;
+export const SMALL_MAP_START_TILES = 2;
+export const MEDIUM_MAP_START_TILES = 4;
+export const LARGE_MAP_START_TILES = 6;
+export const SMALL_MAP_ITEMS = 2;
+export const MEDIUM_MAP_ITEMS = 4;
+export const LARGE_MAP_ITEMS = 6;
