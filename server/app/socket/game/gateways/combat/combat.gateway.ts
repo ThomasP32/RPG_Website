@@ -6,7 +6,7 @@ import { ServerCombatService } from '../../service/combat/combat.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class GameManagerGateway {
+export class CombatGateway {
     @WebSocketServer()
     server: Server;
 
