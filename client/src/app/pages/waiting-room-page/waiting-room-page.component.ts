@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
@@ -13,7 +14,7 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [PlayersListComponent],
+    imports: [PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -31,18 +32,18 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     player: Player;
     socketSubscription: Subscription = new Subscription();
     isCreatingGame: boolean = false;
+    isStartable: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        this.getMapName();
         this.player = history.state.player;
         this.listenToSocketMessages();
         if (this.router.url.includes('create-game')) {
             this.isCreatingGame = true;
+            this.getMapName();
             this.generateRandomNumber();
             await this.startNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            await this.joinGame();
         }
     }
 
@@ -57,22 +58,15 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             id: this.waitingRoomCode,
             players: [this.player],
             hostSocketId: '',
-            availableAvatars: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,
             isLocked: false,
+            hasStarted: false,
         };
-        console.log('starting a new game');
         this.socketService.sendMessage('startGame', newGame);
-    }
-
-    async joinGame(): Promise<void> {
-        console.log('joining a game');
-        this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
     }
 
     exitGame(): void {
@@ -97,7 +91,27 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             );
         }
         this.socketSubscription.add(
+            // seulement a partir du premier joueur qui rejoint qu'on verifie si le game est startable 
             this.socketService.listen('playerJoined').subscribe((message) => {
+                if (this.isCreatingGame) {
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketSubscription.add(
+                        this.socketService.listen('isStartable').subscribe((message) => {
+                            console.log('Game is startable:', message);
+                            this.isStartable = true;
+                        }),
+                    );
+                }
+                console.log('A new player joined the game:', message);
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen('playerLeft').subscribe((message) => {
+                if (this.isCreatingGame) {
+                    this.isStartable = false;
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                }
                 console.log('A new player joined the game:', message);
             }),
         );
@@ -107,5 +121,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         if (this.socketSubscription) {
             this.socketSubscription.unsubscribe();
         }
+    }
+
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie
+    @HostListener('window:beforeunload', ['$event'])
+    onBeforeUnload(event: Event): void {
+        event.preventDefault();
     }
 }
