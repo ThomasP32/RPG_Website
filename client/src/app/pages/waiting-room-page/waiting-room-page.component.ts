@@ -1,5 +1,6 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -14,7 +15,7 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [PlayersListComponent],
+    imports: [PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -72,7 +73,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             hostSocketId: '',
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,
@@ -133,12 +133,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 if (this.isHost) {
                     this.isStartable = false;
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
-                    this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((message) => {
-                            console.log('Game is startable:', message);
-                            this.isStartable = true;
-                        }),
-                    );
                 }
                 this.appPlayersListComponent.players = players;
                 console.log('A player left the game:');

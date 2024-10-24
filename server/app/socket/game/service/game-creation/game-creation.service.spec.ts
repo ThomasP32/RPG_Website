@@ -53,6 +53,7 @@ describe('GameCreationService', () => {
             position: { x: 0, y: 0 },
             specs,
             inventory: [],
+            visitedTiles: [],
             turn: 0,
         };
 
@@ -79,7 +80,7 @@ describe('GameCreationService', () => {
             players: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
+
             duration: 0,
             nTurns: 0,
             debug: false,
@@ -97,7 +98,7 @@ describe('GameCreationService', () => {
 
     it('should return the correct game with getGame', () => {
         service.addGame(gameRoom);
-        const game = service.getGame('room-1');
+        const game = service.getGameById('room-1');
         expect(game).toEqual(gameRoom);
     });
 
@@ -246,11 +247,11 @@ describe('GameCreationService', () => {
         it('should return false for an unrecognized map size', () => {
             gameRoom.mapSize = { x: 999, y: 999 };
             gameRoom.players = new Array(5).fill(player);
-    
+
             service.addGame(gameRoom);
             const result = service.isGameStartable(gameRoom.id);
-    
-            expect(result).toBe(false); 
+
+            expect(result).toBe(false);
         });
     });
 
@@ -286,13 +287,13 @@ describe('GameCreationService', () => {
         });
 
         it('should return false for an unrecognized map size', () => {
-            gameRoom.mapSize = { x: 999, y: 999 }; 
+            gameRoom.mapSize = { x: 999, y: 999 };
             const connections = new Array(5).fill('connection-id');
-    
+
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
-    
-            expect(result).toBe(false); 
+
+            expect(result).toBe(false);
         });
     });
 

@@ -35,11 +35,11 @@ export class GameGateway implements OnGatewayDisconnect {
                 client.emit('gameLocked', { reason: "La salle d'attente de la partie est pleine." });
                 return;
             }
-            this.server.to(data.gameId).emit('playerJoined', game.players);
-            // if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
-            //     game.isLocked = true;
-            //     client.emit('gameLocked', { reason: 'La partie est prête à commencer.' });
-            // }
+            game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
+            client.emit('youJoined', { newPlayer: newPlayer });
+            this.server.to(data.gameId).emit('playerJoined', { name: newPlayer.name, game: game });
+            this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
         }
@@ -100,7 +100,6 @@ export class GameGateway implements OnGatewayDisconnect {
     @SubscribeMessage('ifStartable')
     isStartable(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        console.log('la game a regarder:', game.players);
         if (client.id === game.hostSocketId) {
             if (this.gameCreationService.isGameStartable(gameId)) {
                 client.emit('isStartable', { game: game });
@@ -111,7 +110,6 @@ export class GameGateway implements OnGatewayDisconnect {
     }
 
     handleDisconnect(client: Socket): void {
-        console.log('Client disconnected:', client.id);
         const games = this.gameCreationService.getGames();
         games.forEach((game) => {
             if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
@@ -121,7 +119,6 @@ export class GameGateway implements OnGatewayDisconnect {
 
                 return;
             } else if (game.players.some((player) => player.socketId === client.id)) {
-                console.log("c'est un joueur de la partie", game.id);
                 game = this.gameCreationService.handlePlayerDisconnect(client, game.id);
                 this.server.to(game.id).emit('playerLeft', game.players);
                 return;
