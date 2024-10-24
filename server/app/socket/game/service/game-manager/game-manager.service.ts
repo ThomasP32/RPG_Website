@@ -40,7 +40,7 @@ export class GameManagerService {
             return [];
         }
 
-        const moves = this.runDijkstra(player.position, game, player.specs.speed);
+        const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
         const accessibleMoves: Coordinate[] = [];
         moves.forEach((value, key) => {
             const [x, y] = key.split(',').map(Number);
@@ -54,6 +54,7 @@ export class GameManagerService {
         const player = game.players.find((p) => p.name === playerName);
         let shortestPath: Coordinate[];
 
+        // si le joueur a pas besoin de jouer 
         if (!player || !player.isActive) {
             return [];
         }
@@ -67,6 +68,7 @@ export class GameManagerService {
             }
         });
 
+        // si la tuile est innaccessible
         if (!shortestPath) {
             return [];
         } else {
@@ -117,7 +119,7 @@ export class GameManagerService {
 
             for (const neighbor of neighbors) {
                 const neighborKey = this.coordinateToKey(neighbor);
-                
+
                 if (visited.has(neighborKey)) {
                     continue;
                 }
@@ -172,6 +174,11 @@ export class GameManagerService {
         }
         for (const door of game.doorTiles) {
             if (door.coordinate.x === pos.x && door.coordinate.y === pos.y && !door.isOpened) {
+                return false;
+            }
+        }
+        for (const player of game.players) {
+            if (player.position.x === pos.x && player.position.y === pos.y) {
                 return false;
             }
         }
