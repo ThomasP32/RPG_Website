@@ -8,7 +8,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Avatar, Bonus, Player, Specs } from '@common/game';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { DetailedMap, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
 
@@ -99,7 +99,7 @@ const mockCharacters: Character[] = [
     },
 ];
 
-const mockMaps: Map[] = [
+const mockMaps: DetailedMap[] = [
     {
         _id: '1',
         isVisible: true,

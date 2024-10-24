@@ -13,7 +13,7 @@ import {
     SMALL_MAP_START_TILES,
 } from '@common/constants';
 import { DIRECTIONS } from '@common/directions';
-import { Coordinate, DBMap, Map, TileCategory } from '@common/map.types';
+import { Coordinate, DetailedMap, Map, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -26,7 +26,7 @@ export class AdminService {
         return await this.mapModel.find({});
     }
 
-    async getMapById(mapId: string): Promise<DBMap> {
+    async getMapById(mapId: string): Promise<DetailedMap> {
         const objectId = new Types.ObjectId(mapId);
         const map = await this.mapModel.findOne({ _id: objectId }, { __v: 0 });
         if (!map) {
@@ -79,7 +79,7 @@ export class AdminService {
         }
     }
 
-    async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DBMap> {
+    async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DetailedMap> {
         await this.verifyMapModification(mapId, updateMapDto);
         try {
             this.verifyMapModification(mapId, updateMapDto);

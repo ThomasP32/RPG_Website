@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap, Map, Mode } from '@common/map.types';
+import { DetailedMap, Map, Mode } from '@common/map.types';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -23,12 +23,17 @@ export class MapService {
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
     /* eslint-disable no-unused-vars */
-    constructor(private communicationMapService: CommunicationMapService, private router: Router) {}
+    constructor(
+        private communicationMapService: CommunicationMapService,
+        private router: Router,
+    ) {}
 
     async getMap(id: string): Promise<void> {
         try {
-        const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(this.communicationMapService.basicGet<DBMap>(`admin/${id}`));
-        this.map = { ...restOfMap };
+            const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(
+                this.communicationMapService.basicGet<DetailedMap>(`admin/${id}`),
+            );
+            this.map = { ...restOfMap };
         } catch (error) {
             this.router.navigate(['/']);
         }
