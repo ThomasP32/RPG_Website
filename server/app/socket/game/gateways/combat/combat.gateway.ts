@@ -17,7 +17,7 @@ export class CombatGateway {
     startCombat(client: Socket, data: { gameId: string; startCombatPlayer: Player; player2: Player }): void {
         const game = this.gameCreationService.getGame(data.gameId);
         if (game) {
-            client.broadcast
+            this.server
                 .to(data.gameId)
                 .emit('combatStarted', { message: `${data.startCombatPlayer.name} a commencé un combat contre ${data.player2.name}` });
             let currentTurnPlayerId: string;

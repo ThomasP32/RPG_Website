@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
@@ -19,7 +19,7 @@ class Dice {
     templateUrl: './combat-modal.component.html',
     styleUrls: ['./combat-modal.component.scss'],
 })
-export class CombatModalComponent implements OnInit {
+export class CombatModalComponent implements OnInit, OnDestroy {
     isOpenCombatModal: boolean = true;
 
     dice: Dice;
@@ -37,8 +37,9 @@ export class CombatModalComponent implements OnInit {
     player2Life: number;
 
     socketSubscription: Subscription = new Subscription();
+    @Inject(SocketService) socketService: SocketService;
 
-    constructor(private socketService: SocketService) {
+    constructor() {
         this.dice = new Dice();
     }
 
@@ -155,13 +156,13 @@ export class CombatModalComponent implements OnInit {
         loser.specs.nCombats += 1;
     }
     combatFinishedNormal() {
-        if ((this.startCombatPlayer.specs.life = 0)) {
+        if (this.startCombatPlayer.specs.life === 0) {
             this.combatWinStatsUpdate(this.player2, this.startCombatPlayer);
             this.socketService.sendMessage('combatFinishedNormal', {
                 gameId: this.gameId,
                 combatWinner: this.player2,
             });
-        } else if ((this.player2.specs.life = 0)) {
+        } else if (this.player2.specs.life === 0) {
             this.combatWinStatsUpdate(this.startCombatPlayer, this.player2);
             this.socketService.sendMessage('combatFinishedNormal', {
                 gameId: this.gameId,
