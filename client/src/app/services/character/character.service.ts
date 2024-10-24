@@ -97,7 +97,6 @@ export class CharacterService {
     ];
 
     setDisabledAvatars(avatars: Avatar[]): void {
-        console.log('Received avatars:', avatars);
         this.characters.forEach((character) => {
             if (avatars.includes(character.id)) {
                 character.isAvailable = false;
