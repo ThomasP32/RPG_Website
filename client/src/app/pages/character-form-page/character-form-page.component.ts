@@ -109,7 +109,15 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameLocked').subscribe((data) => {
+                console.log(data.reason);
+                this.router.navigate(['/']);
+            }),
+        );
+
+        this.socketSubscription.add(
             this.socketService.listen<{ newPlayer: Player }>('youJoined').subscribe((data) => {
+                console.log('youJoined:', data.newPlayer);
                 this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: data.newPlayer } });
             }),
         );

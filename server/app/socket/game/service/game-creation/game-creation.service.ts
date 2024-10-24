@@ -68,6 +68,9 @@ export class GameCreationService {
             });
         } else {
             game.players = game.players.filter((player) => player.socketId !== client.id);
+            if(!this.isMaxPlayersReached(game.players, gameId)) {
+                game.isLocked = false;
+            }
         }
         return this.getGameById(gameId);
     }
