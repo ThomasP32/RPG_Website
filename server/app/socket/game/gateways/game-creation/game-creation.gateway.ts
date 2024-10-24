@@ -32,6 +32,7 @@ export class GameGateway implements OnGatewayDisconnect {
             game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
             if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
                 this.gameCreationService.lockGame(data.gameId);
+                this.server.to(data.gameId).emit('gameLocked', { reason: 'La partie est pleine' });
             }
             const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
             client.emit('youJoined', { newPlayer: newPlayer });
@@ -99,9 +100,9 @@ export class GameGateway implements OnGatewayDisconnect {
     }
 
     @SubscribeMessage('toggleGameLockState')
-    handleToggleGameLockState(client: Socket, data: { isLocked: boolean }): void {
-        const game = this.gameCreationService.getGameById(client.id);
-        if (game.hostSocketId === client.id) {
+    handleToggleGameLockState(client: Socket, data: { isLocked: boolean; gameId: string }): void {
+        const game = this.gameCreationService.getGameById(data.gameId);
+        if (game && game.hostSocketId === client.id) {
             game.isLocked = data.isLocked;
             this.server.to(game.id).emit('gameLockToggled', { isLocked: game.isLocked });
         }
@@ -110,7 +111,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @SubscribeMessage('ifStartable')
     isStartable(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        if (client.id === game.hostSocketId) {
+        if (game && client.id === game.hostSocketId) {
             if (this.gameCreationService.isGameStartable(gameId)) {
                 client.emit('isStartable', { game: game });
             } else {

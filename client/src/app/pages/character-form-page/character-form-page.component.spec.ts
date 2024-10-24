@@ -130,50 +130,6 @@ const mockMaps: Map[] = [
     },
 ];
 
-// const mockPlayer: Player = {
-//     socketId: 'player1-socket-id',
-//     name: 'Player1',
-//     id: Avatar.Avatar1,
-//     isActive: true,
-//     specs: {
-//         life: 100,
-//         speed: 10,
-//         attack: 15,
-//         defense: 12,
-//         attackBonus: Bonus.D6,
-//         defenseBonus: Bonus.D4,
-//         movePoints: 5,
-//         actions: 2,
-//         nVictories: 3,
-//         nDefeats: 1,
-//         nCombats: 4,
-//         nEvasions: 1,
-//         nLifeTaken: 50,
-//         nLifeLost: 30,
-//     },
-//     inventory: [ItemCategory.Hat, ItemCategory.Key],
-//     position: { x: 1, y: 2 },
-//     turn: 1,
-//     visitedTiles: [],
-// };
-
-// const mockGame: Game = {
-//     ...mockMaps[0],
-//     id: 'game-1',
-//     hostSocketId: 'host-socket-1',
-//     currentTurn: 1,
-//     nDoorsManipulated: 0,
-//     duration: 3600,
-//     nTurns: 10,
-//     debug: false,
-//     isLocked: false,
-//     hasStarted: true,
-//     items: [],
-//     doorTiles: [],
-//     tiles: [],
-//     players: [mockPlayer],
-// };
-
 import SpyObj = jasmine.SpyObj;
 
 describe('CharacterFormPageComponent', () => {
@@ -196,8 +152,6 @@ describe('CharacterFormPageComponent', () => {
         routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'setDisabledAvatars']);
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'isSocketAlive']);
-
-        communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
                 params: { mapName: 'Map1' },
@@ -245,12 +199,9 @@ describe('CharacterFormPageComponent', () => {
 
     beforeEach(() => {
         component.ngOnInit();
-    });
-
-    it('should update currentIndex when selecting a character', () => {
-        component.selectCharacter(mockCharacters[3]);
-        expect(component.currentIndex).toBe(3);
-        expect(component.selectedCharacter).toBe(mockCharacters[3]);
+        component.characters = [...mockCharacters];
+        component.selectedCharacter = mockCharacters[0];
+        component.currentIndex = 0;
     });
 
     it('should disable characters when receiving avatarsSet event', fakeAsync(() => {

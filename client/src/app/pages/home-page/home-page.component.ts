@@ -34,7 +34,6 @@ export class HomePageComponent implements OnInit {
     async connect() {
         if (!this.socketService.isSocketAlive()) {
             this.socketService.connect();
-            console.log('this socket:', this.socketId);
         }
     }
 

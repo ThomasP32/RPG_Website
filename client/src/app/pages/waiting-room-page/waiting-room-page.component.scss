@@ -103,6 +103,11 @@
     width: 100%;
 }
 
+.start-game-button button:hover {
+    background-color: #b5651d;
+    animation: glowing 2s infinite alternate;
+}
+
 .game {
     margin-top: 5vw;
     width: 50vw;

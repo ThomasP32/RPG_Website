@@ -82,7 +82,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     exitGame(): void {
-        window.location.href = '/';
+        this.socketService.disconnect();
+        this.router.navigate(['/main-menu']);
     }
     startGame(): void {
         this.socketService.sendMessage('startGame', this.waitingRoomCode);
@@ -106,24 +107,22 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         if (!this.isHost) {
             this.socketSubscription.add(
                 this.socketService.listen('gameClosed').subscribe(() => {
-                    window.location.href = '/';
+                    this.socketService.disconnect();
+                    this.router.navigate(['/main-menu']);
                 }),
             );
         }
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
-                console.log('playerJoined:', players);
                 this.appPlayersListComponent.players = players;
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
                         this.socketService.listen('isStartable').subscribe((data) => {
-                            console.log('Game is startable:', data);
                             this.isStartable = true;
                         }),
                     );
                 }
-                console.log('A new player joined the game:', players);
             }),
         );
 
@@ -134,19 +133,16 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                 }
                 this.appPlayersListComponent.players = players;
-                console.log('A player left the game:');
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen('isStartable').subscribe(() => {
-                console.log('Game is startable');
                 this.isStartable = true;
             }),
         );
 
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
-                console.log('currentPlayers:', players);
                 this.appPlayersListComponent.players = players;
             }),
         );
@@ -158,7 +154,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
-        // this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
+        this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
     }
 
     ngOnDestroy(): void {
