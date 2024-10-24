@@ -1,0 +1,82 @@
+<div class="game-page-container">
+    <div class="game-info-panel">
+        <div class="game-info">
+            <h2>Informations de la partie</h2>
+            <p>Taille de la carte : 10 x 10</p>
+            <p>Nombre de joueurs : 2</p>
+            <p>Joueur actif : Joueur Test</p>
+        </div>
+
+        <!-- À FAIRE EN COMPONENT -->
+        <div class="player-info">
+            <div class="player-info-header">
+                <!-- <img [src]="player.avatar" alt="Avatar du joueur" class="player-avatar" /> -->
+                <img src="https://via.placeholder.com/150" alt="Avatar du joueur" class="player-avatar" />
+                <h3>Informations du JOUEUR</h3>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : 5 PV </label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(5 / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage.">Rapidité : 10 PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(10 / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
+                        >Attaque : 10 PTS</label
+                    >
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(5 / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : 10 PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(5 / 10) * 100"></div>
+                    </div>
+                </div>
+
+                <p>Dés : D6</p>
+                <p>Mouvements restants : 1</p>
+                <p>Actions restantes : 1</p>
+            </div>
+
+            <div class="inventory">
+                <h3>Inventaire</h3>
+                <div class="inventory-container">
+                    <div class="inventory-slot" *ngFor="let slot of [1, 2]">
+                        <div class="empty-slot">Vide</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="game-map-container">
+        <app-game-map [map]="Map" [getTileImage]="getTileImage" [getItemImage]="getItemImage"> </app-game-map>
+    </div>
+
+    <div class="right-panel">
+        <!--AJOUTER LE COMPONENT -->
+        <div class="player-list">
+            Liste des joueurs
+        </div>
+    
+        <!-- AJOUTER LE COMPONENT -->
+        <div class="chat-box">
+            Chat
+        </div>
+    
+        <div class="action-buttons">
+            <button>Fin du tour</button>
+            <button>Exécuter une action</button>
+            <button>Quitter la partie</button>
+        </div>
+    </div>
+</div>
