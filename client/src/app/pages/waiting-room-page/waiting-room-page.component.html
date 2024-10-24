@@ -8,6 +8,12 @@
         <div class="exit-button">
             <button (click)="exitGame()">Quitter la partie</button>
         </div>
+        
+        @if (isCreatingGame) {
+        <div class="start-game-button">
+            <button [disabled]="!isStartable">Commencer la partie</button>
+        </div>
+        }
 
         <div class="game">
             <div class="game-details">
@@ -29,6 +35,9 @@
                     <img src="assets/gear.png" alt="Gear Animation" />
                 </div>
             </div>
+        </div>
+        <div class="chat-container">
+            <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>
         </div>
     </div>
 </body>

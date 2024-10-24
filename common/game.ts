@@ -46,20 +46,20 @@ export interface Player {
     inventory: ItemCategory[];
     position: Coordinate;
     turn: number;
+    visitedTiles: Coordinate[];
 }
 
 export interface Game extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
-    availableAvatars: Avatar[];
     currentTurn: number;
     nDoorsManipulated: number;
-    visitedTiles: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;
     isLocked: boolean;
+    hasStarted: boolean;
 }
 
 export interface GameCtf extends Game {
