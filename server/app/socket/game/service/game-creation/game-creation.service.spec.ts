@@ -6,6 +6,15 @@ import { stub } from 'sinon';
 import { Socket } from 'socket.io';
 import { GameCreationService } from './game-creation.service';
 
+const SMALL_MAP_SIZE = 10;
+const MEDIUM_MAP_SIZE = 15;
+const LARGE_MAP_SIZE = 20;
+const SMALL_MAP_PLAYERS_MIN_MAX = 2;
+const MEDIUM_MAP_PLAYERS_MIN = 2;
+const MEDIUM_MAP_PLAYERS_MAX = 4;
+const LARGE_MAP_PLAYERS_MIN = 2;
+const LARGE_MAP_PLAYERS_MAX = 6;
+
 describe('GameCreationService', () => {
     let service: GameCreationService;
     let player: Player;
@@ -45,6 +54,7 @@ describe('GameCreationService', () => {
             specs,
             inventory: [],
             turn: 0,
+            visitedTiles: [],
         };
 
         gameRoom = {
@@ -70,7 +80,6 @@ describe('GameCreationService', () => {
             players: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,
@@ -109,24 +118,9 @@ describe('GameCreationService', () => {
 
         gameRoom.hasStarted = true;
 
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket);
+        service.handlePlayerDisconnect(mockSocket as unknown as Socket, gameRoom.id);
 
         expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
-    });
-
-    it('should remove a player on disconnect if the game has not started', () => {
-        const player = { socketId: 'player-1', isActive: true } as Player;
-        gameRoom.players.push(player);
-        service.addGame(gameRoom);
-
-        const mockSocket = sinon.createStubInstance(Socket);
-        (mockSocket as any).id = 'player-1';
-        stub(mockSocket, 'rooms').value(new Set(['room-1']));
-
-        gameRoom.hasStarted = false;
-
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket);
-        expect(service['gameRooms']['room-1'].players.some((p) => p.socketId === 'player-1')).toBe(false);
     });
 
     it('should add a player with a unique name to the game', () => {
@@ -206,5 +200,113 @@ describe('GameCreationService', () => {
         service['gameRooms'] = {};
         const result = service.doesGameExist('room-1');
         expect(result).toBe(false);
+    });
+
+    describe('isGameStartable', () => {
+        it('should return true for a small map with the exact number of players', () => {
+            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
+            gameRoom.players = new Array(SMALL_MAP_PLAYERS_MIN_MAX).fill(player);
+
+            service.addGame(gameRoom);
+            const result = service.isGameStartable(gameRoom.id);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false for a small map with fewer than the required players', () => {
+            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
+            gameRoom.players = new Array(SMALL_MAP_PLAYERS_MIN_MAX - 1).fill(player);
+
+            service.addGame(gameRoom);
+            const result = service.isGameStartable(gameRoom.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return true for a medium map with valid number of players', () => {
+            gameRoom.mapSize = { x: MEDIUM_MAP_SIZE, y: MEDIUM_MAP_SIZE };
+            gameRoom.players = new Array(MEDIUM_MAP_PLAYERS_MIN + 1).fill(player);
+
+            service.addGame(gameRoom);
+            const result = service.isGameStartable(gameRoom.id);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false for a large map with fewer than the minimum number of players', () => {
+            gameRoom.mapSize = { x: LARGE_MAP_SIZE, y: LARGE_MAP_SIZE };
+            gameRoom.players = new Array(LARGE_MAP_PLAYERS_MIN - 1).fill(player);
+
+            service.addGame(gameRoom);
+            const result = service.isGameStartable(gameRoom.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false for an unrecognized map size', () => {
+            gameRoom.mapSize = { x: 999, y: 999 };
+            gameRoom.players = new Array(5).fill(player);
+    
+            service.addGame(gameRoom);
+            const result = service.isGameStartable(gameRoom.id);
+    
+            expect(result).toBe(false); 
+        });
+    });
+
+    describe('isMaxPlayersReached', () => {
+        it('should return true when max players are reached for a small map', () => {
+            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
+            const connections = new Array(SMALL_MAP_PLAYERS_MIN_MAX).fill('connection-id');
+
+            service.addGame(gameRoom);
+            const result = service.isMaxPlayersReached(connections, gameRoom.id);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false when there are fewer players than the max for a medium map', () => {
+            gameRoom.mapSize = { x: MEDIUM_MAP_SIZE, y: MEDIUM_MAP_SIZE };
+            const connections = new Array(MEDIUM_MAP_PLAYERS_MAX - 1).fill('connection-id');
+
+            service.addGame(gameRoom);
+            const result = service.isMaxPlayersReached(connections, gameRoom.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false for a large map with fewer than the max number of players', () => {
+            gameRoom.mapSize = { x: LARGE_MAP_SIZE, y: LARGE_MAP_SIZE };
+            const connections = new Array(LARGE_MAP_PLAYERS_MAX - 1).fill('connection-id');
+
+            service.addGame(gameRoom);
+            const result = service.isMaxPlayersReached(connections, gameRoom.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false for an unrecognized map size', () => {
+            gameRoom.mapSize = { x: 999, y: 999 }; 
+            const connections = new Array(5).fill('connection-id');
+    
+            service.addGame(gameRoom);
+            const result = service.isMaxPlayersReached(connections, gameRoom.id);
+    
+            expect(result).toBe(false); 
+        });
+    });
+
+    it('should lock the game', () => {
+        service.addGame(gameRoom);
+        service.lockGame(gameRoom.id);
+
+        expect(service['gameRooms'][gameRoom.id].isLocked).toBe(true);
+    });
+
+    it('should delete the game room', () => {
+        service.addGame(gameRoom);
+        service.deleteRoom(gameRoom.id);
+
+        expect(service['gameRooms'][gameRoom.id]).toBeUndefined();
     });
 });

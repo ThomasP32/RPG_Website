@@ -48,6 +48,7 @@ export interface Player {
     position: Coordinate;
     //startPosition: Coordinate;
     turn: number;
+    visitedTiles: Coordinate[];
 }
 
 export interface Game extends Map {
@@ -56,7 +57,6 @@ export interface Game extends Map {
     players: Player[];
     currentTurn: number;
     nDoorsManipulated: number;
-    visitedTiles: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;

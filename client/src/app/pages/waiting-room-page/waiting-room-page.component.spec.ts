@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { Avatar, Bonus, Player } from '@common/game';
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { WaitingRoomPageComponent } from './waiting-room-page.component';
 
@@ -35,9 +35,10 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Hat, ItemCategory.Key],
     position: { x: 1, y: 2 },
     turn: 1,
+    visitedTiles: [],
 };
 
-const mockMap = {
+const mockMap: Map = {
     name: 'Map1',
     description: 'This is a mock map',
     imagePreview: 'mock-image.png',
@@ -58,6 +59,9 @@ const mockMap = {
     ],
 };
 
+
+
+
 describe('WaitingRoomPageComponent when creating a game', () => {
     let component: WaitingRoomPageComponent;
     let fixture: ComponentFixture<WaitingRoomPageComponent>;
@@ -77,7 +81,7 @@ describe('WaitingRoomPageComponent when creating a game', () => {
                 writable: true,
             },
         });
-        
+
         RouterSpy = jasmine.createSpyObj('Router', ['navigate', 'url', 'history'], {
             url: 'create-game',
         });
@@ -91,10 +95,9 @@ describe('WaitingRoomPageComponent when creating a game', () => {
             } else if (eventName === 'playerJoined') {
                 return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({} as T);
+                return of([] as T);
             }
         });
-        
 
         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
@@ -176,7 +179,7 @@ describe('WaitingRoomPageComponent when joining a game', () => {
             if (eventName === 'playerJoined') {
                 return playerJoinedSubject.asObservable() as Observable<T>;
             } else {
-                return of({} as T); 
+                return of([] as T);
             }
         });
 

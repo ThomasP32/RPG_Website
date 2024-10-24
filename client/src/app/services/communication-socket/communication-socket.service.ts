@@ -31,7 +31,7 @@ export class SocketService {
         return this.socket && this.socket.connected;
     }
 
-    sendMessage<T>(event: string, data: T): void {
+    sendMessage<T>(event: string, data?: T): void {
         console.log('sending message', event, data);
         this.socket.emit(event, data);
     }
