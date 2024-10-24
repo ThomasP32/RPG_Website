@@ -1,11 +1,12 @@
 .chat-container {
-    position: fixed;
-    right: 0;
-    top: 14%;
-    width: 350px;
-    max-height: 500px;
+    // position: fixed;
+    // right: 0;
+    // bottom: 0;
+    // top: 14%;
+    // width: 30;
+    // max-height: 500px;
     padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     background-color: #1c242c;
     overflow-y: auto;
     overflow-x: hidden;
@@ -51,16 +52,23 @@ li {
 }
 
 input#messageInput {
+    position: absolute;
+    bottom: 1vh;
+    height: 4vh;
     width: 70%;
     padding: 5px;
     box-sizing: border-box;
 }
 
 .send-message-button {
+    position: absolute;
+    right: 1vw;
+    bottom: 1vh;
     background-color: #2c3e50;
     border: 3px solid #202020;
     color: white;
-    padding: 10px 10px;
+    height: 4vh;
+    width: 20%;
     cursor: pointer;
     font-weight: bold;
     font-size: 8px;

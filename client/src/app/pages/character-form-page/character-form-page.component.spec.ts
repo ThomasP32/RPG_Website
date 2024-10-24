@@ -133,7 +133,7 @@ const mockMaps: Map[] = [
 // const mockPlayer: Player = {
 //     socketId: 'player1-socket-id',
 //     name: 'Player1',
-//     avatar: Avatar.Avatar1,
+//     id: Avatar.Avatar1,
 //     isActive: true,
 //     specs: {
 //         life: 100,
@@ -255,7 +255,7 @@ describe('CharacterFormPageComponent', () => {
 
     it('should disable characters when receiving avatarsSet event', fakeAsync(() => {
         const disabledAvatars = [Avatar.Avatar3, Avatar.Avatar5];
-        avatarSubject.next({ avatars: disabledAvatars });
+        availableAvatarsSubject.next({ avatars: disabledAvatars });
 
         tick();
         fixture.detectChanges();
@@ -264,7 +264,7 @@ describe('CharacterFormPageComponent', () => {
     }));
 
     it('should cycle to the next available character', () => {
-        mockCharacters[1].available = false;
+        mockCharacters[1].isAvailable = false;
 
         component.currentIndex = 0;
         component.nextCharacter();
@@ -272,15 +272,15 @@ describe('CharacterFormPageComponent', () => {
     });
 
     it('should cycle to the previous available character', () => {
-        mockCharacters[1].available = false;
+        mockCharacters[1].isAvailable = false;
         component.currentIndex = 2;
         component.previousCharacter();
         expect(component.selectedCharacter).toEqual(mockCharacters[0]);
     });
 
     it('should handle avatarSelected event', fakeAsync(() => {
-        const avatar = Avatar.Avatar4;
-        avatarSubject.next({ avatar });
+        const id = Avatar.Avatar4;
+        availableAvatarsSubject.next({ id });
 
         tick();
         fixture.detectChanges();
@@ -462,7 +462,7 @@ describe('CharacterFormPageComponent', () => {
             await fixture.whenStable();
             fixture.detectChanges();
             expect(routerSpy.navigate).toHaveBeenCalledWith([`create-game/${mockMaps[0].name}/waiting-room`], {
-                state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].avatar }) },
+                state: { player: jasmine.objectContaining({ name: 'Nom valide', id: mockCharacters[0].id }) },
             });
         });
     });
@@ -560,6 +560,7 @@ describe('CharacterFormPage when joining game', () => {
                     visitedTiles: [],
                 },
             ];
+
             availableAvatarsSubject.next(currentPlayers);
             component.listenToSocketMessages();
             tick();

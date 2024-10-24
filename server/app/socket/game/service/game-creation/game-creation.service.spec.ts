@@ -140,7 +140,7 @@ describe('GameCreationService', () => {
         service.addPlayerToGame(player2, 'room-1');
 
         expect(service['gameRooms']['room-1'].players.length).toBe(2);
-        expect(service['gameRooms']['room-1'].players[1].name).toBe('Player 1-(2)');
+        expect(service['gameRooms']['room-1'].players[1].name).toBe('Player 1-2');
     });
 
     it('should return true if socketId is host in isPlayerHost', () => {

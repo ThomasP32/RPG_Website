@@ -1,4 +1,5 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
@@ -15,7 +16,7 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [PlayersListComponent, ChatroomComponent],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -39,9 +40,9 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     playerName: string;
     isStartable: boolean = false;
     isGameLocked: boolean = false;
+    hover: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        this.initializeView();
         this.player = history.state.player;
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.playerName = this.player.name;
@@ -51,20 +52,18 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             this.isHost = true;
             this.getMapName();
             this.generateRandomNumber();
-            await this.startNewGame(this.mapName);
+            await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
         }
         this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
     }
 
-    initializeView(): void {}
-
     generateRandomNumber(): void {
         this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
     }
 
-    async startNewGame(mapName: string): Promise<void> {
+    async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
             ...map,
@@ -79,11 +78,14 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             isLocked: false,
             hasStarted: false,
         };
-        this.socketService.sendMessage('startGame', newGame);
+        this.socketService.sendMessage('createGame', newGame);
     }
 
     exitGame(): void {
         window.location.href = '/';
+    }
+    startGame(): void {
+        this.socketService.sendMessage('startGame', this.waitingRoomCode);
     }
 
     getMapName(): void {
@@ -96,13 +98,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     listenToSocketMessages(): void {
-        // if (this.isHost) {
-        //     this.socketSubscription.add(
-        //         this.socketService.listen('gameStarted').subscribe(() => {
-        //             console.log('You started a new game');
-        //         }),
-        //     );
-        // }
+        // this.socketSubscription.add(
+        //     this.socketService.listen('gameStarted').subscribe(() => {
+        //         console.log('game is starting');
+        //     }),
+        // );
         if (!this.isHost) {
             this.socketSubscription.add(
                 this.socketService.listen('gameClosed').subscribe(() => {
@@ -113,6 +113,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
                 console.log('playerJoined:', players);
+                this.appPlayersListComponent.players = players;
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
@@ -123,7 +124,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     );
                 }
 
-                this.appPlayersListComponent.players = players;
                 console.log('A new player joined the game:', players);
             }),
         );
@@ -141,7 +141,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen('isStartable').subscribe(() => {
                 console.log('Game is startable');
-                this.isGameLocked = true;
                 this.isStartable = true;
             }),
         );
@@ -154,15 +153,24 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
     }
 
+    toggleHover(state: boolean): void {
+        this.hover = state;
+    }
+
+    toggleGameLockState(): void {
+        this.isGameLocked = !this.isGameLocked;
+        // this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
+    }
+
     ngOnDestroy(): void {
         if (this.socketSubscription) {
             this.socketSubscription.unsubscribe();
         }
     }
 
-    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie
-    @HostListener('window:beforeunload', ['$event'])
-    onBeforeUnload(event: Event): void {
-        event.preventDefault();
-    }
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie, pour l'instant ca fait trop de pop up des qu'on load le code et ca fait des triples pop up
+    // @HostListener('window:beforeunload', ['$event'])
+    // onBeforeUnload(event: Event): void {
+    //     event.preventDefault();
+    // }
 }
