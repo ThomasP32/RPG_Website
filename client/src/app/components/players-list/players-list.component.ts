@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component} from '@angular/core';
 
 import { CharacterService } from '@app/services/character/character.service';
 import { Avatar, Player } from '@common/game';
@@ -13,9 +13,10 @@ import { Avatar, Player } from '@common/game';
 export class PlayersListComponent {
     players: Player[];
     gameId: string;
-    @Inject(CharacterService) private characterService: CharacterService;
 
-    constructor() {}
+    constructor(private characterService: CharacterService) {
+        this.characterService = characterService;
+    }
 
     getAvatarPreview(avatar: Avatar): string {
         return this.characterService.getAvatarPreview(avatar);

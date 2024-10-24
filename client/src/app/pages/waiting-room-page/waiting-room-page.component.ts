@@ -123,7 +123,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                         }),
                     );
                 }
-
                 console.log('A new player joined the game:', players);
             }),
         );

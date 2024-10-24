@@ -32,11 +32,7 @@ export class GameGateway implements OnGatewayDisconnect {
             game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
             if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
                 this.gameCreationService.lockGame(data.gameId);
-                console.log('la salle dattente est pleine');
-                client.emit('gameLocked', { reason: "La salle d'attente de la partie est pleine." });
-                return;
             }
-
             const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
             client.emit('youJoined', { newPlayer: newPlayer });
             this.server.to(data.gameId).emit('playerJoined', game.players);
