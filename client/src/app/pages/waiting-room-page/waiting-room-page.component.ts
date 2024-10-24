@@ -33,10 +33,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     mapName: string;
     player: Player;
     socketSubscription: Subscription = new Subscription();
-    isCreatingGame: boolean = false;
+    isHost: boolean = false;
     playerPreview: string;
     playerName: string;
     isStartable: boolean = false;
+    isGameLocked: boolean = false;
 
     async ngOnInit(): Promise<void> {
         this.initializeView();
@@ -46,7 +47,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
         this.listenToSocketMessages();
         if (this.router.url.includes('host')) {
-            this.isCreatingGame = true;
+            this.isHost = true;
             this.getMapName();
             this.generateRandomNumber();
             await this.startNewGame(this.mapName);
@@ -82,7 +83,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     exitGame(): void {
-        this.router.navigate(['/']);
+        window.location.href = '/';
     }
 
     getMapName(): void {
@@ -95,31 +96,41 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     listenToSocketMessages(): void {
-        if (this.isCreatingGame) {
+        // if (this.isHost) {
+        //     this.socketSubscription.add(
+        //         this.socketService.listen('gameStarted').subscribe(() => {
+        //             console.log('You started a new game');
+        //         }),
+        //     );
+        // }
+        if (!this.isHost) {
             this.socketSubscription.add(
-                this.socketService.listen('gameStarted').subscribe(() => {
-                    console.log('You started a new game');
+                this.socketService.listen('gameClosed').subscribe(() => {
+                    window.location.href = '/';
                 }),
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen('playerJoined').subscribe((message) => {
-                if (this.isCreatingGame) {
+            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
+                console.log('playerJoined:', players);
+                if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((message) => {
-                            console.log('Game is startable:', message);
+                        this.socketService.listen('isStartable').subscribe((data) => {
+                            console.log('Game is startable:', data);
                             this.isStartable = true;
                         }),
                     );
                 }
-                console.log('A new player joined the game:', message);
+
+                this.appPlayersListComponent.players = players;
+                console.log('A new player joined the game:', players);
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('playerLeft').subscribe((message) => {
-                if (this.isCreatingGame) {
+            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+                if (this.isHost) {
                     this.isStartable = false;
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
@@ -129,9 +140,18 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                         }),
                     );
                 }
-                console.log('A new player joined the game:', message);
+                this.appPlayersListComponent.players = players;
+                console.log('A player left the game:');
             }),
         );
+        this.socketSubscription.add(
+            this.socketService.listen('isStartable').subscribe(() => {
+                console.log('Game is startable');
+                this.isGameLocked = true;
+                this.isStartable = true;
+            }),
+        );
+
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 console.log('currentPlayers:', players);

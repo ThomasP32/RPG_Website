@@ -46,7 +46,7 @@ export class GameCreationService {
             return baseName === player.name.split('-')[0];
         });
         if (existingPlayers.length > 0) {
-            player.name = `${player.name}-(${existingPlayers.length + 1})`;
+            player.name = `${player.name}-${existingPlayers.length + 1}`;
         }
         this.gameRooms[gameId].players.push(player);
         console.log('Player', player.name, 'has been added to the game', gameId);
@@ -59,12 +59,16 @@ export class GameCreationService {
 
     handlePlayerDisconnect(client: Socket, gameId: string): Game {
         const game = this.getGameById(gameId);
-        game.players = game.players.map((player) => {
-            if (player.socketId === client.id) {
-                return { ...player, isActive: false };
-            }
-            return player;
-        });
+        if (game.hasStarted) {
+            game.players = game.players.map((player) => {
+                if (player.socketId === client.id) {
+                    return { ...player, isActive: false };
+                }
+                return player;
+            });
+        } else {
+            game.players = game.players.filter((player) => player.socketId !== client.id);
+        }
         return this.getGameById(gameId);
     }
 
