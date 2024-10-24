@@ -38,6 +38,7 @@ describe('GameGateway', () => {
         specs,
         inventory: [],
         turn: 0,
+        visitedTiles: [],
     };
     let gameRoom: Game = {
         hasStarted: false,
@@ -61,7 +62,6 @@ describe('GameGateway', () => {
         players: [player],
         currentTurn: 0,
         nDoorsManipulated: 0,
-        visitedTiles: [],
         duration: 0,
         nTurns: 0,
         debug: false,
@@ -185,8 +185,9 @@ describe('GameGateway', () => {
         });
 
         it('should add player to game and call addPlayerToGame on GameCreationService', () => {
-            const newPlayer: Player = { name: 'Player1', socketId: 'socket-id', isActive: true } as Player;
+            const newPlayer: Player = { name: 'Player1', socketId: socket.id, isActive: true } as Player;
             const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
+
 
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGame.returns(gameRoom);
