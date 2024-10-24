@@ -22,6 +22,49 @@
     gap: 10px;
 }
 
+.players-list .player:first-child {
+    border: 3px solid #b5651d;
+    color: white;
+    width: 100%;
+    border: 2px solid #b5651d; /* Couleur de la bordure */
+    box-shadow:
+        0 0 15px rgba(243, 156, 18, 0.6),
+        0 0 30px rgba(243, 156, 18, 0.5),
+        0 0 45px rgba(243, 156, 18, 0.4),
+        0 0 60px rgba(243, 156, 18, 0.3);
+    transition: box-shadow 0.5s ease-in-out;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    gap: 10px;
+    animation: glowing 2s infinite alternate;
+}
+
+@keyframes glowing {
+    0% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 3px rgba(243, 156, 18, 0.8),
+            0 0 6px rgba(243, 156, 18, 0.7),
+            0 0 9px rgba(243, 156, 18, 0.6),
+            0 0 12px rgba(243, 156, 18, 0.5);
+    }
+    100% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+}
+
 .avatar-container {
     width: 3vw;
     border-radius: 50%;

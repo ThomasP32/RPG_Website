@@ -11,13 +11,13 @@ export class GameGateway implements OnGatewayDisconnect {
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
 
-    @SubscribeMessage('startGame')
-    handleStartGame(client: Socket, newGame: Game): void {
+    @SubscribeMessage('createGame')
+    handleCreateGame(client: Socket, newGame: Game): void {
         client.join(newGame.id);
         newGame.hostSocketId = client.id;
         this.gameCreationService.addGame(newGame);
 
-        this.server.to(newGame.id).emit('gameStarted', { game: newGame });
+        this.server.to(newGame.id).emit('gameCreated', { game: newGame });
     }
 
     @SubscribeMessage('joinGame')
@@ -29,16 +29,17 @@ export class GameGateway implements OnGatewayDisconnect {
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
             }
-            this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+            game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
             if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
                 this.gameCreationService.lockGame(data.gameId);
+                console.log('la salle dattente est pleine');
                 client.emit('gameLocked', { reason: "La salle d'attente de la partie est pleine." });
                 return;
             }
-            game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
+
             const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
             client.emit('youJoined', { newPlayer: newPlayer });
-            this.server.to(data.gameId).emit('playerJoined', { name: newPlayer.name, game: game });
+            this.server.to(data.gameId).emit('playerJoined', game.players);
             this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
@@ -76,6 +77,10 @@ export class GameGateway implements OnGatewayDisconnect {
             client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
     }
+    @SubscribeMessage('startGame')
+    handleStartGame(client: Socket, newGame: Game): void {
+        this.server.to(newGame.id).emit('gameStarted', { game: newGame });
+    }
 
     @SubscribeMessage('initializeGame')
     async handleInitGame(client: Socket, roomId: string): Promise<void> {
@@ -94,6 +99,15 @@ export class GameGateway implements OnGatewayDisconnect {
             }
         } else {
             client.emit('gameNotFound');
+        }
+    }
+
+    @SubscribeMessage('toggleGameLockState')
+    handleToggleGameLockState(client: Socket, data: { isLocked: boolean }): void {
+        const game = this.gameCreationService.getGameById(client.id);
+        if (game.hostSocketId === client.id) {
+            game.isLocked = data.isLocked;
+            this.server.to(game.id).emit('gameLockToggled', { isLocked: game.isLocked });
         }
     }
 

@@ -54,7 +54,7 @@ export class GameManagerService {
         const player = game.players.find((p) => p.name === playerName);
         let shortestPath: Coordinate[];
 
-        // si le joueur a pas besoin de jouer 
+        // si le joueur a pas besoin de jouer
         if (!player || !player.isActive) {
             return [];
         }

@@ -116,16 +116,16 @@ describe('WaitingRoomPageComponent when creating a game', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should call generateRandomNumber and startNewGame on ngOnInit when URL contains create-game', async () => {
+    it('should call generateRandomNumber and createGame on ngOnInit when URL contains create-game', async () => {
         spyOn(component, 'generateRandomNumber').and.callThrough();
-        spyOn(component, 'startNewGame').and.returnValue(Promise.resolve());
+        spyOn(component, 'createNewGame').and.returnValue(Promise.resolve());
 
         CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
 
         await component.ngOnInit();
 
         expect(component.generateRandomNumber).toHaveBeenCalled();
-        expect(component.startNewGame).toHaveBeenCalledWith('Map1');
+        expect(component.createNewGame).toHaveBeenCalledWith('Map1');
     });
 
     it('should generate a random number within the specified range', () => {

@@ -14,13 +14,19 @@
         </div>
 
         @if (isHost) {
-        <div class="start-game-button">
-            <button [disabled]="!isStartable">Commencer la partie</button>
+
+        <div class="game-status">
+            <button
+                (mouseenter)="toggleHover(true)"
+                (mouseleave)="toggleHover(false)"
+                (click)="toggleGameLockState()"
+                [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
+            >
+                {{ hover ? (isGameLocked ? 'Dévérouiller' : 'Vérouiller') : isGameLocked ? 'Fermée' : 'Ouverte' }}
+            </button>
         </div>
         }
-        <div class="player-waiting">
-            <h2>La salle d'attente est {{ isGameLocked ? 'fermée' : 'ouverte' }}.</h2>
-        </div>
+
         <div class="game">
             <div class="game-details">
                 <div class="game-code">
@@ -35,12 +41,18 @@
             <div class="players-list">
                 <app-players-list></app-players-list>
             </div>
+            @if(!isStartable){
             <div class="player-waiting">
                 <h2>En attente d'autres joueurs...</h2>
                 <div class="gear-animation">
                     <img src="assets/gear.png" alt="Gear Animation" />
                 </div>
             </div>
+            } @else {
+            <div class="start-game-button">
+                <button (click)="startGame()">Commencer la partie</button>
+            </div>
+            }
         </div>
         <div class="chat-container">
             <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>

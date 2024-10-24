@@ -27,10 +27,10 @@ describe('CharacterService', () => {
     it('should return characters with valid properties', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
             characters.forEach((character) => {
-                expect(character.avatar).toBeDefined();
+                expect(character.id).toBeDefined();
                 expect(character.name).toBeDefined();
                 expect(character.image).toBeDefined();
-                expect(character.available).toBe(true);
+                expect(character.isAvailable).toBe(true);
             });
             done();
         });
@@ -38,7 +38,7 @@ describe('CharacterService', () => {
 
     it('should return characters with correct avatars', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
-            const avatars = characters.map((c) => c.avatar);
+            const avatars = characters.map((c) => c.id);
             expect(avatars).toEqual([
                 Avatar.Avatar1,
                 Avatar.Avatar2,
@@ -61,7 +61,7 @@ describe('CharacterService', () => {
         service.setDisabledAvatars([Avatar.Avatar2, Avatar.Avatar4]);
 
         service.getCharacters().subscribe((characters: Character[]) => {
-            const disabledAvatars = characters.filter((character) => !character.available).map((character) => character.avatar);
+            const disabledAvatars = characters.filter((character) => !character.isAvailable).map((character) => character.id);
             expect(disabledAvatars).toEqual([Avatar.Avatar2, Avatar.Avatar4]);
             done();
         });
@@ -71,8 +71,8 @@ describe('CharacterService', () => {
         service.setDisabledAvatars([Avatar.Avatar5]);
 
         service.getCharacters().subscribe((characters: Character[]) => {
-            const availableCharacters = characters.filter((character) => character.available).map((character) => character.avatar);
-            const disabledCharacters = characters.filter((character) => !character.available).map((character) => character.avatar);
+            const availableCharacters = characters.filter((character) => character.isAvailable).map((character) => character.id);
+            const disabledCharacters = characters.filter((character) => !character.isAvailable).map((character) => character.id);
 
             expect(disabledCharacters).toEqual([Avatar.Avatar5]);
             expect(availableCharacters).toContain(Avatar.Avatar1);
@@ -85,7 +85,7 @@ describe('CharacterService', () => {
         service.setDisabledAvatars([]);
 
         service.getCharacters().subscribe((characters: Character[]) => {
-            const disabledAvatars = characters.filter((character) => !character.available);
+            const disabledAvatars = characters.filter((character) => !character.isAvailable);
             expect(disabledAvatars.length).toBe(0);
             done();
         });
