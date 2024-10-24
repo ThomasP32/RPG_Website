@@ -34,7 +34,7 @@ describe('MapDto', () => {
             mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
-            items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], // Invalid value
+            items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], 
             tiles: [],
             doorTiles: [],
         };
@@ -55,7 +55,7 @@ describe('MapDto', () => {
             mode: Mode.Classic,
             mapSize: { x: 'a', y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
-            items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], // Invalid value
+            items: [{ coordinate: { x: 1, y: 1 }, category: 'InvalidCategory' }], 
             tiles: [],
             doorTiles: [],
         };
