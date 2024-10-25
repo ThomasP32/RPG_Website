@@ -7,6 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Game, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
+import { Subscription } from 'rxjs';
 
 /* eslint-disable no-unused-vars */
 
@@ -23,6 +24,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     mapSize: number;
     numberOfPlayers: number;
     player: Player;
+    socketSubscription: Subscription = new Subscription();
     playerPreview: string;
     activePlayers: Player[] = [];
     gameId: string;
@@ -42,10 +44,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.player = state.player;
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
             this.gameId = state.gameId;
+            console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
             this.loadGameData();
             this.loadPlayerData();
             this.socketService.sendMessage('getPlayers', this.gameId);
-            console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
             this.socketService.sendMessage('getGame', this.gameId);
         } else {
             console.error('No game or player data passed through navigation');
@@ -54,12 +56,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     loadGameData() {
-        this.socketService.listen<Game>('currentGame').subscribe((game: Game | undefined) => {
+        this.socketService.listen<Game>('currentGame').subscribe((game: Game) => {
             if (game) {
                 this.appGamemapComponent.map = game;
                 this.game = game;
                 this.mapSize = game.mapSize?.x;
-                this.mapSize = game.mapSize?.y;
                 console.log('Game data loaded:', game);
             } else {
                 console.error('Failed to load game data');
@@ -68,7 +69,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     loadPlayerData() {
-        this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[] | undefined) => {
+        this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
             if (players && players.length > 0) {
                 this.activePlayers = players;
                 console.log('Player data loaded:', players);
