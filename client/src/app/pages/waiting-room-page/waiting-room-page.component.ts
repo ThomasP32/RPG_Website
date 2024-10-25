@@ -89,7 +89,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/main-menu']);
     }
     startGame(): void {
-        this.socketService.sendMessage('startGame', this.waitingRoomCode);
+        this.socketService.sendMessage('initializeGame', this.waitingRoomCode);
+        this.navigateToGamePage();
     }
 
     getMapName(): void {
@@ -114,9 +115,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.router.navigate(['/main-menu']);
                 }),
             );
-        }
-
-        if (this.isHost) {
             this.socketSubscription.add(
                 this.socketService.listen('gameInitialized').subscribe((data) => {
                     console.log('You started a new game');
@@ -124,6 +122,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 }),
             );
         }
+
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
                 this.appPlayersListComponent.players = players;
