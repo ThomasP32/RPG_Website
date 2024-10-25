@@ -22,7 +22,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     mapHeight: number;
     numberOfPlayers: number;
     player: Player;
-    activePlayers: Player[];
+    activePlayers: Player[] = [];
     gameId: string;
     showExitModal = false;
     map: Map;
@@ -38,9 +38,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (state && state.player && state.gameId) {
             this.player = state.player;
             this.gameId = state.gameId;
+            this.socketService.sendMessage('getPlayers', this.gameId);
             console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
     
-            
             this.loadGameData();
             this.loadPlayerData();
         } else {
