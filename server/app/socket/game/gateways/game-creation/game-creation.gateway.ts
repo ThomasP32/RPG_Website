@@ -34,7 +34,7 @@ export class GameGateway implements OnGatewayDisconnect {
                 this.gameCreationService.lockGame(data.gameId);
             }
             const newPlayer = game.players.filter((player) => player.socketId === client.id)[0];
-            client.emit('youJoined', newPlayer );
+            client.emit('youJoined', newPlayer);
             this.server.to(data.gameId).emit('playerJoined', game.players);
             this.server.to(data.gameId).emit('currentPlayers', game.players);
         } else {
@@ -58,7 +58,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @SubscribeMessage('getGame')
     getGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
-            const game = this.gameCreationService.getGame(gameId);
+            const game = this.gameCreationService.getGameById(gameId);
             client.emit('currentGame', game);
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
@@ -84,8 +84,8 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
     @SubscribeMessage('startGame')
-    handleStartGame(client: Socket, newGame: Game): void {
-        this.server.to(newGame.id).emit('gameStarted', { game: newGame });
+    handleStartGame(client: Socket, gameId: string): void {
+        this.server.to(gameId).emit('gameStarted');
     }
 
     @SubscribeMessage('initializeGame')
