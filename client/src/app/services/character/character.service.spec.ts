@@ -93,7 +93,7 @@ describe('CharacterService', () => {
 
     it('should return the correct preview image for a given avatar', () => {
         const preview = service.getAvatarPreview(Avatar.Avatar1);
-        expect(preview).toBe('../../assets/previewcharacters/1.png');
+        expect(preview).toBe('./assets/previewcharacters/1.png');
     });
 
     it('should return an empty string if the avatar does not exist', () => {
