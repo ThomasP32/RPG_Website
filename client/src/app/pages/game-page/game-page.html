@@ -1,0 +1,95 @@
+<div class="game-page-container">
+    <div class="game-info-panel">
+        <div class="game-info">
+            <h2>Informations de la partie</h2>
+            <p>Taille de la carte : {{mapWidth || "N/A"}} x {{mapHeight || "N/A"}}</p>
+            <p>Nombre de joueurs : {{ activePlayers.length || "N/A" }}</p>
+            <p>Joueur actif : {{ player.name || "N/A" }}</p>
+        </div>
+
+        <!-- À FAIRE EN COMPONENT -->
+        <div class="player-info">
+            <div class="player-info-header">
+                <img [src]="player.avatar || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
+                <h3>Informations de {{ player.name || "JOUEUR" }}</h3>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{specs.life || "N/A"}} PV </label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(specs.life / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage.">Rapidité : {{specs.speed || "N/A"}} PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(specs.speed / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
+                        >Attaque : {{specs.attack || "N/A"}} PTS</label
+                    >
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(specs.attack / 10) * 100"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{specs.defense || "N/A"}} PTS</label>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" [style.width.%]="(specs.defense / 10) * 100"></div>
+                    </div>
+                </div>
+
+                <p>Dé d'attaque = {{specs.attackBonus || "N/A"}} </p>
+                <p>Dé de défense = {{specs.defenseBonus || "N/A"}} </p>
+                <p>Mouvements restants : {{specs.movePoints || "N/A"}}</p>
+                <p>Actions restantes : {{specs.actions || "N/A"}}</p>
+            </div>
+
+            <div class="inventory">
+                <h3>Inventaire</h3>
+                <div class="inventory-container">
+                    <div class="inventory-slot" *ngFor="let slot of [1, 2]">
+                        <div class="empty-slot">Vide</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="game-map-container">
+        <app-game-map> </app-game-map>
+    </div>
+
+    <div class="right-panel">
+        <!--AJOUTER LE COMPONENT -->
+        <div class="player-list">
+            <!-- <app-player-list [players]="players" [activePlayer]="activePlayer"></app-player-list> -->
+            Liste des joueurs
+        </div>
+    
+        <!-- AJOUTER LE COMPONENT -->
+        <div class="chatroom">
+            <app-chatroom [player]="player" [gameId]="gameId"></app-chatroom>
+
+        </div>
+    
+        <div class="action-buttons">
+            <button>Fin du tour</button>
+            <button>Exécuter une action</button>
+            <button class="quit-game-button" (click)="openExitConfirmationModal()">
+                Quitter la partie
+            </button>
+            
+            <div class="open-exit-confirmation-modal" [class.show]="showExitModal">
+                <div class="modal">
+                    <h2>Confirmer la sortie</h2>
+                    <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
+                    <button class="modal-button" (click)="confirmExit()">Oui</button>
+                    <button class="modal-button" (click)="closeExitModal()">Non</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
