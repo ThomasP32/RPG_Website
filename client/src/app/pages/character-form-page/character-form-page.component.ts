@@ -35,10 +35,10 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     attackBonus: Bonus;
     defenseBonus: Bonus;
 
-    selectedCharacter: Character;
     characters: Character[] = [];
-
+    selectedCharacter: Character;
     currentIndex: number;
+
     life = defaultHp;
     speed = defaultSpeed;
     attack = defaultAttack;
@@ -89,8 +89,10 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
-                    if (players.some((player) => player.avatar === character.id)) {
-                        character.isAvailable = false;
+                    if (Array.isArray(players) && players.length > 0) {
+                        if (players.some((player) => player.avatar === character.id)) {
+                            character.isAvailable = false;
+                        }
                     }
                 });
                 if (!this.selectedCharacter.isAvailable) {
@@ -106,8 +108,14 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ newPlayer: Player }>('youJoined').subscribe((data) => {
-                this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: data.newPlayer } });
+            this.socketService.listen<{ reason: string }>('gameLocked').subscribe((data) => {
+                this.router.navigate(['/']);
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
+                this.router.navigate([`${this.gameId}/waiting-room/player`], { state: { player: updatedPlayer } });
             }),
         );
 
@@ -120,7 +128,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ reason: string }>('gameHasStarted').subscribe((data) => {
                 // gerer comment on affiche le message d'erreur d'une partie qui a commencé
-                console.log(data.reason);
             }),
         );
     }
@@ -139,7 +146,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.nextCharacter();
         }
     }
-
     previousCharacter() {
         do {
             this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
@@ -213,15 +219,21 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.createPlayer();
 
         if (this.router.url.includes('create-game')) {
-            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
-            if (!chosenMap) {
+            try {
+                const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
+                if (!chosenMap) {
+                    this.showErrorMessage.selectionError = true;
+                    setTimeout(() => {
+                        this.router.navigate(['/create-game']);
+                    }, timeLimit);
+                } else {
+                    this.router.navigate([`${this.mapName}/waiting-room/host`], { state: { player: this.player } });
+                }
+            } catch (error) {
                 this.showErrorMessage.selectionError = true;
                 setTimeout(() => {
                     this.router.navigate(['/create-game']);
                 }, timeLimit);
-            } else {
-                // ici t'es obligé de start-game à la page suivante parce que t'as pas encore le gameId
-                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
@@ -262,14 +274,18 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     onReturn() {
-        this.router.navigate(['/create-game']);
+        if (this.router.url.includes('choose-character')) {
+            this.router.navigate(['/main-menu']);
+        } else {
+            this.router.navigate(['/create-game']);
+        }
     }
 
     onQuit() {
         // besoin de refresh la page pour fermer le socekt
-        window.location.href = '/';
+        this.socketService.disconnect();
+        this.router.navigate(['/main-menu']);
     }
-
     ngOnDestroy(): void {
         this.socketSubscription.unsubscribe();
     }

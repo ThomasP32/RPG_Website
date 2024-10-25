@@ -4,6 +4,9 @@
     background-color: #1c242c;
     font-family: 'Press Start 2P', sans-serif;
 }
+.left-side {
+    width: 35vw;
+}
 .character-selection-container {
     background-color: #1c242c;
     color: #f0f0f0;
@@ -156,6 +159,11 @@ h4 {
     grid-template-columns: repeat(3, 1fr);
     gap: 5px;
     margin-right: 20px;
+}
+
+.disabled-character {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .character-box:not(.unavailable-character) {

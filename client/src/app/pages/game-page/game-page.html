@@ -2,7 +2,7 @@
     <div class="game-info-panel">
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{ mapWidth }} x {{ mapHeight }}</p>
+            <p>Taille de la carte : {{ mapSize }} x {{ mapSize }}</p>
             <p>Nombre de joueurs : {{ activePlayers.length }}</p>
             <p>Joueur actif : {{ player.name }}</p>
         </div>
@@ -10,7 +10,7 @@
         <!-- À FAIRE EN COMPONENT -->
         <div class="player-info">
             <div class="player-info-header">
-                <img [src]="player.avatar || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
+                <img [src]="playerPreview || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
                 <h3>Informations de {{ player.name }}</h3>
             </div>
 
