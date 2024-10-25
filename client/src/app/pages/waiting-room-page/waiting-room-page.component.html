@@ -1,17 +1,29 @@
 <body>
     <div class="waiting-room-container">
-        <div class="player-avatar">
-            <img src="assets/your-avatar.png" alt="Player Avatar" />
-            <p>character</p>
+        <div class="player">
+            <div class="avatar-container">
+                <img [src]="playerPreview" alt="Player Avatar" />
+            </div>
+            <div class="player-name">
+                <h1>{{ playerName }}</h1>
+            </div>
         </div>
 
         <div class="exit-button">
             <button (click)="exitGame()">Quitter la partie</button>
         </div>
-        
-        @if (isCreatingGame) {
-        <div class="start-game-button">
-            <button (click)="navigateToGamePage()">Commencer la partie</button>
+
+        @if (isHost) {
+
+        <div class="game-status">
+            <button
+                (mouseenter)="toggleHover(true)"
+                (mouseleave)="toggleHover(false)"
+                (click)="toggleGameLockState()"
+                [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
+            >
+                {{ hover ? (isGameLocked ? 'Dévérouiller' : 'Vérouiller') : isGameLocked ? 'Fermée' : 'Ouverte' }}
+            </button>
         </div>
         }
 
@@ -29,12 +41,18 @@
             <div class="players-list">
                 <app-players-list></app-players-list>
             </div>
+            @if(!isStartable){
             <div class="player-waiting">
                 <h2>En attente d'autres joueurs...</h2>
                 <div class="gear-animation">
                     <img src="assets/gear.png" alt="Gear Animation" />
                 </div>
             </div>
+            } @else { @if(isHost){
+            <div class="start-game-button">
+                <button (click)="startGame()">Commencer la partie</button>
+            </div>
+            } }
         </div>
         <div class="chat-container">
             <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>

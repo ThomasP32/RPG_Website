@@ -41,43 +41,41 @@ export class JoinGameModalComponent implements OnInit {
                 nextInput.nativeElement.focus();
             }
         }
+    }
 
-        if (event.inputType === 'deleteContentBackward' && index > 0) {
-            const prevInput = this.codeInputs.toArray()[index - 1];
-            if (prevInput) {
-                prevInput.nativeElement.focus();
-            }
+    joinGame(event: any): void {
+        const input = event.target;
+        const value = input.value.replace(/[^0-9]/g, '');
+        input.value = value;
+
+        if (this.code.every((digit) => digit !== '')) {
+            const gameCode = this.code.join('');
+            this.gameId = gameCode;
+
+            this.socketService.sendMessage('accessGame', gameCode);
         }
     }
 
-    joinGame(): void {
-        const gameCode = this.code.join('');
-        this.gameId = gameCode;
-
-        // accéder au choix de joeur avant de join
-        this.socketService.sendMessage('accessGame', gameCode);
-        // this.socketService.sendMessage('joinGame', gameCode);
-
+    resetCodeAndFocus(): void {
         this.code = ['', '', '', ''];
+        const firstInput = this.codeInputs.first;
+        if (firstInput) {
+            firstInput.nativeElement.focus();
+        }
     }
 
     configureJoinGameSocketFeatures(): void {
         this.socketSubscription.add(
             this.socketService.listen('gameAccessed').subscribe(() => {
-                // quand le jeu a été accédé, on peut accéder au choix de joueur
                 this.router.navigate([`join-game/${this.gameId}/create-character`]);
             }),
         );
-
-        // accéder au choix de joeur avant de join
-        // this.socketService.listen('playerJoined').subscribe(() => {
-        //     this.router.navigate(['/create-character']);
-        // });
 
         this.socketSubscription.add(
             this.socketService.listen('gameNotFound').subscribe((data: any) => {
                 if (data && data.reason) {
                     this.errorMessage = data.reason;
+                    this.resetCodeAndFocus();
                 }
             }),
         );
@@ -86,6 +84,7 @@ export class JoinGameModalComponent implements OnInit {
             this.socketService.listen('gameLocked').subscribe((data: any) => {
                 if (data && data.reason) {
                     this.errorMessage = data.reason;
+                    this.resetCodeAndFocus();
                 }
             }),
         );

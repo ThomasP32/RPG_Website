@@ -10,13 +10,14 @@
     text-align: center;
     margin-top: 40px;
     color: white;
-    position: relative;
+    z-index: 0;
 }
 
 .return-to-previous-page {
     position: absolute;
     top: 25px;
     left: 35px;
+    z-index: 1;
 }
 
 .return-button {
