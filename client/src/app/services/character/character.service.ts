@@ -90,8 +90,8 @@ export class CharacterService {
         {
             id: Avatar.Avatar12,
             name: 'Grimmauld Ironfist',
-            image: './assets/characters/12.png',
-            preview: './assets/previewcharacters/12.png',
+            image: 'client/src/assets/characters/12.png',
+            preview: 'client/src/assets/previewcharacters/12.png',
             isAvailable: true,
         },
     ];
