@@ -10,6 +10,8 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CombatGateway } from './socket/game/gateways/combat/combat.gateway';
+import { ServerCombatService } from './socket/game/service/combat/combat.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -26,6 +28,16 @@ import { MongooseModule } from '@nestjs/mongoose';
         MongooseModule.forFeature([{ name: Map.name, schema: mapSchema }]),
     ],
     controllers: [MapController, AdminController],
-    providers: [MapService, AdminService, GameCreationService, GameGateway, Logger, ChatRoomGateway, ChatroomService],
+    providers: [
+        MapService,
+        AdminService,
+        GameCreationService,
+        GameGateway,
+        Logger,
+        ChatRoomGateway,
+        ChatroomService,
+        CombatGateway,
+        ServerCombatService,
+    ],
 })
 export class AppModule {}
