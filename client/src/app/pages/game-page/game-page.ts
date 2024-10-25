@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Game, Player, Specs } from '@common/game';
@@ -12,7 +13,7 @@ import { Map } from '@common/map.types';
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, CombatModalComponent],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
@@ -28,6 +29,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     map: Map;
     specs: Specs;
 
+    isCombatModalOpen = false;
+
     constructor(
         private router: Router,
         private socketService: SocketService,
@@ -38,14 +41,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (state && state.player && state.gameId) {
             this.player = state.player;
             this.gameId = state.gameId;
-            this.socketService.sendMessage('getPlayers', this.gameId);
+            // this.socketService.sendMessage('getPlayers', this.gameId);
             console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
-    
+
             this.loadGameData();
             this.loadPlayerData();
         } else {
             console.error('No game or player data passed through navigation');
-            this.navigateToMain(); 
+            this.navigateToMain();
         }
     }
 
@@ -90,6 +93,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     closeExitModal(): void {
         this.showExitModal = false;
+    }
+
+    startCombat(): void {
+        this.isCombatModalOpen = true;
     }
 
     ngOnDestroy() {
