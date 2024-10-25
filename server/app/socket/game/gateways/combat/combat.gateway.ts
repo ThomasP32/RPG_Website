@@ -14,19 +14,19 @@ export class CombatGateway {
     @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
 
     @SubscribeMessage('startCombat')
-    startCombat(client: Socket, data: { gameId: string; startCombatPlayer: Player; player2: Player }): void {
+    startCombat(client: Socket, data: { gameId: string; opponentName: string }): void {
+        const opponent = this.gameCreationService.getPlayer(data.gameId, data.opponentName);
+        const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         const game = this.gameCreationService.getGame(data.gameId);
         if (game) {
-            this.server
-                .to(data.gameId)
-                .emit('combatStarted', { message: `${data.startCombatPlayer.name} a commencé un combat contre ${data.player2.name}` });
+            this.server.to(data.gameId).emit('combatStarted', { message: `${player.name} a commencé un combat contre ${opponent.name}` });
             let currentTurnPlayerId: string;
-            if (data.startCombatPlayer.specs.speed > data.player2.specs.speed) {
-                currentTurnPlayerId = data.startCombatPlayer.socketId;
-            } else if (data.startCombatPlayer.specs.speed === data.player2.specs.speed) {
-                currentTurnPlayerId = data.player2.socketId;
+            if (player.specs.speed > opponent.specs.speed) {
+                currentTurnPlayerId = player.socketId;
+            } else if (player.specs.speed === opponent.specs.speed) {
+                currentTurnPlayerId = opponent.socketId;
             } else {
-                currentTurnPlayerId = data.player2.socketId;
+                currentTurnPlayerId = opponent.socketId;
             }
             client.emit('updateTurn', { currentPlayerTurn: currentTurnPlayerId });
         }
@@ -53,13 +53,14 @@ export class CombatGateway {
     @SubscribeMessage('combatFinishedEvasion')
     combatFinishedByEvasion(client: Socket, data: { gameId: string; evasion: boolean; player1: Player; Player2: Player }): void {
         if (data.evasion) {
-            client.broadcast.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
+            this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
         } else {
-            client.broadcast.to(data.gameId).emit('combatFinishedByEvasion', { message: 'Combat terminé' });
+            this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: 'Combat terminé' });
         }
     }
     @SubscribeMessage('combatFinishedNormal')
     combatFinishedNormally(client: Socket, data: { gameId: string; combatWinner: Player }): void {
-        client.broadcast.to(data.gameId).emit('combatFinishedNormally', { message: `Combat terminé, le gagnant est ${data.combatWinner.name}` });
+        this.server.to(data.gameId).emit('combatFinishedNormally', { message: `Combat terminé, le gagnant est ${data.combatWinner.name}` });
+        this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat, continuez votre tour` });
     }
 }

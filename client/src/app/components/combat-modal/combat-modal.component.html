@@ -3,11 +3,11 @@
 
     <div class="players-modal-container">
         <div class="player player1">
-            <p class="player-name">Player.name</p>
-            <img class="player-avatar" src="../../assets/characters/1.png" alt="Player 1 avatar" />
-            <p class="player-health">Vies restantes: player.specs.life</p>
-            <p class="player-attack">Attaque: player.specs.attack</p>
-            <p class="player-defense">Défense: player.specs.defense</p>
+            <p class="player-name">{{ player.name }}</p>
+            <img class="player-avatar" src="./assets/characters/{{ player.avatar }}.png" alt="Player 1 avatar" />
+            <p class="player-health">Vies restantes: {{ player.specs.life }}</p>
+            <p class="player-attack">Attaque: {{ player.specs.attack }}</p>
+            <p class="player-defense">Défense: {{ player.specs.defense }}</p>
         </div>
         <!-- <div
             class="dice"
@@ -26,15 +26,15 @@
             <div class="face-bottom">2</div>
         </div> -->
 
-        <img class="dice" src="../../../assets/gear.png" alt="Dice" />
-        <img class="dice" src="../../../assets/gear.png" alt="Dice" />
+        <img class="dice" src="./assets/gear.png" alt="Dice" />
+        <img class="dice" src="./assets/gear.png" alt="Dice" />
 
         <div class="player player2">
-            <p class="player-name">Player.name</p>
-            <img class="player-avatar" src="../../assets/characters/2.png" alt="Player 2 avatar" />
-            <p class="player-health">Vies restantes: player.specs.life</p>
-            <p class="player-attack">Attaque: player.specs.attack</p>
-            <p class="player-defense">Défense: player.specs.defense</p>
+            <p class="player-name">{{ opponent.name }}</p>
+            <img class="player-avatar" src="./assets/characters/{{ opponent.avatar }}.png" alt="Player 2 avatar" />
+            <p class="player-health">Vies restantes: {{ opponent.specs.life }}</p>
+            <p class="player-attack">Attaque: {{ opponent.specs.attack }}</p>
+            <p class="player-defense">Défense: {{ opponent.specs.defense }}</p>
         </div>
     </div>
     //TODO: faire apparaitre les boutons pour seulement le joueur @if ("startCombatPlayerTurn && current") {

@@ -23,6 +23,11 @@ export class GameCreationService {
         return Object.values(this.gameRooms);
     }
 
+    getPlayer(gameId: string, playerSocketId: string): Player {
+        const game = this.getGame(gameId);
+        return game.players.filter((player) => player.socketId === playerSocketId)[0];
+    }
+
     addGame(game: Game): void {
         this.gameRooms[game.id] = game;
     }
