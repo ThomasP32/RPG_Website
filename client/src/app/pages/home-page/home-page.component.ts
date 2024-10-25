@@ -25,8 +25,8 @@ export class HomePageComponent implements OnInit {
         this.connect();
     }
 
-    // TODO:ca normalement ca ne devrait pas être necessaire sinon ca bloque la connexion seulement aux utilisateurs qui 
-    // ont accédé au jeu a partir de la page d'acceuil 
+    // TODO:ca normalement ca ne devrait pas être necessaire sinon ca bloque la connexion seulement aux utilisateurs qui
+    // ont accédé au jeu a partir de la page d'acceuil
     get socketId() {
         return this.socketService.socket && this.socketService.socket.id ? this.socketService.socket.id : '';
     }
