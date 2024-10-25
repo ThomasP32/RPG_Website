@@ -2,50 +2,50 @@
     <div class="game-info-panel">
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{mapWidth || "N/A"}} x {{mapHeight || "N/A"}}</p>
-            <p>Nombre de joueurs : {{ activePlayers.length || "N/A" }}</p>
-            <p>Joueur actif : {{ player.name || "N/A" }}</p>
+            <p>Taille de la carte : {{ mapWidth }} x {{ mapHeight }}</p>
+            <p>Nombre de joueurs : {{ activePlayers.length }}</p>
+            <p>Joueur actif : {{ player.name }}</p>
         </div>
 
         <!-- À FAIRE EN COMPONENT -->
         <div class="player-info">
             <div class="player-info-header">
                 <img [src]="player.avatar || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
-                <h3>Informations de {{ player.name || "JOUEUR" }}</h3>
+                <h3>Informations de {{ player.name }}</h3>
             </div>
 
             <div class="stats">
                 <div class="stat">
-                    <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{specs.life || "N/A"}} PV </label>
+                    <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{ player.specs.life }} PV </label>
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(specs.life / 10) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(player.specs.life / 10) * 100"></div>
                     </div>
                 </div>
                 <div class="stat">
-                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage.">Rapidité : {{specs.speed || "N/A"}} PTS</label>
+                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage.">Rapidité : {{player.specs.speed }} PTS</label>
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(specs.speed / 10) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
                     </div>
                 </div>
                 <div class="stat">
                     <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
-                        >Attaque : {{specs.attack || "N/A"}} PTS</label
+                        >Attaque : {{player.specs.attack }} PTS</label
                     >
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(specs.attack / 10) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(player.specs.attack / 10) * 100"></div>
                     </div>
                 </div>
                 <div class="stat">
-                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{specs.defense || "N/A"}} PTS</label>
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ player.specs.defense }} PTS</label>
                     <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(specs.defense / 10) * 100"></div>
+                        <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
                     </div>
                 </div>
 
-                <p>Dé d'attaque = {{specs.attackBonus || "N/A"}} </p>
-                <p>Dé de défense = {{specs.defenseBonus || "N/A"}} </p>
-                <p>Mouvements restants : {{specs.movePoints || "N/A"}}</p>
-                <p>Actions restantes : {{specs.actions || "N/A"}}</p>
+                <p>Dé d'attaque = {{ player.specs.attackBonus }} </p>
+                <p>Dé de défense = {{ player.specs.defenseBonus }} </p>
+                <p>Mouvements restants : {{ player.specs.movePoints }}</p>
+                <p>Actions restantes : {{ player.specs.actions }}</p>
             </div>
 
             <div class="inventory">
