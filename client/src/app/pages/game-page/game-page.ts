@@ -1,73 +1,98 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ImageService } from '@app/services/image/image.service';
-// import { MapService } from '@app/services/map/map.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { GameMapComponent } from '@app/components/game-map/game-map.component';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { Game, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
-import { GameMapComponent } from '@app/game-map/game-map.component';
+
 /* eslint-disable no-unused-vars */
 
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
-export class GamePageComponent implements OnInit {
-    gameMap: Map;
+export class GamePageComponent implements OnInit, OnDestroy {
+    game: Game;
     mapWidth: number;
     mapHeight: number;
-    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
     numberOfPlayers: number;
-    // activePlayer: Player;
-    // player: Player;
-    
+    player: Player;
+    activePlayers: Player[];
+    gameId: string;
+    showExitModal = false;
+    map: Map;
+    specs: Specs;
 
     constructor(
-        // private mapService: MapService,
-        private imageService: ImageService,
+        private router: Router,
+        private socketService: SocketService,
     ) {}
 
     ngOnInit() {
-        this.loadMap();
-        this.loadPlayerInfo();
-    }
-
-    loadMap() {
-        // this.mapService.getGame().subscribe((mapData: Map) => {
-        //     this.gameMap = mapData;
-        //     this.mapWidth = mapData.mapSize.x;
-        //     this.mapHeight = mapData.mapSize.y;
-        //     // this.numberOfPlayers = mapData.numberOfPlayers;
-        //     // this.activePlayer = mapData.activePlayer;
-
-        //     this.Map = this.generateMockMap();
-        // });
-    }
-
-    loadPlayerInfo() {
-        // this.player = this.mapService.getPlayer();
-    }
+        const state = history.state as { player: Player; gameId: string };
+        if (state && state.player && state.gameId) {
+            this.player = state.player;
+            this.gameId = state.gameId;
+            console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
     
-    getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.Map);
-    }
-
-    getItemImage(item: string): string {
-        return this.imageService.getItemImage(item);
-    }
-
-    generateMockMap() {
-        const mockMap = [];
-        for (let i = 0; i < this.mapHeight; i++) {
-            const row = [];
-            for (let j = 0; j < this.mapWidth; j++) {
-                const randomTile = Math.random() > 0.5 ? 'grass' : 'water'; 
-                const randomItem = Math.random() > 0.8 ? 'sword' : undefined;
-                row.push({ value: randomTile, isHovered: false, item: randomItem });
-            }
-            mockMap.push(row);
+            
+            this.loadGameData();
+            this.loadPlayerData();
+        } else {
+            console.error('No game or player data passed through navigation');
+            this.navigateToMain(); 
         }
-        return mockMap;
+    }
+
+    loadGameData() {
+        this.socketService.sendMessage('getGame', this.gameId);
+        this.socketService.listen<Game>('currentGame').subscribe((game: Game | undefined) => {
+            if (game) {
+                this.game = game;
+                this.mapWidth = game.mapSize?.x;
+                this.mapHeight = game.mapSize?.y;
+                console.log('Game data loaded:', game);
+            } else {
+                console.error('Failed to load game data');
+            }
+        });
+    }
+
+    loadPlayerData() {
+        this.socketService.sendMessage('getPlayers', this.gameId);
+        this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[] | undefined) => {
+            if (players && players.length > 0) {
+                this.activePlayers = players;
+                console.log('Player data loaded:', players);
+            } else {
+                console.error('Failed to load players or no players available');
+            }
+        });
+    }
+
+    navigateToMain(): void {
+        this.router.navigate(['/main-menu']);
+    }
+
+    confirmExit(): void {
+        this.navigateToMain();
+        this.showExitModal = false;
+    }
+
+    openExitConfirmationModal(): void {
+        this.showExitModal = true;
+    }
+
+    closeExitModal(): void {
+        this.showExitModal = false;
+    }
+
+    ngOnDestroy() {
+        this.socketService.sendMessage('leaveGame', this.gameId);
     }
 }
