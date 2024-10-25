@@ -33,6 +33,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     socketSubscription: Subscription = new Subscription();
     isCreatingGame: boolean = false;
     isStartable: boolean = false;
+    activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
         this.player = history.state.player;
@@ -44,6 +45,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.startNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
+            this.socketService.sendMessage('getGame', this.waitingRoomCode);
+            this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
         }
     }
 
@@ -87,22 +90,31 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             this.socketSubscription.add(
                 this.socketService.listen('gameStarted').subscribe(() => {
                     console.log('You started a new game');
+                    this.navigateToGamePage();
                 }),
             );
         }
         this.socketSubscription.add(
-            // seulement a partir du premier joueur qui rejoint qu'on verifie si le game est startable 
+            // seulement a partir du premier joueur qui rejoint qu'on verifie si le game est startable
             this.socketService.listen('playerJoined').subscribe((message) => {
                 if (this.isCreatingGame) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
                         this.socketService.listen('isStartable').subscribe((message) => {
-                            console.log('Game is startable:', message);
                             this.isStartable = true;
+                            console.log('Game is startable');
                         }),
                     );
                 }
+                this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
+                this.socketService.sendMessage('getGame', this.waitingRoomCode);
                 console.log('A new player joined the game:', message);
+            }),
+        );
+        // Permet de mettre a jour la liste des joueurs actifs pour l'affichage dans la salle d'attente
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                this.activePlayers = players;
             }),
         );
 
@@ -127,5 +139,12 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     onBeforeUnload(event: Event): void {
         event.preventDefault();
+    }
+
+    navigateToGamePage() {
+        console.log("Navigating to game page with gameId:", this.waitingRoomCode, "and mapName:", this.mapName);
+        this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
+            state: { player: this.player, gameId: this.waitingRoomCode },
+        });
     }
 }
