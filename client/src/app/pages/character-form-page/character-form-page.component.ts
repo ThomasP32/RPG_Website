@@ -114,8 +114,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ newPlayer: Player }>('youJoined').subscribe((data) => {
-                this.router.navigate([`join-game/${this.gameId}/waiting-room`], { state: { player: data.newPlayer } });
+            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
+                this.router.navigate([`${this.gameId}/waiting-room/player`], { state: { player: updatedPlayer } });
             }),
         );
 
@@ -237,7 +237,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             }
         } else {
             this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.gameId });
-            this.router.navigate([`${this.gameId}/waiting-room/player`], { state: { player: this.player } });
         }
     }
 
