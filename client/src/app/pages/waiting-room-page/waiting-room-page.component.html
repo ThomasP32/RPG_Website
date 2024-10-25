@@ -11,7 +11,7 @@
         
         @if (isCreatingGame) {
         <div class="start-game-button">
-            <button [disabled]="!isStartable">Commencer la partie</button>
+            <button (click)="navigateToGamePage()">Commencer la partie</button>
         </div>
         }
 
