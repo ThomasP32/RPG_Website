@@ -15,7 +15,7 @@ export class CombatGateway {
 
     @SubscribeMessage('startCombat')
     startCombat(client: Socket, data: { gameId: string; startCombatPlayer: Player; player2: Player }): void {
-        const game = this.gameCreationService.getGame(data.gameId);
+        const game = this.gameCreationService.getGameById(data.gameId);
         if (game) {
             this.server
                 .to(data.gameId)

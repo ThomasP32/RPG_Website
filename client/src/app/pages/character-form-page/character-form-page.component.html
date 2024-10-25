@@ -160,7 +160,7 @@
                 class="character-box"
                 (click)="selectCharacter(character)"
                 [ngClass]="{
-                    'unavailable-character': !character.isAvailable,
+                    'disabled-character': !character.isAvailable,
                     'selected-character': character === selectedCharacter
                 }"
             >
