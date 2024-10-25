@@ -24,11 +24,6 @@
             >
                 {{ hover ? (isGameLocked ? 'Dévérouiller' : 'Vérouiller') : isGameLocked ? 'Fermée' : 'Ouverte' }}
             </button>
-        }
-
-        @if (isCreatingGame) {
-        <div class="start-game-button">
-            <button (click)="navigateToGamePage()">Commencer la partie</button>
         </div>
         }
 
@@ -53,11 +48,11 @@
                     <img src="assets/gear.png" alt="Gear Animation" />
                 </div>
             </div>
-            } @else {
-            <!-- <div class="start-game-button">
-                <button (click)="startGame()">Commencer la partie</button>
-            </div> -->
-            }
+            } @else { @if(isHost){
+            <div class="start-game-button">
+                <button (click)="navigateToGamePage()">Commencer la partie</button>
+            </div>
+            } }
         </div>
         <div class="chat-container">
             <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>

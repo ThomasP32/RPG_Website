@@ -2,7 +2,7 @@
     <div class="game-info-panel">
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{ mapWidth }} x {{ mapHeight }}</p>
+            <p>Taille de la carte : {{ mapSize }} x {{ mapSize }}</p>
             <p>Nombre de joueurs : {{ activePlayers.length }}</p>
             <p>Joueur actif : {{ player.name }}</p>
         </div>
@@ -10,7 +10,7 @@
         <!-- À FAIRE EN COMPONENT -->
         <div class="player-info">
             <div class="player-info-header">
-                <img [src]="player.avatar || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
+                <img [src]="playerPreview || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
                 <h3>Informations de {{ player.name }}</h3>
             </div>
 
@@ -22,7 +22,9 @@
                     </div>
                 </div>
                 <div class="stat">
-                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage.">Rapidité : {{player.specs.speed }} PTS</label>
+                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage."
+                        >Rapidité : {{player.specs.speed }} PTS</label
+                    >
                     <div class="stat-bar">
                         <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
                     </div>
@@ -36,14 +38,16 @@
                     </div>
                 </div>
                 <div class="stat">
-                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire.">Défense : {{ player.specs.defense }} PTS</label>
+                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire."
+                        >Défense : {{ player.specs.defense }} PTS</label
+                    >
                     <div class="stat-bar">
                         <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
                     </div>
                 </div>
 
-                <p>Dé d'attaque = {{ player.specs.attackBonus }} </p>
-                <p>Dé de défense = {{ player.specs.defenseBonus }} </p>
+                <p>Dé d'attaque = {{ player.specs.attackBonus }}</p>
+                <p>Dé de défense = {{ player.specs.defenseBonus }}</p>
                 <p>Mouvements restants : {{ player.specs.movePoints }}</p>
                 <p>Actions restantes : {{ player.specs.actions }}</p>
             </div>
@@ -68,20 +72,17 @@
             <!-- <app-player-list [players]="players" [activePlayer]="activePlayer"></app-player-list> -->
             Liste des joueurs
         </div>
-    
+
         <!-- AJOUTER LE COMPONENT -->
         <div class="chatroom">
             <app-chatroom [player]="player" [gameId]="gameId"></app-chatroom>
-
         </div>
-    
+
         <div class="action-buttons">
             <button>Fin du tour</button>
             <button>Exécuter une action</button>
-            <button class="quit-game-button" (click)="openExitConfirmationModal()">
-                Quitter la partie
-            </button>
-            
+            <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
+
             <div class="open-exit-confirmation-modal" [class.show]="showExitModal">
                 <div class="modal">
                     <h2>Confirmer la sortie</h2>
