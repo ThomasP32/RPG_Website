@@ -41,6 +41,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     isStartable: boolean = false;
     isGameLocked: boolean = false;
     hover: boolean = false;
+    activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
         this.player = history.state.player;
@@ -55,6 +56,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
+            this.socketService.sendMessage('getGame', this.waitingRoomCode);
+            this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
         }
         this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
     }
@@ -112,6 +115,15 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 }),
             );
         }
+
+        if (this.isHost) {
+            this.socketSubscription.add(
+                this.socketService.listen('gameInitialized').subscribe((data) => {
+                    console.log('You started a new game');
+                    this.navigateToGamePage();
+                }),
+            );
+        }
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
                 this.appPlayersListComponent.players = players;
@@ -120,9 +132,16 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.socketSubscription.add(
                         this.socketService.listen('isStartable').subscribe((data) => {
                             this.isStartable = true;
+                            console.log('Game is startable');
                         }),
                     );
                 }
+            }),
+        );
+        // Permet de mettre a jour la liste des joueurs actifs pour l'affichage dans la salle d'attente
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                this.activePlayers = players;
             }),
         );
 
@@ -163,9 +182,12 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la partie, pour l'instant ca fait trop de pop up des qu'on load le code et ca fait des triples pop up
-    // @HostListener('window:beforeunload', ['$event'])
-    // onBeforeUnload(event: Event): void {
-    //     event.preventDefault();
-    // }
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la parti
+
+    navigateToGamePage() {
+        console.log('Navigating to game page with gameId:', this.waitingRoomCode, 'and mapName:', this.mapName);
+        this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
+            state: { player: this.player, gameId: this.waitingRoomCode },
+        });
+    }
 }
