@@ -89,7 +89,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         if (this.isCreatingGame) {
             this.socketSubscription.add(
                 this.socketService.listen('gameStarted').subscribe(() => {
-                    console.log('Game started event received');
+                    console.log('You started a new game');
                     this.navigateToGamePage();
                 }),
             );
