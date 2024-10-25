@@ -9,6 +9,8 @@ import { environment } from 'src/environments/environment';
 export class SocketService {
     public socket: Socket;
 
+    // connect() {
+    //     this.socket = io(this.socketUrl, { transports: ['websocket'] });
     // TODO: la connexion devrait se faire automatiquement à partir de n'importe quelle page?
     // mais la on a le problème de si quelqu'un refresh
     // du coup il faudrait que la connexion se fasse automatiquement à partir de n'importe quelle page sauf à

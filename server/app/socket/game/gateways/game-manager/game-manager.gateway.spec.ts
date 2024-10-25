@@ -93,7 +93,7 @@ describe('GameManagerGateway', () => {
         serverStub.to.returns({ emit: emitStub } as any);
 
         gameCreationService.doesGameExist.returns(true);
-        gameCreationService.getGame.returns(gameRoom);
+        gameCreationService.getGameById.returns(gameRoom);
         gameManagerService.getMove.returns([{ x: 19, y: 19 }]);
     });
 
@@ -146,13 +146,13 @@ describe('GameManagerGateway', () => {
             const mockMoves = [{ x: 1, y: 2 }];
 
             gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGame.returns(gameRoom);
+            gameCreationService.getGameById.returns(gameRoom);
             gameManagerService.getMove.returns(mockMoves);
 
             gateway.getPreviewMove(socket, { playerName: 'Player1', gameId, position });
 
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGame.calledWith(gameId)).toBeTruthy();
+            expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
             expect(gameManagerService.getMove.calledWith(gameId, 'Player1', position, true)).toBeTruthy();
             expect(socket.emit.calledWith('playerPossibleMove', { moves: mockMoves })).toBeTruthy();
         });
@@ -204,7 +204,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGame.returns(gameRoom);
+            gameCreationService.getGameById.returns(gameRoom);
             gameManagerService.getMove.returns(mockMoves);
 
             gateway.getMove(socket, { playerName: gameRoom.players[0].name, gameId: gameRoom.id, destination: position });
@@ -222,7 +222,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: true };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -234,7 +234,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: false };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -246,7 +246,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player, { ...player, socketId: 'player-2', name: 'Player 2' }], hasStarted: true };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -260,7 +260,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: true };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -272,7 +272,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: false };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -284,7 +284,7 @@ describe('GameManagerGateway', () => {
             const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
 
             const modifiedGameRoom = { ...gameRoom, players: [player, { ...player, socketId: 'player-2', name: 'Player 2' }], hasStarted: true };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.isGameFinished(gameId);
 
@@ -299,7 +299,7 @@ describe('GameManagerGateway', () => {
 
             const winningPlayer = { ...player, specs: { ...player.specs, nVictories: 3 } };
             const modifiedGameRoom = { ...gameRoom, players: [winningPlayer] };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.hasPlayerWon(gameId);
 
@@ -312,7 +312,7 @@ describe('GameManagerGateway', () => {
 
             const losingPlayer = { ...player, specs: { ...player.specs, nVictories: 2 } };
             const modifiedGameRoom = { ...gameRoom, players: [losingPlayer] };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.hasPlayerWon(gameId);
 
@@ -326,7 +326,7 @@ describe('GameManagerGateway', () => {
             const winningPlayer = { ...player, specs: { ...player.specs, nVictories: 3 } };
             const losingPlayer = { ...player, socketId: 'player-2', name: 'Player 2', specs: { ...player.specs, nVictories: 2 } };
             const modifiedGameRoom = { ...gameRoom, players: [winningPlayer, losingPlayer] };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
 
             gateway.hasPlayerWon(gameId);
 
@@ -347,7 +347,7 @@ describe('GameManagerGateway', () => {
                 currentTurn: 0,
                 tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
             };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.startTurn(socket, gameId);
@@ -368,7 +368,7 @@ describe('GameManagerGateway', () => {
                 currentTurn: 0,
                 tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
             };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.startTurn(socket, gameId);
@@ -384,7 +384,7 @@ describe('GameManagerGateway', () => {
 
             const inactivePlayer = { ...player, isActive: false, turn: 0 };
             const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.startTurn(socket, gameId);
@@ -404,7 +404,7 @@ describe('GameManagerGateway', () => {
                 players: [playerOnIce],
                 tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
             };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.endTurn(socket, gameId);
@@ -424,7 +424,7 @@ describe('GameManagerGateway', () => {
                 players: [playerNotOnIce],
                 tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
             };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.endTurn(socket, gameId);
@@ -440,7 +440,7 @@ describe('GameManagerGateway', () => {
 
             const inactivePlayer = { ...player, isActive: false, turn: 0 };
             const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
-            gameCreationService.getGame.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
 
             gateway.endTurn(socket, gameId);

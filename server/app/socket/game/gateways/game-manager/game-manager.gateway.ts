@@ -19,7 +19,7 @@ export class GameManagerGateway {
             client.emit('gameNotFound');
             return;
         }
-        this.gameCreationService.getGame(data.gameId);
+        this.gameCreationService.getGameById(data.gameId);
         const moves = this.gameManagerService.getMoves(data.gameId, data.playerName);
         client.emit('playerPossibleMoves', { moves: moves });
     }
@@ -30,7 +30,7 @@ export class GameManagerGateway {
             client.emit('gameNotFound');
             return;
         }
-        this.gameCreationService.getGame(data.gameId);
+        this.gameCreationService.getGameById(data.gameId);
         const moves = this.gameManagerService.getMove(data.gameId, data.playerName, data.position, true);
         client.emit('playerPossibleMove', { moves: moves });
     }
@@ -41,10 +41,10 @@ export class GameManagerGateway {
             client.emit('gameNotFound');
             return;
         }
-        this.gameCreationService.getGame(data.gameId);
+        this.gameCreationService.getGameById(data.gameId);
         let hasFell = false;
         const moves = this.gameManagerService.getMove(data.gameId, data.playerName, data.destination, false);
-        const player = this.gameCreationService.getGame(data.gameId).players.find((player) => player.name === data.playerName);
+        const player = this.gameCreationService.getGameById(data.gameId).players.find((player) => player.name === data.playerName);
         if (moves.length === 0) {
             // on peut rajouter une gestion quelconque mais cest pas demandé
             return;
@@ -64,10 +64,10 @@ export class GameManagerGateway {
         });
         // le joueur peut continuer à jouer s'il n'est pas tombé (combat ou mouvement)
         // on doit envoyer game complet pour recuperer les stats
-        this.server.to(data.gameId).emit('playerFinishedMoving', { game: this.gameCreationService.getGame(data.gameId) });
+        this.server.to(data.gameId).emit('playerFinishedMoving', { game: this.gameCreationService.getGameById(data.gameId) });
         // si le joueur est tombé alors on doit avertir le frontend pour qu'il passe au tour suivant
         if (hasFell) {
-            this.server.to(data.gameId).emit('playerFell', { game: this.gameCreationService.getGame(data.gameId) });
+            this.server.to(data.gameId).emit('playerFell', { game: this.gameCreationService.getGameById(data.gameId) });
             // endTurn doit être appelé
         }
     }
@@ -75,7 +75,7 @@ export class GameManagerGateway {
     // à chaque abandon de joueur
     @SubscribeMessage('isGameFinished')
     isGameFinished(gameId: string): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
         }
@@ -84,7 +84,7 @@ export class GameManagerGateway {
     // à chaque fin de combat
     @SubscribeMessage('hasPlayerWon')
     hasPlayerWon(gameId: string): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         game.players.forEach((player) => {
             if (player.specs.nVictories >= 3) {
                 this.server.to(gameId).emit('playerWon', { winner: player });
@@ -94,7 +94,7 @@ export class GameManagerGateway {
 
     @SubscribeMessage('endTurn')
     endTurn(client: Socket, gameId: string): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.turn === game.currentTurn);
 
         if (
@@ -108,18 +108,18 @@ export class GameManagerGateway {
         }
         player.specs.movePoints = player.specs.speed;
         this.gameManagerService.updateTurnCounter(gameId);
-        this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGame(gameId) });
+        this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGameById(gameId) });
     }
 
     @SubscribeMessage('startTurn')
     startTurn(client: Socket, gameId: string): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.turn === game.currentTurn);
         // si le tour du joueur a abandonné
         if (!player.isActive || !player) {
             // on update juste le compteur du currentTurn et on renvoie playerFinishedTurn
             game.currentTurn++;
-            this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGame(gameId) });
+            this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGameById(gameId) });
             return;
         }
         if (
@@ -146,12 +146,12 @@ export class GameManagerGateway {
     // devrait plutot etre une action globale qui verifie le contenu de position (porte ou item pour savoir si on ramasse ou on ouvre)
     // @SubscribeMessage('manipulateDoor')
     // manipulateDoor(client: Socket, data: { gameId: string; doorPosition: Coordinate }): void {
-    //     const game = this.gameCreationService.getGame(data.gameId);
+    //     const game = this.gameCreationService.getGameById(data.gameId);
     //     game.doorTiles.forEach((door) => {
     //         if (door.coordinate.x === data.doorPosition.x && door.coordinate.y === data.doorPosition.y) {
     //             if (!game.players.some((player) => player.position.x === door.coordinate.x && player.position.y === door.coordinate.y)) {
     //                 door.isOpened = !door.isOpened;
-    //                 this.server.to(data.gameId).emit('doorManipulated', { game: this.gameCreationService.getGame(data.gameId) });
+    //                 this.server.to(data.gameId).emit('doorManipulated', { game: this.gameCreationService.getGameById(data.gameId) });
     //                 game.nDoorsManipulated++;
     //             }
     //         }

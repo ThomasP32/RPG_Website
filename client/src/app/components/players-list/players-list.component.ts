@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component} from '@angular/core';
 
+import { CharacterService } from '@app/services/character/character.service';
+import { Avatar, Player } from '@common/game';
 @Component({
     selector: 'app-players-list',
     standalone: true,
@@ -9,8 +11,14 @@ import { Component } from '@angular/core';
     styleUrl: './players-list.component.scss',
 })
 export class PlayersListComponent {
-    players = [
-        { name: 'Player 1', avatar: 'avatar1.jpg', status: 'Ready' },
-        { name: 'Player 2', avatar: 'avatar2.jpg', status: 'Waiting' },
-    ];
+    players: Player[];
+    gameId: string;
+
+    constructor(private characterService: CharacterService) {
+        this.characterService = characterService;
+    }
+
+    getAvatarPreview(avatar: Avatar): string {
+        return this.characterService.getAvatarPreview(avatar);
+    }
 }

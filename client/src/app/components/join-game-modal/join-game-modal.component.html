@@ -5,11 +5,11 @@
             <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[0]" (input)="moveToNext($event, 1)" #codeInput />
             <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[1]" (input)="moveToNext($event, 2)" #codeInput />
             <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[2]" (input)="moveToNext($event, 3)" #codeInput />
-            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]" (input)="moveToNext($event, 4)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]" (input)="joinGame($event)" #codeInput />
         </div>
         <h3 class="error-message">{{ errorMessage }}</h3>
     </div>
-    <div class="join-game">
+    <!-- <div class="join-game">
         <button (click)="joinGame()">Rejoindre</button>
-    </div>
+    </div> -->
 </div>

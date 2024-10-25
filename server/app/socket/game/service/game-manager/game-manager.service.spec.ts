@@ -85,7 +85,7 @@ describe('GameManagerService', () => {
 
     beforeEach(async () => {
         const gameCreationServiceStub = {
-            getGame: jest.fn().mockReturnValue(game2),
+            getGameById: jest.fn().mockReturnValue(game2),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -219,7 +219,7 @@ describe('GameManagerService', () => {
         });
 
         it('should update the path if a shorter path is found', () => {
-            game2.players[0].position = { x: 5, y: 8 }; 
+            game2.players[0].position = { x: 5, y: 8 };
 
             const destination: Coordinate = { x: 6, y: 9 };
             const path = gameManagerService.getMove(game2.id, game2.players[0].name, destination, false);

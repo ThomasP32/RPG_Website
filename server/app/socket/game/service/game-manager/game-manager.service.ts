@@ -15,7 +15,7 @@ export class GameManagerService {
     ];
 
     updatePosition(gameId: string, playerName: string, position: { x: number; y: number }): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         game.players.forEach((player) => {
             if (player.name === playerName) {
                 player.position = position;
@@ -24,7 +24,7 @@ export class GameManagerService {
     }
 
     updateTurnCounter(gameId: string): void {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         game.nTurns++;
         game.currentTurn++;
         if (game.currentTurn >= game.players.length) {
@@ -33,7 +33,7 @@ export class GameManagerService {
     }
 
     getMoves(gameId: string, playerName: string): Coordinate[] {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((p) => p.name === playerName);
 
         if (!player || !player.isActive) {
@@ -50,11 +50,11 @@ export class GameManagerService {
     }
 
     getMove(gameId: string, playerName: string, destination: Coordinate, isPreviewMode: boolean): Coordinate[] {
-        const game = this.gameCreationService.getGame(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((p) => p.name === playerName);
         let shortestPath: Coordinate[];
 
-        // si le joueur a pas besoin de jouer 
+        // si le joueur a pas besoin de jouer
         if (!player || !player.isActive) {
             return [];
         }
@@ -134,7 +134,7 @@ export class GameManagerService {
                         });
                     } else if (neighborWeight < shortestPaths.get(neighborKey).weight) {
                         shortestPaths.set(neighborKey, {
-                            path: [...(shortestPaths.get(currentKey).path), neighbor],
+                            path: [...shortestPaths.get(currentKey).path, neighbor],
                             weight: neighborWeight,
                         });
                     }
