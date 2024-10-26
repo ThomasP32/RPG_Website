@@ -150,7 +150,7 @@ describe('CharacterFormPageComponent', () => {
     ];
 
     beforeEach(async () => {
-        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters']);
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
         characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
 
         playerServiceSpy = jasmine.createSpyObj('PlayerService', [
@@ -431,7 +431,7 @@ describe('CharacterFormPage when joining game', () => {
     let availableAvatarsSubject: Subject<Object>;
 
     beforeEach(async () => {
-        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters']);
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
         characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
 
         communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
