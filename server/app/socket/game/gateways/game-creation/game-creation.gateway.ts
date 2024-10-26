@@ -25,7 +25,6 @@ export class GameGateway implements OnGatewayDisconnect {
         if (this.gameCreationService.doesGameExist(data.gameId)) {
             let game = this.gameCreationService.getGameById(data.gameId);
             if (game.isLocked) {
-                console.log('la partie est verrouillée');
                 client.emit('gameLocked', { reason: 'La partie est vérouillée, veuillez réessayer plus tard.' });
                 return;
             }
@@ -90,7 +89,7 @@ export class GameGateway implements OnGatewayDisconnect {
             const game = this.gameCreationService.getGameById(roomId);
             if (game && client.id === game.hostSocketId) {
                 this.gameCreationService.initializeGame(roomId);
-                const sockets = await this.server.in('room1').fetchSockets();
+                const sockets = await this.server.in(roomId).fetchSockets();
                 sockets.forEach((socket) => {
                     if (game.players.every((player) => player.socketId !== socket.id)) {
                         socket.emit('gameAlreadyStarted', { reason: "La partie a commencée. Vous serez redirigé à la page d'acceuil" });

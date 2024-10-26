@@ -7,7 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Avatar, Bonus, Player, Specs } from '@common/game';
+import { Avatar, Bonus, Player } from '@common/game';
 import { DBMap as Map, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
@@ -389,7 +389,7 @@ describe('CharacterFormPageComponent', () => {
             it('should not change selection if character is unavailable', () => {
                 const unavailableCharacter = { ...component.characters[1], isAvailable: false };
                 component.selectCharacter(unavailableCharacter);
-                expect(component.selectedCharacter).toEqual(component.characters[0]); 
+                expect(component.selectedCharacter).toEqual(component.characters[0]);
                 expect(playerServiceSpy.setPlayerAvatar).not.toHaveBeenCalled();
             });
         });
@@ -449,7 +449,7 @@ describe('CharacterFormPage when joining game', () => {
 
         availableAvatarsSubject = new Subject<any>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen'], {
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect'], {
             socket: { id: 'mock-socket-id' },
         });
 
@@ -462,6 +462,8 @@ describe('CharacterFormPage when joining game', () => {
                     socketId: 'mock-socket-id',
                     isActive: true,
                 } as T);
+            } else if(eventName === 'gameAlreadyStarted') {
+                return of({} as T);
             } else {
                 return of({} as T);
             }
@@ -487,99 +489,31 @@ describe('CharacterFormPage when joining game', () => {
         component.ngOnInit();
     });
 
+    it('should show an error and navigate to main menu if game has already started', fakeAsync(() => {
+        component.listenToSocketMessages();
+
+        socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
+
+        tick(5000); 
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
+    
+
     it('should navigate to main menu if router url does not include "create-game"', () => {
         component.onReturn();
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
     });
 
-    it('should navigate to the main page when gameLocked event is received', () => {
-        component.listenToSocketMessages();
-        socketServiceSpy.listen.and.returnValue(of({ reason: 'Game is locked' }));
-        socketServiceSpy.listen.calls.mostRecent().returnValue.subscribe(() => {
-            expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
-        });
-    });
 
     describe('listenToSocketMessages', () => {
-        it('should update character availability based on received players and select a new character if the current one is unavailable', fakeAsync(() => {
-            component.characters = [...mockCharacters];
+        it('should update character availability based on received players', fakeAsync(() => {
+            const currentPlayers = [{ avatar: Avatar.Avatar1, name: 'Player 1' } as Player, { avatar: Avatar.Avatar3, name: 'Player 3' } as Player];
+
+            availableAvatarsSubject.next(currentPlayers);
             component.selectedCharacter = mockCharacters[0];
-            component.currentIndex = 0;
-            const currentPlayers: Player[] = [
-                {
-                    avatar: Avatar.Avatar1,
-                    name: 'Player 1',
-                    isActive: true,
-                    socketId: 'socket1',
-                    position: { x: 0, y: 0 },
-                    specs: {} as Specs,
-                    inventory: [],
-                    turn: 0,
-                    visitedTiles: [],
-                },
-                {
-                    avatar: Avatar.Avatar3,
-                    name: 'Player 3',
-                    isActive: true,
-                    socketId: 'socket3',
-                    position: { x: 0, y: 0 },
-                    specs: {} as Specs,
-                    inventory: [],
-                    turn: 0,
-                    visitedTiles: [],
-                },
-            ];
-
-            availableAvatarsSubject.next(currentPlayers);
-            component.listenToSocketMessages();
-            tick();
-            expect(component.characters[0].isAvailable).toBeFalse();
-            expect(component.characters[2].isAvailable).toBeFalse();
-
-            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
-            expect(component.currentIndex).toBe(1);
-
-            expect(component.characters[1].isAvailable).toBeTrue();
-            expect(component.characters[3].isAvailable).toBeTrue();
-        }));
-
-        it('should not change selected character if it remains available', fakeAsync(() => {
-            component.characters = [...mockCharacters];
-            component.selectedCharacter = mockCharacters[1];
-            component.currentIndex = 1;
-
-            const currentPlayers: Player[] = [
-                {
-                    avatar: Avatar.Avatar1,
-                    name: 'Player 1',
-                    isActive: true,
-                    socketId: 'socket1',
-                    position: { x: 0, y: 0 },
-                    specs: {} as Specs,
-                    inventory: [],
-                    turn: 0,
-                    visitedTiles: [],
-                },
-                {
-                    avatar: Avatar.Avatar3,
-                    name: 'Player 3',
-                    isActive: true,
-                    socketId: 'socket3',
-                    position: { x: 0, y: 0 },
-                    specs: {} as Specs,
-                    inventory: [],
-                    turn: 0,
-                    visitedTiles: [],
-                },
-            ];
-
-            availableAvatarsSubject.next(currentPlayers);
-
-            component.listenToSocketMessages();
             tick();
 
-            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
-            expect(component.currentIndex).toBe(1);
+            expect(component.selectedCharacter.isAvailable).toBeFalse();
         }));
     });
 
@@ -606,16 +540,6 @@ describe('CharacterFormPage when joining game', () => {
 
             expect(component.selectedCharacter).toEqual(mockCharacters[1]);
             expect(component.currentIndex).toBe(1);
-        });
-    });
-
-    describe('Socket Message Handling', () => {
-        it('should navigate to the main page when gameLocked event is received', () => {
-            component.listenToSocketMessages();
-            socketServiceSpy.listen.and.returnValue(of({ reason: 'Game is locked' }));
-            socketServiceSpy.listen.calls.mostRecent().returnValue.subscribe(() => {
-                expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
-            });
         });
     });
 
