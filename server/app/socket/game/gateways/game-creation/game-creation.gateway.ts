@@ -83,10 +83,6 @@ export class GameGateway implements OnGatewayDisconnect {
             client.emit('gameNotFound', { reason: 'Le code est invalide, veuillez réessayer.' });
         }
     }
-    @SubscribeMessage('startGame')
-    handleStartGame(client: Socket, gameId: string): void {
-        this.server.to(gameId).emit('gameStarted');
-    }
 
     @SubscribeMessage('initializeGame')
     async handleInitGame(client: Socket, roomId: string): Promise<void> {
@@ -132,13 +128,16 @@ export class GameGateway implements OnGatewayDisconnect {
     handleDisconnect(client: Socket): void {
         const games = this.gameCreationService.getGames();
         games.forEach((game) => {
-            if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
-                this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                this.gameCreationService.deleteRoom(game.id);
-                this.server.socketsLeave(game.id);
+            if (!game.hasStarted) {
+                if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
+                    this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                    this.gameCreationService.deleteRoom(game.id);
+                    this.server.socketsLeave(game.id);
 
-                return;
-            } else if (game.players.some((player) => player.socketId === client.id)) {
+                    return;
+                }
+            }
+            if (game.players.some((player) => player.socketId === client.id)) {
                 game = this.gameCreationService.handlePlayerDisconnect(client, game.id);
                 this.server.to(game.id).emit('playerLeft', game.players);
                 return;

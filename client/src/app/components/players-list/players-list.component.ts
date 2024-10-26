@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component} from '@angular/core';
+import { Component, Input} from '@angular/core';
 
 import { CharacterService } from '@app/services/character/character.service';
 import { Avatar, Player } from '@common/game';
@@ -11,7 +11,7 @@ import { Avatar, Player } from '@common/game';
     styleUrl: './players-list.component.scss',
 })
 export class PlayersListComponent {
-    players: Player[];
+    @Input() players: Player[];
     gameId: string;
 
     constructor(private characterService: CharacterService) {

@@ -99,16 +99,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     startGame(): void {
-        this.socketService.sendMessage('startGame', this.waitingRoomCode);
-        this.navigateToGamePage();
+        this.socketService.sendMessage('initializeGame', this.waitingRoomCode);
     }
 
     listenToSocketMessages(): void {
-        // this.socketSubscription.add(
-        //     this.socketService.listen('gameStarted').subscribe(() => {
-        //         console.log('game is starting');
-        //     }),
-        // );
+
         if (!this.isHost) {
             this.socketSubscription.add(
                 this.socketService.listen('gameClosed').subscribe(() => {
@@ -118,7 +113,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen('gameStarted').subscribe(() => {
+            this.socketService.listen('gameInitialized').subscribe(() => {
                 this.navigateToGamePage();
             }),
         );
