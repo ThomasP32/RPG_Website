@@ -243,18 +243,6 @@
             transform: translateY(4px);
         }
     }
-
-    .open-exit-confirmation-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 600px;
-        height: 100%;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
     
     .modal h2 {
         margin-bottom: 20px;
@@ -279,18 +267,6 @@
         min-height: 3em;
         line-height: 1.5em;
         font-family: 'Press Start 2P';
-    }
-    
-    .open-exit-confirmation-modal.show {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
     }
     
     .modal-overlay {
@@ -320,6 +296,30 @@
         border: 4px solid #7d7f7d;
         position: relative;
         z-index: 1001;
+    }
+
+    .open-exit-confirmation-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .game-finished-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
     }
     
     .close-button {
