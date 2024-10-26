@@ -35,14 +35,19 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     gameId: string | null = null;
     mapName: string | null = null;
 
+    gameHasStarted: boolean = false;
+
     isJoiningGame: boolean = false;
 
-    showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean } = {
+    showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean, waitingRoomFullError: boolean } = {
         selectionError: false,
         characterNameError: false,
         bonusError: false,
         diceError: false,
+        waitingRoomFullError: false,
     };
+
+    showGameStartedModal: boolean = false;
 
     constructor(
         private communicationMapService: CommunicationMapService,
@@ -127,8 +132,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameLocked').subscribe((data) => {
-                this.router.navigate(['/']);
+            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
+                this.showErrorMessage.waitingRoomFullError = true;
             }),
         );
 
@@ -146,8 +151,12 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameHasStarted').subscribe((data) => {
-                // gerer comment on affiche le message d'erreur d'une partie qui a commencé
+            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
+                this.showGameStartedModal = true;
+                setTimeout(() => {
+                    this.socketService.disconnect();
+                    this.router.navigate(['/main-menu']);
+                }, timeLimit);
             }),
         );
     }
@@ -242,6 +251,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             characterNameError: false,
             bonusError: false,
             diceError: false,
+            waitingRoomFullError: false,
         };
 
         if (this.name === 'Choisis un nom' || this.playerService.getPlayer().name === '') {
