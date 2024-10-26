@@ -6,6 +6,7 @@ import { PlayersListComponent } from '@app/components/players-list/players-list.
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -26,6 +27,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     constructor(
         private communicationMapService: CommunicationMapService,
         private characterService: CharacterService,
+        private playerService: PlayerService,
         private socketService: SocketService,
         private route: ActivatedRoute,
         private router: Router,
@@ -44,7 +46,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
-        this.player = history.state.player;
+        this.player = this.playerService.getPlayer();
+        console.log('Player:', this.playerService.getPlayer());
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.playerName = this.player.name;
 
@@ -86,6 +89,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     exitGame(): void {
         this.socketService.disconnect();
+        this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }
 

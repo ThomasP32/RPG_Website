@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ImageService } from './image.service';
+import { Avatar } from '@common/game';
 
 describe('ImageService', () => {
     let service: ImageService;
@@ -43,5 +44,21 @@ describe('ImageService', () => {
         expect(service.getItemImage('random')).toBe('./assets/items/randomchest.png');
         expect(service.getItemImage('starting-point')).toBe('./assets/tiles/startingpoint.png');
         expect(service.getItemImage('invalid')).toBe('');
+    });
+
+    it('should get player image', () => {
+        expect(service.getPlayerImage(Avatar.Avatar1)).toBe('./assets/characters/1.png');
+        expect(service.getPlayerImage(Avatar.Avatar2)).toBe('./assets/characters/2.png');
+        expect(service.getPlayerImage(Avatar.Avatar3)).toBe('./assets/characters/3.png');
+        expect(service.getPlayerImage(Avatar.Avatar4)).toBe('./assets/characters/4.png');
+        expect(service.getPlayerImage(Avatar.Avatar5)).toBe('./assets/characters/5.png');
+        expect(service.getPlayerImage(Avatar.Avatar6)).toBe('./assets/characters/6.png');
+        expect(service.getPlayerImage(Avatar.Avatar7)).toBe('./assets/characters/7.png');
+        expect(service.getPlayerImage(Avatar.Avatar8)).toBe('./assets/characters/8.png');
+        expect(service.getPlayerImage(Avatar.Avatar9)).toBe('./assets/characters/9.png');
+        expect(service.getPlayerImage(Avatar.Avatar10)).toBe('./assets/characters/10.png');
+        expect(service.getPlayerImage(Avatar.Avatar11)).toBe('./assets/characters/11.png');
+        expect(service.getPlayerImage(Avatar.Avatar12)).toBe('./assets/characters/12.png');
+        expect(service.getPlayerImage({} as Avatar)).toBe('');
     });
 });
