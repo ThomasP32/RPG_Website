@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ImageService } from '@app/services/image/image.service';
 import { Avatar, Game } from '@common/game';
 
@@ -18,7 +18,7 @@ le HTML et non directement dans le code TypeScript. En désactivant cette règle
     templateUrl: './game-map.component.html',
     styleUrl: './game-map.component.scss',
 })
-export class GameMapComponent implements OnInit {
+export class GameMapComponent implements OnInit, OnChanges {
     @Input() map: Game;
     Map: { value: string, isHovered: boolean, doorState?: 'open' | 'closed', item?: string, player?: Avatar }[][];
 
