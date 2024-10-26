@@ -100,6 +100,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     confirmExit(): void {
         this.navigateToMain();
         this.showExitModal = false;
+        this.characterService.resetCharacterAvailability();
+        this.playerService.resetPlayer();
     }
 
     openExitConfirmationModal(): void {

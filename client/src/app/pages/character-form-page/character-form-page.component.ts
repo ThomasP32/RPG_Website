@@ -39,7 +39,13 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     isJoiningGame: boolean = false;
 
-    showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean, waitingRoomFullError: boolean } = {
+    showErrorMessage: {
+        selectionError: boolean;
+        characterNameError: boolean;
+        bonusError: boolean;
+        diceError: boolean;
+        waitingRoomFullError: boolean;
+    } = {
         selectionError: false,
         characterNameError: false,
         bonusError: false,
@@ -68,7 +74,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     async ngOnInit(): Promise<void> {
         this.playerService.resetPlayer();
         this.name = this.playerService.getPlayer().name || 'Choisis ton nom';
+
         this.characterService.getCharacters().subscribe((characters) => {
+            console.log('tu arrives ici');
             this.characters = characters;
             this.selectedCharacter = this.characters[0];
             this.currentIndex = 0;
@@ -154,7 +162,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
                 this.showGameStartedModal = true;
                 setTimeout(() => {
-                    this.socketService.disconnect();
+                    this.characterService.resetCharacterAvailability();
                     this.router.navigate(['/main-menu']);
                 }, timeLimit);
             }),
@@ -273,6 +281,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     onQuit() {
         this.socketService.disconnect();
+        this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }
     ngOnDestroy(): void {
