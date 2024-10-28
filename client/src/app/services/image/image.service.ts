@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Avatar } from '@common/game';
 
 @Injectable({
     providedIn: 'root',
@@ -56,6 +57,38 @@ export class ImageService {
                 return './assets/items/randomchest.png';
             case 'starting-point':
                 return './assets/tiles/startingpoint.png';
+            default:
+                return '';
+        }
+    }
+    
+    // va falloir update les routes pour les petits avatars pixelisé 
+    getPlayerImage(avatar: Avatar): string {
+        switch (avatar) {
+            case Avatar.Avatar1:
+                return './assets/characters/1.png';
+            case Avatar.Avatar2:
+                return './assets/characters/2.png';
+            case Avatar.Avatar3:
+                return './assets/characters/3.png';
+            case Avatar.Avatar4:
+                return './assets/characters/4.png';
+            case Avatar.Avatar5:
+                return './assets/characters/5.png';
+            case Avatar.Avatar6:
+                return './assets/characters/6.png';
+            case Avatar.Avatar7:
+                return './assets/characters/7.png';
+            case Avatar.Avatar8:
+                return './assets/characters/8.png';
+            case Avatar.Avatar9:
+                return './assets/characters/9.png';
+            case Avatar.Avatar10:
+                return './assets/characters/10.png';
+            case Avatar.Avatar11:
+                return './assets/characters/11.png';
+            case Avatar.Avatar12:
+                return './assets/characters/12.png';
             default:
                 return '';
         }

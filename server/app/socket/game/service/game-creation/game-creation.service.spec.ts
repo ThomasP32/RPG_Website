@@ -96,6 +96,21 @@ describe('GameCreationService', () => {
         expect(service['gameRooms']['room-1']).toEqual(gameRoom);
     });
 
+    it('should add a player with a unique incremented suffix based on existing players', () => {
+        const player1: Player = { ...player, name: 'Player 1' };
+        const player2: Player = { ...player, name: 'Player 1-2', socketId: 'player-2' };
+        const player3: Player = { ...player, name: 'Player 1-3', socketId: 'player-3' };
+        gameRoom.players.push(player1, player2, player3);
+
+        service.addGame(gameRoom);
+
+        const newPlayer: Player = { ...player, name: 'Player 1', socketId: 'player-4' };
+        service.addPlayerToGame(newPlayer, 'room-1');
+
+        expect(service['gameRooms']['room-1'].players.length).toBe(4);
+        expect(service['gameRooms']['room-1'].players[3].name).toBe('Player 1-4');
+    });
+
     it('should return the correct game with getGame', () => {
         service.addGame(gameRoom);
         const game = service.getGameById('room-1');
@@ -122,6 +137,22 @@ describe('GameCreationService', () => {
         service.handlePlayerDisconnect(mockSocket as unknown as Socket, gameRoom.id);
 
         expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
+    });
+
+    it('should remove the player if the game has not started and unlock if below max players', () => {
+        gameRoom.hasStarted = false;
+        gameRoom.isLocked = true;
+        const disconnectingPlayer = { ...player, socketId: 'disconnecting-player' };
+        gameRoom.players.push(disconnectingPlayer);
+
+        service.addGame(gameRoom);
+
+        const mockSocket = { id: 'disconnecting-player' } as unknown as Socket;
+        service.handlePlayerDisconnect(mockSocket, gameRoom.id);
+
+        const updatedGame = service.getGameById(gameRoom.id);
+        expect(updatedGame.players.some((p) => p.socketId === 'disconnecting-player')).toBe(false);
+        expect(updatedGame.isLocked).toBe(false);
     });
 
     it('should add a player with a unique name to the game', () => {

@@ -96,18 +96,16 @@ export class CharacterService {
         },
     ];
 
-    setDisabledAvatars(avatars: Avatar[]): void {
-        this.characters.forEach((character) => {
-            if (avatars.includes(character.id)) {
-                character.isAvailable = false;
-            }
-        });
-    }
-
     getCharacters(): Observable<Character[]> {
+        console.log('les characters ont été requested', this.characters);
         return of(this.characters);
     }
 
+    resetCharacterAvailability(): void {
+        this.characters.forEach(character => {
+            character.isAvailable = true;
+        });
+    }
     getAvatarPreview(avatar: Avatar): string {
         return this.characters.find((character) => character.id === avatar)?.preview || '';
     }

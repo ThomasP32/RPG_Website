@@ -11,10 +11,10 @@
             <div class="player-stats">
                 <h2 class="character-name">
                     @if(!isEditing){
-                    <span>{{ characterName }}</span
+                    <span>{{ name }}</span
                     >} @if(isEditing){
                     <input
-                        [(ngModel)]="characterName"
+                        [(ngModel)]="name"
                         class="character-name-input"
                         (blur)="stopEditing()"
                         placeholder="Choisis ton nom"
@@ -103,8 +103,8 @@
                             <label for="attack"> Attaque </label>
                         </div>
                         <div class="dice-icon">
-                            @if(attackBonus === Bonus.D4) {
-                            <i class="fas fa-dice-four"></i>} @if(attackBonus === Bonus.D6) { <i class="fas fa-dice-six"></i>}
+                            @if (attackOrDefenseBonus) { @if(attackBonus === Bonus.D4) {
+                            <i class="fas fa-dice-four"></i>} @else if(attackBonus === Bonus.D6) { <i class="fas fa-dice-six"></i>} }
                         </div>
                     </div>
                     <div class="dice-and-buttons-wrapper">
@@ -121,8 +121,10 @@
                             <label for="defense">Defense </label>
                         </div>
                         <div class="dice-icon">
-                            @if(defenseBonus === Bonus.D4) {
-                            <i class="fas fa-dice-four"></i>} @if(defenseBonus === Bonus.D6) { <i class="fas fa-dice-six"></i>}
+                            @if(attackOrDefenseBonus) { @if(defenseBonus === Bonus.D4) {
+                            <i class="fas fa-dice-four"></i>
+                            } @else if(defenseBonus === Bonus.D6) {
+                            <i class="fas fa-dice-six"></i>}}
                         </div>
                     </div>
                 </div>
@@ -149,6 +151,8 @@
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
                 } @if (showErrorMessage.selectionError) {
                 <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
+                } @if (showErrorMessage.waitingRoomFullError) {
+                <div class="error-message">La salle d'attente est présentement pleine.</div>
                 }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
@@ -169,4 +173,12 @@
             }
         </div>
     </div>
+    @if(showGameStartedModal) {
+    <div class="game-started-modal">
+        <div class="modal">
+            <h2>La partie a commencée.</h2>
+            <p>La partie a commencée sans vous, vous serez redirigé.</p>
+        </div>
+    </div>
+    }
 </div>

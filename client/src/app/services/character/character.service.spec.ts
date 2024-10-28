@@ -57,40 +57,6 @@ describe('CharacterService', () => {
         });
     });
 
-    it('should disable specified avatars when setDisabledAvatars is called', (done) => {
-        service.setDisabledAvatars([Avatar.Avatar2, Avatar.Avatar4]);
-
-        service.getCharacters().subscribe((characters: Character[]) => {
-            const disabledAvatars = characters.filter((character) => !character.isAvailable).map((character) => character.id);
-            expect(disabledAvatars).toEqual([Avatar.Avatar2, Avatar.Avatar4]);
-            done();
-        });
-    });
-
-    it('should keep unspecified avatars enabled when setDisabledAvatars is called', (done) => {
-        service.setDisabledAvatars([Avatar.Avatar5]);
-
-        service.getCharacters().subscribe((characters: Character[]) => {
-            const availableCharacters = characters.filter((character) => character.isAvailable).map((character) => character.id);
-            const disabledCharacters = characters.filter((character) => !character.isAvailable).map((character) => character.id);
-
-            expect(disabledCharacters).toEqual([Avatar.Avatar5]);
-            expect(availableCharacters).toContain(Avatar.Avatar1);
-            expect(availableCharacters).toContain(Avatar.Avatar2);
-            done();
-        });
-    });
-
-    it('should not disable any avatars if an empty array is passed to setDisabledAvatars', (done) => {
-        service.setDisabledAvatars([]);
-
-        service.getCharacters().subscribe((characters: Character[]) => {
-            const disabledAvatars = characters.filter((character) => !character.isAvailable);
-            expect(disabledAvatars.length).toBe(0);
-            done();
-        });
-    });
-
     it('should return the correct preview image for a given avatar', () => {
         const preview = service.getAvatarPreview(Avatar.Avatar1);
         expect(preview).toBe('./assets/previewcharacters/1.png');
@@ -99,5 +65,20 @@ describe('CharacterService', () => {
     it('should return an empty string if the avatar does not exist', () => {
         const preview = service.getAvatarPreview(999 as Avatar);
         expect(preview).toBe('');
+    });
+
+    it('should reset character availability to true for all characters', () => {
+        const characters = service.getCharacters();
+        characters.subscribe((chars) => {
+            chars[0].isAvailable = false;
+        });
+
+        service.resetCharacterAvailability();
+
+        service.getCharacters().subscribe((chars) => {
+            chars.forEach(character => {
+                expect(character.isAvailable).toBe(true);
+            });
+        });
     });
 });
