@@ -6,8 +6,9 @@
             } @if(cell.item) {
             <img [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
             } @if(cell.doorState) {
-            <p class="door-state">Porte: {{ cell.doorState }}</p>
-            }
+            <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Item" class="grid-item" />
+            } @if(cell.player) {
+            <img [src]="getAvatarImage(cell.player)" alt="Player" class="grid-item" />}
         </div>
     </div>
 </div>

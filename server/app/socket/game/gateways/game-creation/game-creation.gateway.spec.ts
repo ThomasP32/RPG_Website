@@ -184,6 +184,24 @@ describe('GameGateway', () => {
             gameRoom.isLocked = false;
         });
 
+        it('should lock the game when max players are reached', () => {
+            const newPlayer: Player = { name: 'Player2', socketId: socket.id, isActive: true } as Player;
+            const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
+    
+            // Mock methods to simulate a full game
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGameById.returns(gameRoom);
+            gameCreationService.addPlayerToGame.returns(updatedGame);
+            gameCreationService.isMaxPlayersReached.returns(true); 
+    
+            gateway.handleJoinGame(socket, { player: newPlayer, gameId: gameRoom.id });
+    
+            expect(gameCreationService.doesGameExist.calledWith(gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.addPlayerToGame.calledWith(newPlayer, gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.lockGame.calledWith(gameRoom.id)).toBeTruthy();
+            expect(socket.emit.calledWith('youJoined', newPlayer)).toBeTruthy();
+        });
+
         it('should add player to game and call addPlayerToGame on GameCreationService', () => {
             const newPlayer: Player = { name: 'Player1', socketId: socket.id, isActive: true } as Player;
             const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
