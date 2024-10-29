@@ -108,6 +108,9 @@ export class GameCreationService {
             }
             return speedDifference;
         });
+        updatedPlayers.forEach((player, index) => {
+            player.turn = index;
+        });
         game.players = updatedPlayers;
     }
 

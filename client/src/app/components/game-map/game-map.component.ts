@@ -53,7 +53,6 @@ export class GameMapComponent implements OnInit, OnChanges {
         });
 
         map.players.forEach((player) => {
-            console.log('un joueur a la position :', player.position, 'avec avatar :', player.avatar);
             this.Map[player.position.x][player.position.y].player = player.avatar;
         });
     }

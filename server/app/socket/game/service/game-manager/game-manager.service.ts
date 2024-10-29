@@ -1,4 +1,4 @@
-import { Game } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
@@ -193,5 +193,13 @@ export class GameManagerService {
             }
         }
         return 1;
+    }
+
+    onIceTile(player: Player, gameId: string): boolean {
+        return this.gameCreationService
+            .getGameById(gameId)
+            .tiles.some(
+                (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
+            );
     }
 }

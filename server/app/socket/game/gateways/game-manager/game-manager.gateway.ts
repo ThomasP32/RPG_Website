@@ -1,6 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
-import { Coordinate, TileCategory } from '@common/map.types';
+import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -19,9 +19,15 @@ export class GameManagerGateway {
             client.emit('gameNotFound');
             return;
         }
-        this.gameCreationService.getGameById(data.gameId);
+        console.log('on a demandé les mouvements');
+        const game = this.gameCreationService.getGameById(data.gameId);
         const moves = this.gameManagerService.getMoves(data.gameId, data.playerName);
-        client.emit('playerPossibleMoves', { moves: moves });
+        const tiles = game.tiles;
+        const doors = game.doorTiles;
+        client.emit('playerPossibleMoves', moves);
+        console.log('on lui a envoyé ses mouvements', moves);
+        console.log('ca cest ses tuiles ', tiles);
+        console.log('ca cest ses portes ', doors);
     }
 
     @SubscribeMessage('previewMove')
@@ -92,69 +98,63 @@ export class GameManagerGateway {
         });
     }
 
+    @SubscribeMessage('startGame')
+    startGame(client: Socket, gameId: string): void {
+        console.log('on a recu le message de startGame pour la game ', gameId);
+        this.startTurn(gameId);
+    }
+
     @SubscribeMessage('endTurn')
     endTurn(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.turn === game.currentTurn);
-
-        if (
-            game.tiles.some(
-                (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
-            )
-        ) {
+        if (player.socketId !== client.id) {
+            return;
+        }
+        if (this.gameManagerService.onIceTile(player, gameId)) {
             // si le joueur est sur une tuile de glace son attaque et sa defense diminue de 2 jusqu'au prochain tour
+            console.log('le joueur est sur une tuile de glace : ', player);
             player.specs.attack -= 2;
             player.specs.defense -= 2;
         }
         player.specs.movePoints = player.specs.speed;
         this.gameManagerService.updateTurnCounter(gameId);
         this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGameById(gameId) });
+        this.startTurn(gameId);
     }
 
-    @SubscribeMessage('startTurn')
-    startTurn(client: Socket, gameId: string): void {
+    startTurn(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((player) => player.turn === game.currentTurn);
+        console.log('cest le tour numéro ', game.currentTurn);
+        const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
         // si le tour du joueur a abandonné
-        if (!player.isActive || !player) {
-            // on update juste le compteur du currentTurn et on renvoie playerFinishedTurn
+        if (!activePlayer || !activePlayer.isActive) {
             game.currentTurn++;
-            this.server.to(game.hostSocketId).emit('playerFinishedTurn', { game: this.gameCreationService.getGameById(gameId) });
+            this.startTurn(gameId);
             return;
         }
-        if (
-            game.tiles.some(
-                (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
-            )
-        ) {
+
+        if (this.gameManagerService.onIceTile(activePlayer, gameId)) {
             // on lui redonne ses points d'attaque et de defense pour son mouvement MAIS s'il effectue un combat
             // on doit vérifier la tuile sur laquelle il est pour lui enlever ses points d'attaque et de defense
             // s'il est toujours sur une tuile de glace
-            player.specs.attack += 2;
-            player.specs.defense += 2;
+            activePlayer.specs.attack += 2;
+            activePlayer.specs.defense += 2;
         }
-        player.specs.movePoints = player.specs.speed;
-        game.players.forEach((player) => {
-            if (player.turn === game.currentTurn) {
-                this.server.to(player.socketId).emit('yourTurn');
-            } else {
-                this.server.to(player.socketId).emit('playerTurn');
-            }
-        });
-    }
 
-    // devrait plutot etre une action globale qui verifie le contenu de position (porte ou item pour savoir si on ramasse ou on ouvre)
-    // @SubscribeMessage('manipulateDoor')
-    // manipulateDoor(client: Socket, data: { gameId: string; doorPosition: Coordinate }): void {
-    //     const game = this.gameCreationService.getGameById(data.gameId);
-    //     game.doorTiles.forEach((door) => {
-    //         if (door.coordinate.x === data.doorPosition.x && door.coordinate.y === data.doorPosition.y) {
-    //             if (!game.players.some((player) => player.position.x === door.coordinate.x && player.position.y === door.coordinate.y)) {
-    //                 door.isOpened = !door.isOpened;
-    //                 this.server.to(data.gameId).emit('doorManipulated', { game: this.gameCreationService.getGameById(data.gameId) });
-    //                 game.nDoorsManipulated++;
-    //             }
-    //         }
-    //     });
-    // }
+        activePlayer.specs.movePoints = activePlayer.specs.speed;
+
+        console.log('on envoye son tour à tours :', activePlayer.socketId);
+
+        this.server.to(activePlayer.socketId).emit('yourTurn');
+
+        game.players
+            .filter((player) => player.socketId !== activePlayer.socketId)
+            .forEach((player) => {
+                if (player.socketId !== activePlayer.socketId) {
+                    console.log('on a envoyé aux autres aussi');
+                    this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
+                }
+            });
+    }
 }
