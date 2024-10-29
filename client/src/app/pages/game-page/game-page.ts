@@ -6,12 +6,11 @@ import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameTurnService } from '@app/services/game/game-turn.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player, Specs } from '@common/game';
 import { Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
-
-/* eslint-disable no-unused-vars */
 
 @Component({
     selector: 'app-game-page',
@@ -25,7 +24,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     numberOfPlayers: number;
     player: Player;
     activePlayers: Player[] = [];
-    currentPlayerTurn: Player;
+
+    currentPlayerTurn: string;
+    isYourTurn: boolean = false;
+
     socketSubscription: Subscription = new Subscription();
     playerPreview: string;
     gameId: string;
@@ -40,14 +42,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private socketService: SocketService,
         private characterService: CharacterService,
         private playerService: PlayerService,
-    ) {}
+        private gameTurnService: GameTurnService,
+    ) {
+        this.route = route; 
+        this.router = router;
+        this.socketService = socketService;
+        this.characterService = characterService;
+        this.playerService = playerService;
+        this.gameTurnService = gameTurnService;
+
+    }
 
     ngOnInit() {
+        this.gameTurnService.listenForTurn();
         this.player = this.playerService.getPlayer();
         this.gameId = this.route.snapshot.params['gameId'];
         this.listenPlayersLeft();
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        console.log('Navigated to GamePage with player:', this.player, 'and gameId:', this.gameId);
         this.loadGameData();
         this.loadPlayerData();
         this.socketService.sendMessage('getPlayers', this.gameId);
@@ -74,14 +85,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketService.listen<Game>('currentGame').subscribe((game: Game) => {
             if (game) {
                 this.game = game;
-                this.currentPlayerTurn = game.players.filter((player) => player.turn === 0)[0];
-                console.log('Game data loaded:', game);
+                this.gameTurnService.game = this.game;
+                if (this.player.socketId === this.game.hostSocketId) {
+                    this.socketService.sendMessage('startGame', this.game.id);
+                }
+                this.listenForCurrentPlayerUpdates();
             } else {
                 console.error('Failed to load game data');
             }
         });
     }
 
+    endTurn() {
+        this.gameTurnService.endTurn();
+    }
     loadPlayerData() {
         this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
             if (players && players.length > 0) {
@@ -115,5 +132,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.socketService.disconnect();
         this.socketService.sendMessage('leaveGame', this.gameId);
+    }
+
+    listenForCurrentPlayerUpdates() {
+        this.gameTurnService.playerTurn$.subscribe((playerName) => {
+            this.currentPlayerTurn = playerName;
+            this.isYourTurn = false;
+            if (playerName === this.player.name) {
+                this.isYourTurn = true;
+            }
+        });
     }
 }

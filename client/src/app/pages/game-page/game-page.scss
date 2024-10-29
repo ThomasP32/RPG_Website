@@ -243,7 +243,7 @@
             transform: translateY(4px);
         }
     }
-    
+
     .modal h2 {
         margin-bottom: 20px;
         white-space: nowrap;
@@ -252,7 +252,7 @@
         font-size: 1.2rem;
         color: #aa3d3d;
     }
-    
+
     .modal p {
         font-size: 1.1rem;
         margin-bottom: 20px;
@@ -268,7 +268,7 @@
         line-height: 1.5em;
         font-family: 'Press Start 2P';
     }
-    
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -281,7 +281,7 @@
         align-items: center;
         z-index: 1000;
     }
-    
+
     .modal {
         background-color: #1c242c;
         padding: 20px;
@@ -321,7 +321,7 @@
         align-items: center;
         z-index: 1000;
     }
-    
+
     .close-button {
         position: absolute;
         top: 10px;
@@ -334,7 +334,7 @@
         background: none;
         border: none;
     }
-    
+
     .modal-button {
         display: flex;
         align-items: center;
@@ -348,8 +348,19 @@
         font-family: 'Press Start 2P', sans-serif;
         transition: background-color 0.3s ease;
     }
-    
+
     .modal-button:hover {
         background-color: #3b3f46;
     }
+
+}
+
+.disable-interactions {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000; 
+    pointer-events: all;
 }

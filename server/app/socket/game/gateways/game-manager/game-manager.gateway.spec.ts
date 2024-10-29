@@ -7,6 +7,7 @@ import { SinonFakeTimers, SinonStub, SinonStubbedInstance, createStubInstance, s
 import { Server, Socket } from 'socket.io';
 import { GameManagerGateway } from './game-manager.gateway';
 
+
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
@@ -123,7 +124,7 @@ describe('GameManagerGateway', () => {
 
             expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
             expect(gameManagerService.getMoves.calledWith(gameId, 'Player1')).toBeTruthy();
-            expect(socket.emit.calledWith('playerPossibleMoves', { moves: mockMoves })).toBeTruthy();
+            expect(socket.emit.calledWith('playerPossibleMoves', mockMoves)).toBeTruthy();
         });
     });
 
@@ -335,90 +336,46 @@ describe('GameManagerGateway', () => {
         });
     });
 
-    describe('startTurn', () => {
-        it('should increase player attack and defense if on ice tile and emit yourTurn', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
-
-            const playerOnIce = { ...player, position: { x: 1, y: 1 }, specs: { ...player.specs, attack: 10, defense: 5 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerOnIce],
-                currentTurn: 0,
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(playerOnIce.specs.attack).toBe(12);
-            expect(playerOnIce.specs.defense).toBe(7);
-            expect(emitStub.calledWith('yourTurn')).toBeTruthy();
-        });
-
-        it('should not change player stats if not on ice tile and emit yourTurn', () => {
-            const gameId = 'room-1';
-            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
-
-            const playerNotOnIce = { ...player, position: { x: 2, y: 2 }, specs: { ...player.specs, attack: 10, defense: 5 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerNotOnIce],
-                currentTurn: 0,
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(playerNotOnIce.specs.attack).toBe(10);
-            expect(playerNotOnIce.specs.defense).toBe(5);
-            expect(emitStub.calledWith('yourTurn')).toBeTruthy();
-        });
-
-        it('should emit playerFinishedTurn if the current player is inactive', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
-
-            const inactivePlayer = { ...player, isActive: false, turn: 0 };
-            const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
-        });
-    });
-
     describe('endTurn', () => {
         it('should reduce player attack and defense if on ice tile and emit playerFinishedTurn', () => {
             const gameId = gameRoom.id;
             const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
-
-            const playerOnIce = { ...player, position: { x: 1, y: 1 }, specs: { ...player.specs, attack: 15, defense: 10 }, turn: 0 };
+            const playerSocket = createStubInstance<Socket>(Socket);
+            const playerOnIce = {
+                ...player,
+                name: 'le joueur sur une tuile de glace',
+                socketId: playerSocket.id,
+                position: { x: 1, y: 1 },
+                specs: { ...player.specs, attack: 15, defense: 10 },
+                turn: 0,
+            };
             const modifiedGameRoom = {
                 ...gameRoom,
                 players: [playerOnIce],
                 tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
+                currentTurn: 0,
             };
             gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
+            const onIceTileSpy = jest.spyOn(gameManagerService, 'onIceTile').mockReturnValue(true);
 
-            gateway.endTurn(socket, gameId);
+            gateway.endTurn(playerSocket, gameId);
 
-            expect(playerOnIce.specs.attack).toBe(13);
-            expect(playerOnIce.specs.defense).toBe(8);
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+            expect(onIceTileSpy).toBeCalled();
+            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom})).toBeTruthy();
         });
 
         it('should not change player stats if not on ice tile and emit playerFinishedTurn', () => {
             const gameId = 'room-1';
             const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
-
-            const playerNotOnIce = { ...player, position: { x: 2, y: 2 }, specs: { ...player.specs, attack: 15, defense: 10 }, turn: 0 };
+            const playerSocket = createStubInstance<Socket>(Socket);
+            const playerNotOnIce = {
+                ...player,
+                socketId: playerSocket.id,
+                position: { x: 2, y: 2 },
+                specs: { ...player.specs, attack: 15, defense: 10 },
+                turn: 0,
+            };
             const modifiedGameRoom = {
                 ...gameRoom,
                 players: [playerNotOnIce],
@@ -426,26 +383,54 @@ describe('GameManagerGateway', () => {
             };
             gameCreationService.getGameById.returns(modifiedGameRoom);
             gameCreationService.doesGameExist.returns(true);
-
-            gateway.endTurn(socket, gameId);
+            gateway.endTurn(playerSocket, gameId);
 
             expect(playerNotOnIce.specs.attack).toBe(15);
             expect(playerNotOnIce.specs.defense).toBe(10);
             expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
         });
+    });
 
-        it('should emit playerFinishedTurn if the player is inactive', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
+    describe('startTurn', () => {
+        it('should skip inactive players and start the turn of the next player', () => {
+            const gameId = 'room-1';
 
             const inactivePlayer = { ...player, isActive: false, turn: 0 };
-            const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
+            const activePlayer = { ...player, socketId: 'player-2', name: 'Active Player', turn: 1 };
+        
+            const modifiedGameRoom = {
+                ...gameRoom,
+                players: [inactivePlayer, activePlayer],
+                currentTurn: 0,
+            };
+        
             gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.endTurn(socket, gameId);
-
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+        
+            gateway.startTurn(gameId);
+            
+            expect(modifiedGameRoom.currentTurn).toBe(1);
+        });
+        
+        it('should notify other players about the active player\'s turn', () => {
+            const gameId = 'room-1';
+            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
+    
+            const activePlayer = { ...player, turn: 0 };
+            const otherPlayer = { ...player, socketId: 'player-2', name: 'Other Player' };
+    
+            const modifiedGameRoom = {
+                ...gameRoom,
+                players: [activePlayer, otherPlayer],
+                currentTurn: 0,
+            };
+    
+            gameCreationService.getGameById.returns(modifiedGameRoom);
+    
+            gateway.startTurn(gameId);
+ 
+            expect(emitStub.calledWith('playerTurn', activePlayer.name)).toBeTruthy();
         });
     });
+    
+    
 });

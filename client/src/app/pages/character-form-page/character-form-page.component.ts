@@ -120,7 +120,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
-                    console.log('un current players a été emit', players);
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
                         character.isAvailable = false;

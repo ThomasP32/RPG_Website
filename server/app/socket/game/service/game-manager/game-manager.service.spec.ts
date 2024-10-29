@@ -4,84 +4,81 @@ import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 
+let specs: Specs = {
+    life: 10,
+    speed: 10,
+    attack: 15,
+    defense: 5,
+    attackBonus: Bonus.D4,
+    defenseBonus: Bonus.D6,
+    movePoints: 10,
+    actions: 2,
+    nVictories: 0,
+    nDefeats: 0,
+    nCombats: 0,
+    nEvasions: 0,
+    nLifeTaken: 0,
+    nLifeLost: 0,
+};
+
+let player: Player = {
+    socketId: 'player-1',
+    name: 'Player 1',
+    avatar: Avatar.Avatar1,
+    isActive: true,
+    position: { x: 0, y: 0 },
+    specs,
+    inventory: [],
+    turn: 0,
+    visitedTiles: [],
+};
+
+let game2: Game = {
+    hasStarted: true,
+    id: 'game-1',
+    hostSocketId: 'host-1',
+    name: 'Test Game Moves',
+    description: 'A test game',
+    imagePreview: 'some-image-url',
+    mapSize: { x: 10, y: 10 },
+    tiles: [
+        { coordinate: { x: 0, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 1, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 2, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 3, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 4, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 5, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 7, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 8, y: 6 }, category: TileCategory.Wall },
+        { coordinate: { x: 9, y: 6 }, category: TileCategory.Wall },
+
+        { coordinate: { x: 4, y: 7 }, category: TileCategory.Ice },
+        { coordinate: { x: 3, y: 7 }, category: TileCategory.Ice },
+        { coordinate: { x: 2, y: 7 }, category: TileCategory.Ice },
+        { coordinate: { x: 1, y: 7 }, category: TileCategory.Ice },
+        { coordinate: { x: 0, y: 7 }, category: TileCategory.Ice },
+        { coordinate: { x: 0, y: 8 }, category: TileCategory.Ice },
+
+        { coordinate: { x: 5, y: 8 }, category: TileCategory.Water },
+        { coordinate: { x: 6, y: 8 }, category: TileCategory.Water },
+        { coordinate: { x: 7, y: 8 }, category: TileCategory.Water },
+        { coordinate: { x: 6, y: 9 }, category: TileCategory.Water },
+    ],
+    doorTiles: [{ coordinate: { x: 6, y: 6 }, isOpened: false }],
+    items: [],
+    players: [player],
+    currentTurn: 0,
+    nTurns: 0,
+    nDoorsManipulated: 0,
+    duration: 0,
+    debug: false,
+    mode: Mode.Classic,
+    startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
+    isLocked: false,
+};
+
 describe('GameManagerService', () => {
     let gameManagerService: GameManagerService;
-    let game2: Game;
-    let specs: Specs;
-    let player: Player;
-
-    specs = {
-        life: 10,
-        speed: 10,
-        attack: 15,
-        defense: 5,
-        attackBonus: Bonus.D4,
-        defenseBonus: Bonus.D6,
-        movePoints: 10,
-        actions: 2,
-        nVictories: 0,
-        nDefeats: 0,
-        nCombats: 0,
-        nEvasions: 0,
-        nLifeTaken: 0,
-        nLifeLost: 0,
-    };
-
-    player = {
-        socketId: 'player-1',
-        name: 'Player 1',
-        avatar: Avatar.Avatar1,
-        isActive: true,
-        position: { x: 0, y: 0 },
-        specs,
-        inventory: [],
-        turn: 0,
-        visitedTiles: [],
-    };
-
-    game2 = {
-        hasStarted: true,
-        id: 'game-1',
-        hostSocketId: 'host-1',
-        name: 'Test Game Moves',
-        description: 'A test game',
-        imagePreview: 'some-image-url',
-        mapSize: { x: 10, y: 10 },
-        tiles: [
-            { coordinate: { x: 0, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 2, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 3, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 4, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 5, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 7, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 8, y: 6 }, category: TileCategory.Wall },
-            { coordinate: { x: 9, y: 6 }, category: TileCategory.Wall },
-
-            { coordinate: { x: 4, y: 7 }, category: TileCategory.Ice },
-            { coordinate: { x: 3, y: 7 }, category: TileCategory.Ice },
-            { coordinate: { x: 2, y: 7 }, category: TileCategory.Ice },
-            { coordinate: { x: 1, y: 7 }, category: TileCategory.Ice },
-            { coordinate: { x: 0, y: 7 }, category: TileCategory.Ice },
-            { coordinate: { x: 0, y: 8 }, category: TileCategory.Ice },
-
-            { coordinate: { x: 5, y: 8 }, category: TileCategory.Water },
-            { coordinate: { x: 6, y: 8 }, category: TileCategory.Water },
-            { coordinate: { x: 7, y: 8 }, category: TileCategory.Water },
-            { coordinate: { x: 6, y: 9 }, category: TileCategory.Water },
-        ],
-        doorTiles: [{ coordinate: { x: 6, y: 6 }, isOpened: false }],
-        items: [],
-        players: [player],
-        currentTurn: 0,
-        nTurns: 0,
-        nDoorsManipulated: 0,
-        duration: 0,
-        debug: false,
-        mode: Mode.Classic,
-        startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
-        isLocked: false,
-    };
 
     beforeEach(async () => {
         const gameCreationServiceStub = {
@@ -228,4 +225,21 @@ describe('GameManagerService', () => {
             expect(path.length).toBe(3);
         });
     });
+    describe('onIceTile', () => {
+        it('should return true if the player is on an ice tile', () => {
+            player.position = { x: 4, y: 7 };
+            const isOnIce = gameManagerService.onIceTile(player, game2.id);
+    
+            expect(isOnIce).toBe(true);
+        });
+    
+
+        it('should return false if the player is on an empty tile with no defined category', () => {
+            player.position = { x: 9, y: 9 };
+            const isOnIce = gameManagerService.onIceTile(player, game2.id);
+    
+            expect(isOnIce).toBe(false);
+        });
+    });
+    
 });

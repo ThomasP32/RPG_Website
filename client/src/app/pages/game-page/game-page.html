@@ -1,10 +1,13 @@
+@if(!isYourTurn) {
+    <div class="disable-interactions"></div>
+}
 <div class="game-page-container">
     <div class="game-info-panel">
         <div class="game-info">
             <h2>Informations de la partie</h2>
             <p>Taille de la carte : {{ game.mapSize.x}} x {{ game.mapSize.y }}</p>
             <p>Nombre de joueurs : {{ activePlayers.length }}</p>
-            <p>Joueur actif : {{ currentPlayerTurn.name }}</p>
+            <p>Joueur actif : {{ currentPlayerTurn }}</p>
         </div>
 
         <!-- À FAIRE EN COMPONENT -->
@@ -79,7 +82,7 @@
         </div>
 
         <div class="action-buttons">
-            <button>Fin du tour</button>
+            <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
 
