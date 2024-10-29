@@ -46,15 +46,32 @@ export class GameCreationService {
 
     addPlayerToGame(player: Player, gameId: string): Game {
         const game = this.getGameById(gameId);
-        const existingPlayers = game.players.filter((existingPlayer) => {
-            const baseName = existingPlayer.name.split('-')[0];
-            return baseName === player.name.split('-')[0];
-        });
-        if (existingPlayers.length > 0) {
-            player.name = `${player.name}-${existingPlayers.length + 1}`;
+
+        const exactMatchPlayers = game.players.filter((existingPlayer) => existingPlayer.name === player.name);
+        if (exactMatchPlayers.length === 0) {
+            this.gameRooms[gameId].players.push(player);
+            return game;
         }
+        const baseName = player.name;
+        const matchingPlayers = game.players.filter((existingPlayer) => {
+            return existingPlayer.name === baseName || existingPlayer.name.startsWith(`${baseName}-`);
+        });
+        let maxSuffix = 0;
+        matchingPlayers.forEach((existingPlayer) => {
+            const match = existingPlayer.name.match(new RegExp(`^${baseName}-(\\d+)$`));
+            if (match) {
+                const suffix = parseInt(match[1], 10);
+                maxSuffix = Math.max(maxSuffix, suffix);
+            } else if (existingPlayer.name === baseName) {
+                maxSuffix = Math.max(maxSuffix, 1);
+            }
+        });
+
+        if (matchingPlayers.length > 0) {
+            player.name = `${baseName}-${maxSuffix + 1}`;
+        }
+
         this.gameRooms[gameId].players.push(player);
-        console.log('Player', player.name, 'has been added to the game', gameId);
         return game;
     }
 

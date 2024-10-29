@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ImageService } from '@app/services/image/image.service';
-import { Game } from '@common/game';
+import { Avatar, Game } from '@common/game';
 
 /* eslint-disable no-unused-vars */
 /* Les variables sont nécessaires pour afficher correctement le contenu dans le template. Elles sont utilisées dans des 
@@ -18,17 +18,21 @@ le HTML et non directement dans le code TypeScript. En désactivant cette règle
     templateUrl: './game-map.component.html',
     styleUrl: './game-map.component.scss',
 })
-export class GameMapComponent implements OnInit {
-    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
-    map: Game;
+export class GameMapComponent implements OnInit, OnChanges {
+    @Input() map: Game;
+    Map: { value: string, isHovered: boolean, doorState?: 'open' | 'closed', item?: string, player?: Avatar }[][];
+
     constructor(private imageService: ImageService) {}
 
     ngOnInit() {
         this.loadMap(this.map);
     }
 
+    ngOnChanges() {
+        this.loadMap(this.map);
+    }
+
     loadMap(map: Game) {
-        this.Map = [];
         this.createMap(map.mapSize.x);
 
         map.tiles.forEach((tile) => {
@@ -39,6 +43,7 @@ export class GameMapComponent implements OnInit {
             this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
             this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
         });
+
         map.startTiles.forEach((start) => {
             this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
         });
@@ -46,13 +51,17 @@ export class GameMapComponent implements OnInit {
         map.items.forEach((item) => {
             this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
+
+        map.players.forEach((player) => {
+            console.log('un joueur a la position :', player.position, 'avec avatar :', player.avatar);
+            this.Map[player.position.x][player.position.y].player = player.avatar;
+        });
     }
 
     createMap(mapSize: number) {
         this.Map = [];
-
         for (let i = 0; i < mapSize; i++) {
-            const row: { value: string | null; isHovered: boolean }[] = [];
+            const row: { value: string; isHovered: boolean }[] = [];
             for (let j = 0; j < mapSize; j++) {
                 row.push({ value: 'floor', isHovered: false });
             }
@@ -67,4 +76,9 @@ export class GameMapComponent implements OnInit {
     getItemImage(item: string): string {
         return this.imageService.getItemImage(item);
     }
+
+    getAvatarImage(avatar: Avatar): string {
+        return this.imageService.getPlayerImage(avatar);
+    }
+
 }
