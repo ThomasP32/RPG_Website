@@ -37,15 +37,12 @@
             <p class="player-defense">Défense: {{ opponent.specs.defense }}</p>
         </div>
     </div>
-    //TODO: faire apparaitre les boutons pour seulement le joueur @if ("startCombatPlayerTurn && current") {
+    @if ("currentTurnPlayerId === player.socketId") {
     <div class="button-container">
         <button class="attack-button" (click)="attack()">Attaquer</button>
         <button class="evade-button" (click)="evade()">Évasion</button>
     </div>
-    } @else if("player2Turn") {
-    <div class="button-container">
-        <button class="attack-button" (click)="attack()">Attaquer</button>
-        <button class="evade-button" (click)="evade()">Évasion</button>
-    </div>
+    } @else if ("currentTurnPlayerId === opponent.socketId") {
+    <button disabled>Waiting for {{ opponent.name }} to play.</button>
     }
 </div>

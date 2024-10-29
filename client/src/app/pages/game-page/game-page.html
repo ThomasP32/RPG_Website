@@ -96,5 +96,5 @@
     </div>
 </div>
 @if(isCombatModalOpen){
-<app-combat-modal [player]="player" [opponent]="this.activePlayers[1]"></app-combat-modal>
+<app-combat-modal [player]="player" [gameId]="gameId" [opponent]="this.activePlayers[1]"></app-combat-modal>
 }
