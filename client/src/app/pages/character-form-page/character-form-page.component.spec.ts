@@ -331,8 +331,8 @@ describe('CharacterFormPageComponent', () => {
                         speed: 5,
                         attack: 8,
                         defense: 7,
-                        attackBonus: Bonus.D6,
-                        defenseBonus: Bonus.D4,
+                        attackBonus: { diceType: Bonus.D6, currentValue: 0 },
+                        defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
                     },
                 } as Player);
             });
@@ -462,7 +462,7 @@ describe('CharacterFormPage when joining game', () => {
                     socketId: 'mock-socket-id',
                     isActive: true,
                 } as T);
-            } else if(eventName === 'gameAlreadyStarted') {
+            } else if (eventName === 'gameAlreadyStarted') {
                 return of({} as T);
             } else {
                 return of({} as T);
@@ -494,16 +494,14 @@ describe('CharacterFormPage when joining game', () => {
 
         socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
 
-        tick(5000); 
+        tick(5000);
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
     }));
-    
 
     it('should navigate to main menu if router url does not include "create-game"', () => {
         component.onReturn();
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
     });
-
 
     describe('listenToSocketMessages', () => {
         it('should update character availability based on received players', fakeAsync(() => {
