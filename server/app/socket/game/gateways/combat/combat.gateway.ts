@@ -14,15 +14,18 @@ export class CombatGateway {
     @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
 
     @SubscribeMessage('startCombat')
-    startCombat(client: Socket, data: { gameId: string; opponent: Player }): void {
+    async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
             const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
             client.join(combatRoomId);
-            const opponentSocket = this.server.sockets.sockets.get(data.opponent.socketId);
+            console.log(`Player ${player.name} started combat in room ${combatRoomId}`);
+            const sockets = await this.server.in(data.gameId).fetchSockets();
+            const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
             if (opponentSocket) {
                 opponentSocket.join(combatRoomId);
+                console.log(`Player ${data.opponent.name} joined combat in room ${combatRoomId}`);
             }
             this.server
                 .to(data.gameId)
@@ -41,11 +44,8 @@ export class CombatGateway {
         }
     }
     @SubscribeMessage('attack')
-    attack(
-        client: Socket,
-        data: { attackPlayer: Player; defendPlayer: Player; gameId: string; player1Dice: number; player2Dice: number; combatRoomId: string },
-    ): void {
-        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.player1Dice, data.player2Dice)) {
+    attack(client: Socket, data: { attackPlayer: Player; defendPlayer: Player; combatRoomId: string }): void {
+        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer)) {
             this.server
                 .to(data.combatRoomId)
                 .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
@@ -55,19 +55,17 @@ export class CombatGateway {
     }
 
     @SubscribeMessage('startEvasion')
-    startEvasion(client: Socket, data: { player: Player; gameId: string; combatRoomId: string }): void {
+    startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): void {
         data.player.specs.nEvasions++;
         const evasionSuccess = Math.random() < 0.4;
         this.server.to(data.combatRoomId).emit('evasionSuccess', {
             success: evasionSuccess,
+            waitingPlayer: data.waitingPlayer,
             message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : 'Évasion échouée',
         });
     }
     @SubscribeMessage('combatFinishedEvasion')
-    async combatFinishedByEvasion(
-        client: Socket,
-        data: { gameId: string; evasion: boolean; player1: Player; Player2: Player; combatRoomId: string },
-    ): Promise<void> {
+    async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
         this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
         await this.cleanupCombatRoom(data.combatRoomId);
     }

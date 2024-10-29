@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { PlayerService } from './player.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Avatar, Bonus, Player } from '@common/game';
+import { PlayerService } from './player.service';
 
 describe('PlayerService', () => {
     let service: PlayerService;
@@ -10,10 +10,7 @@ describe('PlayerService', () => {
     beforeEach(() => {
         const spy = jasmine.createSpyObj('SocketService', ['socket']);
         TestBed.configureTestingModule({
-            providers: [
-                PlayerService,
-                { provide: SocketService, useValue: spy },
-            ],
+            providers: [PlayerService, { provide: SocketService, useValue: spy }],
         });
         service = TestBed.inject(PlayerService);
         socketServiceSpy = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
@@ -36,8 +33,8 @@ describe('PlayerService', () => {
             expect(player.specs.speed).toBe(4);
             expect(player.specs.attack).toBe(4);
             expect(player.specs.defense).toBe(4);
-            expect(player.specs.attackBonus).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus).toBe(Bonus.D4);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
             expect(player.inventory.length).toBe(0);
             expect(player.position).toEqual({ x: 0, y: 0 });
             expect(player.turn).toBe(0);
@@ -61,12 +58,12 @@ describe('PlayerService', () => {
             expect(player.avatar).toBe(Avatar.Avatar2);
             expect(player.specs.life).toBe(6); // life bonus
             expect(player.specs.speed).toBe(4);
-            expect(player.specs.attackBonus).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus).toBe(Bonus.D4);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
         });
 
         it('should create a player with updated specs and empty strings as socket ID when none', () => {
-            socketServiceSpy.socket = { } as any;
+            socketServiceSpy.socket = {} as any;
             service.setPlayerName('Test Player');
             service.setPlayerAvatar(Avatar.Avatar2);
             service.assignBonus('life');
@@ -80,8 +77,8 @@ describe('PlayerService', () => {
             expect(player.avatar).toBe(Avatar.Avatar2);
             expect(player.specs.life).toBe(6); // life bonus
             expect(player.specs.speed).toBe(4);
-            expect(player.specs.attackBonus).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus).toBe(Bonus.D4);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
         });
     });
 
@@ -97,8 +94,8 @@ describe('PlayerService', () => {
                     speed: 5,
                     attack: 5,
                     defense: 5,
-                    attackBonus: Bonus.D6,
-                    defenseBonus: Bonus.D6,
+                    attackBonus: { diceType: Bonus.D6, currentValue: 0 },
+                    defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
                     movePoints: 0,
                     actions: 0,
                     nVictories: 0,
@@ -158,8 +155,8 @@ describe('PlayerService', () => {
             service.assignDice('attack');
             const player = service.getPlayer();
 
-            expect(player.specs.attackBonus).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus).toBe(Bonus.D4);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
         });
 
         it('should set attack bonus to D4 and defense bonus to D6 when "defense" dice is assigned', () => {
@@ -167,8 +164,8 @@ describe('PlayerService', () => {
             service.assignDice('defense');
             const player = service.getPlayer();
 
-            expect(player.specs.attackBonus).toBe(Bonus.D4);
-            expect(player.specs.defenseBonus).toBe(Bonus.D6);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D6);
         });
     });
 
@@ -188,8 +185,8 @@ describe('PlayerService', () => {
             expect(player.avatar).toBe(Avatar.Avatar4);
             expect(player.specs.life).toBe(4);
             expect(player.specs.speed).toBe(6);
-            expect(player.specs.attackBonus).toBe(Bonus.D4);
-            expect(player.specs.defenseBonus).toBe(Bonus.D6);
+            expect(player.specs.attackBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D6);
         });
     });
 });

@@ -109,11 +109,11 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     get attackBonus(): Bonus {
-        return this.playerService.getPlayer().specs.attackBonus;
+        return this.playerService.getPlayer().specs.attackBonus.diceType;
     }
 
     get defenseBonus(): Bonus {
-        return this.playerService.getPlayer().specs.defenseBonus;
+        return this.playerService.getPlayer().specs.defenseBonus.diceType;
     }
 
     listenToSocketMessages(): void {

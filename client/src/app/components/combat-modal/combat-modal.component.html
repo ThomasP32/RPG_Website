@@ -25,9 +25,13 @@
             <div class="face-top">5</div>
             <div class="face-bottom">2</div>
         </div> -->
+        <p>{{ player.specs.attackBonus }}</p>
+        <p>{{ player.specs.defenseBonus }}</p>
+        <p>{{ opponent.specs.attackBonus }}</p>
+        <p>{{ opponent.specs.defenseBonus }}</p>
 
-        <img class="dice" src="./assets/gear.png" alt="Dice" />
-        <img class="dice" src="./assets/gear.png" alt="Dice" />
+        <!-- <img class="dice" src="./assets/gear.png" alt="Dice" />
+        <img class="dice" src="./assets/gear.png" alt="Dice" /> -->
 
         <div class="player player2">
             <p class="player-name">{{ opponent.name }}</p>
@@ -43,6 +47,7 @@
         <button class="evade-button" (click)="evade()">Évasion</button>
     </div>
     } @else if ("currentTurnPlayerId === opponent.socketId") {
-    <button disabled>Waiting for {{ opponent.name }} to play.</button>
+    <button disabled>{{ opponent.name }} joue.</button>
     }
+    <p>{{ currentTurnPlayerId }} joue presentement</p>
 </div>
