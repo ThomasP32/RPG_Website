@@ -25,13 +25,12 @@ export class CombatGateway {
             if (opponentSocket) {
                 await opponentSocket.join(combatRoomId);
             }
-            this.server
-                .to(combatRoomId)
-                .emit('combatStarted', {
-                    message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
-                    combatRoomId: combatRoomId,
-                    challenger: player,
-                });
+            this.server.to(combatRoomId).emit('combatStarted', {
+                message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
+                combatRoomId: combatRoomId,
+                challenger: player,
+                opponent: data.opponent,
+            });
 
             let currentTurnPlayerId: string;
             if (player.specs.speed > data.opponent.specs.speed) {
