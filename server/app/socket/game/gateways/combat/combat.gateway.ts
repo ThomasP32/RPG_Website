@@ -19,24 +19,25 @@ export class CombatGateway {
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
             const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
-            client.join(combatRoomId);
-            console.log(`Player ${player.name} started combat in room ${combatRoomId}`);
+            await client.join(combatRoomId);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
             if (opponentSocket) {
-                opponentSocket.join(combatRoomId);
-                console.log(`Player ${data.opponent.name} joined combat in room ${combatRoomId}`);
+                await opponentSocket.join(combatRoomId);
             }
             this.server
-                .to(data.gameId)
-                .emit('combatStarted', { message: `${player.name} a commencé un combat contre ${data.opponent.name}`, combatRoomId: combatRoomId });
-            this.server.to(data.opponent.socketId).emit('challengeReceived', { combatRoomId: combatRoomId });
+                .to(combatRoomId)
+                .emit('combatStarted', {
+                    message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
+                    combatRoomId: combatRoomId,
+                    challenger: player,
+                });
 
             let currentTurnPlayerId: string;
             if (player.specs.speed > data.opponent.specs.speed) {
                 currentTurnPlayerId = player.socketId;
             } else if (player.specs.speed === data.opponent.specs.speed) {
-                currentTurnPlayerId = data.opponent.socketId;
+                currentTurnPlayerId = player.socketId;
             } else {
                 currentTurnPlayerId = data.opponent.socketId;
             }
@@ -44,8 +45,11 @@ export class CombatGateway {
         }
     }
     @SubscribeMessage('attack')
-    attack(client: Socket, data: { attackPlayer: Player; defendPlayer: Player; combatRoomId: string }): void {
-        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer)) {
+    attack(
+        client: Socket,
+        data: { attackPlayer: Player; defendPlayer: Player; combatRoomId: string; attackDice: number; defenseDice: number },
+    ): void {
+        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.attackDice, data.defenseDice)) {
             this.server
                 .to(data.combatRoomId)
                 .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
@@ -70,11 +74,35 @@ export class CombatGateway {
         await this.cleanupCombatRoom(data.combatRoomId);
     }
     @SubscribeMessage('combatFinishedNormal')
-    async combatFinishedNormally(client: Socket, data: { gameId: string; combatWinner: Player; combatRoomId: string }): Promise<void> {
-        this.server.to(data.gameId).emit('combatFinishedNormally', { message: `Combat terminé, le gagnant est ${data.combatWinner.name}` });
+    async combatFinishedNormally(
+        client: Socket,
+        data: { gameId: string; combatWinner: Player; combatLooser: Player; combatRoomId: string },
+    ): Promise<void> {
+        this.server.to(data.gameId).emit('combatFinishedNormally', {
+            message: `Combat terminé, le gagnant est ${data.combatWinner.name}`,
+            combatWinner: data.combatWinner,
+            combatLooser: data.combatLooser,
+        });
         this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat, continuez votre tour` });
         await this.cleanupCombatRoom(data.combatRoomId);
     }
+    @SubscribeMessage('rollDice')
+    rollDice(client: Socket, data: { combatRoomId: string; player: Player; opponent: Player }): void {
+        const attackingPlayerAttackDice = Math.floor(Math.random() * data.player.specs.attackBonus) + 1;
+        const attackingPlayerDefenseDice = Math.floor(Math.random() * data.player.specs.defenseBonus) + 1;
+        const opponentAttackDice = Math.floor(Math.random() * data.opponent.specs.attackBonus) + 1;
+        const opponentDefenseDice = Math.floor(Math.random() * data.opponent.specs.defenseBonus) + 1;
+        this.server.to(data.combatRoomId).emit('diceRolled', {
+            playerDiceAttack: attackingPlayerAttackDice,
+            playerDiceDefense: attackingPlayerDefenseDice,
+            opponentDiceAttack: opponentAttackDice,
+            opponentDiceDefense: opponentDefenseDice,
+        });
+    }
+    // @SubscribeMessage('updatePlayersAfterCombat')
+    // async updatePlayersAfterCombat(client: Socket, data: { gameId: string; player1: Player; player2: Player }): Promise<void> {
+    //     this.server.to(data.gameId).emit('updatedPlayersAfterCombat', { player1: data.player1, player2: data.player2 });
+    // }
 
     private async cleanupCombatRoom(combatRoomId: string): Promise<void> {
         try {

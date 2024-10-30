@@ -6,39 +6,23 @@
             <p class="player-name">{{ player.name }}</p>
             <img class="player-avatar" src="./assets/characters/{{ player.avatar }}.png" alt="Player 1 avatar" />
             <p class="player-health">Vies restantes: {{ player.specs.life }}</p>
-            <p class="player-attack">Attaque: {{ player.specs.attack }}</p>
-            <p class="player-defense">Défense: {{ player.specs.defense }}</p>
+            <!-- <p class="player-attack">Attaque: {{ player.specs.attack }}</p>
+            <p class="player-defense">Défense: {{ player.specs.defense }}</p> -->
+            <p class="player-evasion">Tentatives d'évasions restantes {{ player.specs.nEvasions }}</p>
         </div>
-        <!-- <div
-            class="dice"
-            [class.face-front]="dice.currentFace === 1"
-            [class.face-bottom]="dice.currentFace === 2"
-            [class.face-right]="dice.currentFace === 3"
-            [class.face-left]="dice.currentFace === 4"
-            [class.face-top]="dice.currentFace === 5"
-            [class.face-back]="dice.currentFace === 6"
-        >
-            <div class="face-front">1</div>
-            <div class="face-back">6</div>
-            <div class="face-left">4</div>
-            <div class="face-right">3</div>
-            <div class="face-top">5</div>
-            <div class="face-bottom">2</div>
-        </div> -->
-        <p>{{ player.specs.attackBonus }}</p>
-        <p>{{ player.specs.defenseBonus }}</p>
-        <p>{{ opponent.specs.attackBonus }}</p>
-        <p>{{ opponent.specs.defenseBonus }}</p>
 
-        <!-- <img class="dice" src="./assets/gear.png" alt="Dice" />
-        <img class="dice" src="./assets/gear.png" alt="Dice" /> -->
+        <p>Attacker attack dice : {{ playerDiceAttack }}</p>
+        <p>Attacker defense dice : {{ playerDiceDefense }}</p>
+        <p>Opponent attack dice : {{ opponentDiceAttack }}</p>
+        <p>Opponent defense dice : {{ opponentDiceDefense }}</p>
 
         <div class="player player2">
             <p class="player-name">{{ opponent.name }}</p>
             <img class="player-avatar" src="./assets/characters/{{ opponent.avatar }}.png" alt="Player 2 avatar" />
             <p class="player-health">Vies restantes: {{ opponent.specs.life }}</p>
-            <p class="player-attack">Attaque: {{ opponent.specs.attack }}</p>
-            <p class="player-defense">Défense: {{ opponent.specs.defense }}</p>
+            <!-- <p class="player-attack">Attaque: {{ opponent.specs.attack }}</p>
+            <p class="player-defense">Défense: {{ opponent.specs.defense }}</p> -->
+            <p class="player-evasion">Tentatives d'évasion restantes {{ opponent.specs.nEvasions }}</p>
         </div>
     </div>
     @if ("currentTurnPlayerId === player.socketId") {
@@ -46,8 +30,9 @@
         <button class="attack-button" (click)="attack()">Attaquer</button>
         <button class="evade-button" (click)="evade()">Évasion</button>
     </div>
-    } @else if ("currentTurnPlayerId === opponent.socketId") {
-    <button disabled>{{ opponent.name }} joue.</button>
+    } @if("currentTurnPlayerId === player.socketId") {
+    <p>{{ player.name }} joue présentement.</p>
+    } @else if("currentTurnPlayerId === opponent.socketId") {
+    <p>{{ opponent.name }} joue présentement.</p>
     }
-    <p>{{ currentTurnPlayerId }} joue presentement</p>
 </div>

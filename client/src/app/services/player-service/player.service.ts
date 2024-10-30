@@ -77,11 +77,11 @@ export class PlayerService {
 
     assignDice(type: 'attack' | 'defense'): void {
         if (type === 'attack') {
-            this.player.specs.attackBonus.diceType = Bonus.D6;
-            this.player.specs.defenseBonus.diceType = Bonus.D4;
+            this.player.specs.attackBonus = Bonus.D6;
+            this.player.specs.defenseBonus = Bonus.D4;
         } else if (type === 'defense') {
-            this.player.specs.attackBonus.diceType = Bonus.D4;
-            this.player.specs.defenseBonus.diceType = Bonus.D6;
+            this.player.specs.attackBonus = Bonus.D4;
+            this.player.specs.defenseBonus = Bonus.D6;
         }
     }
 
@@ -91,8 +91,8 @@ export class PlayerService {
             speed: defaultSpeed,
             attack: defaultAttack,
             defense: defaultDefense,
-            attackBonus: { diceType: Bonus.D6, currentValue: 0 },
-            defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
+            attackBonus: Bonus.D6,
+            defenseBonus: Bonus.D4,
             movePoints: 0,
             actions: 0,
             nVictories: 0,
