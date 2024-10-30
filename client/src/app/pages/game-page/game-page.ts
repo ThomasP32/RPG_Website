@@ -100,12 +100,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     combatListener() {
         this.socketSubscription.add(
-            this.socketService.listen<{ message: string; combatRoomId: string; challenger: Player }>('combatStarted').subscribe((data) => {
-                console.log(`${data.message} in room ${data.combatRoomId}`);
-                this.opponent = data.challenger;
-                this.combatRoomId = data.combatRoomId;
-                this.isCombatModalOpen = true;
-            }),
+            this.socketService
+                .listen<{ message: string; combatRoomId: string; challenger: Player; opponent: Player }>('combatStarted')
+                .subscribe((data) => {
+                    console.log(`${data.message} in room ${data.combatRoomId}`);
+                    if (this.player.socketId === data.challenger.socketId) {
+                        this.opponent = data.opponent;
+                    } else {
+                        this.opponent = data.challenger;
+                    }
+                    this.combatRoomId = data.combatRoomId;
+                    this.isCombatModalOpen = true;
+                }),
         );
 
         this.socketSubscription.add(
@@ -155,6 +161,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     startCombat(): void {
+        //TODO: Change opponent to real opponent
         this.socketService.sendMessage('startCombat', { gameId: this.gameId, opponent: this.activePlayers[1] });
     }
 
