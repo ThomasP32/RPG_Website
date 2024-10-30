@@ -20,19 +20,14 @@ export enum Bonus {
     D6 = 6,
 }
 
-export interface dice {
-    diceType: Bonus;
-    currentValue: number;
-}
-
 export interface Specs {
     life: number;
     //bonuslife: boolean;
     speed: number;
     attack: number;
     defense: number;
-    attackBonus: dice;
-    defenseBonus: dice;
+    attackBonus: Bonus;
+    defenseBonus: Bonus;
     movePoints: number;
     actions: number;
     nVictories: number;
