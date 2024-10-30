@@ -3,7 +3,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 import { Coordinate } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SocketService } from '../communication-socket/communication-socket.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 
 @Injectable({
     providedIn: 'root',
@@ -12,7 +12,8 @@ export class GameTurnService {
     game: Game;
     player: Player;
     socketSubscription: Subscription = new Subscription();
-    moves: Coordinate[];
+    moves: Coordinate[] = [];
+    movePreview: Coordinate[] = [];
     private playerTurn = new BehaviorSubject<string>('');
     public playerTurn$ = this.playerTurn.asObservable();
 
@@ -28,7 +29,7 @@ export class GameTurnService {
     }
 
     startTurn(): void {
-        this.getMoves();
+        setTimeout(() => this.getMoves(), 3000);
     }
 
     endTurn(): void {
@@ -44,6 +45,7 @@ export class GameTurnService {
         );
         this.socketSubscription.add(
             this.socketService.listen<string>('playerTurn').subscribe((playerName) => {
+                this.moves = [];
                 this.playerTurn.next(playerName);
             }),
         );
@@ -63,12 +65,15 @@ export class GameTurnService {
     }
 
     listenMoves() {
-        console.log('jecoute les mouvements');
         this.socketSubscription.add(
             this.socketService.listen<Coordinate[]>('playerPossibleMoves').subscribe((moves) => {
-                console.log('je les recois');
-                console.log('tes mouvements: ', moves);
                 this.moves = moves;
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<Coordinate[]>('playerPossibleMove').subscribe((movePreview) => {
+                console.log('son preview ', this.movePreview);
+                this.movePreview = movePreview;
             }),
         );
     }
