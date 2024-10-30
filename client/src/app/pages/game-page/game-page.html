@@ -1,5 +1,8 @@
 @if(!isYourTurn) {
-    <div class="disable-interactions"></div>
+<div class="disable-interactions"></div>
+} @if(!delayFinished) {
+<div class="disable-interactions"></div>
+<div class="turn-indicator"><h3>C'est au tour de {{currentPlayerTurn}}</h3></div>
 }
 <div class="game-page-container">
     <div class="game-info-panel">
@@ -8,6 +11,14 @@
             <p>Taille de la carte : {{ game.mapSize.x}} x {{ game.mapSize.y }}</p>
             <p>Nombre de joueurs : {{ activePlayers.length }}</p>
             <p>Joueur actif : {{ currentPlayerTurn }}</p>
+        </div>
+
+        <div class="countdown-container">
+            <h2>Temps restant</h2>
+            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+                <h3>{{ countdown }}</h3>
+            </div>
+            <h2>secondes</h2>
         </div>
 
         <!-- À FAIRE EN COMPONENT -->
@@ -66,13 +77,13 @@
         </div>
     </div>
     <div class="game-map-container">
-        <app-game-map [map]="game"> </app-game-map>
+        <app-game-map [map]="game" [moves]="moves" [movePreview]="movePreview" (tileHovered)="onTileHovered($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
         <!--AJOUTER LE COMPONENT -->
         <div class="player-list">
-            <app-players-list [players]="activePlayers" ></app-players-list>
+            <app-players-list [players]="activePlayers"></app-players-list>
             Liste des joueurs
         </div>
 
@@ -87,23 +98,21 @@
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
 
             @if(showExitModal) {
-                <div class="open-exit-confirmation-modal">
-                    <div class="modal">
-                        <h2>Confirmer la sortie</h2>
-                        <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
-                        <button class="modal-button" (click)="confirmExit()">Oui</button>
-                        <button class="modal-button" (click)="closeExitModal()">Non</button>
-                    </div>
+            <div class="open-exit-confirmation-modal">
+                <div class="modal">
+                    <h2>Confirmer la sortie</h2>
+                    <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
+                    <button class="modal-button" (click)="confirmExit()">Oui</button>
+                    <button class="modal-button" (click)="closeExitModal()">Non</button>
                 </div>
-            }
-            @if(showKickedModal) {
-                <div class="game-finished-modal">
-                    <div class="modal">
-                        <h2>Tous les joueurs ont abandonné.</h2>
-                        <p>La partie est finie, vous serez redirigé.</p>
-                    </div>
+            </div>
+            } @if(showKickedModal) {
+            <div class="game-finished-modal">
+                <div class="modal">
+                    <h2>Tous les joueurs ont abandonné.</h2>
+                    <p>La partie est finie, vous serez redirigé.</p>
                 </div>
-
+            </div>
             }
         </div>
     </div>

@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { ImageService } from '@app/services/image/image.service';
 import { Avatar, Game } from '@common/game';
+import { Coordinate } from '@common/map.types';
 
 /* eslint-disable no-unused-vars */
 /* Les variables sont nécessaires pour afficher correctement le contenu dans le template. Elles sont utilisées dans des 
@@ -20,8 +21,10 @@ le HTML et non directement dans le code TypeScript. En désactivant cette règle
 })
 export class GameMapComponent implements OnInit, OnChanges {
     @Input() map: Game;
-    Map: { value: string, isHovered: boolean, doorState?: 'open' | 'closed', item?: string, player?: Avatar }[][];
-
+    @Input() moves: Coordinate[];
+    @Input() movePreview: Coordinate[] = [];
+    @Output() tileHovered = new EventEmitter<Coordinate>();
+    Map: { value: string; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string; player?: Avatar }[][];
     constructor(private imageService: ImageService) {}
 
     ngOnInit() {
@@ -30,6 +33,16 @@ export class GameMapComponent implements OnInit, OnChanges {
 
     ngOnChanges() {
         this.loadMap(this.map);
+    }
+
+    onTileHover(position: Coordinate) {
+        if (this.isMove(position.x, position.y)) {
+            this.tileHovered.emit(position);
+        }
+    }
+
+    clearPreview() {
+        this.movePreview = [];
     }
 
     loadMap(map: Game) {
@@ -80,4 +93,15 @@ export class GameMapComponent implements OnInit, OnChanges {
         return this.imageService.getPlayerImage(avatar);
     }
 
+    isMove(rowIndex: number, colIndex: number): boolean {
+        return this.moves.some((coord) => coord.x === rowIndex && coord.y === colIndex);
+    }
+
+    isPreview(rowIndex: number, colIndex: number): boolean {
+        if (this.isMove(rowIndex, colIndex)) {
+            console.log('le preview ',this.movePreview);
+            return this.movePreview.some((coord) => coord.x === rowIndex && coord.y === colIndex);
+        }
+        return false;
+    }
 }
