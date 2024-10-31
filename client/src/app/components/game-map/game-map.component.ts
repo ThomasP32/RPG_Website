@@ -17,7 +17,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     @Input() moves: MovesMap;
     @Output() tileClicked = new EventEmitter<Coordinate>();
     movePreview: Coordinate[] = [];
-    Map: { value: string; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string; player?: Avatar }[][];
+    Map: { value: string; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string; player?: Avatar }[][] = [];
     tileDescription: string = '';
     explanationIsVisible: boolean = false;
     tooltipX: number = 0;
@@ -40,7 +40,7 @@ export class GameMapComponent implements OnInit, OnChanges {
 
     ngOnChanges() {
         this.clearPreview();
-        this.loadMap(this.map);
+        this.reloadMap(this.map);
     }
 
     onTileHover(position: Coordinate) {
@@ -71,6 +71,29 @@ export class GameMapComponent implements OnInit, OnChanges {
 
         map.startTiles.forEach((start) => {
             this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
+        });
+
+        map.items.forEach((item) => {
+            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
+        });
+
+        map.players.forEach((player) => {
+            this.Map[player.position.x][player.position.y].player = player.avatar;
+        });
+    }
+
+    reloadMap(map: Game) {
+        this.Map.forEach((row) =>
+            row.forEach((cell) => {
+                cell.player = undefined;
+                cell.item = undefined;
+                cell.doorState = undefined;
+            }),
+        );
+
+        map.doorTiles.forEach((door) => {
+            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
+            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
         });
 
         map.items.forEach((item) => {

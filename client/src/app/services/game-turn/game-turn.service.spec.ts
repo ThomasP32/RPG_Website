@@ -4,12 +4,14 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
-import { GameTurnService } from './game-turn.service';
+import { GameTurnService } from '@app/services/game-turn/game-turn.service';
+import { GameService } from '@app/services/game/game.service';
 
 describe('GameTurnService', () => {
     let service: GameTurnService;
     let playerServiceSpy: jasmine.SpyObj<PlayerService>;
     let socketServiceSpy: jasmine.SpyObj<SocketService>;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     let yourTurnSubject: Subject<Player>;
     let playerTurnSubject: Subject<string>;
@@ -55,9 +57,9 @@ describe('GameTurnService', () => {
     } as Game;
 
     beforeEach(() => {
-        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayerAvatar', 'setPlayerName'], { player: mockPlayer });
+        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayerAvatar', 'setPlayerName', 'setPlayer'], { player: mockPlayer });
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
-
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['setGame'], {game: mockGame})
         yourTurnSubject = new Subject<Player>();
         playerTurnSubject = new Subject<string>();
         playerPossibleMovesSubject = new Subject<[string, { path: Coordinate[]; weight: number }][]>();
@@ -89,11 +91,10 @@ describe('GameTurnService', () => {
                 GameTurnService,
                 { provide: PlayerService, useValue: playerServiceSpy },
                 { provide: SocketService, useValue: socketServiceSpy },
+                {provide: GameService, useValue: gameServiceSpy}
             ],
         });
-
         service = TestBed.inject(GameTurnService);
-        service.game = mockGame;
     });
 
     it('should create the service', () => {
