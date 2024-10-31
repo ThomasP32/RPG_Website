@@ -26,13 +26,12 @@ export class GameManagerGateway {
     }
 
     @SubscribeMessage('moveToPosition')
-    getMove(client: Socket, data: { gameId: string; destination: Coordinate }): void {
+    async getMove(client: Socket, data: { gameId: string; destination: Coordinate }): Promise<void> {
         if (!this.gameCreationService.doesGameExist(data.gameId)) {
             client.emit('gameNotFound');
             return;
         }
         const game = this.gameCreationService.getGameById(data.gameId);
-        let hasFell = false;
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
 
@@ -40,15 +39,16 @@ export class GameManagerGateway {
             return;
         }
 
-        if (moves[moves.length - 1].x !== data.destination.x || moves[moves.length - 1].y !== data.destination.y) {
-            hasFell = true;
+        moves.shift();
+
+        for (const move of moves) {
+            this.gameManagerService.updatePosition(data.gameId, client.id, [move]);
+            this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
+            console.log('on emit que la personne a bougée dune case', player);
+            await new Promise((resolve) => setTimeout(resolve, 150));
         }
-
-        this.gameManagerService.updatePosition(data.gameId, client.id, moves);
-
-        this.server.to(data.gameId).emit('positionToUpdate', { player: player, path: moves });
-        if (hasFell) {
-            console.log("on ta envoyé youFell");
+        this.server.to(data.gameId).emit('finishedMoving', player);
+        if (this.gameManagerService.hasFallen(moves, data.destination)) {
             this.server.to(client.id).emit('youFell', player);
         } else {
             this.server.to(client.id).emit('youFinishedMoving', player);

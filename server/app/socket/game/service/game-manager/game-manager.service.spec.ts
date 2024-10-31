@@ -105,10 +105,7 @@ describe('GameManagerService', () => {
 
     describe('updatePosition', () => {
         it('should update the player position', () => {
-            const newPosition: Coordinate[] = [
-                { x: 5, y: 5 },
-                { x: 5, y: 5 },
-            ];
+            const newPosition: Coordinate[] = [{ x: 5, y: 5 }];
             const currentPlayer = game2.players[0];
             currentPlayer.specs.movePoints = 10;
             gameManagerService.updatePosition('game-1', currentPlayer.socketId, newPosition);
@@ -184,15 +181,13 @@ describe('GameManagerService', () => {
             const destination: Coordinate = { x: 2, y: 8 };
             game2.players[0].position = { x: 2, y: 7 };
             game2.players[0].specs.movePoints = 10;
-            game2.tiles.push({coordinate:{x:2, y:8}, category: TileCategory.Ice})
+            game2.tiles.push({ coordinate: { x: 2, y: 8 }, category: TileCategory.Ice });
 
             jest.spyOn(global.Math, 'random').mockReturnValue(0.05);
 
             const result = gameManagerService.getMove(game2.id, game2.players[0].socketId, destination);
 
-            expect(result).toEqual([
-                { x: 2, y: 7 }
-            ]);
+            expect(result).toEqual([{ x: 2, y: 7 }]);
         });
 
         it('should return an empty path if the player is not found', () => {
@@ -247,6 +242,32 @@ describe('GameManagerService', () => {
             const isOnIce = gameManagerService.onIceTile(player, game2.id);
 
             expect(isOnIce).toBe(false);
+        });
+    });
+
+    describe('hasFallen', () => {
+        it('should return true if the last move does not match the destination', () => {
+            const moves: Coordinate[] = [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ];
+            const destination: Coordinate = { x: 3, y: 3 };
+
+            const result = gameManagerService.hasFallen(moves, destination);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if the last move matches the destination', () => {
+            const moves: Coordinate[] = [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ];
+            const destination: Coordinate = { x: 2, y: 2 };
+
+            const result = gameManagerService.hasFallen(moves, destination);
+
+            expect(result).toBe(false);
         });
     });
 });

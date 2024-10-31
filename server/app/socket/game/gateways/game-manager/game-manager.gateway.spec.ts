@@ -39,7 +39,6 @@ describe('GameManagerGateway', () => {
             emit: stub() as SinonStub,
         };
         serverStub.to.returns(toStub as any);
-
     });
 
     describe('getMoves', () => {
@@ -65,54 +64,62 @@ describe('GameManagerGateway', () => {
     });
 
     describe('getMove', () => {
-        it('should emit gameNotFound if the game does not exist', () => {
+        it('should emit gameNotFound if the game does not exist', async () => {
             gameCreationService.doesGameExist.returns(false);
 
-            gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
             expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
             expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
         });
 
-        it('should emit positionToUpdate and youFell if the player falls', () => {
+        it('should emit positionToUpdate and youFell if the player falls', async () => {
             gameCreationService.doesGameExist.returns(true);
 
             const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
             const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
 
-            const moves = [{ x: 1, y: 1 }];
+            const moves = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+            ];
             gameManagerService.getMove.returns(moves);
+            gameManagerService.updatePosition.resolves();
+            gameManagerService.hasFallen.returns(true);
 
-            gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
-            expect(gameManagerService.updatePosition.calledWith('game-id', socket.id, moves)).toBeTruthy();
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
 
             const toRoomStub = serverStub.to('game-id').emit as SinonStub;
-            expect(toRoomStub.calledWith('positionToUpdate', { player, path: moves })).toBeTruthy();
+            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
             expect(toSocketStub.calledWith('youFell', player)).toBeTruthy();
         });
 
-        it('should emit youFinishedMoving if the player reaches the destination', () => {
+        it('should emit youFinishedMoving if the player reaches the destination', async () => {
             gameCreationService.doesGameExist.returns(true);
 
             const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
             const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
 
-            const moves = [{ x: 2, y: 2 }];
+            const moves = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+                { x: 2, y: 2 },
+            ];
             gameManagerService.getMove.returns(moves);
+            gameManagerService.updatePosition.resolves();
 
-            gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
-
-            expect(gameManagerService.updatePosition.calledWith('game-id', socket.id, moves)).toBeTruthy();
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+            expect(gameManagerService.updatePosition.calledWithMatch('game-id', socket.id, [moves[1]])).toBeTruthy();
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
 
             const toRoomStub = serverStub.to('game-id').emit as SinonStub;
-            expect(toRoomStub.calledWith('positionToUpdate', { player, path: moves })).toBeTruthy();
+            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
             expect(toSocketStub.calledWith('youFinishedMoving', player)).toBeTruthy();
@@ -170,7 +177,7 @@ describe('GameManagerGateway', () => {
                 id: 'game-id',
                 players: [
                     {
-                        socketId: 'different-socket-id', 
+                        socketId: 'different-socket-id',
                         turn: 0,
                         specs: { speed: 3, movePoints: 3, attack: 5, defense: 5 },
                         isActive: true,
@@ -178,11 +185,11 @@ describe('GameManagerGateway', () => {
                 ],
                 currentTurn: 0,
             } as Game;
-    
+
             gameCreationService.getGameById.returns(game);
-    
+
             gateway.endTurn(socket, 'game-id');
-    
+
             expect(startTurnSpy.notCalled).toBeTruthy();
             expect(game.players[0].specs.movePoints).toBe(3);
         });
@@ -318,38 +325,37 @@ describe('GameManagerGateway', () => {
 
     describe('startGame', () => {
         let startTurnSpy: SinonStub;
-    
+
         beforeEach(() => {
             startTurnSpy = stub(gateway, 'startTurn');
         });
-    
+
         afterEach(() => {
             startTurnSpy.restore();
         });
-    
+
         it('should call startTurn with the given gameId', () => {
             const gameId = 'game-id';
-    
+
             gateway.startGame(socket, gameId);
 
             expect(startTurnSpy.calledWith(gameId)).toBeTruthy();
         });
     });
-    
+
     describe('moveToPosition', () => {
         it('should return without emitting if moves length is 0', () => {
             gameCreationService.doesGameExist.returns(true);
-    
+
             const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
             const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
-    
+
             gameManagerService.getMove.returns([]);
-    
+
             gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
-    
+
             expect(gameManagerService.updatePosition.notCalled).toBeTruthy();
         });
     });
-    
 });

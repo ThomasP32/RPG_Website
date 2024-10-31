@@ -125,17 +125,11 @@ export class GameTurnService {
 
     listenForPlayerMove() {
         this.socketSubscription.add(
-            this.socketService.listen<{ player: Player; path: Coordinate[] }>('positionToUpdate').subscribe(async (data) => {
-                const updatedGame = { ...this.gameService.game }; 
-                const playerToUpdate = updatedGame.players.find((player) => player.name === data.player.name);
-                
-                for (const move of data.path) {
-                    playerToUpdate!.position = move;
-                }
-                if (playerToUpdate?.socketId === this.player.socketId) {
+            this.socketService.listen<{ game: Game, player: Player }>('positionToUpdate').subscribe(async (data) => {                
+                if (data.player.socketId === this.player.socketId) {
                     this.playerService.setPlayer(data.player);
                 }
-                this.gameService.setGame(updatedGame);
+                this.gameService.setGame(data.game);
             }),
         );
 
@@ -154,8 +148,4 @@ export class GameTurnService {
             }),
         );
     }
-
-    // async waitAndBlock(ms: number): Promise<void> {
-    //     await new Promise<void>((resolve) => setTimeout(resolve, ms));
-    // }
 }

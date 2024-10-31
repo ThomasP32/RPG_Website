@@ -1,11 +1,11 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameTurnService } from '@app/services/game-turn/game-turn.service';
+import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
-import { GameTurnService } from '@app/services/game-turn/game-turn.service';
-import { GameService } from '@app/services/game/game.service';
 
 describe('GameTurnService', () => {
     let service: GameTurnService;
@@ -16,7 +16,7 @@ describe('GameTurnService', () => {
     let yourTurnSubject: Subject<Player>;
     let playerTurnSubject: Subject<string>;
     let playerPossibleMovesSubject: Subject<[string, { path: Coordinate[]; weight: number }][]>;
-    let positionToUpdateSubject: Subject<{ player: Player; path: Coordinate[] }>;
+    let positionToUpdateSubject: Subject<{ game: Game; player: Player }>;
     let youFinishedMovingSubject: Subject<Player>;
     let youFellSubject: Subject<Player>;
 
@@ -59,11 +59,11 @@ describe('GameTurnService', () => {
     beforeEach(() => {
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayerAvatar', 'setPlayerName', 'setPlayer'], { player: mockPlayer });
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
-        gameServiceSpy = jasmine.createSpyObj('GameService', ['setGame'], {game: mockGame})
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['setGame'], { game: mockGame });
         yourTurnSubject = new Subject<Player>();
         playerTurnSubject = new Subject<string>();
         playerPossibleMovesSubject = new Subject<[string, { path: Coordinate[]; weight: number }][]>();
-        positionToUpdateSubject = new Subject<{ player: Player; path: Coordinate[] }>();
+        positionToUpdateSubject = new Subject<{ game: Game; player: Player }>();
         youFinishedMovingSubject = new Subject<Player>();
         youFellSubject = new Subject<Player>();
 
@@ -91,7 +91,7 @@ describe('GameTurnService', () => {
                 GameTurnService,
                 { provide: PlayerService, useValue: playerServiceSpy },
                 { provide: SocketService, useValue: socketServiceSpy },
-                {provide: GameService, useValue: gameServiceSpy}
+                { provide: GameService, useValue: gameServiceSpy },
             ],
         });
         service = TestBed.inject(GameTurnService);
@@ -217,21 +217,35 @@ describe('GameTurnService', () => {
     });
 
     describe('#listenForPlayerMove', () => {
-        it('should update player position on positionToUpdate event', () => {
-            const path = [
-                { x: 2, y: 2 },
-                { x: 3, y: 3 },
-            ];
-            const data = { player: mockPlayer, path };
-            positionToUpdateSubject.next(data);
-            const updatedPlayer = service.game.players.find((player) => player.name === mockPlayer.name);
-            expect(updatedPlayer!.position).toEqual({ x: 3, y: 3 });
-        });
+        it('should update player and game on "positionToUpdate" event when player IDs match', fakeAsync(() => {
+            const updatedPlayer = { ...mockPlayer, position: { x: 2, y: 2 } };
+            const updatedGame = { ...mockGame, players: [updatedPlayer] };
+
+            positionToUpdateSubject.next({ game: updatedGame, player: updatedPlayer });
+
+            tick();
+
+            expect(playerServiceSpy.setPlayer).toHaveBeenCalledWith(updatedPlayer);
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
+
+        it('should not update player if socket IDs do not match', fakeAsync(() => {
+            const otherPlayer = { ...mockPlayer, socketId: 'socket-2' };
+            const updatedGame = { ...mockGame, players: [otherPlayer] };
+
+            positionToUpdateSubject.next({ game: updatedGame, player: otherPlayer });
+
+            tick();
+
+            expect(playerServiceSpy.setPlayer).not.toHaveBeenCalled();
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
+
         it('should update player, clear moves, and call resumeTurn on "youFinishedMoving" event', () => {
             spyOn(service, 'clearMoves');
             spyOn(service, 'resumeTurn');
             const updatedPlayer = { ...mockPlayer, position: { x: 2, y: 2 } };
-            
+
             youFinishedMovingSubject.next(updatedPlayer);
 
             expect(service.clearMoves).toHaveBeenCalled();
@@ -242,7 +256,7 @@ describe('GameTurnService', () => {
             spyOn(service, 'clearMoves');
             spyOn(service, 'endTurnBecauseFell');
             const updatedPlayer = { ...mockPlayer, position: { x: 2, y: 2 } };
-            
+
             youFellSubject.next(updatedPlayer);
 
             expect(service.clearMoves).toHaveBeenCalled();
