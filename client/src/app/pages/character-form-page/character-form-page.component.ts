@@ -36,7 +36,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     mapName: string | null = null;
 
     gameHasStarted: boolean = false;
-
+    gameLockedModal: boolean = false;
     isJoiningGame: boolean = false;
 
     showErrorMessage: {
@@ -44,13 +44,11 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         characterNameError: boolean;
         bonusError: boolean;
         diceError: boolean;
-        waitingRoomFullError: boolean;
     } = {
         selectionError: false,
         characterNameError: false,
         bonusError: false,
         diceError: false,
-        waitingRoomFullError: false,
     };
 
     showGameStartedModal: boolean = false;
@@ -73,10 +71,10 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         this.playerService.resetPlayer();
+        // pourquoi est ce qu'on met un getPlayer si il est toujours vide , tu l'initialise dans cette page
         this.name = this.playerService.getPlayer().name || 'Choisis ton nom';
 
         this.characterService.getCharacters().subscribe((characters) => {
-            console.log('tu arrives ici');
             this.characters = characters;
             this.selectedCharacter = this.characters[0];
             this.currentIndex = 0;
@@ -141,7 +139,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
         this.socketSubscription.add(
             this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
-                this.showErrorMessage.waitingRoomFullError = true;
+                this.gameLockedModal = true;
             }),
         );
 
@@ -219,6 +217,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     async onSubmit() {
+        if (this.gameLockedModal) {
+            this.gameLockedModal = false;
+        }
         if (this.verifyErrors()) {
             this.playerService.createPlayer();
 
@@ -259,7 +260,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             characterNameError: false,
             bonusError: false,
             diceError: false,
-            waitingRoomFullError: false,
         };
 
         if (this.name === 'Choisis un nom' || this.playerService.getPlayer().name === '') {

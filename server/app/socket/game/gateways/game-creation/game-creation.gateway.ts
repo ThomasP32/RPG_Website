@@ -54,6 +54,20 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
 
+    @SubscribeMessage('getMapName')
+    getMapName(client: Socket, gameId: string): void {
+        if (this.gameCreationService.doesGameExist(gameId)) {
+            const game = this.gameCreationService.getGameById(gameId);
+            client.emit('currentMapName', game.name);
+        } else {
+            client.emit('gameNotFound', { reason: 'La partie a été fermée' });
+        }
+    }
+    @SubscribeMessage('kickPlayer')
+    handleKickPlayer(client: Socket, playerId: string): void {
+        this.server.to(playerId).emit('playerKicked');
+    }
+
     @SubscribeMessage('getGame')
     getGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
