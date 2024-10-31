@@ -14,13 +14,16 @@ export class GameManagerService {
         { x: 1, y: 0 },
     ];
 
-    updatePosition(gameId: string, playerName: string, position: { x: number; y: number }): void {
+    updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
-        game.players.forEach((player) => {
-            if (player.name === playerName) {
-                player.position = position;
-            }
-        });
+        const player = game.players.find((player) => player.socketId === playerSocket);
+        if (player) {
+            path.forEach((position, index) => {
+                if (index === 0) return;
+                player.specs.movePoints -= this.getTileWeight(position, game);
+            });
+            player.position = path[path.length - 1];
+        }
     }
 
     updateTurnCounter(gameId: string): void {
@@ -32,34 +35,36 @@ export class GameManagerService {
         }
     }
 
-    getMoves(gameId: string, playerName: string): Coordinate[] {
+    getMoves(
+        gameId: string,
+        playerSocket: string,
+    ): [
+        string,
+        {
+            path: Coordinate[];
+            weight: number;
+        },
+    ][] {
         const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((p) => p.name === playerName);
-
+        const player = game.players.find((p) => p.socketId === playerSocket);
         if (!player || !player.isActive) {
             return [];
         }
-
         const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
-        const accessibleMoves: Coordinate[] = [];
-        moves.forEach((value, key) => {
-            const [x, y] = key.split(',').map(Number);
-            accessibleMoves.push({ x: x, y: y });
-        });
-        return accessibleMoves;
+        const mapAsArray = Array.from(moves.entries());
+        return mapAsArray;
     }
 
-    getMove(gameId: string, playerName: string, destination: Coordinate, isPreviewMode: boolean): Coordinate[] {
+    getMove(gameId: string, playerSocket: string, destination: Coordinate): Coordinate[] {
         const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((p) => p.name === playerName);
+        const player = game.players.find((p) => p.socketId === playerSocket);
         let shortestPath: Coordinate[];
 
-        // si le joueur a pas besoin de jouer
         if (!player || !player.isActive) {
             return [];
         }
 
-        const shortestPaths = this.runDijkstra(player.position, game, player.specs.life);
+        const shortestPaths = this.runDijkstra(player.position, game, player.specs.movePoints);
 
         shortestPaths.forEach((value) => {
             const lastPosition = value.path[value.path.length - 1];
@@ -68,14 +73,9 @@ export class GameManagerService {
             }
         });
 
-        // si la tuile est innaccessible
         if (!shortestPath) {
             return [];
         } else {
-            if (isPreviewMode) {
-                return shortestPath;
-            }
-
             const finalPath: Coordinate[] = [];
 
             for (const position of shortestPath) {

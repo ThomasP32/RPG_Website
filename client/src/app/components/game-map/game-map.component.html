@@ -7,6 +7,9 @@
             [class.preview-highlight]="isPreview(rowIndex, colIndex)"
             (mouseover)="onTileHover({ x: rowIndex, y: colIndex })"
             (mouseleave)="clearPreview()"
+            (click)="onTileClick({ x: rowIndex, y: colIndex })"
+            (contextmenu)="$event.preventDefault()"
+            (mousedown)="onRightClickTile($event, { x: rowIndex, y: colIndex })"
         >
             @if(cell.value) {
             <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-tile" />
@@ -19,3 +22,8 @@
         </div>
     </div>
 </div>
+@if(explanationIsVisible) {
+<div class="tooltip" [style.top.px]="tooltipY" [style.left.px]="tooltipX">
+    {{ tileDescription }}
+</div>
+}
