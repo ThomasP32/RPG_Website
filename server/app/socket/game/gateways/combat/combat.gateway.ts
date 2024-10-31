@@ -53,7 +53,9 @@ export class CombatGateway {
                 .to(data.combatRoomId)
                 .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
         } else {
-            this.server.to(data.combatRoomId).emit('attackFailure', { message: `Attaque échouée de ${data.attackPlayer.name}` });
+            this.server
+                .to(data.combatRoomId)
+                .emit('attackFailure', { playerAttacked: data.defendPlayer, message: `Attaque échouée de ${data.attackPlayer.name}` });
         }
     }
 

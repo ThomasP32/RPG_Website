@@ -20,19 +20,14 @@
             <p class="player-name">{{ opponent.name }}</p>
             <img class="player-avatar" src="./assets/characters/{{ opponent.avatar }}.png" alt="Player 2 avatar" />
             <p class="player-health">Vies restantes: {{ opponent.specs.life }}</p>
-            <!-- <p class="player-attack">Attaque: {{ opponent.specs.attack }}</p>
-            <p class="player-defense">Défense: {{ opponent.specs.defense }}</p> -->
             <p class="player-evasion">Tentatives d'évasion restantes {{ opponent.specs.nEvasions }}</p>
         </div>
     </div>
-    @if ("currentTurnPlayerId === player.socketId") {
+    @if ("getActionsButtonsOnTurn") {
     <div class="button-container">
         <button class="attack-button" (click)="attack()">Attaquer</button>
         <button class="evade-button" (click)="evade()">Évasion</button>
     </div>
-    } @if("currentTurnPlayerId === player.socketId") {
-    <p>{{ player.name }} joue présentement.</p>
-    } @else if("currentTurnPlayerId === opponent.socketId") {
-    <p>{{ opponent.name }} joue présentement.</p>
     }
+    <p>{{ turnMessage }}</p>
 </div>
