@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MovesMap } from '@app/interfaces/moves';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 import { Coordinate } from '@common/map.types';
@@ -10,7 +11,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
     providedIn: 'root',
 })
 export class GameTurnService {
-    game: Game;
     socketSubscription: Subscription = new Subscription();
     moves: MovesMap = new Map();
     private playerTurn = new BehaviorSubject<string>('');
@@ -20,22 +20,29 @@ export class GameTurnService {
     isMoving = false;
 
     constructor(
+        private gameService: GameService,
         private playerService: PlayerService,
         private socketService: SocketService,
     ) {
-        this.playerService = playerService;
-        this.socketService = socketService;
         this.listenForTurn();
         this.listenForPlayerMove();
         this.listenMoves();
+        this.gameService = gameService;
+        this.playerService = playerService;
+        this.socketService = socketService;
     }
 
     get player(): Player {
         return this.playerService.player;
     }
 
+    get game(): Game {
+        return this.gameService.game;
+    }
+
     startTurn(): void {
         if (this.playerTurn.getValue() === this.player.name) {
+            console.log('cest ton tour');
             setTimeout(() => this.getMoves(), 3000);
         }
     }
@@ -67,7 +74,8 @@ export class GameTurnService {
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
                 this.playerService.player = yourPlayer;
                 this.clearMoves();
-                this.playerTurn.next(this.player.name);
+                this.playerTurn.next(yourPlayer.name);
+                console.log('cest ton tour qui commence');
                 this.startTurn();
             }),
         );
@@ -75,6 +83,7 @@ export class GameTurnService {
             this.socketService.listen<string>('playerTurn').subscribe((playerName) => {
                 this.clearMoves();
                 this.playerTurn.next(playerName);
+                console.log('cest le tour de ', playerName, ' qui commence');
             }),
         );
     }
@@ -95,9 +104,11 @@ export class GameTurnService {
     listenMoves() {
         this.socketSubscription.add(
             this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
+                console.log('tu as recu tes mouvements');
                 this.moves = new Map();
                 this.moves = new Map(paths);
                 if (this.moves.size === 1) {
+                    console.log('tu peux plus bouger tu déclare forfait');
                     this.endTurn();
                 }
             }),
@@ -115,13 +126,16 @@ export class GameTurnService {
     listenForPlayerMove() {
         this.socketSubscription.add(
             this.socketService.listen<{ player: Player; path: Coordinate[] }>('positionToUpdate').subscribe(async (data) => {
-                const player = this.game.players.find((player) => player.name === data.player.name);
+                const updatedGame = { ...this.gameService.game }; 
+                const playerToUpdate = updatedGame.players.find((player) => player.name === data.player.name);
+                
                 for (const move of data.path) {
-                    player!.position = move;
+                    playerToUpdate!.position = move;
                 }
-                if (player?.socketId === this.player.socketId) {
-                    this.playerService.player = data.player;
+                if (playerToUpdate?.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
                 }
+                this.gameService.setGame(updatedGame);
             }),
         );
 
