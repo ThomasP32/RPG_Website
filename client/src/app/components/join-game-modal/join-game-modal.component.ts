@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-join-game-modal',
@@ -11,9 +12,12 @@ import { SocketService } from '@app/services/communication-socket/communication-
     styleUrl: './join-game-modal.component.scss',
 })
 export class JoinGameModalComponent implements OnInit {
+    @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
+
     code: string[] = ['', '', '', ''];
     gameId: string | null = null;
     errorMessage: string | null = null;
+    socketSubscription: Subscription = new Subscription();
 
     constructor(
         // eslint-disable-next-line no-unused-vars
@@ -32,44 +36,57 @@ export class JoinGameModalComponent implements OnInit {
         input.value = value;
 
         if (value.length === 1 && index < 4) {
-            const nextInput = document.querySelectorAll('input')[index];
+            const nextInput = this.codeInputs.toArray()[index];
             if (nextInput) {
-                (nextInput as HTMLElement).focus();
-            }
-        }
-
-        if (event.inputType === 'deleteContentBackward' && index > 0) {
-            const prevInput = document.querySelectorAll('input')[index - 1];
-            if (prevInput) {
-                (prevInput as HTMLElement).focus();
+                nextInput.nativeElement.focus();
             }
         }
     }
 
-    joinGame(): void {
-        const gameCode = this.code.join('');
-        this.gameId = gameCode;
+    joinGame(event: any): void {
+        const input = event.target;
+        const value = input.value.replace(/[^0-9]/g, '');
+        input.value = value;
 
-        this.socketService.sendMessage('accessGame', gameCode);
+        if (this.code.every((digit) => digit !== '')) {
+            const gameCode = this.code.join('');
+            this.gameId = gameCode;
 
+            this.socketService.sendMessage('accessGame', gameCode);
+        }
+    }
+
+    resetCodeAndFocus(): void {
         this.code = ['', '', '', ''];
+        const firstInput = this.codeInputs.first;
+        if (firstInput) {
+            firstInput.nativeElement.focus();
+        }
     }
 
     configureJoinGameSocketFeatures(): void {
-        this.socketService.listen('gameAccessed').subscribe(() => {
-            this.router.navigate(['/create-character']);
-        });
+        this.socketSubscription.add(
+            this.socketService.listen('gameAccessed').subscribe(() => {
+                this.router.navigate([`join-game/${this.gameId}/create-character`]);
+            }),
+        );
 
-        this.socketService.listen('gameNotFound').subscribe((data: any) => {
-            if (data && data.reason) {
-                this.errorMessage = data.reason;
-            }
-        });
+        this.socketSubscription.add(
+            this.socketService.listen('gameNotFound').subscribe((data: any) => {
+                if (data && data.reason) {
+                    this.errorMessage = data.reason;
+                    this.resetCodeAndFocus();
+                }
+            }),
+        );
 
-        this.socketService.listen('gameLocked').subscribe((data: any) => {
-            if (data && data.reason) {
-                this.errorMessage = data.reason;
-            }
-        });
+        this.socketSubscription.add(
+            this.socketService.listen('gameLocked').subscribe((data: any) => {
+                if (data && data.reason) {
+                    this.errorMessage = data.reason;
+                    this.resetCodeAndFocus();
+                }
+            }),
+        );
     }
 }

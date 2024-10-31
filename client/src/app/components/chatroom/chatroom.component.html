@@ -1,0 +1,23 @@
+<div class="chat-container">
+    <div class="chat-header">
+        <strong>{{ player.name }}</strong>
+    </div>
+    <section>
+        <div id="messageArea" class="message-area">
+            <ul id="messageList">
+                @for (message of messages; track message) {
+                <li>
+                    @if (message.author) {
+                    <strong class="author">{{ message.author }}:</strong>
+                    {{ message.text }}
+                    <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
+                    }
+                </li>
+                }
+            </ul>
+        </div>
+
+        <input id="messageInput" placeholder="Votre message" [(ngModel)]="messageText" (keydown.enter)="sendMessage()" maxlength="200" type="text" />
+        <button class="send-message-button" (click)="sendMessage()">Envoyer</button>
+    </section>
+</div>

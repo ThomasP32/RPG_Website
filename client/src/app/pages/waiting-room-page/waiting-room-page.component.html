@@ -1,15 +1,63 @@
 <body>
     <div class="waiting-room-container">
-        <div class="code-display">
-            <h1>Le code de votre partie est :</h1>
-            <p id="game-code">{{ waitingRoomCode }}</p>
-        </div>
-        <div class="gear-animation">
-            <img src="assets/gear.png" alt="Gear Animation" />
+        <div class="player">
+            <div class="avatar-container">
+                <img [src]="playerPreview" alt="Player Avatar" />
+            </div>
+            <div class="player-name">
+                <h1>{{ playerName }}</h1>
+            </div>
         </div>
 
-        <div class="player-waiting">
-            <h2>En attente de joueurs...</h2>
+        <div class="exit-button">
+            <button (click)="exitGame()">Quitter la partie</button>
         </div>
+
+        @if (isHost) {
+
+        <div class="game-status">
+            <button
+                (mouseenter)="toggleHover(true)"
+                (mouseleave)="toggleHover(false)"
+                (click)="toggleGameLockState()"
+                [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
+            >
+                {{ hover ? (isGameLocked ? 'Dévérouiller' : 'Vérouiller') : isGameLocked ? 'Fermée' : 'Ouverte' }}
+            </button>
+        </div>
+        }
+
+        <div class="game">
+            <div class="game-details">
+                <div class="game-code">
+                    <p>Code:</p>
+                    <h1>{{ waitingRoomCode }}</h1>
+                </div>
+                <div class="game-map">
+                    <p>Carte:</p>
+                    <h1>{{ mapName }}</h1>
+                </div>
+            </div>
+            <div class="players-list">
+                <app-players-list></app-players-list>
+            </div>
+            @if(!isStartable){
+            <div class="player-waiting">
+                <h2>En attente d'autres joueurs...</h2>
+                <div class="gear-animation">
+                    <img src="assets/gear.png" alt="Gear Animation" />
+                </div>
+            </div>
+            } @else { @if(isHost){
+            <div class="start-game-button">
+                <button (click)="startGame()">Commencer la partie</button>
+            </div>
+            } }
+        </div>
+        @if(player) {
+        <div class="chat-container">
+            <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>
+        </div>
+        }
     </div>
 </body>

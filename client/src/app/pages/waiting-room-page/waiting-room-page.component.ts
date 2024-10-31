@@ -1,7 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -12,14 +17,17 @@ const maxCode = 9999;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
+    @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
     /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
+        private characterService: CharacterService,
+        private playerService: PlayerService,
         private socketService: SocketService,
         private route: ActivatedRoute,
         private router: Router,
@@ -29,49 +37,60 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     mapName: string;
     player: Player;
     socketSubscription: Subscription = new Subscription();
-    isCreatingGame: boolean = false;
+    isHost: boolean = false;
+    playerPreview: string;
+    playerName: string;
+    isStartable: boolean = false;
+    isGameLocked: boolean = false;
+    hover: boolean = false;
+    activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
-        this.getMapName();
-        this.player = history.state.player;
+        this.player = this.playerService.getPlayer();
+        console.log('Player:', this.playerService.getPlayer());
+        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+        this.playerName = this.player.name;
+
         this.listenToSocketMessages();
-        if (this.router.url.includes('create-game')) {
-            this.isCreatingGame = true;
+        if (this.router.url.includes('host')) {
+            this.isHost = true;
+            this.getMapName();
             this.generateRandomNumber();
-            await this.startNewGame(this.mapName);
+            await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            await this.joinGame();
+            this.socketService.sendMessage('getGame', this.waitingRoomCode);
+            this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
         }
+        this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
     }
 
     generateRandomNumber(): void {
         this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
     }
 
-    async startNewGame(mapName: string): Promise<void> {
+    async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
             ...map,
             id: this.waitingRoomCode,
             players: [this.player],
             hostSocketId: '',
-            availableAvatars: [],
             currentTurn: 0,
             nDoorsManipulated: 0,
-            visitedTiles: [],
             duration: 0,
             nTurns: 0,
             debug: false,
             isLocked: false,
+            hasStarted: false,
         };
-        console.log('starting a new game');
-        this.socketService.sendMessage('startGame', newGame);
+        this.socketService.sendMessage('createGame', newGame);
     }
 
-    async joinGame(): Promise<void> {
-        console.log('joining a game');
-        this.socketService.sendMessage('joinGame', { player: this.player, gameId: this.waitingRoomCode });
+    exitGame(): void {
+        this.socketService.disconnect();
+        this.characterService.resetCharacterAvailability();
+        this.router.navigate(['/main-menu']);
     }
 
     getMapName(): void {
@@ -83,24 +102,90 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         }
     }
 
+    startGame(): void {
+        this.socketService.sendMessage('initializeGame', this.waitingRoomCode);
+    }
+
     listenToSocketMessages(): void {
-        if (this.isCreatingGame) {
+
+        if (!this.isHost) {
             this.socketSubscription.add(
-                this.socketService.listen('gameStarted').subscribe(() => {
-                    console.log('You started a new game');
+                this.socketService.listen('gameClosed').subscribe(() => {
+                    this.socketService.disconnect();
+                    this.router.navigate(['/main-menu']);
                 }),
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen('playerJoined').subscribe((message) => {
-                console.log('A new player joined the game:', message);
+            this.socketService.listen('gameInitialized').subscribe(() => {
+                this.navigateToGamePage();
             }),
         );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
+                this.appPlayersListComponent.players = players;
+                if (this.isHost) {
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketSubscription.add(
+                        this.socketService.listen('isStartable').subscribe((data) => {
+                            this.isStartable = true;
+                            console.log('Game is startable');
+                        }),
+                    );
+                }
+            }),
+        );
+        // Permet de mettre a jour la liste des joueurs actifs pour l'affichage dans la salle d'attente
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                this.activePlayers = players;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+                if (this.isHost) {
+                    this.isStartable = false;
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                }
+                this.appPlayersListComponent.players = players;
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen('isStartable').subscribe(() => {
+                this.isStartable = true;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                this.appPlayersListComponent.players = players;
+            }),
+        );
+    }
+
+    toggleHover(state: boolean): void {
+        this.hover = state;
+    }
+
+    toggleGameLockState(): void {
+        this.isGameLocked = !this.isGameLocked;
+        this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
     }
 
     ngOnDestroy(): void {
         if (this.socketSubscription) {
             this.socketSubscription.unsubscribe();
         }
+    }
+
+    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la parti
+
+    navigateToGamePage() {
+        console.log('Navigating to game page with gameId:', this.waitingRoomCode, 'and mapName:', this.mapName);
+        this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
+            state: { player: this.player, gameId: this.waitingRoomCode },
+        });
     }
 }
