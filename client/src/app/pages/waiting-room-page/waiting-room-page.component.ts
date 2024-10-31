@@ -35,7 +35,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     waitingRoomCode: string;
     mapName: string;
-    player: Player;
     socketSubscription: Subscription = new Subscription();
     isHost: boolean = false;
     playerPreview: string;
@@ -46,8 +45,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
-        this.player = this.playerService.getPlayer();
-        console.log('Player:', this.playerService.getPlayer());
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.playerName = this.player.name;
 
@@ -69,6 +66,9 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
     }
 
+    get player(): Player {
+        return this.playerService.player;
+    }
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {

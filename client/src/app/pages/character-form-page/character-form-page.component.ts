@@ -73,7 +73,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         this.playerService.resetPlayer();
-        this.name = this.playerService.getPlayer().name || 'Choisis ton nom';
+        this.name = this.playerService.player.name || 'Choisis ton nom';
 
         this.characterService.getCharacters().subscribe((characters) => {
             console.log('tu arrives ici');
@@ -93,27 +93,27 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     get life(): number {
-        return this.playerService.getPlayer().specs.life;
+        return this.playerService.player.specs.life;
     }
 
     get speed(): number {
-        return this.playerService.getPlayer().specs.speed;
+        return this.playerService.player.specs.speed;
     }
 
     get attack(): number {
-        return this.playerService.getPlayer().specs.attack;
+        return this.playerService.player.specs.attack;
     }
 
     get defense(): number {
-        return this.playerService.getPlayer().specs.defense;
+        return this.playerService.player.specs.defense;
     }
 
     get attackBonus(): Bonus {
-        return this.playerService.getPlayer().specs.attackBonus;
+        return this.playerService.player.specs.attackBonus;
     }
 
     get defenseBonus(): Bonus {
-        return this.playerService.getPlayer().specs.defenseBonus;
+        return this.playerService.player.specs.defenseBonus;
     }
 
     listenToSocketMessages(): void {
@@ -202,7 +202,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         if (!this.isEditing) {
             this.stopEditing();
         } else {
-            this.name = this.playerService.getPlayer().name;
+            this.name = this.playerService.player.name;
         }
     }
 
@@ -239,7 +239,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     }, timeLimit);
                 }
             } else {
-                this.socketService.sendMessage('joinGame', { player: this.playerService.getPlayer(), gameId: this.gameId });
+                this.socketService.sendMessage('joinGame', { player: this.playerService.player, gameId: this.gameId });
             }
         }
     }
@@ -261,7 +261,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             waitingRoomFullError: false,
         };
 
-        if (this.name === 'Choisis un nom' || this.playerService.getPlayer().name === '') {
+        if (this.name === 'Choisis un nom' || this.playerService.player.name === '') {
             this.showErrorMessage.characterNameError = true;
             return false;
         }

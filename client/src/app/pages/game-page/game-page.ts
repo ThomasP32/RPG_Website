@@ -4,10 +4,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/countdown.service';
-import { GameTurnService } from '@app/services/game/game-turn.service';
+import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, Map } from '@common/map.types';
@@ -21,9 +22,7 @@ import { Subscription } from 'rxjs';
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-    game: Game;
     numberOfPlayers: number;
-    player: Player;
     activePlayers: Player[];
 
     currentPlayerTurn: string;
@@ -37,6 +36,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     gameId: string;
     showExitModal = false;
     showKickedModal = false;
+    youFell: boolean = false;
     map: Map;
     specs: Specs;
 
@@ -59,7 +59,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.player = this.playerService.getPlayer();
+        this.listenForFalling();
         this.gameId = this.route.snapshot.params['gameId'];
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.loadGameData();
@@ -72,12 +72,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.listenPlayersLeft();
     }
 
+    get player(): Player {
+        return this.playerService.player;
+    }
+
     listenPlayersLeft() {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
                 this.activePlayers = players.filter((player) => player.isActive);
                 if (this.activePlayers.length <= 1) {
-                    // afficher modale comme quoi la partie est terminée pcq plus assez de joueurs
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {
@@ -91,8 +94,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     loadGameData() {
         this.socketService.listen<Game>('currentGame').subscribe((game: Game) => {
             if (game) {
-                this.game = game;
-                this.gameTurnService.game = this.game;
+                console.log(game.players);
+                this.gameTurnService.game = game;
                 if (this.player.socketId === this.game.hostSocketId) {
                     this.socketService.sendMessage('startGame', this.game.id);
                 }
@@ -103,6 +106,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
     }
 
+    get game(): Game {
+        return this.gameTurnService.game;
+    }
+
     endTurn() {
         this.gameTurnService.endTurn();
     }
@@ -111,6 +118,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
             if (players && players.length > 0) {
                 this.activePlayers = players.filter((player) => player.isActive);
+                this.playerService.setPlayer(players.filter((player) => player.socketId === this.player.socketId)[0]);
             } else {
                 console.error('Failed to load players or no players available');
             }
@@ -137,11 +145,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.showExitModal = false;
     }
 
-    ngOnDestroy() {
-        this.socketService.disconnect();
-        this.socketService.sendMessage('leaveGame', this.gameId);
-    }
-
     listenForCurrentPlayerUpdates() {
         this.gameTurnService.playerTurn$.subscribe((playerName) => {
             this.currentPlayerTurn = playerName;
@@ -154,12 +157,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
     }
 
+    listenForFalling() {
+        this.gameTurnService.youFell$.subscribe((youFell) => {
+            this.countDownService.pauseCountdown();
+            this.youFell = youFell;
+        });
+    }
+
     listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
             this.countdown = time;
             this.triggerPulse();
             if (this.countdown === 0) {
-                this.endTurn();
+                this.gameTurnService.endTurn();
             }
         });
     }
@@ -169,12 +179,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         setTimeout(() => (this.isPulsing = false), 500);
     }
 
-    get moves(): Coordinate[] {
+    get moves(): MovesMap {
         return this.gameTurnService.moves;
-    }
-
-    get movePreview(): Coordinate[] {
-        return this.gameTurnService.movePreview;
     }
 
     playTurn() {
@@ -186,7 +192,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }, 3000);
     }
 
-    onTileHovered(destination: Coordinate) {
-        this.socketService.sendMessage('previewMove', { playerName: this.player.name, gameId: this.gameId, position: destination });
+    onTileClickToMove(position: Coordinate) {
+        this.gameTurnService.movePlayer(position);
+    }
+
+    ngOnDestroy() {
+        this.socketService.disconnect();
     }
 }
