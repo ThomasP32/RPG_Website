@@ -22,11 +22,17 @@
                 (click)="toggleGameLockState()"
                 [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
             >
-                {{ hover ? (isGameLocked ? 'Dévérouiller' : 'Vérouiller') : isGameLocked ? 'Fermée' : 'Ouverte' }}
+                {{ isGameLocked ? 'Fermée' : 'Ouverte' }}
             </button>
         </div>
+        } @else {
+        <div class="game-status">
+            <h2>La partie est</h2>
+            <h3>
+                {{ isGameLocked ? 'fermée' : 'ouverte' }}
+            </h3>
+        </div>
         }
-
         <div class="game">
             <div class="game-details">
                 <div class="game-code">
@@ -39,7 +45,7 @@
                 </div>
             </div>
             <div class="players-list">
-                <app-players-list></app-players-list>
+                <app-players-list [players]="activePlayers" [isHost]="isHost"></app-players-list>
             </div>
             @if(!isStartable){
             <div class="player-waiting">
@@ -57,6 +63,13 @@
         @if(player) {
         <div class="chat-container">
             <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>
+        </div>
+        } @if(showExitModal) {
+        <div class="exit-modal">
+            <div class="modal">
+                <h2>{{ dialogBoxMessage }}</h2>
+                <p>Vous serez redirigé vers le menu principal.</p>
+            </div>
         </div>
         }
     </div>
