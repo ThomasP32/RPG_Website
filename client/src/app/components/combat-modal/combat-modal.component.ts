@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
@@ -31,7 +31,10 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
-    constructor(private socketService: SocketService) {
+    constructor(
+        private socketService: SocketService,
+        private cdr: ChangeDetectorRef,
+    ) {
         this.socketService = socketService;
     }
 
@@ -62,6 +65,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.socketService.listen<{ currentPlayerTurn: string }>('updateTurn').subscribe((data) => {
                 this.currentTurnPlayerId = data.currentPlayerTurn;
                 console.log('Current turn player:', this.currentTurnPlayerId);
+                this.cdr.detectChanges();
             }),
         );
         this.socketSubscription.add(
@@ -100,6 +104,12 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             }),
         );
         this.socketSubscription.add(
+            this.socketService.listen<{ playerAttacked: Player }>('attackFailure').subscribe((data) => {
+                this.currentTurnPlayerId = data.playerAttacked.socketId;
+                console.log('Attack failure, change of turn', this.currentTurnPlayerId);
+            }),
+        );
+        this.socketSubscription.add(
             this.socketService.listen<Player>('currentPlayer').subscribe((player: Player) => {
                 this.opponent = player;
             }),
@@ -107,7 +117,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(this.socketService.listen('playerDisconnected').subscribe(() => {}));
     }
 
-    //Check a qui est le tour true = joueur ayant start le combat, false = opponent
     isCombatPlayerTurn(): boolean {
         return this.currentTurnPlayerId === this.player.socketId;
     }
@@ -199,11 +208,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 combatRoomId: this.combatRoomId,
             });
         }
-        // this.socketService.sendMessage('updatePlayersAfterCombat', {
-        //     gameId: this.gameId,
-        //     player1: this.player,
-        //     player2: this.opponent,
-        // });
     }
 
     combatFinishedByEvasion() {
@@ -221,15 +225,17 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         this.combatRoomId = '';
         this.currentTurnPlayerId = '';
     }
+    get turnMessage(): string {
+        if (this.currentTurnPlayerId === this.player.socketId) {
+            return `${this.player.name} joue présentement.`;
+        } else if (this.currentTurnPlayerId === this.opponent.socketId) {
+            return `${this.opponent.name} joue présentement.`;
+        } else {
+            return '';
+        }
+    }
+
+    get getActionsButtonsOnTurn(): boolean {
+        return this.currentTurnPlayerId === this.player.socketId;
+    }
 }
-
-//combat start
-// front end envoie les 2 joueurs en combat + le gameName ou gameId
-// 1. getCombatPlayers()
-// 2. remplir player1 et player2
-
-// 1. getplayers (active)
-// 2. listen to combatStart -- push button start combat -> emit combatStart-> serveur recoit les 2 joueurs, envoie invite aux 2 joueurs avec une reponse combat start html pop pour seulement 2 joueurs impliques
-
-// //after combat
-// 3. emit updatePlayer(player1) : player.id, player.specs.combats + 1, player.specs.evasions,
