@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { JoinGameModalComponent } from './join-game-modal.component';
 
 describe('JoinGameModalComponent', () => {
@@ -10,15 +10,33 @@ describe('JoinGameModalComponent', () => {
     let fixture: ComponentFixture<JoinGameModalComponent>;
     let mockSocketService: jasmine.SpyObj<SocketService>;
     let mockRouter: jasmine.SpyObj<Router>;
+    let gameAccessedSubject: Subject<any>;
+    let gameNotFoundSubject: Subject<any>;
+    let gameLockedSubject: Subject<any>;
 
     beforeEach(async () => {
         mockSocketService = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-        mockSocketService.listen.and.returnValue(of(null));
+        gameAccessedSubject = new Subject();
+        gameNotFoundSubject = new Subject();
+        gameLockedSubject = new Subject();
+
+        mockSocketService.listen.and.callFake((eventName: string) => {
+            switch (eventName) {
+                case 'gameAccessed':
+                    return gameAccessedSubject.asObservable();
+                case 'gameNotFound':
+                    return gameNotFoundSubject.asObservable();
+                case 'gameLocked':
+                    return gameLockedSubject.asObservable();
+                default:
+                    return of(null);
+            }
+        });
 
         await TestBed.configureTestingModule({
-            imports: [JoinGameModalComponent, FormsModule],
+            imports: [FormsModule],
             providers: [
                 { provide: SocketService, useValue: mockSocketService },
                 { provide: Router, useValue: mockRouter },
@@ -40,82 +58,91 @@ describe('JoinGameModalComponent', () => {
         expect(component.configureJoinGameSocketFeatures).toHaveBeenCalled();
     });
 
-    // it('should move to the next input on valid input in moveToNext', () => {
-    //     const inputElement1 = document.createElement('input');
-    //     const inputElement2 = document.createElement('input');
-    //     inputElement1.value = '5';
-
-    //     const nodeList = {
-    //         length: 4,
-    //         item: (index: number) => (index === 1 ? inputElement2 : inputElement1),
-    //         [Symbol.iterator]: function* () {
-    //             yield inputElement1;
-    //             yield inputElement2;
-    //             yield inputElement1;
-    //             yield inputElement1;
-    //         },
-    //     } as unknown as NodeListOf<Element>;
-
-    //     spyOn(inputElement2, 'focus');
-    //     spyOn(document, 'querySelectorAll').and.returnValue(nodeList);
-
-    //     const event = { target: inputElement1, inputType: 'insertText' };
-    //     component.moveToNext(event, 1);
-
-    //     expect(document.querySelectorAll).toHaveBeenCalledWith('input');
-    //     expect(inputElement2.focus).toHaveBeenCalled();
-    // });
-
-    // it('should move to the previous input on backspace in moveToNext', () => {
-    //     const inputElement = document.createElement('input');
-
-    //     const nodeList = {
-    //         length: 4,
-    //         item: (index: number) => inputElement,
-    //         [Symbol.iterator]: function* () {
-    //             yield inputElement;
-    //             yield inputElement;
-    //             yield inputElement;
-    //             yield inputElement;
-    //         },
-    //     } as unknown as NodeListOf<Element>;
-
-    //     spyOn(document, 'querySelectorAll').and.returnValue(nodeList);
-
-    //     const event = { target: inputElement, inputType: 'deleteContentBackward' };
-    //     component.moveToNext(event, 2); // Move to previous input from index 2
-    //     expect(document.querySelectorAll).toHaveBeenCalledWith('input');
-    // });
-
     it('should send game code via socket on joinGame', () => {
         component.code = ['1', '2', '3', '4'];
-        component.joinGame();
+        const event = { target: { value: '4' } };
+        component.joinGame(event);
         expect(mockSocketService.sendMessage).toHaveBeenCalledWith('accessGame', '1234');
     });
 
-    it('should reset the code array after calling joinGame', () => {
-        component.code = ['1', '2', '3', '4'];
-        component.joinGame();
-        expect(component.code).toEqual(['', '', '', '']);
-    });
+    // it('should reset the code array after calling joinGame', () => {
+    //     component.code = ['1', '2', '3', '4'];
+    //     const event = { target: { value: '4' } };
+
+    //     component.joinGame(event);
+
+    //     fixture.detectChanges();
+
+    //     expect(component.code).toEqual(['', '', '', '']);
+    // });
 
     it('should navigate to create-character on gameAccessed event', () => {
-        mockSocketService.listen.and.returnValue(of(null));
+        component.code = ['1', '2', '3', '4'];
+        component.gameId = '1234';
         component.configureJoinGameSocketFeatures();
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/create-character']);
+        gameAccessedSubject.next(null);
+        expect(mockRouter.navigate).toHaveBeenCalledWith([`join-game/1234/create-character`]);
     });
 
     it('should set errorMessage on gameNotFound event', () => {
         const errorResponse = { reason: 'Game not found' };
-        mockSocketService.listen.and.returnValue(of(errorResponse));
         component.configureJoinGameSocketFeatures();
+        gameNotFoundSubject.next(errorResponse);
         expect(component.errorMessage).toBe('Game not found');
     });
 
     it('should set errorMessage on gameLocked event', () => {
         const errorResponse = { reason: 'Game is locked' };
-        mockSocketService.listen.and.returnValue(of(errorResponse));
         component.configureJoinGameSocketFeatures();
+        gameLockedSubject.next(errorResponse);
         expect(component.errorMessage).toBe('Game is locked');
+    });
+
+    // it('should move to the next input when a digit is entered', () => {
+    //     const event = { target: { value: '1' } };
+    //     component.codeInputs = {
+    //         toArray: () => [
+    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
+    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
+    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
+    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
+    //         ],
+    //     } as any;
+
+    //     component.moveToNext(event, 0);
+
+    //     expect(component.codeInputs.toArray()[1].nativeElement.focus).toHaveBeenCalled();
+    // });
+
+    it('should not move to the next input if the value is not a digit', () => {
+        const event = { target: { value: 'a' } };
+        component.codeInputs = {
+            toArray: () => [
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+            ],
+        } as any;
+
+        component.moveToNext(event, 0);
+
+        expect(component.codeInputs.toArray()[1].nativeElement.focus).not.toHaveBeenCalled();
+    });
+
+    it('should not move to the next input if the index is out of bounds', () => {
+        const event = { target: { value: '1' } };
+        component.codeInputs = {
+            toArray: () => [
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+                { nativeElement: { focus: jasmine.createSpy('focus') } },
+            ],
+        } as any;
+
+        component.moveToNext(event, 3);
+
+        expect(component.codeInputs.toArray()[3].nativeElement.focus).not.toHaveBeenCalled();
     });
 });

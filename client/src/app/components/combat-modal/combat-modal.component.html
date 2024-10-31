@@ -1,0 +1,51 @@
+<div class="modal-combat">
+    <div class="versus">VS</div>
+
+    <div class="players-modal-container">
+        <div class="player player1">
+            <p class="player-name">Player.name</p>
+            <img class="player-avatar" src="../../assets/characters/1.png" alt="Player 1 avatar" />
+            <p class="player-health">Vies restantes: player.specs.life</p>
+            <p class="player-attack">Attaque: player.specs.attack</p>
+            <p class="player-defense">Défense: player.specs.defense</p>
+        </div>
+        <!-- <div
+            class="dice"
+            [class.face-front]="dice.currentFace === 1"
+            [class.face-bottom]="dice.currentFace === 2"
+            [class.face-right]="dice.currentFace === 3"
+            [class.face-left]="dice.currentFace === 4"
+            [class.face-top]="dice.currentFace === 5"
+            [class.face-back]="dice.currentFace === 6"
+        >
+            <div class="face-front">1</div>
+            <div class="face-back">6</div>
+            <div class="face-left">4</div>
+            <div class="face-right">3</div>
+            <div class="face-top">5</div>
+            <div class="face-bottom">2</div>
+        </div> -->
+
+        <img class="dice" src="../../../assets/gear.png" alt="Dice" />
+        <img class="dice" src="../../../assets/gear.png" alt="Dice" />
+
+        <div class="player player2">
+            <p class="player-name">Player.name</p>
+            <img class="player-avatar" src="../../assets/characters/2.png" alt="Player 2 avatar" />
+            <p class="player-health">Vies restantes: player.specs.life</p>
+            <p class="player-attack">Attaque: player.specs.attack</p>
+            <p class="player-defense">Défense: player.specs.defense</p>
+        </div>
+    </div>
+    //TODO: faire apparaitre les boutons pour seulement le joueur @if ("startCombatPlayerTurn && current") {
+    <div class="button-container">
+        <button class="attack-button" (click)="attack()">Attaquer</button>
+        <button class="evade-button" (click)="evade()">Évasion</button>
+    </div>
+    } @else if("player2Turn") {
+    <div class="button-container">
+        <button class="attack-button" (click)="attack()">Attaquer</button>
+        <button class="evade-button" (click)="evade()">Évasion</button>
+    </div>
+    }
+</div>

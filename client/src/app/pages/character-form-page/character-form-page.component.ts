@@ -1,18 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
 import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Bonus, Player, Specs } from '@common/game';
+import { PlayerService } from '@app/services/player-service/player.service';
+import { Bonus, Player } from '@common/game';
 import { Map } from '@common/map.types';
-import { firstValueFrom } from 'rxjs';
-/* eslint-disable no-unused-vars */
-const defaultHp = 4;
-const defaultSpeed = 4;
-const defaultAttack = 4;
-const defaultDefense = 4;
+import { firstValueFrom, Subscription } from 'rxjs';
 const timeLimit = 5000;
 
 @Component({
@@ -22,172 +19,281 @@ const timeLimit = 5000;
     templateUrl: './character-form-page.component.html',
     styleUrls: ['./character-form-page.component.scss'],
 })
-export class CharacterFormPageComponent {
+export class CharacterFormPageComponent implements OnInit, OnDestroy {
+    socketSubscription: Subscription = new Subscription();
     Bonus = Bonus;
-    characterName: string = 'Choisis un nom';
+    name: string = '';
     isEditing: boolean = false;
 
-    player: Player;
-    lifeOrSpeedBonus = '';
-    attackOrDefenseBonus = '';
-    attackBonus: Bonus;
-    defenseBonus: Bonus;
+    lifeOrSpeedBonus: 'life' | 'speed';
+    attackOrDefenseBonus: 'attack' | 'defense';
 
-    selectedCharacter: Character;
     characters: Character[] = [];
+    selectedCharacter: Character;
+    currentIndex: number;
 
-    currentIndex: number = 0;
-
-    life = defaultHp;
-    speed = defaultSpeed;
-    attack = defaultAttack;
-    defense = defaultDefense;
     gameId: string | null = null;
     mapName: string | null = null;
-    maps: Map[] = [];
-    // map: Map;
-    showErrorMessage: { selectionError: boolean; characterNameError: boolean; bonusError: boolean; diceError: boolean } = {
+
+    gameHasStarted: boolean = false;
+
+    isJoiningGame: boolean = false;
+
+    showErrorMessage: {
+        selectionError: boolean;
+        characterNameError: boolean;
+        bonusError: boolean;
+        diceError: boolean;
+        waitingRoomFullError: boolean;
+    } = {
         selectionError: false,
         characterNameError: false,
         bonusError: false,
         diceError: false,
+        waitingRoomFullError: false,
     };
 
-    private readonly characterService: CharacterService = inject(CharacterService);
-    private readonly router: Router = inject(Router);
-    private readonly route: ActivatedRoute = inject(ActivatedRoute);
+    showGameStartedModal: boolean = false;
 
-    constructor(private communicationMapService: CommunicationMapService) {
+    constructor(
+        private communicationMapService: CommunicationMapService,
+        private socketService: SocketService,
+        private playerService: PlayerService,
+        private characterService: CharacterService,
+        private router: Router,
+        private route: ActivatedRoute,
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.socketService = socketService;
+        this.playerService = playerService;
+        this.characterService = characterService;
+        this.router = router;
+        this.route = route;
+    }
+
+    async ngOnInit(): Promise<void> {
+        this.playerService.resetPlayer();
+        this.name = this.playerService.getPlayer().name || 'Choisis ton nom';
+
         this.characterService.getCharacters().subscribe((characters) => {
+            console.log('tu arrives ici');
             this.characters = characters;
             this.selectedCharacter = this.characters[0];
+            this.currentIndex = 0;
         });
 
-        this.mapName = this.route.snapshot.params['mapName'];
         if (!this.router.url.includes('create-game')) {
+            this.listenToSocketMessages();
+            this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
+            this.socketService.sendMessage('getPlayers', this.gameId);
+        } else {
+            this.mapName = this.route.snapshot.params['mapName'];
         }
     }
 
+    get life(): number {
+        return this.playerService.getPlayer().specs.life;
+    }
+
+    get speed(): number {
+        return this.playerService.getPlayer().specs.speed;
+    }
+
+    get attack(): number {
+        return this.playerService.getPlayer().specs.attack;
+    }
+
+    get defense(): number {
+        return this.playerService.getPlayer().specs.defense;
+    }
+
+    get attackBonus(): Bonus {
+        return this.playerService.getPlayer().specs.attackBonus;
+    }
+
+    get defenseBonus(): Bonus {
+        return this.playerService.getPlayer().specs.defenseBonus;
+    }
+
+    listenToSocketMessages(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+                this.characters.forEach((character) => {
+                    console.log('un current players a été emit', players);
+                    character.isAvailable = true;
+                    if (players.some((player) => player.avatar === character.id)) {
+                        character.isAvailable = false;
+                    }
+                });
+                if (!this.selectedCharacter.isAvailable) {
+                    for (let i = 0; i < this.characters.length; i++) {
+                        if (this.characters[i].isAvailable) {
+                            this.selectedCharacter = this.characters[i];
+                            this.playerService.setPlayerAvatar(this.selectedCharacter.id);
+                            this.currentIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
+                this.showErrorMessage.waitingRoomFullError = true;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
+                this.playerService.setPlayer(updatedPlayer);
+                this.router.navigate([`${this.gameId}/waiting-room/player`]);
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
+                this.gameId = data.gameId;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
+                this.showGameStartedModal = true;
+                setTimeout(() => {
+                    this.characterService.resetCharacterAvailability();
+                    this.router.navigate(['/main-menu']);
+                }, timeLimit);
+            }),
+        );
+    }
+
     selectCharacter(character: Character) {
-        this.selectedCharacter = character;
+        if (character.isAvailable) {
+            this.selectedCharacter = character;
+            this.playerService.setPlayerAvatar(character.id);
+        }
     }
 
     previousCharacter() {
-        this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        do {
+            this.currentIndex = this.currentIndex === 0 ? this.characters.length - 1 : this.currentIndex - 1;
+        } while (!this.characters[this.currentIndex].isAvailable);
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
     nextCharacter() {
-        this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        do {
+            this.currentIndex = this.currentIndex === this.characters.length - 1 ? 0 : this.currentIndex + 1;
+        } while (!this.characters[this.currentIndex].isAvailable);
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
     addBonus() {
-        this.life = defaultHp;
-        this.speed = defaultSpeed;
-        if (this.lifeOrSpeedBonus === 'life') {
-            this.life += 2;
-        } else if (this.lifeOrSpeedBonus === 'speed') {
-            this.speed += 2;
-        }
+        this.playerService.assignBonus(this.lifeOrSpeedBonus);
     }
 
     assignDice() {
-        if (this.attackOrDefenseBonus === 'attack') {
-            this.attackBonus = Bonus.D6;
-            this.defenseBonus = Bonus.D4;
-        } else if (this.attackOrDefenseBonus === 'defense') {
-            this.attackBonus = Bonus.D4;
-            this.defenseBonus = Bonus.D6;
+        this.playerService.assignDice(this.attackOrDefenseBonus);
+    }
+
+    toggleEditing(): void {
+        this.isEditing = !this.isEditing;
+        if (!this.isEditing) {
+            this.stopEditing();
+        } else {
+            this.name = this.playerService.getPlayer().name;
         }
     }
 
-    toggleEditing() {
-        this.isEditing = !this.isEditing;
-        this.characterName = '';
-    }
-
-    stopEditing() {
+    stopEditing(): void {
         this.isEditing = false;
-        this.characterName = this.characterName.trim();
-        if (!this.characterName) {
-            this.characterName = 'Choisis ton nom';
+        const trimmedName = this.name.trim();
+
+        if (trimmedName !== '') {
+            this.playerService.setPlayerName(trimmedName);
+        } else {
+            this.name = 'Choisis ton nom';
         }
     }
 
     async onSubmit() {
+        if (this.verifyErrors()) {
+            this.playerService.createPlayer();
 
+            if (this.router.url.includes('create-game')) {
+                try {
+                    const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
+                    if (!chosenMap) {
+                        this.showErrorMessage.selectionError = true;
+                        setTimeout(() => {
+                            this.router.navigate(['/create-game']);
+                        }, timeLimit);
+                    } else {
+                        this.router.navigate([`${this.mapName}/waiting-room/host`]);
+                    }
+                } catch (error) {
+                    this.showErrorMessage.selectionError = true;
+                    setTimeout(() => {
+                        this.router.navigate(['/create-game']);
+                    }, timeLimit);
+                }
+            } else {
+                this.socketService.sendMessage('joinGame', { player: this.playerService.getPlayer(), gameId: this.gameId });
+            }
+        }
+    }
+
+    onReturn() {
+        if (!this.router.url.includes('create-game')) {
+            this.router.navigate(['/main-menu']);
+        } else {
+            this.router.navigate(['/create-game']);
+        }
+    }
+
+    verifyErrors(): boolean {
         this.showErrorMessage = {
             selectionError: false,
             characterNameError: false,
             bonusError: false,
             diceError: false,
+            waitingRoomFullError: false,
         };
 
-        if (this.characterName === '' || this.characterName === 'Choisis un nom') {
+        if (this.name === 'Choisis un nom' || this.playerService.getPlayer().name === '') {
             this.showErrorMessage.characterNameError = true;
-            return;
+            return false;
         }
 
         if (!this.lifeOrSpeedBonus) {
             this.showErrorMessage.bonusError = true;
-            return;
+            return false;
         }
 
         if (!this.attackOrDefenseBonus) {
             this.showErrorMessage.diceError = true;
-            return;
+            return false;
         }
-
-        this.createPlayer();
-
-        if (this.router.url.includes('create-game')) {
-            const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
-            if (!chosenMap) {
-                this.showErrorMessage.selectionError = true;
-                setTimeout(() => {
-                    this.router.navigate(['/create-game']);
-                }, timeLimit);
-            } else {
-                this.router.navigate([`create-game/${this.mapName}/waiting-room`], { state: { player: this.player } });
-            }
-        } else {
-            this.router.navigate([`join-game/${this.gameId}/${this.mapName}/waiting-room`], { state: { player: this.player } });
-        }
-    }
-    
-    createPlayer() {
-        const playerSpecs: Specs = {
-            life: this.life,
-            speed: this.speed,
-            attack: this.attack,
-            defense: this.defense,
-            attackBonus: this.attackBonus,
-            defenseBonus: this.defenseBonus,
-            movePoints: 0,
-            actions: 0,
-            nVictories: 0,
-            nDefeats: 0,
-            nCombats: 0,
-            nEvasions: 0,
-            nLifeTaken: 0,
-            nLifeLost: 0,
-        };
-        const player: Player = {
-            name: this.characterName,
-            socketId: '',
-            isActive: true,
-            avatar: this.selectedCharacter.id,
-            specs: playerSpecs,
-            inventory: [],
-            position: { x: 0, y: 0 },
-            turn: 0,
-        };
-        this.player = player;
+        return true;
     }
 
-    onReturn() {
-        this.router.navigate(['/create-game']);
+    onQuit() {
+        this.socketService.disconnect();
+        this.characterService.resetCharacterAvailability();
+        this.router.navigate(['/main-menu']);
+    }
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
+    }
+
+    @HostListener('window:keydown', ['$event'])
+    handleKeyDown(event: KeyboardEvent): void {
+        if (event.key === 'ArrowLeft') {
+            this.previousCharacter();
+        } else if (event.key === 'ArrowRight') {
+            this.nextCharacter();
+        }
     }
 }

@@ -1,28 +1,102 @@
-/* eslint-disable */
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Character } from '@app/interfaces/character';
+import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Bonus } from '@common/game';
+import { PlayerService } from '@app/services/player-service/player.service';
+import { Avatar, Bonus, Player } from '@common/game';
 import { DBMap as Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { CharacterFormPageComponent } from './character-form-page.component';
 
 const mockCharacters: Character[] = [
-    { id: 1, name: 'Alistair Clockhaven', image: '../../assets/characters/1.png', preview: '../../assets/previewcharacters/1.png' },
-    { id: 2, name: 'Arachnoform', image: '../../assets/characters/2.png', preview: '../../assets/previewcharacters/2.png' },
-    { id: 3, name: 'Archibald Light', image: '../../assets/characters/3.png', preview: '../../assets/previewcharacters/3.png' },
-    { id: 4, name: 'Archpriest Mechanohr', image: '../../assets/characters/4.png', preview: '../../assets/previewcharacters/4.png' },
-    { id: 5, name: 'Cyron Vex', image: '../../assets/characters/5.png', preview: '../../assets/previewcharacters/5.png' },
-    { id: 6, name: 'Magnus Brassguard', image: '../../assets/characters/6.png', preview: '../../assets/previewcharacters/6.png' },
-    { id: 7, name: 'Professor Quicksprocket', image: '../../assets/characters/7.png', preview: '../../assets/previewcharacters/7.png' },
-    { id: 8, name: 'Reginald Gearwhisle', image: '../../assets/characters/8.png', preview: '../../assets/previewcharacters/8.png' },
-    { id: 9, name: 'Vance Steelstrike', image: '../../assets/characters/9.png', preview: '../../assets/previewcharacters/9.png' },
-    { id: 10, name: 'Zephyr Gearwind', image: '../../assets/characters/10.png', preview: '../../assets/previewcharacters/10.png' },
-    { id: 11, name: 'Dr. Veselius', image: '../../assets/characters/11.png', preview: '../../assets/previewcharacters/11.png' },
-    { id: 12, name: 'Grimmauld Ironfist', image: '../../assets/characters/12.png', preview: '../../assets/previewcharacters/12.png' },
+    {
+        id: Avatar.Avatar1,
+        name: 'Alistair Clockhaven',
+        image: './assets/characters/1.png',
+        preview: './assets/previewcharacters/1.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar2,
+        name: 'Arachnoform',
+        image: './assets/characters/2.png',
+        preview: './assets/previewcharacters/2.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar3,
+        name: 'Archibald Light',
+        image: './assets/characters/3.png',
+        preview: './assets/previewcharacters/3.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar4,
+        name: 'Archpriest Mechanohr',
+        image: './assets/characters/4.png',
+        preview: './assets/previewcharacters/4.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar5,
+        name: 'Cyron Vex',
+        image: './assets/characters/5.png',
+        preview: './assets/previewcharacters/5.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar6,
+        name: 'Magnus Brassguard',
+        image: './assets/characters/6.png',
+        preview: './assets/previewcharacters/6.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar7,
+        name: 'Professor Quicksprocket',
+        image: './assets/characters/7.png',
+        preview: './assets/previewcharacters/7.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar8,
+        name: 'Reginald Gearwhisle',
+        image: './assets/characters/8.png',
+        preview: './assets/previewcharacters/8.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar9,
+        name: 'Vance Steelstrike',
+        image: './assets/characters/9.png',
+        preview: './assets/previewcharacters/9.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar10,
+        name: 'Zephyr Gearwind',
+        image: './assets/characters/10.png',
+        preview: './assets/previewcharacters/10.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar11,
+        name: 'Dr. Veselius',
+        image: './assets/characters/11.png',
+        preview: './assets/previewcharacters/11.png',
+        isAvailable: true,
+    },
+    {
+        id: Avatar.Avatar12,
+        name: 'Grimmauld Ironfist',
+        image: './assets/characters/12.png',
+        preview: './assets/previewcharacters/12.png',
+        isAvailable: true,
+    },
 ];
 
 const mockMaps: Map[] = [
@@ -61,26 +135,64 @@ import SpyObj = jasmine.SpyObj;
 describe('CharacterFormPageComponent', () => {
     let component: CharacterFormPageComponent;
     let fixture: ComponentFixture<CharacterFormPageComponent>;
-    let CommunicationMapServiceSpy: SpyObj<CommunicationMapService>;
-    let routerSpy: SpyObj<Router>;
-    let activatedRouteSpy: SpyObj<ActivatedRoute>;
+    let communicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
+    let routerSpy: jasmine.SpyObj<Router>;
+    let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
+    let characterServiceSpy: jasmine.SpyObj<CharacterService>;
+    let playerServiceSpy: jasmine.SpyObj<PlayerService>;
+    let socketServiceSpy: jasmine.SpyObj<SocketService>;
+    let availableAvatarsSubject: Subject<any>;
+
+    const mockCharacters: Character[] = [
+        { id: Avatar.Avatar1, name: 'Alistair Clockhaven', image: '', preview: '', isAvailable: true },
+        { id: Avatar.Avatar2, name: 'Arachnoform', image: '', preview: '', isAvailable: false },
+        { id: Avatar.Avatar3, name: 'Archibald Light', image: '', preview: '', isAvailable: true },
+    ];
 
     beforeEach(async () => {
-        CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
-        routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
+        characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
 
-        CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
-        activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
-            snapshot: {
-                params: { mapName: 'Map1' },
-            },
+        playerServiceSpy = jasmine.createSpyObj('PlayerService', [
+            'getPlayer',
+            'setPlayer',
+            'resetPlayer',
+            'setPlayerAvatar',
+            'createPlayer',
+            'assignBonus',
+            'assignDice',
+            'setPlayerName',
+        ]);
+        playerServiceSpy.getPlayer.and.returnValue({ name: 'Player 1', avatar: Avatar.Avatar1 } as Player);
+
+        routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
+        communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect'], {
+            socket: { id: 'host-socket-id' },
         });
+
+        activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
+            snapshot: { params: { mapName: 'Map1' } },
+        });
+
+        availableAvatarsSubject = new Subject<any>();
+        socketServiceSpy.listen.and.callFake((eventName: string) => {
+            if (eventName === 'currentPlayers') {
+                return availableAvatarsSubject.asObservable();
+            }
+            return of({});
+        });
+
         await TestBed.configureTestingModule({
             imports: [CharacterFormPageComponent, CommonModule, FormsModule],
             providers: [
-                { provide: CommunicationMapService, useValue: CommunicationMapServiceSpy },
+                { provide: CommunicationMapService, useValue: communicationMapServiceSpy },
                 { provide: Router, useValue: routerSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
+                { provide: CharacterService, useValue: characterServiceSpy },
+                { provide: SocketService, useValue: socketServiceSpy },
+                { provide: PlayerService, useValue: playerServiceSpy },
             ],
         }).compileComponents();
 
@@ -88,176 +200,220 @@ describe('CharacterFormPageComponent', () => {
         component = fixture.componentInstance;
     });
 
-    it('should create', () => {
+    it('should create the component', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize characters and select the first character', () => {
-        expect(component.characters).toEqual(mockCharacters);
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
+    describe('Character Selection', () => {
+        beforeEach(() => {
+            component.characters = [
+                { id: Avatar.Avatar1, name: 'Alistair Clockhaven', image: '', preview: '', isAvailable: true },
+                { id: Avatar.Avatar2, name: 'Arachnoform', image: '', preview: '', isAvailable: false },
+                { id: Avatar.Avatar3, name: 'Archibald Light', image: '', preview: '', isAvailable: true },
+            ];
+            component.selectedCharacter = component.characters[0];
+            component.currentIndex = 0;
+        });
+
+        it('should cycle to the next available character', () => {
+            component.nextCharacter();
+            expect(component.selectedCharacter).toEqual(component.characters[2]);
+            expect(component.currentIndex).toBe(2);
+        });
+
+        it('should wrap around to the first available character if at the end of the list', () => {
+            component.currentIndex = 2;
+            component.nextCharacter();
+            expect(component.selectedCharacter).toEqual(component.characters[0]);
+            expect(component.currentIndex).toBe(0);
+        });
     });
 
-    it('should set map name from query params', () => {
-        expect(component.mapName).toBe('Map1');
-    });
-
-    it('should select a character', () => {
-        component.selectCharacter(mockCharacters[0]);
-        expect(component.selectedCharacter).toBe(mockCharacters[0]);
-    });
-
-    it('should select the previous character', () => {
-        component.currentIndex = 1;
-        component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
-    });
-
-    it('should select the next character', () => {
-        component.currentIndex = 0;
-        component.nextCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[1]);
-    });
-
-    it('should select the last character when selecting previous character from the first', () => {
-        component.currentIndex = 0;
-        component.previousCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[mockCharacters.length - 1]);
-    });
-
-    it('should select the first character when selecting next character from the last', () => {
-        component.currentIndex = mockCharacters.length - 1;
-        component.nextCharacter();
-        expect(component.selectedCharacter).toEqual(mockCharacters[0]);
-    });
-
-    it('should add life bonus', () => {
-        component.lifeOrSpeedBonus = 'life';
-        component.addBonus();
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.life).toBe(6);
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.speed).toBe(4);
-    });
-
-    it('should add speed bonus', () => {
-        component.lifeOrSpeedBonus = 'speed';
-        component.addBonus();
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.life).toBe(4);
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.speed).toBe(6);
-    });
-
-    it('should assign attack dice', () => {
-        component.attackOrDefenseBonus = 'attack';
-        component.assignDice();
-        expect(component.attackBonus).toBe(Bonus.D6);
-        expect(component.defenseBonus).toBe(Bonus.D4);
-    });
-
-    it('should assign defense dice', () => {
-        component.attackOrDefenseBonus = 'defense';
-        component.assignDice();
-        expect(component.attackBonus).toBe(Bonus.D4);
-        expect(component.defenseBonus).toBe(Bonus.D6);
-    });
-
-    it('should toggle editing mode', () => {
-        component.toggleEditing();
-        expect(component.isEditing).toBe(true);
-        component.toggleEditing();
-        expect(component.isEditing).toBe(false);
-    });
-
-    it('should stop editing and keep character name if it is not empty', () => {
-        component.characterName = 'Test Name';
-        component.stopEditing();
-        expect(component.isEditing).toBeFalse();
-        expect(component.characterName).toBe('Test Name');
-    });
-
-    it('should navigate to create game on return', () => {
-        component.onReturn();
-        expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
-    });
-
-    it('should show characterNameError if character name is empty', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = '';
-        component.lifeOrSpeedBonus = 'life';
-        component.attackOrDefenseBonus = 'attack';
-
-        component.onSubmit();
-
-        fixture.whenStable();
-        fixture.detectChanges();
-
-        expect(component.showErrorMessage.characterNameError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    });
-
-    it('should show bonusError if lifeOrSpeedBonus is not selected', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = 'Nom valide';
-        component.lifeOrSpeedBonus = '';
-        component.attackOrDefenseBonus = 'attack';
-
-        component.onSubmit();
-
-        await fixture.whenStable();
-        fixture.detectChanges();
-
-        expect(component.showErrorMessage.bonusError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    });
-
-    it('should show diceError if attackOrDefenseBonus is not selected', async () => {
-        CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
-        component.characterName = 'Nom valide';
-        component.lifeOrSpeedBonus = 'speed';
-        component.attackOrDefenseBonus = '';
-
-        component.onSubmit();
-
-        await fixture.whenStable();
-        fixture.detectChanges();
-
-        expect(component.showErrorMessage.diceError).toBeTrue();
-        expect(routerSpy.navigate).not.toHaveBeenCalled();
-    });
-
-    it('should set characterName to default if trimmed characterName is empty', () => {
-        component.characterName = '   ';
-        component.stopEditing();
-
-        expect(component.isEditing).toBeFalse();
-        expect(component.characterName).toBe('Choisis ton nom');
-    });
-
-    describe('when creating game', () => {
-        it('should handle onSubmit correctly when map is not found', fakeAsync(async () => {
-            CommunicationMapServiceSpy.basicGet.and.returnValue(of(undefined));
-            component.characterName = 'Nom valide';
+    describe('Form Submission', () => {
+        it('should navigate to waiting room when map is found on creation', async () => {
+            component.name = 'Valid Name';
             component.lifeOrSpeedBonus = 'life';
             component.attackOrDefenseBonus = 'attack';
+            component.ngOnInit();
 
-            component.onSubmit();
-            tick(5000);
+            await component.onSubmit();
 
-            expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
-        }));
+            expect(routerSpy.navigate).toHaveBeenCalledWith(['Map1/waiting-room/host']);
+        });
 
-        it('should handle onSubmit correctly when map is found', async () => {
-            CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[0]));
-            component.characterName = 'Nom valide';
-            component.lifeOrSpeedBonus = 'life';
-            component.attackOrDefenseBonus = 'attack';
-
+        it('should show characterNameError if character name is empty', async () => {
+            component.name = 'Choisis ton nom';
+            playerServiceSpy.getPlayer.and.returnValue({ name: '', avatar: Avatar.Avatar1 } as Player);
             component.onSubmit();
             await fixture.whenStable();
-            fixture.detectChanges();
-            expect(routerSpy.navigate).toHaveBeenCalledWith([`create-game/${mockMaps[0].name}/waiting-room`], {
-                state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].id }) },
+            expect(component.showErrorMessage.characterNameError).toBeTrue();
+            expect(routerSpy.navigate).not.toHaveBeenCalled();
+        });
+
+        it('should show bonusError if lifeOrSpeedBonus is not selected', async () => {
+            component.name = 'Valid Name';
+            component.attackOrDefenseBonus = 'attack';
+            component.onSubmit();
+            await fixture.whenStable();
+            expect(component.showErrorMessage.bonusError).toBeTrue();
+            expect(routerSpy.navigate).not.toHaveBeenCalled();
+        });
+
+        it('should show diceError if attackOrDefenseBonus is not selected', async () => {
+            component.name = 'Valid Name';
+            component.lifeOrSpeedBonus = 'life';
+            component.onSubmit();
+            await fixture.whenStable();
+            expect(component.showErrorMessage.diceError).toBeTrue();
+            expect(routerSpy.navigate).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('CharacterForm interactions with playerService', () => {
+        beforeEach(() => {
+            component.lifeOrSpeedBonus = 'life';
+            component.attackOrDefenseBonus = 'attack';
+            component.name = 'Player Name';
+        });
+
+        describe('addBonus()', () => {
+            it('should call assignBonus with the correct lifeOrSpeedBonus', () => {
+                component.addBonus();
+                expect(playerServiceSpy.assignBonus).toHaveBeenCalledWith('life');
+            });
+        });
+
+        describe('assignDice()', () => {
+            it('should call assignDice with the correct attackOrDefenseBonus', () => {
+                component.assignDice();
+                expect(playerServiceSpy.assignDice).toHaveBeenCalledWith('attack');
+            });
+        });
+
+        describe('toggleEditing()', () => {
+            it('should enable editing mode when isEditing is false', () => {
+                component.isEditing = false;
+                component.toggleEditing();
+                expect(component.isEditing).toBeTrue();
+                expect(component.name).toEqual(playerServiceSpy.getPlayer().name);
+            });
+
+            it('should disable editing mode and call stopEditing when isEditing is true', () => {
+                component.isEditing = true;
+                spyOn(component, 'stopEditing');
+                component.toggleEditing();
+                expect(component.isEditing).toBeFalse();
+                expect(component.stopEditing).toHaveBeenCalled();
+            });
+        });
+
+        describe('stopEditing()', () => {
+            it('should set the player name if trimmed name is not empty', () => {
+                component.name = ' Valid Name ';
+                component.stopEditing();
+                expect(component.isEditing).toBeFalse();
+                expect(playerServiceSpy.setPlayerName).toHaveBeenCalledWith('Valid Name');
+            });
+
+            it('should reset name to "Choisis ton nom" if trimmed name is empty', () => {
+                component.name = '   ';
+                component.stopEditing();
+                expect(component.isEditing).toBeFalse();
+                expect(component.name).toEqual('Choisis ton nom');
+            });
+        });
+
+        describe('Getters', () => {
+            beforeEach(() => {
+                playerServiceSpy.getPlayer.and.returnValue({
+                    specs: {
+                        life: 10,
+                        speed: 5,
+                        attack: 8,
+                        defense: 7,
+                        attackBonus: Bonus.D6,
+                        defenseBonus: Bonus.D4,
+                    },
+                } as Player);
+            });
+
+            it('should return the correct life value from playerService', () => {
+                expect(component.life).toBe(10);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+
+            it('should return the correct speed value from playerService', () => {
+                expect(component.speed).toBe(5);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+
+            it('should return the correct attack value from playerService', () => {
+                expect(component.attack).toBe(8);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+
+            it('should return the correct defense value from playerService', () => {
+                expect(component.defense).toBe(7);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+
+            it('should return the correct attackBonus value from playerService', () => {
+                expect(component.attackBonus).toBe(Bonus.D6);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+
+            it('should return the correct defenseBonus value from playerService', () => {
+                expect(component.defenseBonus).toBe(Bonus.D4);
+                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('CharacterFormPageComponent additional tests', () => {
+        beforeEach(() => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = component.characters[0];
+            component.currentIndex = 0;
+            component.name = 'Valid Name';
+            component.lifeOrSpeedBonus = 'life';
+            component.attackOrDefenseBonus = 'attack';
+        });
+
+        describe('Character Selection with selectCharacter', () => {
+            it('should select a character if it is available and set the avatar', () => {
+                component.selectCharacter(component.characters[2]); // Choix d'un personnage disponible
+                expect(component.selectedCharacter).toEqual(component.characters[2]);
+                expect(playerServiceSpy.setPlayerAvatar).toHaveBeenCalledWith(component.characters[2].id);
+            });
+
+            it('should not change selection if character is unavailable', () => {
+                const unavailableCharacter = { ...component.characters[1], isAvailable: false };
+                component.selectCharacter(unavailableCharacter);
+                expect(component.selectedCharacter).toEqual(component.characters[0]);
+                expect(playerServiceSpy.setPlayerAvatar).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('Error handling and navigation on failed map retrieval', () => {
+            it('should display selectionError and navigate to /create-game after delay', fakeAsync(() => {
+                communicationMapServiceSpy.basicGet.and.returnValue(of(undefined));
+                component.onSubmit();
+                tick(5000);
+                expect(component.showErrorMessage.selectionError).toBeTrue();
+                expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
+            }));
+        });
+
+        describe('Navigation with onReturn and onQuit', () => {
+            it('should navigate to create-game if router url includes "create-game"', () => {
+                component.onReturn();
+                expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
+            });
+
+            it('should disconnect socket and navigate to main menu on onQuit', () => {
+                component.onQuit();
+                expect(socketServiceSpy.disconnect).toHaveBeenCalled();
+                expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
             });
         });
     });
@@ -266,26 +422,62 @@ describe('CharacterFormPageComponent', () => {
 describe('CharacterFormPage when joining game', () => {
     let component: CharacterFormPageComponent;
     let fixture: ComponentFixture<CharacterFormPageComponent>;
-    let communicationMapService: SpyObj<CommunicationMapService>;
+    let communicationMapServiceSpy: SpyObj<CommunicationMapService>;
     let routerSpy: SpyObj<Router>;
     let activatedRouteSpy: SpyObj<ActivatedRoute>;
+    let socketServiceSpy: jasmine.SpyObj<SocketService>;
+    let playerServiceSpy: jasmine.SpyObj<PlayerService>;
+    let characterServiceSpy: jasmine.SpyObj<CharacterService>;
+    let availableAvatarsSubject: Subject<Object>;
 
     beforeEach(async () => {
-        communicationMapService = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
+        characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
+
+        communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'join-game' });
 
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[1]));
+        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer', 'setPlayerAvatar', 'createPlayer']);
+        playerServiceSpy.getPlayer.and.returnValue({ name: 'Player 1', avatar: Avatar.Avatar1 } as Player);
+
+        communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[1]));
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: {
-                params: { mapName: 'Map2', gameId: '5678' },
+                params: { gameId: '5678' },
             },
         });
+
+        availableAvatarsSubject = new Subject<any>();
+
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect'], {
+            socket: { id: 'mock-socket-id' },
+        });
+
+        socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
+            if (eventName === 'currentPlayers') {
+                return availableAvatarsSubject.asObservable() as Observable<T>;
+            } else if (eventName === 'playerJoined') {
+                return of({
+                    name: 'nouveau user',
+                    socketId: 'mock-socket-id',
+                    isActive: true,
+                } as T);
+            } else if(eventName === 'gameAlreadyStarted') {
+                return of({} as T);
+            } else {
+                return of({} as T);
+            }
+        });
+
         await TestBed.configureTestingModule({
             imports: [CharacterFormPageComponent, CommonModule, FormsModule],
             providers: [
-                { provide: CommunicationMapService, useValue: communicationMapService },
+                { provide: CommunicationMapService, useValue: communicationMapServiceSpy },
                 { provide: Router, useValue: routerSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
+                { provide: SocketService, useValue: socketServiceSpy },
+                { provide: PlayerService, useValue: playerServiceSpy },
+                { provide: CharacterService, useValue: characterServiceSpy },
             ],
         }).compileComponents();
 
@@ -293,17 +485,72 @@ describe('CharacterFormPage when joining game', () => {
         component = fixture.componentInstance;
     });
 
-    it('should handle onSubmit correctly when map is found', async () => {
-        communicationMapService.basicGet.and.returnValue(of(mockMaps[1]));
-        component.characterName = 'Nom valide';
+    beforeEach(() => {
+        component.ngOnInit();
+    });
+
+    it('should show an error and navigate to main menu if game has already started', fakeAsync(() => {
+        component.listenToSocketMessages();
+
+        socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
+
+        tick(5000); 
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
+    
+
+    it('should navigate to main menu if router url does not include "create-game"', () => {
+        component.onReturn();
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+
+    describe('listenToSocketMessages', () => {
+        it('should update character availability based on received players', fakeAsync(() => {
+            const currentPlayers = [{ avatar: Avatar.Avatar1, name: 'Player 1' } as Player, { avatar: Avatar.Avatar3, name: 'Player 3' } as Player];
+
+            availableAvatarsSubject.next(currentPlayers);
+            component.selectedCharacter = mockCharacters[0];
+            tick();
+
+            expect(component.selectedCharacter.isAvailable).toBeFalse();
+        }));
+    });
+
+    describe('CharacterFormPageComponent HostListener keydown', () => {
+        it('should navigate to the previous character when ArrowLeft is pressed', () => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[2];
+            component.currentIndex = 2;
+
+            const event = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
+            component.handleKeyDown(event);
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+        });
+
+        it('should navigate to the next character when ArrowRight is pressed', () => {
+            component.characters = [...mockCharacters];
+            component.selectedCharacter = mockCharacters[0];
+            component.currentIndex = 0;
+
+            const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+            component.handleKeyDown(event);
+
+            expect(component.selectedCharacter).toEqual(mockCharacters[1]);
+            expect(component.currentIndex).toBe(1);
+        });
+    });
+
+    it('should send joinGame message via socket if joining a game', async () => {
+        component.name = 'Valid Name';
         component.lifeOrSpeedBonus = 'life';
         component.attackOrDefenseBonus = 'attack';
 
-        component.onSubmit();
-        await fixture.whenStable();
-        fixture.detectChanges();
-        expect(routerSpy.navigate).toHaveBeenCalledWith([`join-game/${component.gameId}/${mockMaps[1].name}/waiting-room`], {
-            state: { player: jasmine.objectContaining({ name: 'Nom valide', avatar: mockCharacters[0].id }) },
-        });
+        component.gameId = '5678';
+        await component.onSubmit();
+
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: playerServiceSpy.getPlayer(), gameId: '5678' });
     });
 });

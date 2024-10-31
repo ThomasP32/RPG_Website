@@ -8,6 +8,7 @@ import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
 import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
+import { GamePageComponent } from '@app/pages/game-page/game-page';
 import { HomePageComponent } from '@app/pages/home-page/home-page.component';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { environment } from './environments/environment';
@@ -23,10 +24,13 @@ const routes: Routes = [
     { path: 'edition/:id', component: GameCreationPageComponent },
     { path: 'create-game', component: GameChoicePageComponent },
     { path: 'admin-page', component: AdminPageComponent },
-    { path: 'join-game/create-character', component: CharacterFormPageComponent },
+    { path: ':gameId/choose-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/create-character', component: CharacterFormPageComponent },
-    { path: 'create-game/:mapName/waiting-room', component: WaitingRoomPageComponent },
-    { path: 'join-game/:gameId/:mapName/waiting-room', component: WaitingRoomPageComponent },
+    { path: ':mapName/waiting-room/host', component: WaitingRoomPageComponent },
+    { path: 'join-game/:gameId/create-character', component: CharacterFormPageComponent },
+    { path: ':gameId/waiting-room/player', component: WaitingRoomPageComponent },
+    { path: 'join-game/:gameId/waiting-room', component: WaitingRoomPageComponent },
+    { path: 'game/:gameId/:mapName', component: GamePageComponent },
     { path: '**', redirectTo: '/main-menu' },
 ];
 
