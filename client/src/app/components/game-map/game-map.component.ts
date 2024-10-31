@@ -40,7 +40,7 @@ export class GameMapComponent implements OnInit, OnChanges {
 
     ngOnChanges() {
         this.clearPreview();
-        this.reloadMap(this.map);
+        this.loadMap(this.map);
     }
 
     onTileHover(position: Coordinate) {
@@ -71,29 +71,6 @@ export class GameMapComponent implements OnInit, OnChanges {
 
         map.startTiles.forEach((start) => {
             this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
-        });
-
-        map.items.forEach((item) => {
-            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
-        });
-
-        map.players.forEach((player) => {
-            this.Map[player.position.x][player.position.y].player = player.avatar;
-        });
-    }
-
-    reloadMap(map: Game) {
-        this.Map.forEach((row) =>
-            row.forEach((cell) => {
-                cell.player = undefined;
-                cell.item = undefined;
-                cell.doorState = undefined;
-            }),
-        );
-
-        map.doorTiles.forEach((door) => {
-            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
-            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
         });
 
         map.items.forEach((item) => {
@@ -157,6 +134,7 @@ export class GameMapComponent implements OnInit, OnChanges {
                     this.tileDescription = "Aucun déplacement n'est possible sur ou à travers un mur.";
                 }
             });
+
             this.map.doorTiles.forEach((doorTile) => {
                 if (!doorTile.isOpened && doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
                     this.tileDescription = 'Une porte fermée ne peut être franchie, mais peut être ouverte par une action.';

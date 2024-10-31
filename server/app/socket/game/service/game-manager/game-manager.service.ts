@@ -18,8 +18,7 @@ export class GameManagerService {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === playerSocket);
         if (player) {
-            path.forEach((position, index) => {
-                if (index === 0) return;
+            path.forEach((position) => {
                 player.specs.movePoints -= this.getTileWeight(position, game);
             });
             player.position = path[path.length - 1];
@@ -201,5 +200,9 @@ export class GameManagerService {
             .tiles.some(
                 (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
             );
+    }
+
+    hasFallen(moves: Coordinate[], destination: Coordinate) {
+        return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
 }

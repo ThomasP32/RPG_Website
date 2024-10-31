@@ -200,37 +200,4 @@ describe('GameMapComponent', () => {
             expect(component.tileDescription).toBe('');
         });
     });
-
-    describe('#reloadMap', () => {
-        beforeEach(() => {
-            component.createMap(mockMap.mapSize.x);
-        });
-
-        it('should clear existing dynamic properties before reloading map', () => {
-            component.createMap(mockMap.mapSize.x);
-
-            component.Map[1][2] = { value: 'door', isHovered: false, doorState: 'open', item: 'old-item', player: Avatar.Avatar2 };
-            component.Map[2][1] = { value: 'floor', isHovered: false, doorState: 'closed', item: 'old-item', player: Avatar.Avatar1 };
-            component.Map[0][1] = { value: 'floor', isHovered: false, item: 'old-item' };
-
-            component.reloadMap(mockMap);
-
-            expect(component.Map[1][2].doorState).toBe('closed');
-            expect(component.Map[2][1].doorState).toBe('open');
-            expect(component.Map[0][1].item).toBe(ItemCategory.Hat);
-            expect(component.Map[2][2].player).toBe(Avatar.Avatar1);
-        });
-
-        it('should correctly load doors, items, and players without duplicating them', () => {
-            component.reloadMap(mockMap);
-
-            expect(component.Map[1][2].value).toBe('door');
-            expect(component.Map[1][2].doorState).toBe('closed');
-            expect(component.Map[2][1].doorState).toBe('open');
-
-            expect(component.Map[0][1].item).toBe(ItemCategory.Hat);
-
-            expect(component.Map[2][2].player).toBe(Avatar.Avatar1);
-        });
-    });
 });
