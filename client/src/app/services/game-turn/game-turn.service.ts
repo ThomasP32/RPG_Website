@@ -94,6 +94,7 @@ export class GameTurnService {
     getMoves(): void {
         this.listenMoves();
         this.socketService.sendMessage('getMovements', this.game.id);
+        this.socketService.sendMessage('getPossibleActions', this.game.id);
     }
 
     listenMoves(): void {
