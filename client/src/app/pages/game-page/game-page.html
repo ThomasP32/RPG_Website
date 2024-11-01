@@ -69,7 +69,7 @@
     <div class="right-panel">
         <!--AJOUTER LE COMPONENT -->
         <div class="player-list">
-            <app-players-list [players]="activePlayers" ></app-players-list>
+            <app-players-list [players]="activePlayers"></app-players-list>
             Liste des joueurs
         </div>
 
@@ -78,28 +78,32 @@
             <app-chatroom [player]="player" [gameId]="gameId"></app-chatroom>
         </div>
 
+        <!-- AJOUTER LE COMPONENT -->
+        <div class="journal">
+            <app-journal [player]="player" [gameId]="gameId"></app-journal>
+        </div>
+
         <div class="action-buttons">
             <button>Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
 
             @if(showExitModal) {
-                <div class="open-exit-confirmation-modal">
-                    <div class="modal">
-                        <h2>Confirmer la sortie</h2>
-                        <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
-                        <button class="modal-button" (click)="confirmExit()">Oui</button>
-                        <button class="modal-button" (click)="closeExitModal()">Non</button>
-                    </div>
+            <div class="open-exit-confirmation-modal">
+                <div class="modal">
+                    <h2>Confirmer la sortie</h2>
+                    <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
+                    <button class="modal-button" (click)="confirmExit()">Oui</button>
+                    <button class="modal-button" (click)="closeExitModal()">Non</button>
                 </div>
-            }
-            @if(showKickedModal) {
-                <div class="game-finished-modal">
-                    <div class="modal">
-                        <h2>Tous les joueurs ont abandonné.</h2>
-                        <p>La partie est finie, vous serez redirigé.</p>
-                    </div>
+            </div>
+            } @if(showKickedModal) {
+            <div class="game-finished-modal">
+                <div class="modal">
+                    <h2>Tous les joueurs ont abandonné.</h2>
+                    <p>La partie est finie, vous serez redirigé.</p>
                 </div>
+            </div>
 
             }
         </div>

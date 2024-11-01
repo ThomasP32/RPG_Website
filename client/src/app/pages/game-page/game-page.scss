@@ -209,6 +209,23 @@
     }
 }
 
+.journal {
+    width: 100%;
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+
+    app-journal {
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
 .action-buttons {
     display: flex;
     flex-direction: column;
@@ -243,7 +260,7 @@
             transform: translateY(4px);
         }
     }
-    
+
     .modal h2 {
         margin-bottom: 20px;
         white-space: nowrap;
@@ -252,7 +269,7 @@
         font-size: 1.2rem;
         color: #aa3d3d;
     }
-    
+
     .modal p {
         font-size: 1.1rem;
         margin-bottom: 20px;
@@ -268,7 +285,7 @@
         line-height: 1.5em;
         font-family: 'Press Start 2P';
     }
-    
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -281,7 +298,7 @@
         align-items: center;
         z-index: 1000;
     }
-    
+
     .modal {
         background-color: #1c242c;
         padding: 20px;
@@ -321,7 +338,7 @@
         align-items: center;
         z-index: 1000;
     }
-    
+
     .close-button {
         position: absolute;
         top: 10px;
@@ -334,7 +351,7 @@
         background: none;
         border: none;
     }
-    
+
     .modal-button {
         display: flex;
         align-items: center;
@@ -348,7 +365,7 @@
         font-family: 'Press Start 2P', sans-serif;
         transition: background-color 0.3s ease;
     }
-    
+
     .modal-button:hover {
         background-color: #3b3f46;
     }

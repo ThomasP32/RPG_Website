@@ -9,9 +9,8 @@
     </select>
     <div class="journal-body"></div>
     <ul>
-        @for (entry of journalEntries$ | async; track entry.timeStamp) {
-        <li>{{ entry.message }} ({{ entry.timeStamp }})</li>
-
+        @for (entry of journalEntries; track entry) {
+        <li>{{ entry.message }} ({{ entry.timestamp | date: 'HH:mm:ss' }})</li>
         }
     </ul>
     <!-- @if(showAll){

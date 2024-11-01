@@ -44,9 +44,9 @@ export class SocketService {
                 subscriber.next(data);
             });
 
-            return () => {
-                this.socket.off(event);
-            };
+            // return () => {
+            //     this.socket.off(event);
+            // };
         });
     }
 
