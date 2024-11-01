@@ -33,8 +33,8 @@ describe('PlayerService', () => {
             expect(player.specs.speed).toBe(4);
             expect(player.specs.attack).toBe(4);
             expect(player.specs.defense).toBe(4);
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.attackBonus).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus).toBe(Bonus.D4);
             expect(player.inventory.length).toBe(0);
             expect(player.position).toEqual({ x: 0, y: 0 });
             expect(player.turn).toBe(0);
@@ -58,8 +58,8 @@ describe('PlayerService', () => {
             expect(player.avatar).toBe(Avatar.Avatar2);
             expect(player.specs.life).toBe(6); // life bonus
             expect(player.specs.speed).toBe(4);
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.attackBonus).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus).toBe(Bonus.D4);
         });
 
         it('should create a player with updated specs and empty strings as socket ID when none', () => {
@@ -75,10 +75,10 @@ describe('PlayerService', () => {
             expect(player.name).toBe('Test Player');
             expect(player.socketId).toBe('');
             expect(player.avatar).toBe(Avatar.Avatar2);
-            expect(player.specs.life).toBe(6); 
+            expect(player.specs.life).toBe(6);
             expect(player.specs.speed).toBe(4);
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.attackBonus).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus).toBe(Bonus.D4);
         });
     });
 
@@ -94,8 +94,8 @@ describe('PlayerService', () => {
                     speed: 5,
                     attack: 5,
                     defense: 5,
-                    attackBonus: { diceType: Bonus.D6, currentValue: 0 },
-                    defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
+                    attackBonus: Bonus.D6,
+                    defenseBonus: Bonus.D4,
                     movePoints: 0,
                     actions: 0,
                     nVictories: 0,
@@ -155,8 +155,8 @@ describe('PlayerService', () => {
             service.assignDice('attack');
             const player = service.player;
 
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
+            expect(player.specs.attackBonus).toBe(Bonus.D6);
+            expect(player.specs.defenseBonus).toBe(Bonus.D4);
         });
 
         it('should set attack bonus to D4 and defense bonus to D6 when "defense" dice is assigned', () => {
@@ -164,8 +164,8 @@ describe('PlayerService', () => {
             service.assignDice('defense');
             const player = service.player;
 
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D4);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.attackBonus).toBe(Bonus.D4);
+            expect(player.specs.defenseBonus).toBe(Bonus.D6);
         });
     });
 
@@ -185,8 +185,8 @@ describe('PlayerService', () => {
             expect(player.avatar).toBe(Avatar.Avatar4);
             expect(player.specs.life).toBe(4);
             expect(player.specs.speed).toBe(6);
-            expect(player.specs.attackBonus.diceType).toBe(Bonus.D4);
-            expect(player.specs.defenseBonus.diceType).toBe(Bonus.D6);
+            expect(player.specs.attackBonus).toBe(Bonus.D4);
+            expect(player.specs.defenseBonus).toBe(Bonus.D6);
         });
     });
 });

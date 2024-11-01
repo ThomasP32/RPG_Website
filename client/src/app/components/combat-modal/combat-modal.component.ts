@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
@@ -36,10 +36,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
-    constructor(
-        private socketService: SocketService,
-        private cdr: ChangeDetectorRef,
-    ) {
+    constructor(private socketService: SocketService) {
         this.socketService = socketService;
     }
 
@@ -70,7 +67,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.socketService.listen<{ currentPlayerTurn: string }>('updateTurn').subscribe((data) => {
                 this.currentTurnPlayerId = data.currentPlayerTurn;
                 console.log('Current turn player:', this.currentTurnPlayerId);
-                this.cdr.detectChanges();
             }),
         );
         this.socketSubscription.add(
