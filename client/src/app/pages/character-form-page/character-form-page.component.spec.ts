@@ -242,7 +242,7 @@ describe('CharacterFormPageComponent', () => {
 
         it('should show characterNameError if character name is empty', async () => {
             component.name = 'Choisis ton nom';
-            playerServiceSpy.player={ name: '', avatar: Avatar.Avatar1 } as Player;
+            playerServiceSpy.player = { name: '', avatar: Avatar.Avatar1 } as Player;
             component.onSubmit();
             await fixture.whenStable();
             expect(component.showErrorMessage.characterNameError).toBeTrue();
@@ -330,8 +330,8 @@ describe('CharacterFormPageComponent', () => {
                         speed: 5,
                         attack: 8,
                         defense: 7,
-                        attackBonus: { diceType: Bonus.D6, currentValue: 0 },
-                        defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
+                        attackBonus: Bonus.D6,
+                        defenseBonus: Bonus.D4,
                     },
                 } as Player;
             });
