@@ -1,15 +1,16 @@
+import { MapConfig, MapSize } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
-const SMALL_MAP_SIZE = 10;
-const MEDIUM_MAP_SIZE = 15;
-const LARGE_MAP_SIZE = 20;
-const SMALL_MAP_PLAYERS_MIN_MAX = 2;
-const MEDIUM_MAP_PLAYERS_MIN = 2;
-const MEDIUM_MAP_PLAYERS_MAX = 4;
-const LARGE_MAP_PLAYERS_MIN = 2;
-const LARGE_MAP_PLAYERS_MAX = 6;
+// const SMALL_MAP_SIZE = 10;
+// const MEDIUM_MAP_SIZE = 15;
+// const LARGE_MAP_SIZE = 20;
+// const SMALL_MAP_PLAYERS_MIN_MAX = 2;
+// const MEDIUM_MAP_PLAYERS_MIN = 2;
+// const MEDIUM_MAP_PLAYERS_MAX = 4;
+// const LARGE_MAP_PLAYERS_MIN = 2;
+// const LARGE_MAP_PLAYERS_MAX = 6;
 
 @Injectable()
 export class GameCreationService {
@@ -130,30 +131,51 @@ export class GameCreationService {
         });
     }
 
+    // isGameStartable(gameId: string): boolean {
+    //     const game = this.getGameById(gameId);
+    //     if (game.mapSize.x === SMALL_MAP_SIZE) {
+    //         return game.players.filter((player) => player.isActive).length === SMALL_MAP_PLAYERS_MIN_MAX;
+    //     } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
+    //         return game.players.filter((player) => player.isActive).length >= MEDIUM_MAP_PLAYERS_MIN;
+    //     } else if (game.mapSize.x === LARGE_MAP_SIZE) {
+    //         return game.players.filter((player) => player.isActive).length >= LARGE_MAP_PLAYERS_MIN;
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
+    // isMaxPlayersReached(players: Player[], gameId: string): boolean {
+    //     const game = this.getGameById(gameId);
+    //     if (game.mapSize.x === MapSettings.SMALL_MAP_SIZE) {
+    //         return players.length === MapSettings.SMALL_MAP_PLAYERS_MIN_MAX;
+    //     } else if (game.mapSize.x === MapSettings.MEDIUM_MAP_SIZE) {
+    //         return players.length === MapSettings.MEDIUM_MAP_PLAYERS_MAX;
+    //     } else if (game.mapSize.x === MapSettings.LARGE_MAP_SIZE) {
+    //         return players.length === MapSettings.LARGE_MAP_PLAYERS_MAX;
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
     isGameStartable(gameId: string): boolean {
         const game = this.getGameById(gameId);
-        if (game.mapSize.x === SMALL_MAP_SIZE) {
-            return game.players.filter((player) => player.isActive).length === SMALL_MAP_PLAYERS_MIN_MAX;
-        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
-            return game.players.filter((player) => player.isActive).length >= MEDIUM_MAP_PLAYERS_MIN;
-        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
-            return game.players.filter((player) => player.isActive).length >= LARGE_MAP_PLAYERS_MIN;
-        } else {
-            return false;
+        const mapSize = Object.values(MapSize).find((size) => MapConfig[size].size === game.mapSize.x);
+
+        if (mapSize) {
+            const activePlayersCount = game.players.filter((player) => player.isActive).length;
+            return activePlayersCount >= MapConfig[mapSize].minPlayers;
         }
+        return false;
     }
 
     isMaxPlayersReached(players: Player[], gameId: string): boolean {
         const game = this.getGameById(gameId);
-        if (game.mapSize.x === SMALL_MAP_SIZE) {
-            return players.length === SMALL_MAP_PLAYERS_MIN_MAX;
-        } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
-            return players.length === MEDIUM_MAP_PLAYERS_MAX;
-        } else if (game.mapSize.x === LARGE_MAP_SIZE) {
-            return players.length === LARGE_MAP_PLAYERS_MAX;
-        } else {
-            return false;
+        const mapSize = Object.values(MapSize).find((size) => MapConfig[size].size === game.mapSize.x);
+
+        if (mapSize) {
+            return players.length === MapConfig[mapSize].maxPlayers;
         }
+        return false;
     }
 
     lockGame(gameId: string): void {
