@@ -217,16 +217,16 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 combatLooser: this.player,
                 combatRoomId: this.combatRoomId,
             });
-        } else if (this.opponent.specs.life === 0) {
-            this.combatWinStatsUpdate(this.player, this.opponent);
-            this.updatePlayerStats();
-            this.closeCombatModal();
-            this.socketService.sendMessage('combatFinishedNormal', {
-                gameId: this.gameId,
-                combatWinner: this.player,
-                combatLooser: this.opponent,
-                combatRoomId: this.combatRoomId,
-            });
+            // } else if (this.opponent.specs.life === 0) {
+            //     this.combatWinStatsUpdate(this.player, this.opponent);
+            //     this.updatePlayerStats();
+            //     this.closeCombatModal();
+            //     this.socketService.sendMessage('combatFinishedNormal', {
+            //         gameId: this.gameId,
+            //         combatWinner: this.player,
+            //         combatLooser: this.opponent,
+            //         combatRoomId: this.combatRoomId,
+            //     });
         }
     }
 
