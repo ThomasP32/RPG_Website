@@ -1,10 +1,27 @@
+@if(!isYourTurn) {
+<div class="disable-interactions"></div>
+} @if(!delayFinished) {
+<div class="disable-interactions"></div>
+<div class="turn-indicator"><h3>C'est au tour de {{currentPlayerTurn}}</h3></div>
+} @if(youFell) {
+<div class="disable-interactions"></div>
+<div class="turn-indicator"><h3>Vous êtes tombé, votre tour est fini.</h3></div>
+}
 <div class="game-page-container">
     <div class="game-info-panel">
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{ game.mapSize.x}} x {{ game.mapSize.y }}</p>
+            <p>Taille de la carte : {{ game.mapSize.x }} x {{ game.mapSize.y}}</p>
             <p>Nombre de joueurs : {{ activePlayers.length }}</p>
-            <p>Joueur actif : {{ currentPlayerTurn.name }}</p>
+            <p>Joueur actif : {{ currentPlayerTurn }}</p>
+        </div>
+
+        <div class="countdown-container">
+            <h2>Temps restant</h2>
+            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+                <h3>{{ countdown }}</h3>
+            </div>
+            <h2>secondes</h2>
         </div>
 
         <!-- À FAIRE EN COMPONENT -->
@@ -23,7 +40,7 @@
                 </div>
                 <div class="stat">
                     <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage."
-                        >Rapidité : {{player.specs.speed }} PTS</label
+                        >Rapidité : {{ player.specs.speed }} PTS</label
                     >
                     <div class="stat-bar">
                         <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
@@ -63,7 +80,7 @@
         </div>
     </div>
     <div class="game-map-container">
-        <app-game-map [map]="game"> </app-game-map>
+        <app-game-map [map]="game" [moves]="moves" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
@@ -75,7 +92,12 @@
 
         <!-- AJOUTER LE COMPONENT -->
         <div class="chatroom">
-            <app-chatroom [player]="player" [gameId]="gameId"></app-chatroom>
+            <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
+        </div>
+
+        <!-- AJOUTER LE COMPONENT -->
+        <div class="journal">
+            <app-journal [player]="player" [gameId]="gameId"></app-journal>
         </div>
 
         <!-- AJOUTER LE COMPONENT -->
@@ -84,7 +106,7 @@
         </div>
 
         <div class="action-buttons">
-            <button>Fin du tour</button>
+            <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
 
@@ -104,7 +126,6 @@
                     <p>La partie est finie, vous serez redirigé.</p>
                 </div>
             </div>
-
             }
         </div>
     </div>

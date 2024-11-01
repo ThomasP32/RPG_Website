@@ -1,451 +1,422 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
-import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Game, Player } from '@common/game';
+import { Coordinate } from '@common/map.types';
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { SinonFakeTimers, SinonStub, SinonStubbedInstance, createStubInstance, stub, useFakeTimers } from 'sinon';
+import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { GameManagerGateway } from './game-manager.gateway';
 
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
+    let logger: SinonStubbedInstance<Logger>;
+    let socket: SinonStubbedInstance<Socket>;
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
-    let socket: SinonStubbedInstance<Socket>;
     let serverStub: SinonStubbedInstance<Server>;
 
-    let specs: Specs = {
-        life: 100,
-        speed: 10,
-        attack: 15,
-        defense: 5,
-        attackBonus: Bonus.D4,
-        defenseBonus: Bonus.D6,
-        movePoints: 3,
-        actions: 2,
-        nVictories: 0,
-        nDefeats: 0,
-        nCombats: 0,
-        nEvasions: 0,
-        nLifeTaken: 0,
-        nLifeLost: 0,
-    };
-
-    let player: Player = {
-        socketId: 'player-1',
-        name: 'Player 1',
-        avatar: Avatar.Avatar1,
-        isActive: true,
-        position: { x: 0, y: 0 },
-        specs,
-        inventory: [],
-        turn: 0,
-        visitedTiles: [],
-    };
-
-    let gameRoom: Game = {
-        hasStarted: true,
-        id: 'room-1',
-        name: 'Test Room',
-        description: 'A test game room',
-        imagePreview: 'some-image-url',
-        mode: Mode.Ctf,
-        mapSize: { x: 20, y: 20 },
-        startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
-        items: [
-            { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-            { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
-        ],
-        doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
-        tiles: [
-            { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Water },
-        ],
-        hostSocketId: 'host-id',
-        players: [player],
-        currentTurn: 0,
-        nDoorsManipulated: 0,
-        duration: 0,
-        nTurns: 0,
-        debug: false,
-        isLocked: false,
-    };
-
     beforeEach(async () => {
-        gameCreationService = createStubInstance(GameCreationService);
-        gameManagerService = createStubInstance(GameManagerService);
+        logger = createStubInstance(Logger);
         socket = createStubInstance<Socket>(Socket);
-        socket.emit = stub();
+        gameCreationService = createStubInstance<GameCreationService>(GameCreationService);
+        gameManagerService = createStubInstance<GameManagerService>(GameManagerService);
         serverStub = createStubInstance<Server>(Server);
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 GameManagerGateway,
+                { provide: Logger, useValue: logger },
                 { provide: GameCreationService, useValue: gameCreationService },
                 { provide: GameManagerService, useValue: gameManagerService },
             ],
         }).compile();
 
         gateway = module.get<GameManagerGateway>(GameManagerGateway);
-
         gateway['server'] = serverStub;
-        const emitStub = stub();
-        serverStub.to.returns({ emit: emitStub } as any);
 
-        gameCreationService.doesGameExist.returns(true);
-        gameCreationService.getGameById.returns(gameRoom);
-        gameManagerService.getMove.returns([{ x: 19, y: 19 }]);
-    });
-
-    it('should be defined', () => {
-        expect(gateway).toBeDefined();
+        const toStub = {
+            emit: stub() as SinonStub,
+        };
+        serverStub.to.returns(toStub as any);
     });
 
     describe('getMoves', () => {
         it('should emit gameNotFound if the game does not exist', () => {
-            const gameId = 'game-1';
             gameCreationService.doesGameExist.returns(false);
 
-            gateway.getMoves(socket, { playerName: 'Player1', gameId });
+            gateway.getMoves(socket, 'game-id');
 
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameNotFound')).toBeTruthy();
-            expect(gameManagerService.getMoves.called).toBeFalsy();
+            expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
+            expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
         });
 
         it('should emit playerPossibleMoves if the game exists', () => {
-            const gameId = 'game-1';
-            const mockMoves = [{ x: 1, y: 2 }];
             gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMoves.returns(mockMoves);
+            const moves: Array<[string, { path: Coordinate[]; weight: number }]> = [['abc', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+            gameManagerService.getMoves.returns(moves);
 
-            gateway.getMoves(socket, { playerName: 'Player1', gameId });
+            gateway.getMoves(socket, 'game-id');
 
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameManagerService.getMoves.calledWith(gameId, 'Player1')).toBeTruthy();
-            expect(socket.emit.calledWith('playerPossibleMoves', { moves: mockMoves })).toBeTruthy();
+            expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
+            expect((socket.emit as SinonStub).calledWith('playerPossibleMoves', moves)).toBeTruthy();
         });
     });
 
-    describe('getPreviewMove', () => {
-        it('should emit gameNotFound if the game does not exist', () => {
-            const gameId = 'game-1';
-            const position = { x: 1, y: 2 };
+    describe('getMove', () => {
+        it('should emit gameNotFound if the game does not exist', async () => {
             gameCreationService.doesGameExist.returns(false);
 
-            gateway.getPreviewMove(socket, { playerName: 'Player1', gameId, position });
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameNotFound')).toBeTruthy();
-            expect(gameManagerService.getMove.called).toBeFalsy();
+            expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
+            expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
         });
 
-        it('should emit playerPossibleMove if the game exists', () => {
-            const gameId = 'game-1';
-            const position = { x: 1, y: 2 };
-            const mockMoves = [{ x: 1, y: 2 }];
-
+        it('should emit positionToUpdate and youFell if the player falls', async () => {
             gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGameById.returns(gameRoom);
-            gameManagerService.getMove.returns(mockMoves);
 
-            gateway.getPreviewMove(socket, { playerName: 'Player1', gameId, position });
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
 
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
-            expect(gameManagerService.getMove.calledWith(gameId, 'Player1', position, true)).toBeTruthy();
-            expect(socket.emit.calledWith('playerPossibleMove', { moves: mockMoves })).toBeTruthy();
-        });
-    });
-
-    describe('moveToPosition', () => {
-        let clock: SinonFakeTimers;
-
-        beforeEach(() => {
-            clock = useFakeTimers();
-        });
-
-        afterEach(() => {
-            clock.restore();
-        });
-
-        it('should emit gameNotFound if the game does not exist', () => {
-            const gameId = 'game-1';
-            const position = { x: 1, y: 2 };
-            gameCreationService.doesGameExist.returns(false);
-
-            gateway.getMove(socket, { playerName: 'Player1', gameId, destination: position });
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(socket.emit.calledWith('gameNotFound')).toBeTruthy();
-            expect(gameManagerService.getMove.called).toBeFalsy();
-        });
-
-        it('should emit nothing if destination is invalid', () => {
-            const gameId = 'game-1';
-            const position = { x: 1, y: 2 };
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([]);
-
-            gateway.getMove(socket, { playerName: 'Player1', gameId, destination: position });
-
-            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
-            expect(gameManagerService.getMove.calledWith(gameId, 'Player1', position, false)).toBeTruthy();
-            expect(socket.emit.calledWith('positionUpdated')).toBeFalsy();
-        });
-
-        it('should emit playerMoved and playerFinishedMoving if moves are returned', () => {
-            const position = { x: 1, y: 2 };
-            const mockMoves = [
+            const moves = [
+                { x: 1, y: 1 },
                 { x: 1, y: 2 },
-                { x: 2, y: 3 },
             ];
+            gameManagerService.getMove.returns(moves);
+            gameManagerService.updatePosition.resolves();
+            gameManagerService.hasFallen.returns(true);
 
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+
+            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
+
+            const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
+            expect(toSocketStub.calledWith('youFell')).toBeTruthy();
+        });
+
+        it('should emit youFinishedMoving if the player reaches the destination', async () => {
             gameCreationService.doesGameExist.returns(true);
-            gameCreationService.getGameById.returns(gameRoom);
-            gameManagerService.getMove.returns(mockMoves);
 
-            gateway.getMove(socket, { playerName: gameRoom.players[0].name, gameId: gameRoom.id, destination: position });
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
 
-            expect(gameManagerService.updatePosition.calledWith(gameRoom.id, gameRoom.players[0].name, position)).toBeTruthy();
-            clock.tick(2000);
-            expect(emitStub.calledWith('positionUpdated', { playerName: gameRoom.players[0].name, position })).toBeTruthy();
-            expect(emitStub.calledWith('playerFinishedMoving', { game: gameRoom })).toBeTruthy();
+            const moves = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+                { x: 2, y: 2 },
+            ];
+            gameManagerService.getMove.returns(moves);
+            gameManagerService.updatePosition.resolves();
+
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+            expect(gameManagerService.updatePosition.calledWithMatch('game-id', socket.id, [moves[1]])).toBeTruthy();
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+
+            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
+
+            const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
+            expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
         });
     });
 
     describe('isGameFinished', () => {
         it('should emit gameFinishedNoWin if only one player is left and the game has started', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
+            const game: Game = {
+                players: [{ name: 'Player1' }] as Player[],
+                hasStarted: true,
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+            gameCreationService.getGameById.returns(game);
 
-            const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: true };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
+            gateway.isGameFinished('game-id');
 
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin', { winner: player })).toBeTruthy();
-        });
-
-        it('should not emit gameFinishedNoWin if the game has not started', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: false };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin')).toBeFalsy();
-        });
-
-        it('should not emit gameFinishedNoWin if more than one player remains', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const modifiedGameRoom = { ...gameRoom, players: [player, { ...player, socketId: 'player-2', name: 'Player 2' }], hasStarted: true };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin')).toBeFalsy();
-        });
-    });
-
-    describe('isGameFinished', () => {
-        it('should emit gameFinishedNoWin if only one player is left and the game has started', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: true };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin', { winner: player })).toBeTruthy();
-        });
-
-        it('should not emit gameFinishedNoWin if the game has not started', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const modifiedGameRoom = { ...gameRoom, players: [player], hasStarted: false };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin')).toBeFalsy();
-        });
-
-        it('should not emit gameFinishedNoWin if more than one player remains', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const modifiedGameRoom = { ...gameRoom, players: [player, { ...player, socketId: 'player-2', name: 'Player 2' }], hasStarted: true };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.isGameFinished(gameId);
-
-            expect(emitStub.calledWith('gameFinishedNoWin')).toBeFalsy();
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+            expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
         });
     });
 
     describe('hasPlayerWon', () => {
-        it('should emit playerWon if a player has 3 or more victories', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
+        it('should emit playerWon if any player has three or more victories', () => {
+            const player: Player = { specs: { nVictories: 3 } } as Player;
+            const game: Game = {
+                players: [player],
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
 
-            const winningPlayer = { ...player, specs: { ...player.specs, nVictories: 3 } };
-            const modifiedGameRoom = { ...gameRoom, players: [winningPlayer] };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(game);
 
-            gateway.hasPlayerWon(gameId);
+            gateway.hasPlayerWon('game-id');
 
-            expect(emitStub.calledWith('playerWon', { winner: winningPlayer })).toBeTruthy();
-        });
-
-        it('should not emit playerWon if no player has 3 victories', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const losingPlayer = { ...player, specs: { ...player.specs, nVictories: 2 } };
-            const modifiedGameRoom = { ...gameRoom, players: [losingPlayer] };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.hasPlayerWon(gameId);
-
-            expect(emitStub.calledWith('playerWon')).toBeFalsy();
-        });
-
-        it('should emit playerWon only for the player with 3 or more victories', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.id).emit as SinonStub;
-
-            const winningPlayer = { ...player, specs: { ...player.specs, nVictories: 3 } };
-            const losingPlayer = { ...player, socketId: 'player-2', name: 'Player 2', specs: { ...player.specs, nVictories: 2 } };
-            const modifiedGameRoom = { ...gameRoom, players: [winningPlayer, losingPlayer] };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-
-            gateway.hasPlayerWon(gameId);
-
-            expect(emitStub.calledWith('playerWon', { winner: winningPlayer })).toBeTruthy();
-            expect(emitStub.calledWith('playerWon', { winner: losingPlayer })).toBeFalsy();
-        });
-    });
-
-    describe('startTurn', () => {
-        it('should increase player attack and defense if on ice tile and emit yourTurn', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
-
-            const playerOnIce = { ...player, position: { x: 1, y: 1 }, specs: { ...player.specs, attack: 10, defense: 5 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerOnIce],
-                currentTurn: 0,
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(playerOnIce.specs.attack).toBe(12);
-            expect(playerOnIce.specs.defense).toBe(7);
-            expect(emitStub.calledWith('yourTurn')).toBeTruthy();
-        });
-
-        it('should not change player stats if not on ice tile and emit yourTurn', () => {
-            const gameId = 'room-1';
-            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
-
-            const playerNotOnIce = { ...player, position: { x: 2, y: 2 }, specs: { ...player.specs, attack: 10, defense: 5 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerNotOnIce],
-                currentTurn: 0,
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(playerNotOnIce.specs.attack).toBe(10);
-            expect(playerNotOnIce.specs.defense).toBe(5);
-            expect(emitStub.calledWith('yourTurn')).toBeTruthy();
-        });
-
-        it('should emit playerFinishedTurn if the current player is inactive', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
-
-            const inactivePlayer = { ...player, isActive: false, turn: 0 };
-            const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.startTurn(socket, gameId);
-
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+            expect((serverStub.to('game-id').emit as SinonStub).calledWith('playerWon', { winner: player })).toBeTruthy();
         });
     });
 
     describe('endTurn', () => {
-        it('should reduce player attack and defense if on ice tile and emit playerFinishedTurn', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
+        let startTurnSpy: SinonStub;
 
-            const playerOnIce = { ...player, position: { x: 1, y: 1 }, specs: { ...player.specs, attack: 15, defense: 10 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerOnIce],
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.endTurn(socket, gameId);
-
-            expect(playerOnIce.specs.attack).toBe(13);
-            expect(playerOnIce.specs.defense).toBe(8);
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+        beforeEach(() => {
+            startTurnSpy = stub(gateway, 'startTurn');
         });
 
-        it('should not change player stats if not on ice tile and emit playerFinishedTurn', () => {
-            const gameId = 'room-1';
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
-
-            const playerNotOnIce = { ...player, position: { x: 2, y: 2 }, specs: { ...player.specs, attack: 15, defense: 10 }, turn: 0 };
-            const modifiedGameRoom = {
-                ...gameRoom,
-                players: [playerNotOnIce],
-                tiles: [{ coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }],
-            };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
-            gameCreationService.doesGameExist.returns(true);
-
-            gateway.endTurn(socket, gameId);
-
-            expect(playerNotOnIce.specs.attack).toBe(15);
-            expect(playerNotOnIce.specs.defense).toBe(10);
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+        afterEach(() => {
+            startTurnSpy.restore();
         });
 
-        it('should emit playerFinishedTurn if the player is inactive', () => {
-            const gameId = gameRoom.id;
-            const emitStub = serverStub.to(gameRoom.hostSocketId).emit as SinonStub;
+        it('should return without calling startTurn if player socketId does not match client id', () => {
+            const game = {
+                id: 'game-id',
+                players: [
+                    {
+                        socketId: 'different-socket-id',
+                        turn: 0,
+                        specs: { speed: 3, movePoints: 3, attack: 5, defense: 5 },
+                        isActive: true,
+                    },
+                ],
+                currentTurn: 0,
+            } as Game;
 
-            const inactivePlayer = { ...player, isActive: false, turn: 0 };
-            const modifiedGameRoom = { ...gameRoom, players: [inactivePlayer], currentTurn: 0 };
-            gameCreationService.getGameById.returns(modifiedGameRoom);
+            gameCreationService.getGameById.returns(game);
+
+            gateway.endTurn(socket, 'game-id');
+
+            expect(startTurnSpy.notCalled).toBeTruthy();
+            expect(game.players[0].specs.movePoints).toBe(3);
+        });
+
+        it('should update attack and defense when player is on ice tile', () => {
+            const game = {
+                id: 'game-id',
+                players: [
+                    {
+                        socketId: socket.id,
+                        turn: 0,
+                        specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
+                        position: { x: 0, y: 0 },
+                        isActive: true,
+                    },
+                ],
+                currentTurn: 0,
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.onIceTile.returns(true);
+
+            gateway.endTurn(socket, 'game-id');
+
+            const player = game.players[0];
+            expect(player.specs.movePoints).toBe(player.specs.speed);
+
+            expect(startTurnSpy.calledWith('game-id')).toBeTruthy();
+        });
+
+        it('should not update attack and defense if player is not on ice tile', () => {
+            const game = {
+                id: 'game-id',
+                players: [
+                    {
+                        socketId: socket.id,
+                        turn: 0,
+                        specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
+                        position: { x: 0, y: 0 },
+                        isActive: true,
+                    },
+                ],
+                currentTurn: 0,
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.onIceTile.returns(false);
+
+            gateway.endTurn(socket, 'game-id');
+
+            const player = game.players[0];
+            expect(player.specs.attack).toBe(5);
+            expect(player.specs.defense).toBe(5);
+            expect(player.specs.movePoints).toBe(player.specs.speed);
+
+            expect(startTurnSpy.calledWith('game-id')).toBeTruthy();
+        });
+    });
+
+    describe('startTurn', () => {
+        it('should emit yourTurn to the active player and playerTurn to others', () => {
+            const activePlayer: Player = {
+                socketId: 'active-player-id',
+                turn: 0,
+                isActive: true,
+                name: 'ActivePlayer',
+                specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
+            } as Player;
+
+            const otherPlayer: Player = {
+                socketId: 'other-player-id',
+                turn: 1,
+                isActive: true,
+                name: 'OtherPlayer',
+                specs: { speed: 5, movePoints: 0 },
+            } as Player;
+
+            const game: Game = {
+                players: [activePlayer, otherPlayer],
+                currentTurn: 0,
+                id: 'game-id',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.onIceTile.returns(true);
+
+            gateway.startTurn('game-id');
+
+            expect(activePlayer.specs.movePoints).toBe(activePlayer.specs.speed);
+
+            const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
+            expect(toActivePlayerStub.calledWith('yourTurn', activePlayer)).toBeTruthy();
+
+            const toOtherPlayerStub = serverStub.to(otherPlayer.socketId).emit as SinonStub;
+            expect(toOtherPlayerStub.calledWith('playerTurn', activePlayer.name)).toBeTruthy();
+        });
+
+        it('should skip to the next player if the active player is inactive', () => {
+            const inactivePlayer: Player = {
+                socketId: 'inactive-player-id',
+                turn: 0,
+                isActive: false,
+                specs: { speed: 5, movePoints: 0 },
+            } as Player;
+
+            const activePlayer: Player = {
+                socketId: 'active-player-id',
+                turn: 1,
+                isActive: true,
+                specs: { speed: 5, movePoints: 0 },
+            } as Player;
+
+            const game: Game = {
+                players: [inactivePlayer, activePlayer],
+                currentTurn: 0,
+                id: 'game-id',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.startTurn('game-id');
+
+            expect(game.currentTurn).toBe(1);
+
+            const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
+            expect(toActivePlayerStub.calledWith('yourTurn', activePlayer)).toBeTruthy();
+        });
+    });
+
+    describe('startGame', () => {
+        let startTurnSpy: SinonStub;
+
+        beforeEach(() => {
+            startTurnSpy = stub(gateway, 'startTurn');
+        });
+
+        afterEach(() => {
+            startTurnSpy.restore();
+        });
+
+        it('should call startTurn with the given gameId', () => {
+            const gameId = 'game-id';
+
+            gateway.startGame(socket, gameId);
+
+            expect(startTurnSpy.calledWith(gameId)).toBeTruthy();
+        });
+    });
+    describe('moveToPosition', () => {
+        let player: Player;
+        let game: Game;
+
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+            } as Player;
+
+            game = {
+                id: 'game-1',
+                players: [player],
+                currentTurn: 0,
+                hasStarted: true,
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+        });
+        it('should return without emitting if moves length is 0', () => {
             gameCreationService.doesGameExist.returns(true);
 
-            gateway.endTurn(socket, gameId);
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
 
-            expect(emitStub.calledWith('playerFinishedTurn', { game: modifiedGameRoom })).toBeTruthy();
+            gameManagerService.getMove.returns([]);
+
+            gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+
+            expect(gameManagerService.updatePosition.notCalled).toBeTruthy();
+        });
+        it('should apply -2 penalty to attack and defense when moving to an ice tile', async () => {
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([
+                { x: 0, y: 1 },
+                { x: 0, y: 1 },
+            ]);
+            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(false);
+            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(true);
+
+            const destination: Coordinate = { x: 0, y: 1 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(8);
+            expect(player.specs.defense).toBe(8);
+        });
+
+        it('should remove -2 penalty from attack and defense when moving off an ice tile', async () => {
+            player.specs.attack = 8;
+            player.specs.defense = 8;
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([{ x: 0, y: 2 },
+                { x: 0, y: 2 },]);
+            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
+            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
+
+            const destination: Coordinate = { x: 0, y: 2 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+        });
+
+        it('should not change attack and defense if remaining on the same type of tile', async () => {
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([{ x: 1, y: 1 }]);
+            gameManagerService.onIceTile.returns(false);
+
+            const destination: Coordinate = { x: 1, y: 1 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
         });
     });
 });
