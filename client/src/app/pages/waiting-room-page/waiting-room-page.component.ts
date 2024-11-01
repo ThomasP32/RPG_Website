@@ -97,7 +97,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     exitGame(): void {
-        this.socketService.disconnect();
+        this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }

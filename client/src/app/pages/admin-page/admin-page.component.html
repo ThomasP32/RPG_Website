@@ -26,16 +26,19 @@
             <div class="map-cards">
                 @for(map of this.maps; track map.name) {
                 <div class="map-card">
+                    <div class="gamemode-bar">
+                        <p class="mode">{{ map.mode }}</p>
+                    </div>
                     <div class="map-image-container">
                         <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
                         <div class="description-overlay">
                             <p class="description">{{ map.description }}</p>
                         </div>
                     </div>
+
                     <div class="map-details">
                         <div class="map-details">
                             <h2 class="name">{{ map.name }}</h2>
-                            <p class="mode">Mode de jeu: {{ map.mode }}</p>
                             <p class="size">Taille : {{ map.mapSize.x }} x {{ map.mapSize.y }}</p>
                             <p class="visibility" (click)="toggleVisibility(map._id!.toString())">
                                 Visibilité : @if(map.isVisible) {
