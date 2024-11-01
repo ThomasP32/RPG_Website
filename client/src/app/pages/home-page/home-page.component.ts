@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { JoinGameModalComponent } from '@app/components/join-game-modal/join-game-modal.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { JournalComponent } from '../../journal/journal.component';
+import { JournalComponent } from '../../components/journal/journal.component';
 /* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-main-page',
