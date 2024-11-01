@@ -134,7 +134,7 @@ describe('GameCreationService', () => {
 
         gameRoom.hasStarted = true;
 
-        service.handlePlayerDisconnect(mockSocket as unknown as Socket, gameRoom.id);
+        service.handlePlayerLeaving(mockSocket as unknown as Socket, gameRoom.id);
 
         expect(service['gameRooms']['room-1'].players[0].isActive).toBe(false);
     });
@@ -148,7 +148,7 @@ describe('GameCreationService', () => {
         service.addGame(gameRoom);
 
         const mockSocket = { id: 'disconnecting-player' } as unknown as Socket;
-        service.handlePlayerDisconnect(mockSocket, gameRoom.id);
+        service.handlePlayerLeaving(mockSocket, gameRoom.id);
 
         const updatedGame = service.getGameById(gameRoom.id);
         expect(updatedGame.players.some((p) => p.socketId === 'disconnecting-player')).toBe(false);
