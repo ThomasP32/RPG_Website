@@ -36,6 +36,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     playerPreview: string;
     showExitModal = false;
     showKickedModal = false;
+    gameOverMessage = false;
     youFell: boolean = false;
     map: Map;
     specs: Specs;
@@ -57,7 +58,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerService = playerService;
         this.gameTurnService = gameTurnService;
         this.countDownService = countDownService;
-        this.gameService = gameService
+        this.gameService = gameService;
     }
 
     ngOnInit() {
@@ -92,6 +93,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {
+                        this.gameTurnService.endGame();
                         this.navigateToMain();
                     }, 3000);
                 }
@@ -106,6 +108,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     navigateToMain(): void {
         this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
+    }
+
+    navigateToEndOfGame(): void {
+        this.navigateToMain();
+        // this.router.navigate([`/endOfGame/${this.game.id}`]);
     }
 
     confirmExit(): void {
@@ -153,6 +160,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
     }
 
+    listenForGameOver() {
+        this.gameTurnService.playerWon$.subscribe((isGameOver) => {
+            this.gameOverMessage = isGameOver;
+            setTimeout(() => {
+                this.navigateToEndOfGame();
+            }, 5000);
+        });
+    }
+
     triggerPulse(): void {
         this.isPulsing = true;
         setTimeout(() => (this.isPulsing = false), 500);
@@ -176,6 +192,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.socketSubscription.unsubscribe();
         this.socketService.disconnect();
     }
 }

@@ -27,6 +27,7 @@ export class GameManagerGateway {
 
     @SubscribeMessage('moveToPosition')
     async getMove(client: Socket, data: { gameId: string; destination: Coordinate }): Promise<void> {
+        let wasOnIceTile = false;
         if (!this.gameCreationService.doesGameExist(data.gameId)) {
             client.emit('gameNotFound');
             return;
@@ -34,6 +35,9 @@ export class GameManagerGateway {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
+        if(this.gameManagerService.onIceTile(player, game.id)){
+            wasOnIceTile = true;
+        }
 
         if (moves.length === 0) {
             return;
@@ -44,14 +48,22 @@ export class GameManagerGateway {
         for (const move of moves) {
             this.gameManagerService.updatePosition(data.gameId, client.id, [move]);
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
-            console.log('on emit que la personne a bougée dune case', player);
             await new Promise((resolve) => setTimeout(resolve, 150));
         }
-        this.server.to(data.gameId).emit('finishedMoving', player);
+
+        if(this.gameManagerService.onIceTile(player, game.id) && !wasOnIceTile) {
+            player.specs.attack -= 2;
+            player.specs.defense -= 2;
+        }
+        if(!this.gameManagerService.onIceTile(player, game.id) && wasOnIceTile) {
+            player.specs.attack += 2;
+            player.specs.defense += 2;
+        }
+
         if (this.gameManagerService.hasFallen(moves, data.destination)) {
-            this.server.to(client.id).emit('youFell', player);
+            this.server.to(client.id).emit('youFell');
         } else {
-            this.server.to(client.id).emit('youFinishedMoving', player);
+            this.server.to(client.id).emit('youFinishedMoving');
         }
     }
 
@@ -75,7 +87,6 @@ export class GameManagerGateway {
 
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
-        console.log('on a recu le message de startGame pour la game ', gameId);
         this.startTurn(gameId);
     }
 
@@ -86,10 +97,7 @@ export class GameManagerGateway {
         if (player.socketId !== client.id) {
             return;
         }
-        if (this.gameManagerService.onIceTile(player, gameId)) {
-            player.specs.attack -= 2;
-            player.specs.defense -= 2;
-        }
+        
         player.specs.movePoints = player.specs.speed;
         this.gameManagerService.updateTurnCounter(gameId);
         this.startTurn(gameId);
@@ -103,11 +111,6 @@ export class GameManagerGateway {
             game.currentTurn++;
             this.startTurn(gameId);
             return;
-        }
-
-        if (this.gameManagerService.onIceTile(activePlayer, gameId)) {
-            activePlayer.specs.attack += 2;
-            activePlayer.specs.defense += 2;
         }
 
         activePlayer.specs.movePoints = activePlayer.specs.speed;
