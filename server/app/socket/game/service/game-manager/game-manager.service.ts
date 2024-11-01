@@ -2,10 +2,12 @@ import { Game, Player } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { JournalService } from '../journal/journal.service';
 
 @Injectable()
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(JournalService) private journalService: JournalService;
 
     private directions = [
         { x: 0, y: -1 },

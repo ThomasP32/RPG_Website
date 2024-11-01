@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -12,6 +13,12 @@ export class GameManagerGateway {
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
+    @Inject(JournalService) private journalService: JournalService;
+
+    afterInit(server: Server) {
+        this.journalService.initializeServer(server);
+        console.log('GameManagerGateway initialized');
+    }
 
     @SubscribeMessage('getMovements')
     getMoves(client: Socket, gameId: string): void {
@@ -75,6 +82,7 @@ export class GameManagerGateway {
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
         }
+        this.journalService.logMessage(gameId, `La partie est terminée.`, game.players);
     }
 
     @SubscribeMessage('hasPlayerWon')
@@ -118,6 +126,8 @@ export class GameManagerGateway {
         activePlayer.specs.movePoints = activePlayer.specs.speed;
 
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+
+        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`);
 
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)

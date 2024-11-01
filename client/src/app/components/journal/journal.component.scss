@@ -7,6 +7,7 @@
     width: 350px;
     max-height: 380px;
 }
+
 .journal-header {
     display: flex;
     flex-direction: column;
@@ -17,6 +18,11 @@
     background-color: #92979c;
 }
 
+.journal-filter {
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+}
+
 .timestamp {
     font-size: 0.8em;
     color: grey;
@@ -24,4 +30,24 @@
 
 li {
     margin: 10px 0;
+}
+
+#journalList {
+    list-style: none;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+}
+
+.journal-body {
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+#dropdown {
+    position: relative;
+    z-index: 10;
 }

@@ -2,38 +2,19 @@
     <div class="journal-header">
         <h1>Journal de jeu</h1>
     </div>
-    <label for="dropdown">Filtrer</label>
-    <select value="filter" id="dropdown" onchange="toggleShowAll()">
-        <option value="all">Tous les joueurs</option>
-        <option value="involved-only">Mes événements</option>
-    </select>
+    <div class="journal-filter">
+        <label for="dropdown">Filtrer</label>
+        <select [(ngModel)]="filter" (change)="toggleShowAll()" id="dropdown">
+            <option value="all">Tous les joueurs</option>
+            <option value="involved-only">Mes événements</option>
+        </select>
+    </div>
     <div class="journal-body"></div>
-    <ul>
+    <ul id="journalList">
         @for (entry of journalEntries; track entry) {
-        <li>{{ entry.message }} ({{ entry.timestamp | date: 'HH:mm:ss' }})</li>
+        <li>
+            {{ entry.message }} <span class="timestamp">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
+        </li>
         }
     </ul>
-    <!-- @if(showAll){
-    <div class="journal-entry">
-        <div class="journal-entry-header">
-            <h2>Événement</h2>
-            <h2>Heure</h2>
-        </div>
-        <div class="journal-entry-body">
-            <p>Événement 1</p>
-            <p>Heure 1</p>
-        </div>
-    </div>
-    } @else if (showAll === false) {
-    <div class="journal-entry">
-        <div class="journal-entry-header">
-            <h2>Mon Événement</h2>
-            <h2>Heure</h2>
-        </div>
-        <div class="journal-entry-body">
-            <p>Mon Événement 1</p>
-            <p>Heure 1</p>
-        </div>
-    </div>
-    } -->
 </div>
