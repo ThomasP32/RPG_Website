@@ -93,7 +93,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {
-                        this.gameTurnService.endGame();
+                        // this.gameTurnService.endGame();
                         this.navigateToMain();
                     }, 3000);
                 }

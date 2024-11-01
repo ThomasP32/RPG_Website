@@ -100,7 +100,7 @@ describe('GamePageComponent', () => {
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayer', 'resetPlayer'], { player: mockPlayer });
         gameTurnServiceSpy = jasmine.createSpyObj(
             'GameTurnService',
-            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves'],
+            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame'],
             {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,

@@ -127,14 +127,16 @@ export class GameTurnService {
                 this.gameService.setGame(data.game);
             }),
         );
+
         this.socketSubscription.add(
             this.socketService.listen('youFinishedMoving').subscribe(() => {
                 this.clearMoves();
                 this.resumeTurn();
             }),
         );
+
         this.socketSubscription.add(
-            this.socketService.listen<Player>('youFell').subscribe((updatedPlayer) => {
+            this.socketService.listen('youFell').subscribe(() => {
                 this.clearMoves();
                 this.endTurnBecauseFell();
             }),
@@ -145,16 +147,16 @@ export class GameTurnService {
         this.socketService.sendMessage('hasPlayerWon', this.game.id);
     }
 
-    listenForPlayerWin(): void {
-        this.socketSubscription.add(
-            this.socketService.listen('playerWon').subscribe(() => {
-                this.playerWon.next(true);
-                this.endGame();
-            }),
-        );
-    }
+    // listenForPlayerWin(): void {
+    //     this.socketSubscription.add(
+    //         this.socketService.listen('playerWon').subscribe(() => {
+    //             this.playerWon.next(true);
+    //             this.endGame();
+    //         }),
+    //     );
+    // }
 
-    endGame(): void {
-        this.socketSubscription.unsubscribe();
-    }
+    // endGame(): void {
+    //     this.socketSubscription.unsubscribe();
+    // }
 }
