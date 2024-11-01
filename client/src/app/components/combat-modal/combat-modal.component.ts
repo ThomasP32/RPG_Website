@@ -15,6 +15,11 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     opponentDiceAttack: number;
     opponentDiceDefense: number;
     diceRollReceived = false;
+    actionButtonsOn = false;
+    attacking = false;
+
+    attackTotal: number;
+    defenseTotal: number;
 
     @Input() gameId: string;
 
@@ -80,15 +85,29 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         );
         this.socketSubscription.add(
             this.socketService
-                .listen<{ playerDiceAttack: number; playerDiceDefense: number; opponentDiceAttack: number; opponentDiceDefense: number }>(
-                    'diceRolled',
-                )
+                .listen<{
+                    playerDiceAttack: number;
+                    playerDiceDefense: number;
+                    opponentDiceAttack: number;
+                    opponentDiceDefense: number;
+                    attackDice: number;
+                    defenseDice: number;
+                }>('diceRolled')
                 .subscribe((data) => {
                     this.playerDiceAttack = data.playerDiceAttack;
                     this.playerDiceDefense = data.playerDiceDefense;
                     this.opponentDiceAttack = data.opponentDiceAttack;
                     this.opponentDiceDefense = data.opponentDiceDefense;
+                    this.defenseTotal = data.defenseDice;
+                    this.attackTotal = data.attackDice;
                     this.diceRollReceived = true;
+                    if (this.isCombatPlayerTurn()) {
+                        this.attacking = true;
+                    } else {
+                        this.attackTotal = data.defenseDice;
+                        this.defenseTotal = data.attackDice;
+                        this.attacking = false;
+                    }
                 }),
         );
 
@@ -144,21 +163,22 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                     });
                 }
             }, 100);
-        } else {
-            this.getDiceRolls(this.opponent, this.player);
-            const interval = setInterval(() => {
-                if (this.diceRollReceived) {
-                    clearInterval(interval);
-                    this.socketService.sendMessage('attack', {
-                        attackPlayer: this.opponent,
-                        defendPlayer: this.player,
-                        combatRoomId: this.combatRoomId,
-                        attackDice: this.opponentDiceAttack,
-                        defenseDice: this.playerDiceDefense,
-                    });
-                }
-            }, 100);
         }
+        // } else {
+        //     this.getDiceRolls(this.opponent, this.player);
+        //     const interval = setInterval(() => {
+        //         if (this.diceRollReceived) {
+        //             clearInterval(interval);
+        //             this.socketService.sendMessage('attack', {
+        //                 attackPlayer: this.opponent,
+        //                 defendPlayer: this.player,
+        //                 combatRoomId: this.combatRoomId,
+        //                 attackDice: this.opponentDiceAttack,
+        //                 defenseDice: this.playerDiceDefense,
+        //             });
+        //         }
+        //     }, 100);
+        // }
     }
 
     evade() {
@@ -170,14 +190,14 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 gameId: this.gameId,
                 combatRoomId: this.combatRoomId,
             });
-        } else if (!this.isCombatPlayerTurn() && this.opponent.specs.nEvasions > 0) {
-            this.opponent.specs.nEvasions -= 1;
-            this.socketService.sendMessage('startEvasion', {
-                player: this.opponent,
-                waitingPlayer: this.player,
-                gameId: this.gameId,
-                combatRoomId: this.combatRoomId,
-            });
+            // } else if (!this.isCombatPlayerTurn() && this.opponent.specs.nEvasions > 0) {
+            //     this.opponent.specs.nEvasions -= 1;
+            //     this.socketService.sendMessage('startEvasion', {
+            //         player: this.opponent,
+            //         waitingPlayer: this.player,
+            //         gameId: this.gameId,
+            //         combatRoomId: this.combatRoomId,
+            //     });
         }
     }
     combatWinStatsUpdate(winner: Player, loser: Player) {
@@ -235,7 +255,8 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         }
     }
 
-    get getActionsButtonsOnTurn(): boolean {
-        return this.currentTurnPlayerId === this.player.socketId;
+    getActionsButtonsOnTurn(): void {
+        if (this.currentTurnPlayerId === this.player.socketId) this.actionButtonsOn = true;
+        else this.actionButtonsOn = false;
     }
 }

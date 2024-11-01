@@ -93,11 +93,15 @@ export class CombatGateway {
         const attackingPlayerDefenseDice = Math.floor(Math.random() * data.player.specs.defenseBonus) + 1;
         const opponentAttackDice = Math.floor(Math.random() * data.opponent.specs.attackBonus) + 1;
         const opponentDefenseDice = Math.floor(Math.random() * data.opponent.specs.defenseBonus) + 1;
+        const attackDice = data.player.specs.attack + attackingPlayerAttackDice;
+        const defenseDice = data.opponent.specs.defense + opponentDefenseDice;
         this.server.to(data.combatRoomId).emit('diceRolled', {
             playerDiceAttack: attackingPlayerAttackDice,
             playerDiceDefense: attackingPlayerDefenseDice,
             opponentDiceAttack: opponentAttackDice,
             opponentDiceDefense: opponentDefenseDice,
+            attackDice: attackDice,
+            defenseDice: defenseDice,
         });
     }
     // @SubscribeMessage('updatePlayersAfterCombat')
