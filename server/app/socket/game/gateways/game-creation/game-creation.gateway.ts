@@ -137,7 +137,7 @@ export class GameGateway implements OnGatewayDisconnect {
                 if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
                     this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
                     this.gameCreationService.deleteRoom(game.id);
-                    this.server.socketsLeave(game.id);
+                    // this.server.socketsLeave(game.id);
 
                     return;
                 }

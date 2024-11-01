@@ -18,10 +18,6 @@ export class PlayerService {
         this.socketService = socketService;
     }
 
-    getPlayer(): Player {
-        return this.player;
-    }
-
     createPlayer() {
         const playerSpecs: Specs = {
             life: this.player.specs.life,
@@ -30,7 +26,7 @@ export class PlayerService {
             defense: this.player.specs.defense,
             attackBonus: this.player.specs.attackBonus,
             defenseBonus: this.player.specs.defenseBonus,
-            movePoints: 0,
+            movePoints: this.player.specs.speed,
             actions: 0,
             nVictories: 0,
             nDefeats: 0,

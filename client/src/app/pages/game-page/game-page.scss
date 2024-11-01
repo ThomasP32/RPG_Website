@@ -55,6 +55,7 @@
         display: flex;
         align-items: center;
         margin-bottom: 5px;
+        margin-top: 10px;
     }
 
     h3 {
@@ -356,4 +357,78 @@
     .modal-button:hover {
         background-color: #3b3f46;
     }
+}
+
+.disable-interactions {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    pointer-events: all;
+}
+
+.countdown-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0px;
+    color: #c0c0c0;
+    font-family: 'Press Start 2P', sans-serif;
+}
+
+.countdown-container h2 {
+    margin: 0px;
+    font-size: 1.2em;
+}
+
+.countdown-container h3 {
+    margin: 10px;
+    font-size: 1.2em;
+}
+
+.countdown-timer {
+    font-size: 1.5em;
+    color: #f39c12;
+    padding: 5px 10px;
+    text-align: center;
+    border-radius: 8px;
+    transition: color 0.3s ease;
+}
+
+.pulse {
+    animation: pulseEffect 0.5s ease;
+}
+
+@keyframes pulseEffect {
+    0% {
+        transform: scale(1);
+        color: #c0c0c0;
+    }
+    50% {
+        transform: scale(1.05);
+        color: #f39c12;
+    }
+    100% {
+        transform: scale(1);
+        color: #f39c12;
+    }
+}
+
+.turn-indicator {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    padding: 50px;
+    background-color: rgba(128, 128, 128, 0.8);
+    font-size: 24px;
+    text-align: center;
+    z-index: 1001;
+}
+.turn-indicator h3 {
+    color:#f39c12;
 }
