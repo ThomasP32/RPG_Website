@@ -103,8 +103,8 @@ describe('MapConversionService', () => {
             expect(service.getPlayerCountMessage(15)).toBe('2 à 4 joueurs');
         });
 
-        it('should return "4 à 6 joueurs" for LARGE size', () => {
-            expect(service.getPlayerCountMessage(20)).toBe('4 à 6 joueurs');
+        it('should return "2 à 6 joueurs" for LARGE size', () => {
+            expect(service.getPlayerCountMessage(20)).toBe('2 à 6 joueurs');
         });
 
         it('should handle invalid size by defaulting to SMALL', () => {
