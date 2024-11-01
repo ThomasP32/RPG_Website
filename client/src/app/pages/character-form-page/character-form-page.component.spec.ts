@@ -154,7 +154,6 @@ describe('CharacterFormPageComponent', () => {
         characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
 
         playerServiceSpy = jasmine.createSpyObj('PlayerService', [
-            'getPlayer',
             'setPlayer',
             'resetPlayer',
             'setPlayerAvatar',
@@ -163,7 +162,7 @@ describe('CharacterFormPageComponent', () => {
             'assignDice',
             'setPlayerName',
         ]);
-        playerServiceSpy.getPlayer.and.returnValue({ name: 'Player 1', avatar: Avatar.Avatar1 } as Player);
+        playerServiceSpy.player = { name: 'Player 1', avatar: Avatar.Avatar1 } as Player;
 
         routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'create-game' });
         communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
@@ -243,7 +242,7 @@ describe('CharacterFormPageComponent', () => {
 
         it('should show characterNameError if character name is empty', async () => {
             component.name = 'Choisis ton nom';
-            playerServiceSpy.getPlayer.and.returnValue({ name: '', avatar: Avatar.Avatar1 } as Player);
+            playerServiceSpy.player={ name: '', avatar: Avatar.Avatar1 } as Player;
             component.onSubmit();
             await fixture.whenStable();
             expect(component.showErrorMessage.characterNameError).toBeTrue();
@@ -295,7 +294,7 @@ describe('CharacterFormPageComponent', () => {
                 component.isEditing = false;
                 component.toggleEditing();
                 expect(component.isEditing).toBeTrue();
-                expect(component.name).toEqual(playerServiceSpy.getPlayer().name);
+                expect(component.name).toEqual(playerServiceSpy.player.name);
             });
 
             it('should disable editing mode and call stopEditing when isEditing is true', () => {
@@ -325,7 +324,7 @@ describe('CharacterFormPageComponent', () => {
 
         describe('Getters', () => {
             beforeEach(() => {
-                playerServiceSpy.getPlayer.and.returnValue({
+                playerServiceSpy.player = {
                     specs: {
                         life: 10,
                         speed: 5,
@@ -334,37 +333,31 @@ describe('CharacterFormPageComponent', () => {
                         attackBonus: { diceType: Bonus.D6, currentValue: 0 },
                         defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
                     },
-                } as Player);
+                } as Player;
             });
 
             it('should return the correct life value from playerService', () => {
                 expect(component.life).toBe(10);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
 
             it('should return the correct speed value from playerService', () => {
                 expect(component.speed).toBe(5);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
 
             it('should return the correct attack value from playerService', () => {
                 expect(component.attack).toBe(8);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
 
             it('should return the correct defense value from playerService', () => {
                 expect(component.defense).toBe(7);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
 
             it('should return the correct attackBonus value from playerService', () => {
                 expect(component.attackBonus).toBe(Bonus.D6);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
 
             it('should return the correct defenseBonus value from playerService', () => {
                 expect(component.defenseBonus).toBe(Bonus.D4);
-                expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
             });
         });
     });
@@ -381,7 +374,7 @@ describe('CharacterFormPageComponent', () => {
 
         describe('Character Selection with selectCharacter', () => {
             it('should select a character if it is available and set the avatar', () => {
-                component.selectCharacter(component.characters[2]); // Choix d'un personnage disponible
+                component.selectCharacter(component.characters[2]);
                 expect(component.selectedCharacter).toEqual(component.characters[2]);
                 expect(playerServiceSpy.setPlayerAvatar).toHaveBeenCalledWith(component.characters[2].id);
             });
@@ -438,7 +431,7 @@ describe('CharacterFormPage when joining game', () => {
         routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'join-game' });
 
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer', 'setPlayerAvatar', 'createPlayer']);
-        playerServiceSpy.getPlayer.and.returnValue({ name: 'Player 1', avatar: Avatar.Avatar1 } as Player);
+        playerServiceSpy.player = { name: 'Player 1', avatar: Avatar.Avatar1 } as Player;
 
         communicationMapServiceSpy.basicGet.and.returnValue(of(mockMaps[1]));
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
@@ -549,6 +542,6 @@ describe('CharacterFormPage when joining game', () => {
         component.gameId = '5678';
         await component.onSubmit();
 
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: playerServiceSpy.getPlayer(), gameId: '5678' });
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: playerServiceSpy.player, gameId: '5678' });
     });
 });

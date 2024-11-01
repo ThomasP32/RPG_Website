@@ -23,7 +23,7 @@ describe('PlayerService', () => {
     describe('resetPlayer', () => {
         it('should reset the player to default values', () => {
             service.resetPlayer();
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.name).toBe('');
             expect(player.socketId).toBe('');
@@ -51,7 +51,7 @@ describe('PlayerService', () => {
             service.assignDice('attack');
 
             service.createPlayer();
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.name).toBe('Test Player');
             expect(player.socketId).toBe('12345');
@@ -70,12 +70,12 @@ describe('PlayerService', () => {
             service.assignDice('attack');
 
             service.createPlayer();
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.name).toBe('Test Player');
             expect(player.socketId).toBe('');
             expect(player.avatar).toBe(Avatar.Avatar2);
-            expect(player.specs.life).toBe(6); // life bonus
+            expect(player.specs.life).toBe(6); 
             expect(player.specs.speed).toBe(4);
             expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
             expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
@@ -111,21 +111,21 @@ describe('PlayerService', () => {
                 visitedTiles: [],
             };
             service.setPlayer(mockPlayer);
-            expect(service.getPlayer()).toEqual(mockPlayer);
+            expect(service.player).toEqual(mockPlayer);
         });
     });
 
     describe('#setPlayerName', () => {
         it('should set the player name without leading or trailing spaces', () => {
             service.setPlayerName('  Player Name   ');
-            expect(service.getPlayer().name).toBe('Player Name');
+            expect(service.player.name).toBe('Player Name');
         });
     });
 
     describe('#setPlayerAvatar', () => {
         it('should set the player avatar', () => {
             service.setPlayerAvatar(Avatar.Avatar3);
-            expect(service.getPlayer().avatar).toBe(Avatar.Avatar3);
+            expect(service.player.avatar).toBe(Avatar.Avatar3);
         });
     });
 
@@ -133,7 +133,7 @@ describe('PlayerService', () => {
         it('should add 2 to life and reset speed when "life" bonus is assigned', () => {
             service.resetPlayer();
             service.assignBonus('life');
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.specs.life).toBe(6);
             expect(player.specs.speed).toBe(4);
@@ -142,7 +142,7 @@ describe('PlayerService', () => {
         it('should add 2 to speed and reset life when "speed" bonus is assigned', () => {
             service.resetPlayer();
             service.assignBonus('speed');
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.specs.speed).toBe(6);
             expect(player.specs.life).toBe(4);
@@ -153,7 +153,7 @@ describe('PlayerService', () => {
         it('should set attack bonus to D6 and defense bonus to D4 when "attack" dice is assigned', () => {
             service.resetPlayer();
             service.assignDice('attack');
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.specs.attackBonus.diceType).toBe(Bonus.D6);
             expect(player.specs.defenseBonus.diceType).toBe(Bonus.D4);
@@ -162,7 +162,7 @@ describe('PlayerService', () => {
         it('should set attack bonus to D4 and defense bonus to D6 when "defense" dice is assigned', () => {
             service.resetPlayer();
             service.assignDice('defense');
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.specs.attackBonus.diceType).toBe(Bonus.D4);
             expect(player.specs.defenseBonus.diceType).toBe(Bonus.D6);
@@ -178,7 +178,7 @@ describe('PlayerService', () => {
             service.assignDice('defense');
 
             service.createPlayer();
-            const player = service.getPlayer();
+            const player = service.player;
 
             expect(player.name).toBe('Final Player');
             expect(player.socketId).toBe('12345');

@@ -54,17 +54,16 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
 
-    @SubscribeMessage('getPlayerById')
-    getPlayerById(client: Socket, gameId: string, playerSocketId: string): void {
-        const player = this.gameCreationService.getPlayer(gameId, playerSocketId);
-        client.emit('currentPlayer', player);
+    @SubscribeMessage('kickPlayer')
+    handleKickPlayer(client: Socket, playerId: string): void {
+        this.server.to(playerId).emit('playerKicked');
     }
 
-    @SubscribeMessage('getGame')
+    @SubscribeMessage('getGameData')
     getGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
             const game = this.gameCreationService.getGameById(gameId);
-            client.emit('currentGame', game);
+            client.emit('currentGameData', { game: game, name: game.name, size: game.mapSize.x });
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
         }
@@ -137,7 +136,7 @@ export class GameGateway implements OnGatewayDisconnect {
                 if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
                     this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
                     this.gameCreationService.deleteRoom(game.id);
-                    this.server.socketsLeave(game.id);
+                    // this.server.socketsLeave(game.id);
 
                     return;
                 }
