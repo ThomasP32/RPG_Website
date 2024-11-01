@@ -167,7 +167,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid #777;
 }
 
 .right-panel {
@@ -363,6 +362,10 @@
 }
 
 .countdown-container {
+    position: absolute;
+    top: 10px; 
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -374,12 +377,12 @@
 
 .countdown-container h2 {
     margin: 0px;
-    font-size: 1.2em;
+    font-size: 0.9em;
 }
 
 .countdown-container h3 {
-    margin: 10px;
-    font-size: 1.2em;
+    margin: 5px;
+    font-size: 0.7em;
 }
 
 .countdown-timer {

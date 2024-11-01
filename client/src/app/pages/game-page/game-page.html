@@ -16,14 +16,6 @@
             <p>Joueur actif : {{ currentPlayerTurn }}</p>
         </div>
 
-        <div class="countdown-container">
-            <h2>Temps restant</h2>
-            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
-                <h3>{{ countdown }}</h3>
-            </div>
-            <h2>secondes</h2>
-        </div>
-
         <div class="player-info">
             <div class="player-info-header">
                 <img [src]="playerPreview || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
@@ -78,6 +70,15 @@
             </div>
         </div>
     </div>
+
+    <div class="countdown-container">
+        <h2>Temps restant</h2>
+        <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+            <h3>{{ countdown }}</h3>
+        </div>
+        <h2>secondes</h2>
+    </div>
+
     <div class="game-map-container">
         <app-game-map [map]="game" [moves]="moves" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
