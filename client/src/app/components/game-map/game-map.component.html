@@ -15,8 +15,8 @@
             <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-tile" />
             } @if(cell.item) {
             <img [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
-            } @if(cell.doorState) {
-            <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Item" class="grid-item" />
+            <!-- } @if(cell.item == "starting-point") {
+            <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-item" /> -->
             } @if(cell.player) {
             <img [src]="getAvatarImage(cell.player)" alt="Player" class="grid-item" />}
         </div>

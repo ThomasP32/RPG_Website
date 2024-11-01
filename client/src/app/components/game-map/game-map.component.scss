@@ -80,6 +80,16 @@
     z-index: 3;
 }
 
+.map-cell .grid-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    z-index: 3;
+}
+
 .tooltip {
     position: absolute;
     max-width: 5cm;
