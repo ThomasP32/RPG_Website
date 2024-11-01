@@ -71,8 +71,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         this.playerService.resetPlayer();
-        // pourquoi est ce qu'on met un getPlayer si il est toujours vide , tu l'initialise dans cette page
-        this.name = this.playerService.getPlayer().name || 'Choisis ton nom';
+        this.name = this.playerService.player.name || 'Choisis ton nom';
 
         this.characterService.getCharacters().subscribe((characters) => {
             this.characters = characters;
@@ -91,34 +90,33 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     get life(): number {
-        return this.playerService.getPlayer().specs.life;
+        return this.playerService.player.specs.life;
     }
 
     get speed(): number {
-        return this.playerService.getPlayer().specs.speed;
+        return this.playerService.player.specs.speed;
     }
 
     get attack(): number {
-        return this.playerService.getPlayer().specs.attack;
+        return this.playerService.player.specs.attack;
     }
 
     get defense(): number {
-        return this.playerService.getPlayer().specs.defense;
+        return this.playerService.player.specs.defense;
     }
 
     get attackBonus(): Bonus {
-        return this.playerService.getPlayer().specs.attackBonus;
+        return this.playerService.player.specs.attackBonus;
     }
 
     get defenseBonus(): Bonus {
-        return this.playerService.getPlayer().specs.defenseBonus;
+        return this.playerService.player.specs.defenseBonus;
     }
 
     listenToSocketMessages(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
-                    console.log('un current players a été emit', players);
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
                         character.isAvailable = false;
@@ -201,7 +199,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         if (!this.isEditing) {
             this.stopEditing();
         } else {
-            this.name = this.playerService.getPlayer().name;
+            this.name = this.playerService.player.name;
         }
     }
 
@@ -241,7 +239,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     }, timeLimit);
                 }
             } else {
-                this.socketService.sendMessage('joinGame', { player: this.playerService.getPlayer(), gameId: this.gameId });
+                this.socketService.sendMessage('joinGame', { player: this.playerService.player, gameId: this.gameId });
             }
         }
     }
@@ -262,7 +260,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             diceError: false,
         };
 
-        if (this.name === 'Choisis un nom' || this.playerService.getPlayer().name === '') {
+        if (this.name === 'Choisis un nom' || this.playerService.player.name === '') {
             this.showErrorMessage.characterNameError = true;
             return false;
         }
