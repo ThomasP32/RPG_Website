@@ -279,7 +279,7 @@ describe('GameManagerGateway', () => {
             gateway.startTurn('game-id');
 
             expect(activePlayer.specs.movePoints).toBe(activePlayer.specs.speed);
-    
+
             const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
             expect(toActivePlayerStub.calledWith('yourTurn', activePlayer)).toBeTruthy();
 
@@ -338,7 +338,6 @@ describe('GameManagerGateway', () => {
             expect(startTurnSpy.calledWith(gameId)).toBeTruthy();
         });
     });
-
     describe('moveToPosition', () => {
         let player: Player;
         let game: Game;
@@ -375,7 +374,10 @@ describe('GameManagerGateway', () => {
         });
         it('should apply -2 penalty to attack and defense when moving to an ice tile', async () => {
             gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([{ x: 0, y: 1 }]);
+            gameManagerService.getMove.returns([
+                { x: 0, y: 1 },
+                { x: 0, y: 1 },
+            ]);
             gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(false);
             gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(true);
 
@@ -391,7 +393,8 @@ describe('GameManagerGateway', () => {
             player.specs.attack = 8;
             player.specs.defense = 8;
             gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([{ x: 0, y: 2 }]);
+            gameManagerService.getMove.returns([{ x: 0, y: 2 },
+                { x: 0, y: 2 },]);
             gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
             gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
 

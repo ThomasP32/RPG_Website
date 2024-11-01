@@ -35,7 +35,7 @@ export class GameManagerGateway {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
-        if(this.gameManagerService.onIceTile(player, game.id)){
+        if (this.gameManagerService.onIceTile(player, game.id)) {
             wasOnIceTile = true;
         }
 
@@ -47,17 +47,19 @@ export class GameManagerGateway {
 
         for (const move of moves) {
             this.gameManagerService.updatePosition(data.gameId, client.id, [move]);
+
+            const isOnIceTile = this.gameManagerService.onIceTile(player, game.id);
+            if (isOnIceTile && !wasOnIceTile) {
+                player.specs.attack -= 2;
+                player.specs.defense -= 2;
+                wasOnIceTile = true;
+            } else if (!isOnIceTile && wasOnIceTile) {
+                player.specs.attack += 2;
+                player.specs.defense += 2;
+                wasOnIceTile = false;
+            }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, 150));
-        }
-
-        if(this.gameManagerService.onIceTile(player, game.id) && !wasOnIceTile) {
-            player.specs.attack -= 2;
-            player.specs.defense -= 2;
-        }
-        if(!this.gameManagerService.onIceTile(player, game.id) && wasOnIceTile) {
-            player.specs.attack += 2;
-            player.specs.defense += 2;
         }
 
         if (this.gameManagerService.hasFallen(moves, data.destination)) {
@@ -97,7 +99,7 @@ export class GameManagerGateway {
         if (player.socketId !== client.id) {
             return;
         }
-        
+
         player.specs.movePoints = player.specs.speed;
         this.gameManagerService.updateTurnCounter(gameId);
         this.startTurn(gameId);
