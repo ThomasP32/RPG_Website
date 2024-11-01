@@ -23,11 +23,13 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     isWaitingRoom: boolean;
     isGamePage: boolean;
 
-    //eslint-disable-next-line no-unused-vars
     constructor(
         public socketService: SocketService,
         private router: Router,
-    ) {}
+    ) {
+        this.socketService = socketService;
+        this.router = router;
+    }
 
     ngOnInit(): void {
         const currentUrl = this.router.url;
