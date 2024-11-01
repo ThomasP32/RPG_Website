@@ -142,6 +142,18 @@
 //         expect(RouterSpy.navigate).toHaveBeenCalledWith(['/create-game']);
 //     });
 
+//     it('should handle playerJoined event correctly', () => {
+//         const players = [mockPlayer];
+//         playerJoinedSubject.next(players);
+//         expect(component.activePlayers).toEqual(players);
+//         expect(component.numberOfPlayers).toBe(players.length);
+//     });
+
+//     afterEach(() => {
+//         gameStartedSubject.complete();
+//         playerJoinedSubject.complete();
+//     });
+// });
 //     afterEach(() => {
 //         gameStartedSubject.complete();
 //         playerJoinedSubject.complete();
