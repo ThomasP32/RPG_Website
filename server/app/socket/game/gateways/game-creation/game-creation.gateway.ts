@@ -63,7 +63,6 @@ export class GameGateway implements OnGatewayDisconnect {
     getGame(client: Socket, gameId: string): void {
         if (this.gameCreationService.doesGameExist(gameId)) {
             const game = this.gameCreationService.getGameById(gameId);
-            console.log('Game data:', game);
             client.emit('currentGameData', { game: game, name: game.name, size: game.mapSize.x });
         } else {
             client.emit('gameNotFound', { reason: 'La partie a été fermée' });
