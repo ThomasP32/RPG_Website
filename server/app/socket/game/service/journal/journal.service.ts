@@ -1,18 +1,17 @@
-import { JournalEntry } from '@common/journal-entry';
+import { Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class JournalService {
-    private gameJournals: Record<string, JournalEntry[]> = {};
+    private server: Server;
 
-    addJournalEntry(gameId: string, journalEntry: JournalEntry): void {
-        if (!this.gameJournals[gameId]) {
-            this.gameJournals[gameId] = [];
-        }
-        this.gameJournals[gameId].push(journalEntry);
+    initializeServer(server: Server) {
+        this.server = server;
     }
 
-    getJournalEntries(gameId: string): JournalEntry[] {
-        return this.gameJournals[gameId] || [];
+    logMessage(gameId: string, message: string, playersInvolved: Player[] = []): void {
+        const entry = { message, timestamp: new Date(), playersInvolved };
+        this.server.to(gameId).emit('journalEntry', entry);
     }
 }

@@ -1,38 +1,36 @@
-import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { JournalEntry } from '@common/journal-entry';
-import { Inject } from '@nestjs/common';
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class JournalGateway {
     @WebSocketServer() server: Server;
 
-    @Inject(JournalService) private journalService: JournalService;
-
-    @SubscribeMessage('getJournalEntries')
-    handleGetJournalEntries(client: Socket, data: { gameId: string }): void {
-        const entries = this.journalService.getJournalEntries(data.gameId);
-        client.emit('journalEntries', entries);
-    }
-
-    @SubscribeMessage('logGameEvent')
-    handleLogGameEvent(client: Socket, data: { gameId: string; message: string; playersInvolved: string[] }): void {
-        const journalEntry: JournalEntry = {
-            gameId: data.gameId,
-            message: data.message,
-            timestamp: new Date(),
-            playersInvolved: data.playersInvolved,
-        };
-
-        this.journalService.addJournalEntry(data.gameId, journalEntry);
-
-        if (data.playersInvolved.length > 0) {
-            data.playersInvolved.forEach((playerId) => {
-                this.server.to(playerId).emit('journalEntry', journalEntry);
-            });
-        } else {
-            this.server.to(data.gameId).emit('journalEntry', journalEntry);
-        }
-    }
+    // @SubscribeMessage('startTurn')
+    // handleStartTurn(client: Socket, data: { gameId: string }): void {
+    //     this.server.to(data.gameId).emit('startTurn', { gameId: data.gameId });
+    // }
+    // @SubscribeMessage('startCombat')
+    // handleStartCombat(client: Socket, data: { gameId: string; players: string[] }): void {
+    //     this.server.to(data.gameId).emit('startCombat', { gameId: data.gameId, players: data.players });
+    // }
+    // @SubscribeMessage('endCombat')
+    // handleEndCombat(client: Socket, data: { gameId: string; winner: string }): void {
+    //     this.server.to(data.gameId).emit('endCombat', { gameId: data.gameId, winner: data.winner });
+    // }
+    // @SubscribeMessage('openDoor')
+    // handleOpenDoor(client: Socket, data: { gameId: string; playerName: string }): void {
+    //     this.server.to(data.gameId).emit('openDoor', { gameId: data.gameId, playerName: data.playerName });
+    // }
+    // @SubscribeMessage('closeDoor')
+    // handleCloseDoor(client: Socket, data: { gameId: string; playerName: string }): void {
+    //     this.server.to(data.gameId).emit('closeDoor', { gameId: data.gameId, playerName: data.playerName });
+    // }
+    // @SubscribeMessage('endGame')
+    // handleEndGame(client: Socket, data: { gameId: string; winner: string }): void {
+    //     this.server.to(data.gameId).emit('endGame', { gameId: data.gameId, winner: data.winner });
+    // }
+    // @SubscribeMessage('playerDisconnected')
+    // handlePlayerAbandonGame(client: Socket, data: { gameId: string; playerName: string }): void {
+    //     this.server.to(data.gameId).emit('playerDisconnected', { playerName: data.playerName, gameId: data.gameId });
+    // }
 }

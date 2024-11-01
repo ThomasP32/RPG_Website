@@ -4,6 +4,7 @@ import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/web
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
+import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class CombatGateway {
@@ -12,6 +13,7 @@ export class CombatGateway {
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
+    @Inject(JournalService) private journalService: JournalService;
 
     @SubscribeMessage('startCombat')
     startCombat(client: Socket, data: { gameId: string; startCombatPlayer: Player; player2: Player }): void {
@@ -20,6 +22,7 @@ export class CombatGateway {
             this.server
                 .to(data.gameId)
                 .emit('combatStarted', { message: `${data.startCombatPlayer.name} a commencé un combat contre ${data.player2.name}` });
+            this.journalService.logMessage(data.gameId, `${data.startCombatPlayer.name} a commencé un combat contre ${data.player2.name}`);
             let currentTurnPlayerId: string;
             if (data.startCombatPlayer.specs.speed > data.player2.specs.speed) {
                 currentTurnPlayerId = data.startCombatPlayer.socketId;
@@ -57,9 +60,11 @@ export class CombatGateway {
         } else {
             client.broadcast.to(data.gameId).emit('combatFinishedByEvasion', { message: 'Combat terminé' });
         }
+        this.journalService.logMessage(data.gameId, `Le combat est terminé.`);
     }
     @SubscribeMessage('combatFinishedNormal')
     combatFinishedNormally(client: Socket, data: { gameId: string; combatWinner: Player }): void {
         client.broadcast.to(data.gameId).emit('combatFinishedNormally', { message: `Combat terminé, le gagnant est ${data.combatWinner.name}` });
+        this.journalService.logMessage(data.gameId, `Combat terminé, le gagnant est ${data.combatWinner.name}`);
     }
 }

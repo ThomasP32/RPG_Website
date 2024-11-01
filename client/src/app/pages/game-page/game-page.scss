@@ -376,7 +376,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 80%;
     height: 100%;
     z-index: 1000;
     pointer-events: all;
@@ -443,5 +443,5 @@
     z-index: 1001;
 }
 .turn-indicator h3 {
-    color:#f39c12;
+    color: #f39c12;
 }
