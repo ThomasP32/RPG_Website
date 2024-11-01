@@ -17,6 +17,8 @@ export class GameTurnService {
     public playerTurn$ = this.playerTurn.asObservable();
     private youFell = new BehaviorSubject<boolean>(false);
     public youFell$ = this.youFell.asObservable();
+    private playerWon = new BehaviorSubject<boolean>(false);
+    public playerWon$ = this.playerWon.asObservable();
     isMoving = false;
 
     constructor(
@@ -72,6 +74,7 @@ export class GameTurnService {
     listenForTurn() {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
+                this.verifyPlayerWin();
                 this.playerService.player = yourPlayer;
                 this.clearMoves();
                 this.playerTurn.next(yourPlayer.name);
@@ -88,20 +91,12 @@ export class GameTurnService {
         );
     }
 
-    // listenForTurnRotation() {
-    //     this.socketSubscription.add(
-    //         this.socketService.listen<Game>('playerFinishedTurn').subscribe((game) => {
-    //             this.game = game;
-    //         }),
-    //     );
-    // }
-
-    getMoves() {
+    getMoves(): void {
         this.listenMoves();
         this.socketService.sendMessage('getMovements', this.game.id);
     }
 
-    listenMoves() {
+    listenMoves(): void {
         this.socketSubscription.add(
             this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
                 console.log('tu as recu tes mouvements');
@@ -115,7 +110,7 @@ export class GameTurnService {
         );
     }
 
-    clearMoves() {
+    clearMoves(): void {
         this.moves = new Map();
     }
 
@@ -123,29 +118,43 @@ export class GameTurnService {
         this.socketService.sendMessage('moveToPosition', { playerTurn: this.player.turn, gameId: this.game.id, destination: position });
     }
 
-    listenForPlayerMove() {
+    listenForPlayerMove(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game, player: Player }>('positionToUpdate').subscribe(async (data) => {                
+            this.socketService.listen<{ game: Game; player: Player }>('positionToUpdate').subscribe(async (data) => {
                 if (data.player.socketId === this.player.socketId) {
                     this.playerService.setPlayer(data.player);
                 }
                 this.gameService.setGame(data.game);
             }),
         );
-
         this.socketSubscription.add(
-            this.socketService.listen<Player>('youFinishedMoving').subscribe((updatedPlayer) => {
-                this.playerService.player = updatedPlayer;
+            this.socketService.listen('youFinishedMoving').subscribe(() => {
                 this.clearMoves();
                 this.resumeTurn();
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen<Player>('youFell').subscribe((updatedPlayer) => {
-                this.playerService.player = updatedPlayer;
                 this.clearMoves();
                 this.endTurnBecauseFell();
             }),
         );
+    }
+
+    verifyPlayerWin(): void {
+        this.socketService.sendMessage('hasPlayerWon', this.game.id);
+    }
+
+    listenForPlayerWin(): void {
+        this.socketSubscription.add(
+            this.socketService.listen('playerWon').subscribe(() => {
+                this.playerWon.next(true);
+                this.endGame();
+            }),
+        );
+    }
+
+    endGame(): void {
+        this.socketSubscription.unsubscribe();
     }
 }

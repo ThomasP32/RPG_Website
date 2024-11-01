@@ -96,7 +96,7 @@ describe('GameManagerGateway', () => {
             expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
-            expect(toSocketStub.calledWith('youFell', player)).toBeTruthy();
+            expect(toSocketStub.calledWith('youFell')).toBeTruthy();
         });
 
         it('should emit youFinishedMoving if the player reaches the destination', async () => {
@@ -122,7 +122,7 @@ describe('GameManagerGateway', () => {
             expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
-            expect(toSocketStub.calledWith('youFinishedMoving', player)).toBeTruthy();
+            expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
         });
     });
 
@@ -215,8 +215,6 @@ describe('GameManagerGateway', () => {
             gateway.endTurn(socket, 'game-id');
 
             const player = game.players[0];
-            expect(player.specs.attack).toBe(3);
-            expect(player.specs.defense).toBe(3);
             expect(player.specs.movePoints).toBe(player.specs.speed);
 
             expect(startTurnSpy.calledWith('game-id')).toBeTruthy();
@@ -281,9 +279,7 @@ describe('GameManagerGateway', () => {
             gateway.startTurn('game-id');
 
             expect(activePlayer.specs.movePoints).toBe(activePlayer.specs.speed);
-            expect(activePlayer.specs.attack).toBe(12);
-            expect(activePlayer.specs.defense).toBe(12);
-
+    
             const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
             expect(toActivePlayerStub.calledWith('yourTurn', activePlayer)).toBeTruthy();
 
@@ -344,6 +340,26 @@ describe('GameManagerGateway', () => {
     });
 
     describe('moveToPosition', () => {
+        let player: Player;
+        let game: Game;
+
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+            } as Player;
+
+            game = {
+                id: 'game-1',
+                players: [player],
+                currentTurn: 0,
+                hasStarted: true,
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+        });
         it('should return without emitting if moves length is 0', () => {
             gameCreationService.doesGameExist.returns(true);
 
@@ -356,6 +372,48 @@ describe('GameManagerGateway', () => {
             gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
             expect(gameManagerService.updatePosition.notCalled).toBeTruthy();
+        });
+        it('should apply -2 penalty to attack and defense when moving to an ice tile', async () => {
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([{ x: 0, y: 1 }]);
+            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(false);
+            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(true);
+
+            const destination: Coordinate = { x: 0, y: 1 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(8);
+            expect(player.specs.defense).toBe(8);
+        });
+
+        it('should remove -2 penalty from attack and defense when moving off an ice tile', async () => {
+            player.specs.attack = 8;
+            player.specs.defense = 8;
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([{ x: 0, y: 2 }]);
+            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
+            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
+
+            const destination: Coordinate = { x: 0, y: 2 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+        });
+
+        it('should not change attack and defense if remaining on the same type of tile', async () => {
+            gameCreationService.doesGameExist.returns(true);
+            gameManagerService.getMove.returns([{ x: 1, y: 1 }]);
+            gameManagerService.onIceTile.returns(false);
+
+            const destination: Coordinate = { x: 1, y: 1 };
+
+            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
         });
     });
 });
