@@ -19,7 +19,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     messages: Message[] = [];
     messageSubscription: Subscription;
 
-    //eslint-disable-next-line no-unused-vars
     constructor(public socketService: SocketService) {}
 
     ngOnInit(): void {
