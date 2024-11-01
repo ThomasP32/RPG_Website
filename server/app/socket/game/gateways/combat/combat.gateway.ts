@@ -84,7 +84,7 @@ export class CombatGateway {
             combatWinner: data.combatWinner,
             combatLooser: data.combatLooser,
         });
-        this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat, continuez votre tour` });
+        this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat` });
         await this.cleanupCombatRoom(data.combatRoomId);
     }
     @SubscribeMessage('rollDice')

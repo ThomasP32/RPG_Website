@@ -10,6 +10,7 @@
             (click)="onTileClick({ x: rowIndex, y: colIndex })"
             (contextmenu)="$event.preventDefault()"
             (mousedown)="onRightClickTile($event, { x: rowIndex, y: colIndex })"
+            [ngClass]="{ 'no-pointer-events': !isYourTurn }"
         >
             @if(cell.value) {
             <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-tile" />

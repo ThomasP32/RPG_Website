@@ -47,6 +47,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.socketSubscription.unsubscribe();
+        // this.socketService.disconnect();
     }
     //preset les niveaux de vie des joueurs du debut
     getPlayersLife(): void {
@@ -205,13 +206,13 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         if (this.player.specs.life === 0) {
             this.combatWinStatsUpdate(this.opponent, this.player);
             this.updatePlayerStats();
-            this.closeCombatModal();
             this.socketService.sendMessage('combatFinishedNormal', {
                 gameId: this.gameId,
                 combatWinner: this.opponent,
                 combatLooser: this.player,
                 combatRoomId: this.combatRoomId,
             });
+            this.closeCombatModal();
             // } else if (this.opponent.specs.life === 0) {
             //     this.combatWinStatsUpdate(this.player, this.opponent);
             //     this.updatePlayerStats();

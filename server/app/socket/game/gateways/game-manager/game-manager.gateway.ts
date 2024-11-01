@@ -19,10 +19,7 @@ export class GameManagerGateway {
             client.emit('gameNotFound');
             return;
         }
-        console.log('on a demandé les mouvements');
         const moves = this.gameManagerService.getMoves(gameId, client.id);
-        client.emit('playerPossibleMoves', moves);
-        console.log('on lui a envoyé ses mouvements', moves);
     }
 
     @SubscribeMessage('moveToPosition')
@@ -78,7 +75,7 @@ export class GameManagerGateway {
     }
 
     @SubscribeMessage('hasPlayerWon')
-    hasPlayerWon(gameId: string): void {
+    hasPlayerWon(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         game.players.forEach((player) => {
             if (player.specs.nVictories >= 3) {
