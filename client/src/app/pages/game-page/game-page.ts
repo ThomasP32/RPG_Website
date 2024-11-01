@@ -42,7 +42,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     specs: Specs;
 
     constructor(
-        // private route: ActivatedRoute,
         private router: Router,
         private socketService: SocketService,
         private characterService: CharacterService,
@@ -51,7 +50,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
     ) {
-        // this.route = route;
         this.router = router;
         this.socketService = socketService;
         this.characterService = characterService;
@@ -62,18 +60,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.listenForFalling();
-        this.listenForCountDown();
-        this.listenPlayersLeft();
-        this.listenForCurrentPlayerUpdates();
-        this.gameTurnService.listenForTurn();
-        this.gameTurnService.listenForPlayerMove();
-        this.gameTurnService.listenMoves();
-        this.activePlayers = this.gameService.game.players;
-        this.countDownService.resetCountdown();
-        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        if (this.playerService.player.socketId === this.game.hostSocketId) {
-            this.socketService.sendMessage('startGame', this.gameService.game.id);
+        if (this.player && this.game) {
+            this.listenForFalling();
+            this.listenForCountDown();
+            this.listenPlayersLeft();
+            this.listenForCurrentPlayerUpdates();
+            this.gameTurnService.listenForTurn();
+            this.gameTurnService.listenForPlayerMove();
+            this.gameTurnService.listenMoves();
+            this.activePlayers = this.game.players;
+            this.countDownService.resetCountdown();
+            this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+            
+            if (this.player.socketId === this.game.hostSocketId) {
+                this.socketService.sendMessage('startGame', this.game.id);
+            }
         }
     }
 
