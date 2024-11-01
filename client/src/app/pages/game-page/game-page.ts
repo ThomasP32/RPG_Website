@@ -97,6 +97,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
                 this.activePlayers = players.filter((player) => player.isActive);
+                if (this.isCombatModalOpen && this.combatRoomId) {
+                    const playersInCombat = this.activePlayers.filter(
+                        (player) => player.socketId === this.player.socketId || player.socketId === this.opponent.socketId,
+                    );
+                    const activePlayersInCombat = playersInCombat.filter((player) => player.isActive);
+                    const inactivePlayersInCombat = playersInCombat.filter((player) => !player.isActive);
+                    if (activePlayersInCombat.length === 1 && inactivePlayersInCombat.length === 1) {
+                        const combatWinner = activePlayersInCombat[0];
+                        const combatLooser = inactivePlayersInCombat[0];
+                        this.socketService.sendMessage('combatFinishedNormal', {
+                            gameId: this.gameService.game.id,
+                            combatWinner: combatWinner,
+                            combatLooser: combatLooser,
+                            combatRoomId: this.combatRoomId,
+                        });
+                    }
+                }
                 if (this.activePlayers.length <= 1) {
                     this.showExitModal = false;
                     this.showKickedModal = true;
@@ -243,7 +260,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     startCombat(): void {
         //TODO: Change opponent to real opponent
-        this.socketService.sendMessage('startCombat', { gameId: this.gameId, opponent: this.activePlayers[1] });
+        this.socketService.sendMessage('startCombat', { gameId: this.gameService.game.id, opponent: this.activePlayers[1] });
     }
 
     ngOnDestroy() {
