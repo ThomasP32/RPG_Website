@@ -78,7 +78,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.activePlayers = this.game.players;
             this.countDownService.resetCountdown();
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-
+            this.gameId = this.game.id;
             if (this.player.socketId === this.game.hostSocketId) {
                 this.socketService.sendMessage('startGame', this.game.id);
             }
@@ -143,6 +143,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     }
                     this.combatRoomId = data.combatRoomId;
                     this.isCombatModalOpen = true;
+                    this.countDownService.pauseCountdown();
                 }),
         );
 
@@ -157,17 +158,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ message: string; combatWinner: Player; combatLooser: Player }>('combatFinishedNormally').subscribe((data) => {
                 console.log(data.message);
-                for (let player of this.activePlayers) {
+
+                this.game.players = this.game.players.map((player) => {
                     if (player.socketId === data.combatLooser.socketId) {
-                        player = data.combatLooser;
+                        return { ...player, ...data.combatLooser };
                     } else if (player.socketId === data.combatWinner.socketId) {
-                        player = data.combatWinner;
+                        return { ...player, ...data.combatWinner };
                     }
-                }
-                console.log('Players updated after combat:', this.activePlayers);
+                    return player;
+                });
+
+                console.log('Players updated after combat:', this.game.players);
                 setTimeout(() => {
                     this.isCombatModalOpen = false;
                 }, 3000);
+                this.countDownService.resumeCountdown();
             }),
         );
     }

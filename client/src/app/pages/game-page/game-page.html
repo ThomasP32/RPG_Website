@@ -1,6 +1,7 @@
-@if(!isYourTurn) {
+<!-- @if(!isYourTurn&&) {
 <div class="disable-interactions"></div>
-} @if(!delayFinished) {
+}  -->
+@if(!delayFinished) {
 <div class="disable-interactions"></div>
 <div class="turn-indicator"><h3>C'est au tour de {{currentPlayerTurn}}</h3></div>
 } @if(youFell) {
@@ -80,7 +81,7 @@
     </div>
 
     <div class="game-map-container">
-        <app-game-map [map]="game" [moves]="moves" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
+        <app-game-map [map]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
