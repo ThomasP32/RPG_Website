@@ -49,15 +49,20 @@
             </div>
             @if(!isStartable){
             <div class="player-waiting">
-                <h2>En attente d'autres joueurs...</h2>
                 <div class="gear-animation">
                     <img src="assets/gear.png" alt="Gear Animation" />
                 </div>
+                <h2>En attente d'autres joueurs...</h2>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
             </div>
             } @else { @if(isHost){
-            <div class="start-game-button">
-                <button (click)="startGame()">Commencer la partie</button>
+            <div class="host-waiting">
+                <div class="button-container">
+                    <button (click)="startGame()">Commencer la partie</button>
+                </div>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
             </div>
+
             } }
         </div>
         @if(player) {

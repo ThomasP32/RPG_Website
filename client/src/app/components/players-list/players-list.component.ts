@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Avatar, Player } from '@common/game';
-import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-players-list',
     standalone: true,
@@ -15,16 +13,16 @@ import { Subscription } from 'rxjs';
 export class PlayersListComponent implements OnInit {
     @Input() players: Player[];
     @Input() isHost: boolean;
+    hostPlayerId: string = '';
+    hoveredPlayerId: string | null = null;
 
     constructor(
         private characterService: CharacterService,
         private socketService: SocketService,
     ) {
         this.characterService = characterService;
+        this.socketService = socketService;
     }
-    socketSubscription: Subscription = new Subscription();
-    hostPlayerId: string = '';
-    hoveredPlayerId: string | null = null;
 
     ngOnInit(): void {
         if (this.isHost && this.players.length > 0) {

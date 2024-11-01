@@ -81,31 +81,11 @@
     transition: background-color 0.4s;
     cursor: pointer;
     width: 100%;
-}
-.start-game-button {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.start-game-button button {
-    background-color: #2c3e50;
-    border: 3px solid #202020;
-    color: white;
-    padding: 10px 20px;
-    font-weight: bold;
-    font-size: 1rem;
-    font-family: 'Press Start 2P', sans-serif;
-    transition: background-color 0.4s;
-    cursor: pointer;
-    width: 100%;
-}
-
-.start-game-button button:hover {
-    background-color: #b5651d;
-    animation: glowing 2s infinite alternate;
+    transition: all 0.3s ease-in-out;
+    &:hover {
+        color: #f39c12;
+        border: 3px solid #b5651d;
+    }
 }
 
 .game {
@@ -184,6 +164,7 @@
     padding: 10px 20px;
     font-weight: bold;
     font-family: 'Press Start 2P', sans-serif;
+    transition: all 0.3s ease-in-out;
 
     &.locked {
         background-color: rgb(201, 52, 52);
@@ -191,6 +172,13 @@
 
     &.unlocked {
         background-color: green;
+    }
+    &.locked:hover {
+        background-color: rgb(136, 35, 35);
+    }
+
+    &.unlocked:hover {
+        background-color: rgb(1, 102, 1);
     }
 }
 
@@ -209,7 +197,7 @@
 .gear-animation img {
     width: 5vw;
     aspect-ratio: 1/1;
-    margin-left: 10px;
+    // margin-right: 10px;
     animation: rotate-gear 6s infinite linear;
 }
 
@@ -222,24 +210,67 @@
     }
 }
 
+.host-waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.button-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.host-waiting h1 {
+    color: white;
+    font-size: 1.2rem;
+    margin-left: 20px;
+}
+
+.host-waiting button {
+    background-color: #2c3e50;
+    border: 3px solid #202020;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 1rem;
+    font-family: 'Press Start 2P', sans-serif;
+    transition: background-color 0.4s;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+        color: #f39c12;
+        border: 3px solid #b5651d;
+    }
+
+    &:active {
+        box-shadow: none;
+        transform: translateY(4px);
+    }
+}
 .player-waiting {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     margin-top: 20px;
 }
 
 .player-waiting h1 {
     color: white;
     font-size: 1.2rem;
-    margin: 0;
+    margin-right: 5px;
 }
 
 .player-waiting h2 {
     color: #f39c12;
-    font-size: 1.2rem;
-    margin: 0;
+    font-size: 1rem;
+    // margin-right: 10px;
 }
 
 .modal h2 {

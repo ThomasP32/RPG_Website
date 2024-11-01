@@ -6,14 +6,13 @@ import { PlayersListComponent } from '@app/components/players-list/players-list.
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { WaitingRoomParameters } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
-const minCode = 1000;
-const maxCode = 9999;
-const timeLimit = 3000;
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
@@ -31,6 +30,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         private socketService: SocketService,
         private route: ActivatedRoute,
         private router: Router,
+        private mapConversionService: MapConversionService,
     ) {}
 
     waitingRoomCode: string;
@@ -46,6 +46,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     activePlayers: Player[] = [];
     showExitModal: boolean = false;
     dialogBoxMessage: string;
+    numberOfPlayers: number;
+    maxPlayers: number;
 
     async ngOnInit(): Promise<void> {
         this.player = this.playerService.getPlayer();
@@ -61,16 +63,17 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            //pourquoi on getGame et getPlayers ici?
-            this.socketService.sendMessage('getGame', this.waitingRoomCode);
+
             this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
-            this.socketService.sendMessage('getMapName', this.waitingRoomCode);
         }
+        this.socketService.sendMessage('getGameData', this.waitingRoomCode);
         this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
     }
 
     generateRandomNumber(): void {
-        this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
+        this.waitingRoomCode = Math.floor(
+            WaitingRoomParameters.MIN_CODE + Math.random() * (WaitingRoomParameters.MAX_CODE - WaitingRoomParameters.MIN_CODE + 1),
+        ).toString();
     }
 
     async createNewGame(mapName: string): Promise<void> {
@@ -118,7 +121,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.showExitModal = true;
                     setTimeout(() => {
                         this.exitGame();
-                    }, timeLimit);
+                    }, WaitingRoomParameters.TIME_LIMIT);
                 }),
             );
             this.socketSubscription.add(
@@ -136,6 +139,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
                 this.activePlayers = players;
+                this.numberOfPlayers = players.length;
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
@@ -151,11 +155,17 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.activePlayers = players;
+                this.numberOfPlayers = players.length;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<string>('currentMapName').subscribe((name) => {
-                this.mapName = name;
+            this.socketService.listen<{ game: Game; name: string; size: number }>('currentGameData').subscribe((data) => {
+                if (this.isHost) {
+                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
+                } else {
+                    this.mapName = data.name;
+                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
+                }
             }),
         );
 
@@ -164,8 +174,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 this.dialogBoxMessage = 'Vous avez été exclu';
                 this.showExitModal = true;
                 setTimeout(() => {
-                    this.exitGame();
-                }, timeLimit);
+                    this.router.navigate(['/main-menu']);
+                }, WaitingRoomParameters.TIME_LIMIT);
+
+                this.socketService.disconnect();
+                this.characterService.resetCharacterAvailability();
             }),
         );
 

@@ -12,6 +12,9 @@
                 @for(map of this.maps; track map.name) {
                 <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
                     <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                    <div class="player-count-bar">
+                        <p>{{ getMapPlayers(map.mapSize.x) }}</p>
+                    </div>
                     <div class="description-overlay">
                         <p class="description">{{ map.description }}</p>
                     </div>
