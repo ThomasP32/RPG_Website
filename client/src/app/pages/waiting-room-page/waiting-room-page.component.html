@@ -56,7 +56,7 @@
                 <h2>En attente d'autres joueurs...</h2>
                 <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
             </div>
-            } @else { @if(isHost){
+            } @else { @if(isHost && isGameLocked) {
             <div class="host-waiting">
                 <div class="button-container">
                     <button (click)="startGame()">Commencer la partie</button>
@@ -64,6 +64,14 @@
                 <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
             </div>
 
+            } @else {
+            <div class="player-waiting">
+                <div class="gear-animation">
+                    <img src="assets/gear.png" alt="Gear Animation" />
+                </div>
+                <h2>Vérouillez la salle pour commencer</h2>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
+            </div>
             } }
         </div>
         @if(player) {
