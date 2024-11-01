@@ -6,6 +6,7 @@ import { PlayersListComponent } from '@app/components/players-list/players-list.
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
@@ -26,6 +27,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
+        private gameService: GameService,
         private characterService: CharacterService,
         private playerService: PlayerService,
         private socketService: SocketService,
@@ -35,7 +37,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     waitingRoomCode: string;
     mapName: string;
-    player: Player;
     socketSubscription: Subscription = new Subscription();
     isHost: boolean = false;
     playerPreview: string;
@@ -46,8 +47,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     activePlayers: Player[] = [];
 
     async ngOnInit(): Promise<void> {
-        this.player = this.playerService.getPlayer();
-        console.log('Player:', this.playerService.getPlayer());
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
         this.playerName = this.player.name;
 
@@ -69,6 +68,9 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.waitingRoomCode = Math.floor(minCode + Math.random() * (maxCode - minCode + 1)).toString();
     }
 
+    get player(): Player {
+        return this.playerService.player;
+    }
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
@@ -107,7 +109,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     listenToSocketMessages(): void {
-
         if (!this.isHost) {
             this.socketSubscription.add(
                 this.socketService.listen('gameClosed').subscribe(() => {
@@ -117,7 +118,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen('gameInitialized').subscribe(() => {
+            this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
+                this.gameService.setGame(data.game);
                 this.navigateToGamePage();
             }),
         );
@@ -130,13 +132,12 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.socketSubscription.add(
                         this.socketService.listen('isStartable').subscribe((data) => {
                             this.isStartable = true;
-                            console.log('Game is startable');
                         }),
                     );
                 }
             }),
         );
-        // Permet de mettre a jour la liste des joueurs actifs pour l'affichage dans la salle d'attente
+
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.activePlayers = players;
@@ -179,8 +180,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             this.socketSubscription.unsubscribe();
         }
     }
-
-    // esquisse de comment prévenir l'utilisateur que refresh ca le fait quitter la parti
 
     navigateToGamePage() {
         console.log('Navigating to game page with gameId:', this.waitingRoomCode, 'and mapName:', this.mapName);

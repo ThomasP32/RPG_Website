@@ -11,7 +11,9 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CombatGateway } from './socket/game/gateways/combat/combat.gateway';
+import { GameManagerGateway } from './socket/game/gateways/game-manager/game-manager.gateway';
 import { ServerCombatService } from './socket/game/service/combat/combat.service';
+import { GameManagerService } from './socket/game/service/game-manager/game-manager.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -38,6 +40,8 @@ import { ServerCombatService } from './socket/game/service/combat/combat.service
         ChatroomService,
         CombatGateway,
         ServerCombatService,
+        GameManagerGateway,
+        GameManagerService,
     ],
 })
 export class AppModule {}
