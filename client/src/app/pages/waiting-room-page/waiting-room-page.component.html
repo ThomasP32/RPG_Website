@@ -21,6 +21,7 @@
                 (mouseleave)="toggleHover(false)"
                 (click)="toggleGameLockState()"
                 [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
+                [disabled]="isGameMaxed()"
             >
                 {{ isGameLocked ? 'Fermée' : 'Ouverte' }}
             </button>

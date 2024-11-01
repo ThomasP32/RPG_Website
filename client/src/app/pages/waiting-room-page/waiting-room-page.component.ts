@@ -140,21 +140,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
-                this.activePlayers = players;
-                this.numberOfPlayers = players.length;
-                if (this.isHost) {
-                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
-                    this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((data) => {
-                            this.isStartable = true;
-                        }),
-                    );
-                }
-            }),
-        );
-
-        this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
@@ -172,13 +157,31 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
+            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
+                this.activePlayers = players;
+                this.numberOfPlayers = players.length;
+
+                if (this.isHost) {
+                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketSubscription.add(
+                        this.socketService.listen('isStartable').subscribe((data) => {
+                            this.isStartable = true;
+                        }),
+                    );
+                }
+                if (this.numberOfPlayers === this.maxPlayers) {
+                    this.socketService.sendMessage('toggleGameLockState', { isLocked: true, gameId: this.waitingRoomCode });
+                }
+            }),
+        );
+
+        this.socketSubscription.add(
             this.socketService.listen('playerKicked').subscribe(() => {
                 this.dialogBoxMessage = 'Vous avez été exclu';
                 this.showExitModal = true;
                 setTimeout(() => {
                     this.router.navigate(['/main-menu']);
                 }, WaitingRoomParameters.TIME_LIMIT);
-
                 this.socketService.disconnect();
                 this.characterService.resetCharacterAvailability();
             }),
@@ -191,12 +194,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                 }
                 this.activePlayers = players;
+                this.numberOfPlayers = players.length;
             }),
         );
+
         this.socketSubscription.add(
             this.socketService.listen('isStartable').subscribe(() => {
                 this.isStartable = true;
-                this.isGameLocked = true;
             }),
         );
     }
@@ -207,6 +211,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
         this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
+    }
+
+    isGameMaxed(): boolean {
+        return this.numberOfPlayers === this.maxPlayers;
     }
 
     ngOnDestroy(): void {
