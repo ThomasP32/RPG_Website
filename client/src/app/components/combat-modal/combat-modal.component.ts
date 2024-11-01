@@ -133,7 +133,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 this.opponent = player;
             }),
         );
-        this.socketSubscription.add(this.socketService.listen('playerDisconnected').subscribe(() => {}));
     }
 
     isCombatPlayerTurn(): boolean {
