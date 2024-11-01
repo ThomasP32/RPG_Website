@@ -26,7 +26,26 @@ export class ImageService {
         switch (tileValue) {
             case 'door': {
                 const doorState = map[rowIndex][colIndex].doorState;
-                return doorState === 'open' ? './assets/tiles/door_x.png' : './assets/tiles/door_y.png';
+
+                const hasWallLeft = map[rowIndex]?.[colIndex - 1]?.value === 'wall';
+                const hasWallRight = map[rowIndex]?.[colIndex + 1]?.value === 'wall';
+                const hasWallAbove = map[rowIndex - 1]?.[colIndex]?.value === 'wall';
+                const hasWallBelow = map[rowIndex + 1]?.[colIndex]?.value === 'wall';
+
+                if (doorState === 'open') {
+                    if (hasWallLeft && hasWallRight && !(hasWallAbove && hasWallBelow)) {
+                        return './assets/tiles/door_y.png';
+                    } else if (hasWallAbove && hasWallBelow && !(hasWallLeft && hasWallRight)) {
+                        return './assets/tiles/door_x.png';
+                    }
+                } else {
+                    if (hasWallLeft && hasWallRight && !(hasWallAbove && hasWallBelow)) {
+                        return './assets/tiles/door_x.png';
+                    } else if (hasWallAbove && hasWallBelow && !(hasWallLeft && hasWallRight)) {
+                        return './assets/tiles/door_y.png';
+                    }
+                }
+                return './assets/tiles/door_y.png';
             }
             case 'wall':
                 return './assets/tiles/wall.png';
@@ -61,8 +80,8 @@ export class ImageService {
                 return '';
         }
     }
-    
-    // va falloir update les routes pour les petits avatars pixelisé 
+
+    // va falloir update les routes pour les petits avatars pixelisé
     getPlayerImage(avatar: Avatar): string {
         switch (avatar) {
             case Avatar.Avatar1:

@@ -75,7 +75,7 @@ export class GameCreationService {
         return this.getGameById(gameId).hostSocketId === socketId;
     }
 
-    handlePlayerDisconnect(client: Socket, gameId: string): Game {
+    handlePlayerLeaving(client: Socket, gameId: string): Game {
         const game = this.getGameById(gameId);
         if (game.hasStarted) {
             game.players = game.players.map((player) => {
