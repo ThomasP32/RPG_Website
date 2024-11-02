@@ -59,6 +59,7 @@
                 <p>Dé de défense = {{ player.specs.defenseBonus }}</p>
                 <p>Mouvements restants : {{ player.specs.movePoints }}</p>
                 <p>Actions restantes : {{ player.specs.actions }}</p>
+                <p>Combats gagnés: {{player.specs.nVictories}}</p>
             </div>
 
             <div class="inventory">
@@ -118,5 +119,9 @@
     </div>
 </div>
 @if(isCombatModalOpen){
-<app-combat-modal [player]="player" [combatRoomId]="combatRoomId" [gameId]="gameId" [opponent]="opponent"></app-combat-modal>
+<div class="modal-overlay">
+    <div class="modal-content">
+        <app-combat-modal [player]="player" [combatRoomId]="combatRoomId" [gameId]="gameId" [opponent]="opponent"> </app-combat-modal>
+    </div>
+</div>
 }

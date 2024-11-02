@@ -74,7 +74,7 @@ export class GameTurnService {
     listenForTurn() {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
-                this.verifyPlayerWin();
+                //this.verifyPlayerWin();
                 this.playerService.player = yourPlayer;
                 this.clearMoves();
                 this.playerTurn.next(yourPlayer.name);

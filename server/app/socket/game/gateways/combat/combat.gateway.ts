@@ -71,7 +71,9 @@ export class CombatGateway {
     }
     @SubscribeMessage('combatFinishedEvasion')
     async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
-        this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
+        this.server
+            .to(data.gameId)
+            .emit('combatFinishedByEvasion', { player1: data.player1, player2: data.Player2, message: "Évasion d'un joueur, combat terminé" });
         await this.cleanupCombatRoom(data.combatRoomId);
     }
     @SubscribeMessage('combatFinishedNormal')

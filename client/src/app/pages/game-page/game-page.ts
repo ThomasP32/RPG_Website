@@ -97,12 +97,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
                 this.activePlayers = players.filter((player) => player.isActive);
+                this.gameService.game.players = players;
+                if (this.activePlayers.length <= 1) {
+                    this.showExitModal = false;
+                    this.showKickedModal = true;
+                    setTimeout(() => {
+                        // this.gameTurnService.endGame();
+                        this.navigateToMain();
+                    }, 3000);
+                }
                 if (this.isCombatModalOpen && this.combatRoomId) {
-                    const playersInCombat = this.activePlayers.filter(
+                    const playersInCombat = this.game.players.filter(
                         (player) => player.socketId === this.player.socketId || player.socketId === this.opponent.socketId,
                     );
                     const activePlayersInCombat = playersInCombat.filter((player) => player.isActive);
                     const inactivePlayersInCombat = playersInCombat.filter((player) => !player.isActive);
+                    console.log('Active players in combat:', activePlayersInCombat);
+                    console.log('Inactive players in combat:', inactivePlayersInCombat);
                     if (activePlayersInCombat.length === 1 && inactivePlayersInCombat.length === 1) {
                         const combatWinner = activePlayersInCombat[0];
                         const combatLooser = inactivePlayersInCombat[0];
@@ -113,14 +124,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                             combatRoomId: this.combatRoomId,
                         });
                     }
-                }
-                if (this.activePlayers.length <= 1) {
-                    this.showExitModal = false;
-                    this.showKickedModal = true;
-                    setTimeout(() => {
-                        // this.gameTurnService.endGame();
-                        this.navigateToMain();
-                    }, 3000);
                 }
             }),
         );
@@ -148,18 +151,31 @@ export class GamePageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<string>('combatFinishedByEvasion').subscribe((message) => {
-                console.log(message);
+            this.socketService.listen<{ player1: Player; player2: Player; message: string }>('combatFinishedByEvasion').subscribe((data) => {
+                console.log(data.message);
+
+                if (data.player1 && data.player2) {
+                    this.game.players = this.gameService.game.players.map((player) => {
+                        if (player.socketId === data.player1.socketId || player.socketId === data.player2.socketId) {
+                            player.specs.nCombats += 1;
+                        }
+                        return player;
+                    });
+                    console.log('Players updated after combat:', this.game.players);
+                } else {
+                    console.log('No players found');
+                }
                 setTimeout(() => {
                     this.isCombatModalOpen = false;
                 }, 3000);
+                this.countDownService.resumeCountdown();
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen<{ message: string; combatWinner: Player; combatLooser: Player }>('combatFinishedNormally').subscribe((data) => {
                 console.log(data.message);
 
-                this.game.players = this.game.players.map((player) => {
+                this.game.players = this.gameService.game.players.map((player) => {
                     if (player.socketId === data.combatLooser.socketId) {
                         return { ...player, ...data.combatLooser };
                     } else if (player.socketId === data.combatWinner.socketId) {
