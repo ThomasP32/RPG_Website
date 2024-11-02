@@ -151,8 +151,6 @@
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
                 } @if (showErrorMessage.selectionError) {
                 <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
-                } @if (showErrorMessage.waitingRoomFullError) {
-                <div class="error-message">La salle d'attente est présentement pleine.</div>
                 }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
@@ -178,6 +176,16 @@
         <div class="modal">
             <h2>La partie a commencée.</h2>
             <p>La partie a commencée sans vous, vous serez redirigé.</p>
+        </div>
+    </div>
+    } @if(gameLockedModal) {
+    <div class="game-locked-modal">
+        <div class="modal">
+            <h2>La partie est vérouillée</h2>
+            <div class="modal-button">
+                <button class="modal-button" (click)="onQuit()">menu principal</button>
+                <button class="modal-button" (click)="onSubmit()">réessayer</button>
+            </div>
         </div>
     </div>
     }

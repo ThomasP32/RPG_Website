@@ -9,8 +9,9 @@ import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Avatar, Bonus, Game, Player } from '@common/game';
-import { Mode } from '@common/map.types';
+import { Coordinate, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
+
 @Component({
     selector: 'app-game-map',
     template: '', // Pas de template, juste un stub pour le test
@@ -93,7 +94,10 @@ describe('GamePageComponent', () => {
                 params: { gameId: 'test-game-id' },
             },
         };
-        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+        mockRouter = {
+            url: '/game-page',
+            navigate: jasmine.createSpy('navigate'),
+        };
 
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
@@ -146,13 +150,15 @@ describe('GamePageComponent', () => {
         component = fixture.componentInstance;
         fixture.detectChanges();
         fixture.autoDetectChanges(false);
+
+        component.activePlayers = [mockPlayer];
     });
 
     it('should create the component', () => {
         expect(component).toBeTruthy();
     });
 
-    describe('#ngOnInit', () => {
+    describe('ngOnInit', () => {
         it('should initialize gameId, load game data, and reset countdown', () => {
             spyOn(component, 'listenForCountDown').and.callThrough();
             component.ngOnInit();
@@ -171,7 +177,7 @@ describe('GamePageComponent', () => {
         });
     });
 
-    describe('#listenForCountDown', () => {
+    describe('listenForCountDown', () => {
         it('should update countdown and trigger pulse', fakeAsync(() => {
             component.listenForCountDown();
             countdownSubject.next(10);
@@ -190,7 +196,7 @@ describe('GamePageComponent', () => {
         });
     });
 
-    describe('#listenPlayersLeft', () => {
+    describe('listenPlayersLeft', () => {
         it('should show kicked modal and navigate when only one player remains', fakeAsync(() => {
             component.listenPlayersLeft();
             playerLeftSubject.next([{ ...mockPlayer, isActive: true }]);
@@ -201,7 +207,7 @@ describe('GamePageComponent', () => {
         }));
     });
 
-    describe('#playTurn', () => {
+    describe('playTurn', () => {
         it('should start countdown after delay', fakeAsync(() => {
             component.playTurn();
             tick(3000);
@@ -209,7 +215,7 @@ describe('GamePageComponent', () => {
         }));
     });
 
-    describe('#confirmExit', () => {
+    describe('confirmExit', () => {
         it('should navigate to main menu and reset character and player data', () => {
             component.confirmExit();
             expect(mockRouter.navigate).toHaveBeenCalledWith(['/main-menu']);
@@ -218,23 +224,22 @@ describe('GamePageComponent', () => {
         });
     });
 
-    describe('#ngOnDestroy', () => {
+    describe('ngOnDestroy', () => {
         it('should disconnect socket and send leave game message', () => {
             component.ngOnDestroy();
             expect(socketServiceSpy.disconnect).toHaveBeenCalled();
         });
     });
 
-    describe('#openExitConfirmationModal', () => {
+    describe('openExitConfirmationModal', () => {
         it('should set showExitModal to true', () => {
             component.openExitConfirmationModal();
             expect(component.showExitModal).toBeTrue();
         });
     });
 
-    describe('#closeExitModal', () => {
+    describe('closeExitModal', () => {
         it('should set showExitModal to false', () => {
-            // First, set showExitModal to true to ensure closeExitModal is actually changing it
             component.showExitModal = true;
 
             component.closeExitModal();
@@ -242,8 +247,7 @@ describe('GamePageComponent', () => {
         });
     });
 
-    describe('#listenForCurrentPlayerUpdates', () => {
-    
+    describe('listenForCurrentPlayerUpdates', () => {
         it('should set isYourTurn to true when the emitted player is the current player', () => {
             component.listenForCurrentPlayerUpdates();
 
@@ -264,25 +268,60 @@ describe('GamePageComponent', () => {
             expect(component.playTurn).toHaveBeenCalled();
         });
     });
-    describe('#listenForFalling', () => {
-    
+    describe('listenForFalling', () => {
         it('should set youFell to true when youFell$ emits true', () => {
             component.listenForFalling();
-    
-            // Emit `true` to simulate the player falling
+
             youFellSubject.next(true);
-    
+
             expect(component.youFell).toBeTrue();
         });
-    
-        it('should call pauseCountdown when youFell$ emits', () => {
 
+        it('should call pauseCountdown when youFell$ emits', () => {
             component.listenForFalling();
-    
+
             youFellSubject.next(false);
-    
+
             expect(countdownServiceSpy.pauseCountdown).toHaveBeenCalled();
         });
     });
+
+    describe('retrieve from service', () => {
+        it('should retrieve player from playerService', () => {
+            expect(component.player).toBe(mockPlayer);
+            expect(playerServiceSpy.player).toBe(mockPlayer);
+        });
+
+        it('should retrieve game from gameService', () => {
+            expect(component.game).toBe(mockGame);
+            expect(gameServiceSpy.game).toBe(mockGame);
+        });
+
+        it('should retrieve player from playerService using get player()', () => {
+            const player = component.player;  
+            expect(player).toBe(mockPlayer);
+        });
     
+        it('should retrieve game from gameService using get game()', () => {
+            const game = component.game; 
+            expect(game).toBe(mockGame);
+        });
+    });
+
+    describe('triggerPulse', () => {
+        it('should set isPulsing to true briefly and then reset to false', fakeAsync(() => {
+            component.triggerPulse();
+            expect(component.isPulsing).toBeTrue(); 
+            tick(500);  
+            expect(component.isPulsing).toBeFalse(); 
+        }));
+    });
+
+    describe('onTileClickToMove', () => {
+        it('should call gameTurnService movePlayer with the correct position', () => {
+            const position: Coordinate = { x: 2, y: 3 };
+            component.onTileClickToMove(position);
+            expect(gameTurnServiceSpy.movePlayer).toHaveBeenCalledWith(position);
+        });
+    });
 });

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './join-game-modal.component.html',
     styleUrl: './join-game-modal.component.scss',
 })
-export class JoinGameModalComponent implements OnInit {
+export class JoinGameModalComponent implements OnInit, AfterViewInit {
     @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
 
     code: string[] = ['', '', '', ''];
@@ -30,6 +30,17 @@ export class JoinGameModalComponent implements OnInit {
         this.configureJoinGameSocketFeatures();
     }
 
+    ngAfterViewInit(): void {
+        // Automatically focus on the first input when the modal opens
+        this.focusFirstInput();
+    }
+
+    focusFirstInput(): void {
+        const firstInput = this.codeInputs.first;
+        if (firstInput) {
+            firstInput.nativeElement.focus();
+        }
+    }
     moveToNext(event: any, index: number): void {
         const input = event.target;
         const value = input.value.replace(/[^0-9]/g, '');

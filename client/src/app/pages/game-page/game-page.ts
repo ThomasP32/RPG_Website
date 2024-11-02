@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
@@ -19,12 +20,13 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, JournalComponent],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, CombatModalComponent, PlayersListComponent, JournalComponent],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     numberOfPlayers: number;
+    opponent: Player;
     activePlayers: Player[];
 
     currentPlayerTurn: string;
@@ -35,6 +37,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     socketSubscription: Subscription = new Subscription();
     playerPreview: string;
+    gameId: string;
+    combatRoomId: string;
     showExitModal = false;
     showKickedModal = false;
     gameOverMessage = false;
@@ -42,8 +46,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     map: Map;
     specs: Specs;
 
+    isCombatModalOpen = false;
+
     constructor(
-        // private route: ActivatedRoute,
         private router: Router,
         private socketService: SocketService,
         private characterService: CharacterService,
@@ -52,7 +57,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
     ) {
-        // this.route = route;
         this.router = router;
         this.socketService = socketService;
         this.characterService = characterService;
@@ -63,18 +67,22 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.listenForFalling();
-        this.listenForCountDown();
-        this.listenPlayersLeft();
-        this.listenForCurrentPlayerUpdates();
-        this.gameTurnService.listenForTurn();
-        this.gameTurnService.listenForPlayerMove();
-        this.gameTurnService.listenMoves();
-        this.activePlayers = this.gameService.game.players;
-        this.countDownService.resetCountdown();
-        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        if (this.playerService.player.socketId === this.game.hostSocketId) {
-            this.socketService.sendMessage('startGame', this.gameService.game.id);
+        if (this.player && this.game) {
+            this.listenForFalling();
+            this.listenForCountDown();
+            this.combatListener();
+            this.listenPlayersLeft();
+            this.listenForCurrentPlayerUpdates();
+            this.gameTurnService.listenForTurn();
+            this.gameTurnService.listenForPlayerMove();
+            this.gameTurnService.listenMoves();
+            this.activePlayers = this.game.players;
+            this.countDownService.resetCountdown();
+            this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+
+            if (this.player.socketId === this.game.hostSocketId) {
+                this.socketService.sendMessage('startGame', this.game.id);
+            }
         }
     }
 
@@ -90,6 +98,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
                 this.activePlayers = players.filter((player) => player.isActive);
+                if (this.isCombatModalOpen && this.combatRoomId) {
+                    const playersInCombat = this.activePlayers.filter(
+                        (player) => player.socketId === this.player.socketId || player.socketId === this.opponent.socketId,
+                    );
+                    const activePlayersInCombat = playersInCombat.filter((player) => player.isActive);
+                    const inactivePlayersInCombat = playersInCombat.filter((player) => !player.isActive);
+                    if (activePlayersInCombat.length === 1 && inactivePlayersInCombat.length === 1) {
+                        const combatWinner = activePlayersInCombat[0];
+                        const combatLooser = inactivePlayersInCombat[0];
+                        this.socketService.sendMessage('combatFinishedNormal', {
+                            gameId: this.gameService.game.id,
+                            combatWinner: combatWinner,
+                            combatLooser: combatLooser,
+                            combatRoomId: this.combatRoomId,
+                        });
+                    }
+                }
                 if (this.activePlayers.length <= 1) {
                     this.showExitModal = false;
                     this.showKickedModal = true;
@@ -104,6 +129,48 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     endTurn() {
         this.gameTurnService.endTurn();
+    }
+
+    combatListener() {
+        this.socketSubscription.add(
+            this.socketService
+                .listen<{ message: string; combatRoomId: string; challenger: Player; opponent: Player }>('combatStarted')
+                .subscribe((data) => {
+                    console.log(`${data.message} in room ${data.combatRoomId}`);
+                    if (this.player.socketId === data.challenger.socketId) {
+                        this.opponent = data.opponent;
+                    } else {
+                        this.opponent = data.challenger;
+                    }
+                    this.combatRoomId = data.combatRoomId;
+                    this.isCombatModalOpen = true;
+                }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<string>('combatFinishedByEvasion').subscribe((message) => {
+                console.log(message);
+                setTimeout(() => {
+                    this.isCombatModalOpen = false;
+                }, 3000);
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<{ message: string; combatWinner: Player; combatLooser: Player }>('combatFinishedNormally').subscribe((data) => {
+                console.log(data.message);
+                for (let player of this.activePlayers) {
+                    if (player.socketId === data.combatLooser.socketId) {
+                        player = data.combatLooser;
+                    } else if (player.socketId === data.combatWinner.socketId) {
+                        player = data.combatWinner;
+                    }
+                }
+                console.log('Players updated after combat:', this.activePlayers);
+                setTimeout(() => {
+                    this.isCombatModalOpen = false;
+                }, 3000);
+            }),
+        );
     }
 
     navigateToMain(): void {
@@ -190,6 +257,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     onTileClickToMove(position: Coordinate) {
         this.gameTurnService.movePlayer(position);
+    }
+
+    startCombat(): void {
+        //TODO: Change opponent to real opponent
+        this.socketService.sendMessage('startCombat', { gameId: this.gameService.game.id, opponent: this.activePlayers[1] });
     }
 
     ngOnDestroy() {
