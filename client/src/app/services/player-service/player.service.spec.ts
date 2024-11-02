@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { PlayerService } from './player.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Avatar, Bonus, Player } from '@common/game';
+import { PlayerService } from './player.service';
 
 describe('PlayerService', () => {
     let service: PlayerService;
@@ -10,10 +10,7 @@ describe('PlayerService', () => {
     beforeEach(() => {
         const spy = jasmine.createSpyObj('SocketService', ['socket']);
         TestBed.configureTestingModule({
-            providers: [
-                PlayerService,
-                { provide: SocketService, useValue: spy },
-            ],
+            providers: [PlayerService, { provide: SocketService, useValue: spy }],
         });
         service = TestBed.inject(PlayerService);
         socketServiceSpy = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
@@ -66,7 +63,7 @@ describe('PlayerService', () => {
         });
 
         it('should create a player with updated specs and empty strings as socket ID when none', () => {
-            socketServiceSpy.socket = { } as any;
+            socketServiceSpy.socket = {} as any;
             service.setPlayerName('Test Player');
             service.setPlayerAvatar(Avatar.Avatar2);
             service.assignBonus('life');
@@ -78,7 +75,7 @@ describe('PlayerService', () => {
             expect(player.name).toBe('Test Player');
             expect(player.socketId).toBe('');
             expect(player.avatar).toBe(Avatar.Avatar2);
-            expect(player.specs.life).toBe(6); 
+            expect(player.specs.life).toBe(6);
             expect(player.specs.speed).toBe(4);
             expect(player.specs.attackBonus).toBe(Bonus.D6);
             expect(player.specs.defenseBonus).toBe(Bonus.D4);
@@ -98,7 +95,7 @@ describe('PlayerService', () => {
                     attack: 5,
                     defense: 5,
                     attackBonus: Bonus.D6,
-                    defenseBonus: Bonus.D6,
+                    defenseBonus: Bonus.D4,
                     movePoints: 0,
                     actions: 0,
                     nVictories: 0,

@@ -1,14 +1,53 @@
 .chat-container {
-    position: fixed;
     right: 0;
     top: 14%;
-    width: 350px;
-    max-height: 380px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    background-color: #1c242c;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c242c;
+    transition:
+        transform 0.3s ease,
+        max-height 0.3s ease;
+}
+
+.chat-container.retracted {
+    transform: translateY(calc(100vh - 50px));
+    max-height: 50px;
+    overflow: hidden;
+}
+
+.waiting-room-chat {
+    position: fixed;
+    height: 100%;
+    width: 330px;
+    bottom: 0;
+    max-height: 100vh;
+    background-color: #1c242c;
+}
+
+.game-page-chat .chat-container {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    max-height: 175px;
+    margin-top: 10px;
+    background-color: #1c242c;
+}
+
+.game-page-chat .chat-container.retracted {
+    max-height: 50px;
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.game-page-chat .message-area {
+    flex: 1;
+    max-height: 150px;
+}
+
+.chat-container.retracted {
+    transform: translateY(25%);
 }
 
 .chat-header {
@@ -18,11 +57,18 @@
     margin-bottom: 10px;
 }
 
+.toggle-icon {
+    margin-left: 10px;
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
 #messageArea {
     font-family: Arial, Helvetica, sans-serif;
 }
 
 .message-area {
+    // flex: 1;
     max-height: 260px;
     overflow-y: auto;
     margin-bottom: 15px;
@@ -51,6 +97,15 @@ li {
     color: grey;
 }
 
+.input-container {
+    display: flex;
+    align-items: center;
+    margin-top: auto;
+    padding: 10px;
+    align-self: flex-end;
+    width: 100%; 
+}
+
 input#messageInput {
     width: 70%;
     padding: 5px;
@@ -68,3 +123,8 @@ input#messageInput {
     font-family: 'Press Start 2P', sans-serif;
     transition: background-color 0.4s;
 }
+
+.send-message-button:hover {
+    background-color: #34495e;
+}
+

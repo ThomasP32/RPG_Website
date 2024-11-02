@@ -159,10 +159,14 @@
 }
 
 .game-map-container {
-    border: 3px solid #202020;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 50px;
 }
 
 .right-panel {
@@ -191,40 +195,6 @@
     color: #ffffff;
     padding: 10px;
     font-family: 'Press Start 2P', sans-serif;
-}
-
-.chatroom {
-    width: 100%;
-    flex-grow: 1;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-
-    app-chatroom {
-        width: 100%;
-        height: 100%;
-        justify-content: center;
-        align-items: center;
-    }
-}
-
-.journal {
-    width: 100%;
-    flex-grow: 1;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-
-    app-journal {
-        width: 100%;
-        height: 100%;
-        justify-content: center;
-        align-items: center;
-    }
 }
 
 .action-buttons {
@@ -370,6 +340,15 @@
     .modal-button:hover {
         background-color: #3b3f46;
     }
+
+    app-chatroom {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        width: 100%;
+        max-height: 150px;
+    }
 }
 
 .disable-interactions {
@@ -383,6 +362,10 @@
 }
 
 .countdown-container {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -394,12 +377,12 @@
 
 .countdown-container h2 {
     margin: 0px;
-    font-size: 1.2em;
+    font-size: 0.9em;
 }
 
 .countdown-container h3 {
-    margin: 10px;
-    font-size: 1.2em;
+    margin: 5px;
+    font-size: 0.7em;
 }
 
 .countdown-timer {
