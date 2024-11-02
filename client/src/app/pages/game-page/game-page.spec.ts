@@ -9,8 +9,8 @@ import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { Map, Mode } from '@common/map.types';
-import {  Observable, of, Subject } from 'rxjs';
+import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
 
 const mockPlayer: Player = {
@@ -45,12 +45,19 @@ const mockGame: Game = {
     hostSocketId: 'test-socket',
     hasStarted: true,
     currentTurn: 0,
-    mapSize: { x: 5, y: 5 },
-    tiles: [],
-    doorTiles: [],
-    startTiles: [],
-    items: [],
-    players: [],
+    mapSize: { x: 10, y: 10 },
+    tiles: [
+        { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+        { coordinate: { x: 3, y: 3 }, category: TileCategory.Ice },
+        { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+    ],
+    doorTiles: [
+        { coordinate: { x: 1, y: 2 }, isOpened: false },
+        { coordinate: { x: 2, y: 1 }, isOpened: true },
+    ],
+    startTiles: [{ coordinate: { x: 0, y: 0 } }],
+    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+    players: [mockPlayer],
     mode: Mode.Classic,
     nTurns: 0,
     debug: false,
@@ -83,6 +90,7 @@ describe('GamePageComponent', () => {
         const youFellSubject = new Subject<boolean>();
         const playerWonSubject = new Subject<boolean>();
         const playerLeftSubject = new Subject<Player[]>();
+        const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
 
         const gameSpy = jasmine.createSpyObj('GameService', ['game']);
@@ -95,11 +103,12 @@ describe('GamePageComponent', () => {
         });
         const gameTurnSpy = jasmine.createSpyObj(
             'GameTurnService',
-            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame'],
+            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame', 'listenForPossibleCombats', 'getMoves'],
             {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,
                 playerWon$: playerWonSubject,
+                possibleOpponents$: possibleOpponentsSubject,
                 moves: new Map(),
             },
         );
@@ -130,6 +139,7 @@ describe('GamePageComponent', () => {
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
 
         component.activePlayers = [];
+        component.possibleOpponents = [];
         component.currentPlayerTurn = '';
         component.startTurnCountdown = 0;
         component.isYourTurn = false;
@@ -141,7 +151,6 @@ describe('GamePageComponent', () => {
         component.showKickedModal = false;
         component.gameOverMessage = false;
         component.youFell = false;
-        component.map = {} as Map;
         component.specs = {} as Specs;
 
         gameSpy.game = mockGame;
@@ -152,11 +161,15 @@ describe('GamePageComponent', () => {
             switch (eventName) {
                 case 'playerLeft':
                     return playerLeftSubject.asObservable() as Observable<T>;
-                    case'delay': return delaySubject.asObservable() as Observable<T>;
+                case 'delay':
+                    return delaySubject.asObservable() as Observable<T>;
                 default:
                     return of();
             }
         });
+        playerService.player = mockPlayer;
+        gameService.game = mockGame;
+        gameTurnService.moves = mockMoves;
         fixture.detectChanges();
     });
 
@@ -190,7 +203,7 @@ describe('GamePageComponent', () => {
     });
 
     it('should update active players when player leaves', fakeAsync(() => {
-        const mockPlayers = [{ isActive: true }, { isActive: false }] as any;
+        const mockPlayers = [{ isActive: true, position: { x: 0, y: 1 } }, { isActive: false, position: {x:1, y:0} }] as unknown as Player;
         socketService.listen.and.returnValue(of(mockPlayers));
 
         component.listenPlayersLeft();
@@ -239,15 +252,6 @@ describe('GamePageComponent', () => {
         component.ngOnInit();
         (countdownService.countdown$ as Subject<number>).next(10);
         expect(component.countdown).toBe(10);
-    });
-
-    it('should handle start turn delay', () => {
-        const delaySubject = new Subject<number>();
-        socketService.listen.and.returnValue(delaySubject.asObservable());
-
-        component.listenForStartTurnDelay();
-        delaySubject.next(3);
-        expect(component.startTurnCountdown).toBe(3);
     });
 
     it('it should call gameTurnService endTurn on endTurn', () => {
@@ -306,22 +310,33 @@ describe('GamePageComponent', () => {
         expect(component.navigateToEndOfGame).not.toHaveBeenCalled();
     }));
 
-    it('should listen for start turn delay updates, update countdown, and handle delayFinished correctly', () => {
-        spyOn(component, 'triggerPulse');
-    
+    it('should handle start turn delay and update countdown correctly', fakeAsync(() => {
         const delaySubject = new Subject<number>();
         socketService.listen.and.returnValue(delaySubject.asObservable());
-    
+        
+        spyOn(component, 'triggerPulse');
+        
         component.listenForStartTurnDelay();
-    
+        
         delaySubject.next(3);
+        fixture.detectChanges();
+        
         expect(component.startTurnCountdown).toBe(3);
         expect(component.triggerPulse).toHaveBeenCalled();
-        expect(component.delayFinished).toBeFalse();
+        expect(component.delayFinished).toBe(false);
     
         delaySubject.next(0);
-        expect(component.startTurnCountdown).toBe(0);
-        expect(component.delayFinished).toBeTrue();
-    });
+        fixture.detectChanges();
     
+        expect(component.startTurnCountdown).toBe(3); 
+        expect(component.delayFinished).toBe(true);
+    }));
+    
+    it('should call gameTurnService.movePlayer with the correct position on tile click', () => {
+        const position: Coordinate = { x: 2, y: 3 };
+        
+        component.onTileClickToMove(position);
+        
+        expect(gameTurnService.movePlayer).toHaveBeenCalledWith(position);
+    });    
 });

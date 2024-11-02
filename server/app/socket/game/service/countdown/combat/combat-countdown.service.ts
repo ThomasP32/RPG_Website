@@ -41,7 +41,6 @@ export class CombatCountdownService extends EventEmitter {
             if (countdown.remaining-- === 0) {
                 this.emit('timeout', id);
                 this.server.to(id).emit('endCombatTurn');
-                this.resetCountdown(id);
             } else {
                 this.server.to(id).emit('combatSecondPassed', value); 
             }

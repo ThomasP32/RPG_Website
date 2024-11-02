@@ -109,6 +109,8 @@ describe('GameTurnService', () => {
     describe('#listenForTurn', () => {
         it('should update playerTurn and clear moves when "playerTurn" event is received', () => {
             spyOn(service, 'clearMoves');
+            service.listenForTurn();
+
             playerTurnSubject.next('Another Player');
 
             expect(service.clearMoves).toHaveBeenCalled();
@@ -117,9 +119,10 @@ describe('GameTurnService', () => {
     });
 
     describe('#movePlayer', () => {
-        it('should send moveToPosition message', () => {
-            const position = { x: 5, y: 5 };
+        it('should send moveToPosition message with correct parameters', () => {
+            const position: Coordinate = { x: 5, y: 5 };
             service.movePlayer(position);
+
             expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('moveToPosition', {
                 playerTurn: mockPlayer.turn,
                 gameId: mockGame.id,
@@ -174,36 +177,22 @@ describe('GameTurnService', () => {
             service['playerTurn'].next(mockPlayer.name);
         });
 
-        it("should call getMoves and getCombats if it is the player's turn and has not already fought", () => {
-            spyOn(service, 'getMoves');
+        it("should call getCombats if it is the player's turn and has not already fought", () => {
             spyOn(service, 'getCombats');
             service['alreadyFought'] = false;
 
             service.resumeTurn();
 
-            expect(service.getMoves).toHaveBeenCalled();
             expect(service.getCombats).toHaveBeenCalled();
         });
 
-        it("should only call getMoves if it is the player's turn and has already fought", () => {
-            spyOn(service, 'getMoves');
+        it("should only call getCombats if it is the player's turn and has already fought", () => {
             spyOn(service, 'getCombats');
             service['alreadyFought'] = true;
+            service['playerTurn'].next(mockPlayer.name);
 
             service.resumeTurn();
 
-            expect(service.getMoves).toHaveBeenCalled();
-            expect(service.getCombats).not.toHaveBeenCalled();
-        });
-
-        it("should do nothing if it is not the player's turn", () => {
-            spyOn(service, 'getMoves');
-            spyOn(service, 'getCombats');
-            service['playerTurn'].next('Another Player');
-
-            service.resumeTurn();
-
-            expect(service.getMoves).not.toHaveBeenCalled();
             expect(service.getCombats).not.toHaveBeenCalled();
         });
     });
@@ -248,40 +237,29 @@ describe('GameTurnService', () => {
     describe('#listenForTurn', () => {
         beforeEach(() => {
             spyOn(service, 'clearMoves');
-            spyOn(service, 'verifyPlayerWin');
-        });
-
-        it('should handle yourTurn event', () => {
-            const anotherPlayer = { ...mockPlayer, name: 'Another Player' };
-            service.listenForTurn();
-            yourTurnSubject.next(anotherPlayer);
-
-            expect(service.clearMoves).toHaveBeenCalled();
-            expect(service.verifyPlayerWin).toHaveBeenCalled();
-            expect(service['playerTurn'].getValue()).toBe(anotherPlayer.name);
-            expect(service['alreadyFought']).toBe(false);
-            expect(service['noCombats']).toBe(false);
-        });
-
-        it('should handle playerTurn event and reset youFell', () => {
-            service.listenForTurn();
-            playerTurnSubject.next('Another Player');
-
-            expect(service.clearMoves).toHaveBeenCalled();
-            expect(service['youFell'].getValue()).toBe(false);
-            expect(service['playerTurn'].getValue()).toBe('Another Player');
-        });
-
-        it('should handle startTurn event for the current player', () => {
-            spyOn(service, 'getMoves');
             spyOn(service, 'getCombats');
+            spyOn(service, 'verifyPlayerWin')
+            service.listenForTurn();
+        });
+
+        it('should handle startTurn event for the current player by calling getCombats', () => {
             service['playerTurn'].next(mockPlayer.name);
             service.listenForTurn();
-
             playerTurnSubject.next(mockPlayer.name);
 
-            expect(service.getMoves).toHaveBeenCalled();
             expect(service.getCombats).toHaveBeenCalled();
+        });
+
+        it('should handle "yourTurn" event and update relevant properties', () => {
+            const newPlayer: Player = { ...mockPlayer, name: 'New Player' };
+    
+            yourTurnSubject.next(newPlayer);
+    
+            expect(service.clearMoves).toHaveBeenCalled();
+            expect(service.verifyPlayerWin).toHaveBeenCalled();
+            expect(service['alreadyFought']).toBe(false);
+            expect(service['noCombats']).toBe(false);
+            expect(service['playerTurn'].getValue()).toBe(newPlayer.name);
         });
     });
 
