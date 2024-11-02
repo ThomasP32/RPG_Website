@@ -1,11 +1,12 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
-import { Game, Player } from '@common/game';
+import { Game, Player, Specs } from '@common/game';
 import { Coordinate } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
+import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameManagerGateway } from './game-manager.gateway';
 
 describe('GameManagerGateway', () => {
@@ -14,6 +15,7 @@ describe('GameManagerGateway', () => {
     let socket: SinonStubbedInstance<Socket>;
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
+    let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
     let serverStub: SinonStubbedInstance<Server>;
 
     beforeEach(async () => {
@@ -21,6 +23,10 @@ describe('GameManagerGateway', () => {
         socket = createStubInstance<Socket>(Socket);
         gameCreationService = createStubInstance<GameCreationService>(GameCreationService);
         gameManagerService = createStubInstance<GameManagerService>(GameManagerService);
+        gameCountdownService = createStubInstance<GameCountdownService>(GameCountdownService);
+        gameCountdownService.startNewCountdown.callsFake(() => {
+            return Promise.resolve();
+        });
         serverStub = createStubInstance<Server>(Server);
 
         const module: TestingModule = await Test.createTestingModule({
@@ -29,6 +35,7 @@ describe('GameManagerGateway', () => {
                 { provide: Logger, useValue: logger },
                 { provide: GameCreationService, useValue: gameCreationService },
                 { provide: GameManagerService, useValue: gameManagerService },
+                { provide: GameCountdownService, useValue: gameCountdownService },
             ],
         }).compile();
 
@@ -275,6 +282,7 @@ describe('GameManagerGateway', () => {
 
             gameCreationService.getGameById.returns(game);
             gameManagerService.onIceTile.returns(true);
+            gameManagerService.isGameResumable.returns(true);
 
             gateway.startTurn('game-id');
 
@@ -309,7 +317,7 @@ describe('GameManagerGateway', () => {
             } as Game;
 
             gameCreationService.getGameById.returns(game);
-
+            gameManagerService.isGameResumable.returns(true);
             gateway.startTurn('game-id');
 
             expect(game.currentTurn).toBe(1);
@@ -393,8 +401,10 @@ describe('GameManagerGateway', () => {
             player.specs.attack = 8;
             player.specs.defense = 8;
             gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([{ x: 0, y: 2 },
-                { x: 0, y: 2 },]);
+            gameManagerService.getMove.returns([
+                { x: 0, y: 2 },
+                { x: 0, y: 2 },
+            ]);
             gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
             gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
 
@@ -417,6 +427,97 @@ describe('GameManagerGateway', () => {
 
             expect(player.specs.attack).toBe(10);
             expect(player.specs.defense).toBe(10);
+        });
+    });
+
+    describe('getCombats', () => {
+        it('should emit an empty array if no adjacent players are found', () => {
+            const gameId = 'test-game-id';
+            const clientId = 'client-id';
+            const player = { socketId: clientId, position: { x: 5, y: 5 }, specs: { speed: 5 } as Specs };
+
+            gameCreationService.getGameById.returns({ players: [player] } as any);
+            gameManagerService.getAdjacentPlayers.returns([]);
+            Object.defineProperty(socket, 'id', {
+                value: clientId,
+                writable: false,
+                configurable: false,
+            });
+
+            gateway.getCombats(socket, gameId);
+
+            const emitStub = serverStub.to(clientId).emit as SinonStub;
+            expect(emitStub.calledWith('yourCombats', [])).toBeTruthy();
+            expect(gameManagerService.getAdjacentPlayers.calledWith(player, gameId)).toBeTruthy();
+        });
+    });
+
+    describe('afterInit', () => {
+        let startTurnSpy: SinonStub;
+
+        beforeEach(() => {
+            startTurnSpy = stub(gateway, 'startTurn');
+        });
+
+        afterEach(() => {
+            startTurnSpy.restore();
+        });
+
+        it('should set up the timeout listener on gameCountdownService once', () => {
+            const endTurnSpy = jest.spyOn(gateway, 'prepareNextTurn');
+            const onSpy = jest.spyOn(gameCountdownService, 'on').mockImplementation((eventName, listener) => {
+                if (eventName === 'timeout') {
+                    listener('test-game-id');
+                }
+                return gameCountdownService;
+            });
+
+            gateway.afterInit();
+
+            expect(onSpy).toHaveBeenCalledWith('timeout', expect.any(Function));
+            expect(endTurnSpy).toHaveBeenCalledWith('test-game-id');
+
+            endTurnSpy.mockRestore();
+            onSpy.mockRestore();
+        });
+    });
+
+    describe('prepareNextTurn', () => {
+        let startTurnSpy: SinonStub;
+
+        beforeEach(() => {
+            startTurnSpy = stub(gateway, 'startTurn');
+        });
+
+        afterEach(() => {
+            startTurnSpy.restore();
+        });
+        it('should reset turn counter if the player is inactive', () => {
+            const game = {
+                id: 'game-id',
+                players: [{ socketId: 'inactive-player', turn: 0, isActive: false, specs: { speed: 5 } as Specs }],
+                currentTurn: 0,
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            const updateTurnCounterSpy = jest.spyOn(gameManagerService, 'updateTurnCounter');
+
+            gateway.prepareNextTurn('game-id');
+
+            expect(updateTurnCounterSpy).toHaveBeenCalledWith('game-id');
+            updateTurnCounterSpy.mockRestore();
+        });
+
+        it('should reset timer subscription with correct gameId', () => {
+            const game = {
+                id: 'game-id',
+                players: [{ socketId: 'active-player', turn: 0, isActive: true, specs: { speed: 5 } as Specs }],
+                currentTurn: 0,
+            } as Game;
+            gameCreationService.getGameById.returns(game);
+
+            gateway.prepareNextTurn('game-id');
+            expect(gameCountdownService.resetTimerSubscription.calledWith('game-id')).toBeTruthy();
         });
     });
 });

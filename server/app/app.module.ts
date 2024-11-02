@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CombatGateway } from './socket/game/gateways/combat/combat.gateway';
 import { GameManagerGateway } from './socket/game/gateways/game-manager/game-manager.gateway';
 import { ServerCombatService } from './socket/game/service/combat/combat.service';
+import { GameCountdownService } from './socket/game/service/countdown/game/game-countdown.service';
 import { GameManagerService } from './socket/game/service/game-manager/game-manager.service';
 
 @Module({
@@ -42,6 +43,7 @@ import { GameManagerService } from './socket/game/service/game-manager/game-mana
         ServerCombatService,
         GameManagerGateway,
         GameManagerService,
+        GameCountdownService,
     ],
 })
 export class AppModule {}

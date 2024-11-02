@@ -21,3 +21,4 @@ export const WaitingRoomParameters: IWaitingRoomParameters = {
     MAX_CODE: 9999,
     TIME_LIMIT: 3000,
 };
+export const TURN_DURATION: number = 30;
