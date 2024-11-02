@@ -143,7 +143,7 @@ describe('GameManagerGateway', () => {
             } as Game;
             gameCreationService.getGameById.returns(game);
 
-            gateway.isGameFinished('game-id');
+            gateway.isGameFinished(socket, 'game-id');
 
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
             expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
@@ -161,7 +161,7 @@ describe('GameManagerGateway', () => {
 
             gameCreationService.getGameById.returns(game);
 
-            gateway.hasPlayerWon('game-id');
+            gateway.hasPlayerWon(socket, 'game-id');
 
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
             expect((serverStub.to('game-id').emit as SinonStub).calledWith('playerWon', { winner: player })).toBeTruthy();

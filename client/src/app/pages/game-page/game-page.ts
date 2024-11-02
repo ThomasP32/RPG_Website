@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { MovesMap } from '@app/interfaces/moves';
@@ -19,13 +20,15 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     numberOfPlayers: number;
     activePlayers: Player[];
+
+    possibleOpponents: Player[];
 
     currentPlayerTurn: string;
     startTurnCountdown: number;
@@ -67,6 +70,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.gameTurnService.listenForTurn();
         this.gameTurnService.listenForPlayerMove();
         this.gameTurnService.listenMoves();
+        this.gameTurnService.listenForPossibleCombats();
+        this.listenForPossibleOpponents();
         this.listenForStartTurnDelay();
         this.listenForFalling();
         this.listenForCountDown();
@@ -149,6 +154,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForFalling() {
         this.gameTurnService.youFell$.subscribe((youFell) => {
+            this.possibleOpponents = [];
             this.youFell = youFell;
         });
     }
@@ -169,6 +175,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.navigateToEndOfGame();
                 }, 5000);
             }
+        });
+    }
+
+    listenForPossibleOpponents() {
+        this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
+            this.possibleOpponents = possibleOpponents;
         });
     }
 

@@ -98,6 +98,8 @@
             <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
         </div>
 
+        <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
+
         <div class="action-buttons">
             <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
