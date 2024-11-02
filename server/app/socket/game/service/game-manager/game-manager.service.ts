@@ -205,4 +205,29 @@ export class GameManagerService {
     hasFallen(moves: Coordinate[], destination: Coordinate) {
         return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
+
+    getAdjacentPlayers(player: Player, gameId: string): Player[] {
+        const game = this.gameCreationService.getGameById(gameId);
+        const adjacentPlayers: Player[] = [];
+
+        game.players.forEach((otherPlayer) => {
+            if (otherPlayer.isActive) {
+                if (otherPlayer.socketId !== player.socketId) {
+                    const isAdjacent = this.directions.some(
+                        (direction) =>
+                            otherPlayer.position.x === player.position.x + direction.x && otherPlayer.position.y === player.position.y + direction.y,
+                    );
+                    if (isAdjacent) {
+                        adjacentPlayers.push(otherPlayer);
+                    }
+                }
+            }
+        });
+
+        return adjacentPlayers;
+    }
+
+    isGameResumable(gameId: string): boolean {
+        return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
+    }
 }

@@ -1,288 +1,327 @@
-import { Component, Input } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { GamePageComponent } from '@app/pages/game-page/game-page';
+import { Router } from '@angular/router';
+import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Avatar, Bonus, Game, Player } from '@common/game';
-import { Mode } from '@common/map.types';
-import { Observable, of, Subject } from 'rxjs';
-@Component({
-    selector: 'app-game-map',
-    template: '', // Pas de template, juste un stub pour le test
-})
-class GameMapStubComponent {
-    @Input() map: Game; // Déclaration de l'input sans logique
-}
+import { TURN_DURATION } from '@common/constants';
+import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
+import { Map, Mode } from '@common/map.types';
+import {  Observable, of, Subject } from 'rxjs';
+import { GamePageComponent } from './game-page';
+
+const mockPlayer: Player = {
+    socketId: 'test-socket',
+    name: 'Test Player',
+    avatar: Avatar.Avatar1,
+    isActive: true,
+    position: { x: 0, y: 0 },
+    specs: {
+        life: 100,
+        speed: 10,
+        attack: 10,
+        defense: 10,
+        movePoints: 5,
+        actions: 2,
+        attackBonus: Bonus.D4,
+        defenseBonus: Bonus.D6,
+        nVictories: 0,
+        nDefeats: 0,
+        nCombats: 0,
+        nEvasions: 0,
+        nLifeTaken: 0,
+        nLifeLost: 0,
+    },
+    inventory: [],
+    turn: 0,
+    visitedTiles: [],
+};
+
+const mockGame: Game = {
+    id: 'test-game-id',
+    hostSocketId: 'test-socket',
+    hasStarted: true,
+    currentTurn: 0,
+    mapSize: { x: 5, y: 5 },
+    tiles: [],
+    doorTiles: [],
+    startTiles: [],
+    items: [],
+    players: [],
+    mode: Mode.Classic,
+    nTurns: 0,
+    debug: false,
+    nDoorsManipulated: 0,
+    duration: 0,
+    isLocked: true,
+    name: 'game',
+    description: 'game description',
+    imagePreview: 'image-preview',
+};
+
+const mockMoves: MovesMap = new Map([
+    ['1,1', { path: [{ x: 1, y: 1 }], weight: 1 }],
+    ['2,2', { path: [{ x: 2, y: 2 }], weight: 2 }],
+]);
 
 describe('GamePageComponent', () => {
     let component: GamePageComponent;
     let fixture: ComponentFixture<GamePageComponent>;
-
-    let mockActivatedRoute: any;
-    let mockRouter: any;
-    let socketServiceSpy: jasmine.SpyObj<SocketService>;
-    let characterServiceSpy: jasmine.SpyObj<CharacterService>;
-    let playerServiceSpy: jasmine.SpyObj<PlayerService>;
-    let gameTurnServiceSpy: jasmine.SpyObj<GameTurnService>;
-    let countdownServiceSpy: jasmine.SpyObj<CountdownService>;
-    let gameServiceSpy: jasmine.SpyObj<GameService>;
-
-    let playerLeftSubject: Subject<Player[]>;
-    let currentGameSubject: Subject<Game>;
-    let countdownSubject: Subject<number>;
-    let playerTurnSubject = new Subject<string>();
-    let youFellSubject = new Subject<boolean>();
-
-    const mockPlayer: Player = {
-        socketId: 'test-socket',
-        name: 'Test Player',
-        avatar: Avatar.Avatar1,
-        isActive: true,
-        position: { x: 0, y: 0 },
-        specs: {
-            life: 100,
-            speed: 10,
-            attack: 10,
-            defense: 10,
-            movePoints: 5,
-            actions: 2,
-            attackBonus: Bonus.D4,
-            defenseBonus: Bonus.D6,
-            nVictories: 0,
-            nDefeats: 0,
-            nCombats: 0,
-            nEvasions: 0,
-            nLifeTaken: 0,
-            nLifeLost: 0,
-        },
-        inventory: [],
-        turn: 0,
-        visitedTiles: [],
-    };
-
-    const mockGame: Game = {
-        id: 'test-game-id',
-        hostSocketId: 'test-socket',
-        hasStarted: true,
-        currentTurn: 0,
-        mapSize: { x: 5, y: 5 },
-        tiles: [],
-        doorTiles: [],
-        startTiles: [],
-        items: [],
-        players: [],
-        mode: Mode.Classic,
-        nTurns: 0,
-        debug: false,
-        nDoorsManipulated: 0,
-        duration: 0,
-        isLocked: true,
-        name: 'game',
-        description: 'game description',
-        imagePreview: 'image-preview',
-    };
+    let gameService: jasmine.SpyObj<GameService>;
+    let playerService: jasmine.SpyObj<PlayerService>;
+    let socketService: jasmine.SpyObj<SocketService>;
+    let countdownService: jasmine.SpyObj<CountdownService>;
+    let gameTurnService: jasmine.SpyObj<GameTurnService>;
+    let characterService: jasmine.SpyObj<CharacterService>;
+    let router: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
-        mockActivatedRoute = {
-            snapshot: {
-                params: { gameId: 'test-game-id' },
-            },
-        };
-        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+        const playerTurnSubject = new Subject<string>();
+        const youFellSubject = new Subject<boolean>();
+        const playerWonSubject = new Subject<boolean>();
+        const playerLeftSubject = new Subject<Player[]>();
+        const delaySubject = new Subject<number>();
 
-        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
-        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
-        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayer', 'resetPlayer'], { player: mockPlayer });
-        gameTurnServiceSpy = jasmine.createSpyObj(
+        const gameSpy = jasmine.createSpyObj('GameService', ['game']);
+        const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer']);
+        const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
+        const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
+        const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
+            countdown$: new Subject<number>(),
+        });
+        const gameTurnSpy = jasmine.createSpyObj(
             'GameTurnService',
             ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame'],
             {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,
+                playerWon$: playerWonSubject,
                 moves: new Map(),
             },
         );
-        gameServiceSpy = jasmine.createSpyObj('GameService', ['setGame'], { game: mockGame });
-        countdownServiceSpy = jasmine.createSpyObj('CountdownService', ['resetCountdown', 'pauseCountdown', 'startCountdown'], {
-            countdown$: new Subject<number>(),
-        });
-
-        playerLeftSubject = new Subject<Player[]>();
-        currentGameSubject = new Subject<Game>();
-        countdownSubject = countdownServiceSpy.countdown$;
-
-        socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-            switch (eventName) {
-                case 'playerLeft':
-                    return playerLeftSubject.asObservable() as Observable<T>;
-                case 'currentGame':
-                    return currentGameSubject.asObservable() as Observable<T>;
-                default:
-                    return of();
-            }
-        });
 
         await TestBed.configureTestingModule({
             imports: [GamePageComponent],
-            declarations: [GameMapStubComponent],
             providers: [
-                { provide: ActivatedRoute, useValue: mockActivatedRoute },
-                { provide: Router, useValue: mockRouter },
-                { provide: SocketService, useValue: socketServiceSpy },
-                { provide: CharacterService, useValue: characterServiceSpy },
-                { provide: PlayerService, useValue: playerServiceSpy },
-                { provide: GameTurnService, useValue: gameTurnServiceSpy },
-                { provide: CountdownService, useValue: countdownServiceSpy },
-                { provide: GameService, useValue: gameServiceSpy },
+                { provide: GameService, useValue: gameSpy },
+                { provide: PlayerService, useValue: playerSpy },
+                { provide: CharacterService, useValue: characterSpy },
+                { provide: SocketService, useValue: socketSpy },
+                { provide: CountdownService, useValue: countdownSpy },
+                { provide: GameTurnService, useValue: gameTurnSpy },
+                { provide: Router, useValue: routerSpy },
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(GamePageComponent);
         component = fixture.componentInstance;
+
+        router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+
+        characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
+        gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
+        playerService = TestBed.inject(PlayerService) as jasmine.SpyObj<PlayerService>;
+        socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
+        countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
+        gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
+
+        component.activePlayers = [];
+        component.currentPlayerTurn = '';
+        component.startTurnCountdown = 0;
+        component.isYourTurn = false;
+        component.delayFinished = false;
+        component.isPulsing = false;
+        component.countdown = 0;
+        component.playerPreview = '';
+        component.showExitModal = false;
+        component.showKickedModal = false;
+        component.gameOverMessage = false;
+        component.youFell = false;
+        component.map = {} as Map;
+        component.specs = {} as Specs;
+
+        gameSpy.game = mockGame;
+        playerSpy.player = mockPlayer;
+        gameTurnSpy.moves = mockMoves;
+
+        socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
+            switch (eventName) {
+                case 'playerLeft':
+                    return playerLeftSubject.asObservable() as Observable<T>;
+                    case'delay': return delaySubject.asObservable() as Observable<T>;
+                default:
+                    return of();
+            }
+        });
         fixture.detectChanges();
-        fixture.autoDetectChanges(false);
     });
 
-    it('should create the component', () => {
+    it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    describe('#ngOnInit', () => {
-        it('should initialize gameId, load game data, and reset countdown', () => {
-            spyOn(component, 'listenForCountDown').and.callThrough();
-            component.ngOnInit();
+    it('should initialize game turn listeners on init', () => {
+        spyOn(component, 'listenForFalling').and.callThrough();
+        spyOn(component, 'listenForCountDown').and.callThrough();
+        spyOn(component, 'listenPlayersLeft').and.callThrough();
+        spyOn(component, 'listenForCurrentPlayerUpdates').and.callThrough();
+        spyOn(component, 'listenForStartTurnDelay').and.callThrough();
 
-            expect(component.game.id).toBe('test-game-id');
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startGame', 'test-game-id');
-            expect(countdownServiceSpy.resetCountdown).toHaveBeenCalled();
-            expect(component.listenForCountDown).toHaveBeenCalled();
-        });
+        component.ngOnInit();
 
-        it('should start the game if the player is the host', () => {
-            component.ngOnInit();
-            currentGameSubject.next(mockGame);
-
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startGame', 'test-game-id');
-        });
+        expect(gameTurnService.listenForTurn).toHaveBeenCalled();
+        expect(gameTurnService.listenForPlayerMove).toHaveBeenCalled();
+        expect(gameTurnService.listenMoves).toHaveBeenCalled();
+        expect(component.listenForFalling).toHaveBeenCalled();
+        expect(component.listenForCountDown).toHaveBeenCalled();
+        expect(component.listenPlayersLeft).toHaveBeenCalled();
+        expect(component.listenForCurrentPlayerUpdates).toHaveBeenCalled();
+        expect(component.listenForStartTurnDelay).toHaveBeenCalled();
     });
 
-    describe('#listenForCountDown', () => {
-        it('should update countdown and trigger pulse', fakeAsync(() => {
-            component.listenForCountDown();
-            countdownSubject.next(10);
-
-            expect(component.countdown).toBe(10);
-            tick(1500);
-            fixture.detectChanges();
-            expect(component.isPulsing).toBeFalse();
-        }));
-
-        it('should call endTurn when countdown reaches zero', () => {
-            component.listenForCountDown();
-            countdownSubject.next(0);
-
-            expect(gameTurnServiceSpy.endTurn).toHaveBeenCalled();
-        });
+    it('should navigate to main menu on confirm exit', () => {
+        spyOn(component, 'navigateToMain');
+        component.confirmExit();
+        expect(component.navigateToMain).toHaveBeenCalled();
     });
 
-    describe('#listenPlayersLeft', () => {
-        it('should show kicked modal and navigate when only one player remains', fakeAsync(() => {
-            component.listenPlayersLeft();
-            playerLeftSubject.next([{ ...mockPlayer, isActive: true }]);
+    it('should update active players when player leaves', fakeAsync(() => {
+        const mockPlayers = [{ isActive: true }, { isActive: false }] as any;
+        socketService.listen.and.returnValue(of(mockPlayers));
 
-            expect(component.showKickedModal).toBeTrue();
-            tick(3000);
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['/main-menu']);
-        }));
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(1);
+        tick(3000);
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
+
+    it('should start game if player is host', () => {
+        playerService.player.socketId = 'hostSocketId';
+        gameService.game.hostSocketId = 'hostSocketId';
+
+        component.ngOnInit();
+        expect(socketService.sendMessage).toHaveBeenCalledWith('startGame', gameService.game.id);
     });
 
-    describe('#playTurn', () => {
-        it('should start countdown after delay', fakeAsync(() => {
-            component.playTurn();
-            tick(3000);
-            expect(countdownServiceSpy.startCountdown).toHaveBeenCalled();
-        }));
+    it('should listen for player turn updates and set isYourTurn to true if playerName matches', () => {
+        component.ngOnInit();
+        component.player.name = 'Test Player';
+        (gameTurnService.playerTurn$ as Subject<string>).next('Test Player');
+
+        expect(component.currentPlayerTurn).toBe('Test Player');
+        expect(component.isYourTurn).toBe(true);
+        expect(component.countdown).toBe(TURN_DURATION);
+        expect(component.delayFinished).toBe(false);
     });
 
-    describe('#confirmExit', () => {
-        it('should navigate to main menu and reset character and player data', () => {
-            component.confirmExit();
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['/main-menu']);
-            expect(characterServiceSpy.resetCharacterAvailability).toHaveBeenCalled();
-            expect(playerServiceSpy.resetPlayer).toHaveBeenCalled();
-        });
+    it('should listen for player turn updates and set isYourTurn to false if playerName does not match', () => {
+        component.ngOnInit();
+
+        (gameTurnService.playerTurn$ as Subject<string>).next('OtherPlayer');
+
+        expect(component.currentPlayerTurn).toBe('OtherPlayer');
+        expect(component.isYourTurn).toBe(false);
+        expect(component.countdown).toBe(TURN_DURATION);
+        expect(component.delayFinished).toBe(false);
     });
 
-    describe('#ngOnDestroy', () => {
-        it('should disconnect socket and send leave game message', () => {
-            component.ngOnDestroy();
-            expect(socketServiceSpy.disconnect).toHaveBeenCalled();
-        });
+    it('should listen for falling event', () => {
+        component.ngOnInit();
+        (gameTurnService.youFell$ as Subject<boolean>).next(true);
+        expect(component.youFell).toBe(true);
     });
 
-    describe('#openExitConfirmationModal', () => {
-        it('should set showExitModal to true', () => {
-            component.openExitConfirmationModal();
-            expect(component.showExitModal).toBeTrue();
-        });
+    it('should listen for countdown updates', () => {
+        component.ngOnInit();
+        (countdownService.countdown$ as Subject<number>).next(10);
+        expect(component.countdown).toBe(10);
     });
 
-    describe('#closeExitModal', () => {
-        it('should set showExitModal to false', () => {
-            // First, set showExitModal to true to ensure closeExitModal is actually changing it
-            component.showExitModal = true;
+    it('should handle start turn delay', () => {
+        const delaySubject = new Subject<number>();
+        socketService.listen.and.returnValue(delaySubject.asObservable());
 
-            component.closeExitModal();
-            expect(component.showExitModal).toBeFalse();
-        });
+        component.listenForStartTurnDelay();
+        delaySubject.next(3);
+        expect(component.startTurnCountdown).toBe(3);
     });
 
-    describe('#listenForCurrentPlayerUpdates', () => {
+    it('it should call gameTurnService endTurn on endTurn', () => {
+        component.endTurn();
+        component.navigateToEndOfGame();
+        expect(gameTurnService.endTurn).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should open the exit confirmation modal', () => {
+        component.openExitConfirmationModal();
+        expect(component.showExitModal).toBeTrue();
+    });
+
+    it('should close the exit modal', () => {
+        component.showExitModal = true;
+        component.closeExitModal();
+        expect(component.showExitModal).toBeFalse();
+    });
+
+    it('should confirm exit and perform required actions', () => {
+        component.confirmExit();
+
+        expect(socketService.disconnect).toHaveBeenCalled();
+        expect(characterService.resetCharacterAvailability).toHaveBeenCalled();
+        expect(playerService.resetPlayer).toHaveBeenCalled();
+
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+
+        expect(component.showExitModal).toBeFalse();
+    });
+
+    it('should listen for game over updates and set gameOverMessage', fakeAsync(() => {
+        spyOn(component, 'navigateToEndOfGame');
+        component.listenForGameOver();
+
+        (gameTurnService.playerWon$ as Subject<boolean>).next(true);
+
+        expect(component.gameOverMessage).toBe(true);
+
+        tick(5000);
+
+        expect(component.navigateToEndOfGame).toHaveBeenCalled();
+    }));
+
+    it('should not call navigateToEndOfGame if game is not over', fakeAsync(() => {
+        spyOn(component, 'navigateToEndOfGame');
+        component.listenForGameOver();
+
+        (gameTurnService.playerWon$ as Subject<boolean>).next(false);
+
+        expect(component.gameOverMessage).toBe(false);
+
+        tick(5000);
+
+        expect(component.navigateToEndOfGame).not.toHaveBeenCalled();
+    }));
+
+    it('should listen for start turn delay updates, update countdown, and handle delayFinished correctly', () => {
+        spyOn(component, 'triggerPulse');
     
-        it('should set isYourTurn to true when the emitted player is the current player', () => {
-            component.listenForCurrentPlayerUpdates();
-
-            playerServiceSpy.player = { ...mockPlayer, name: 'Test Player' };
-
-            playerTurnSubject.next('Test Player');
-
-            expect(component.isYourTurn).toBeTrue();
-        });
-
-        it('should call playTurn when playerTurn$ emits a value', () => {
-            spyOn(component, 'playTurn');
-
-            component.listenForCurrentPlayerUpdates();
-
-            playerTurnSubject.next('Another Player');
-
-            expect(component.playTurn).toHaveBeenCalled();
-        });
-    });
-    describe('#listenForFalling', () => {
+        const delaySubject = new Subject<number>();
+        socketService.listen.and.returnValue(delaySubject.asObservable());
     
-        it('should set youFell to true when youFell$ emits true', () => {
-            component.listenForFalling();
+        component.listenForStartTurnDelay();
     
-            // Emit `true` to simulate the player falling
-            youFellSubject.next(true);
+        delaySubject.next(3);
+        expect(component.startTurnCountdown).toBe(3);
+        expect(component.triggerPulse).toHaveBeenCalled();
+        expect(component.delayFinished).toBeFalse();
     
-            expect(component.youFell).toBeTrue();
-        });
-    
-        it('should call pauseCountdown when youFell$ emits', () => {
-
-            component.listenForFalling();
-    
-            youFellSubject.next(false);
-    
-            expect(countdownServiceSpy.pauseCountdown).toHaveBeenCalled();
-        });
+        delaySubject.next(0);
+        expect(component.startTurnCountdown).toBe(0);
+        expect(component.delayFinished).toBeTrue();
     });
     
 });

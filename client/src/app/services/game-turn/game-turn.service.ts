@@ -13,13 +13,22 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 export class GameTurnService {
     socketSubscription: Subscription = new Subscription();
     moves: MovesMap = new Map();
+
     private playerTurn = new BehaviorSubject<string>('');
     public playerTurn$ = this.playerTurn.asObservable();
+
     private youFell = new BehaviorSubject<boolean>(false);
     public youFell$ = this.youFell.asObservable();
+
     private playerWon = new BehaviorSubject<boolean>(false);
     public playerWon$ = this.playerWon.asObservable();
+
+    private possibleOpponents = new BehaviorSubject<Player[]>([]);
+    public possibleOpponents$ = this.possibleOpponents.asObservable();
+
     isMoving = false;
+    alreadyFought = false;
+    noCombats = false;
 
     constructor(
         private gameService: GameService,
@@ -27,8 +36,7 @@ export class GameTurnService {
         private socketService: SocketService,
     ) {
         this.listenForTurn();
-        this.listenForPlayerMove();
-        this.listenMoves();
+        this.listenForPossibleCombats();
         this.gameService = gameService;
         this.playerService = playerService;
         this.socketService = socketService;
@@ -43,15 +51,16 @@ export class GameTurnService {
     }
 
     startTurn(): void {
-        if (this.playerTurn.getValue() === this.player.name) {
-            console.log('cest ton tour');
-            setTimeout(() => this.getMoves(), 3000);
-        }
+        this.getMoves();
+        this.getCombats();
     }
 
     resumeTurn(): void {
         if (this.playerTurn.getValue() === this.player.name) {
             this.getMoves();
+            if (!this.alreadyFought) {
+                this.getCombats();
+            }
         }
     }
 
@@ -74,36 +83,48 @@ export class GameTurnService {
     listenForTurn() {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
-                this.verifyPlayerWin();
-                this.playerService.player = yourPlayer;
                 this.clearMoves();
+                this.verifyPlayerWin();
+                this.alreadyFought = false;
+                this.noCombats = false;
+                this.playerService.player = yourPlayer;
                 this.playerTurn.next(yourPlayer.name);
-                console.log('cest ton tour qui commence');
-                this.startTurn();
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen<string>('playerTurn').subscribe((playerName) => {
                 this.clearMoves();
+                this.youFell.next(false);
                 this.playerTurn.next(playerName);
-                console.log('cest le tour de ', playerName, ' qui commence');
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen('startTurn').subscribe(() => {
+                if (this.playerTurn.getValue() === this.player.name) {
+                    this.getMoves();
+                    if (!this.alreadyFought) {
+                        this.getCombats();
+                    }
+                }
             }),
         );
     }
 
+    getCombats(): void {
+        this.listenForPossibleCombats();
+        this.socketService.sendMessage('getCombats', this.game.id);
+    }
+
     getMoves(): void {
-        this.listenMoves();
         this.socketService.sendMessage('getMovements', this.game.id);
     }
 
     listenMoves(): void {
         this.socketSubscription.add(
             this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
-                console.log('tu as recu tes mouvements');
                 this.moves = new Map();
                 this.moves = new Map(paths);
-                if (this.moves.size === 1) {
-                    console.log('tu peux plus bouger tu déclare forfait');
+                if (this.moves.size === 1 && (this.alreadyFought || this.noCombats)) {
                     this.endTurn();
                 }
             }),
@@ -143,20 +164,21 @@ export class GameTurnService {
         );
     }
 
+    listenForPossibleCombats(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('yourCombats').subscribe((possibleOpponents) => {
+                console.log('voici tes combats possibles : ', possibleOpponents);
+                if (possibleOpponents.length === 0) {
+                    this.noCombats = true;
+                } else {
+                    this.noCombats = false;
+                }
+                this.possibleOpponents.next(possibleOpponents);
+            }),
+        );
+    }
+
     verifyPlayerWin(): void {
         this.socketService.sendMessage('hasPlayerWon', this.game.id);
     }
-
-    // listenForPlayerWin(): void {
-    //     this.socketSubscription.add(
-    //         this.socketService.listen('playerWon').subscribe(() => {
-    //             this.playerWon.next(true);
-    //             this.endGame();
-    //         }),
-    //     );
-    // }
-
-    // endGame(): void {
-    //     this.socketSubscription.unsubscribe();
-    // }
 }
