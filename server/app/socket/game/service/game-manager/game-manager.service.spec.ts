@@ -270,4 +270,138 @@ describe('GameManagerService', () => {
             expect(result).toBe(false);
         });
     });
+
+    describe('getAdjacentPlayers', () => {
+        let player: Player;
+        let adjacentPlayer: Player;
+        let nonAdjacentPlayer: Player;
+        let game2: Game;
+
+        beforeEach(async () => {
+            
+            const specs: Specs = {
+                life: 10,
+                speed: 10,
+                attack: 15,
+                defense: 5,
+                attackBonus: Bonus.D4,
+                defenseBonus: Bonus.D6,
+                movePoints: 10,
+                actions: 2,
+                nVictories: 0,
+                nDefeats: 0,
+                nCombats: 0,
+                nEvasions: 0,
+                nLifeTaken: 0,
+                nLifeLost: 0,
+            };
+
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                avatar: Avatar.Avatar1,
+                isActive: true,
+                position: { x: 5, y: 5 },
+                specs,
+                inventory: [],
+                turn: 0,
+                visitedTiles: [],
+            };
+
+            adjacentPlayer = {
+                socketId: 'player-2',
+                name: 'Player 2',
+                avatar: Avatar.Avatar2,
+                isActive: true,
+                position: { x: 5, y: 4 },
+                specs,
+                inventory: [],
+                turn: 0,
+                visitedTiles: [],
+            };
+
+            nonAdjacentPlayer = {
+                socketId: 'player-3',
+                name: 'Player 3',
+                avatar: Avatar.Avatar3,
+                isActive: true,
+                position: { x: 7, y: 7 }, // Positioned non-adjacent to player
+                specs,
+                inventory: [],
+                turn: 0,
+                visitedTiles: [],
+            };
+
+            game2 = {
+                hasStarted: true,
+                id: 'game-1',
+                hostSocketId: 'host-1',
+                name: 'Test Game',
+                description: 'A test game',
+                imagePreview: 'some-image-url',
+                mapSize: { x: 10, y: 10 },
+                tiles: [],
+                doorTiles: [],
+                items: [],
+                players: [player, adjacentPlayer, nonAdjacentPlayer],
+                currentTurn: 0,
+                nTurns: 0,
+                nDoorsManipulated: 0,
+                duration: 0,
+                debug: false,
+                mode: Mode.Classic,
+                startTiles: [],
+                isLocked: false,
+            };
+
+            (gameCreationServiceStub.getGameById as jest.Mock).mockReturnValue(game2);
+        });
+
+        it('should return adjacent players when they are next to the player', () => {
+            const result = gameManagerService.getAdjacentPlayers(player, game2.id);
+            expect(result).toHaveLength(1);
+            expect(result[0]).toEqual(adjacentPlayer);
+        });
+
+        it('should return an empty array if there are no adjacent players', () => {
+            // Move adjacentPlayer to a non-adjacent position
+            adjacentPlayer.position = { x: 8, y: 8 };
+
+            const result = gameManagerService.getAdjacentPlayers(player, game2.id);
+            expect(result).toEqual([]);
+        });
+
+        it('should not include the player themselves in the result', () => {
+            const result = gameManagerService.getAdjacentPlayers(player, game2.id);
+            expect(result).not.toContainEqual(player);
+        });
+
+        it('should return multiple adjacent players if more than one player is adjacent', () => {
+            const anotherAdjacentPlayer: Player = {
+                socketId: 'player-4',
+                name: 'Player 4',
+                avatar: Avatar.Avatar4,
+                isActive: true,
+                position: { x: 6, y: 5 }, // Also adjacent to player
+                specs: { ...player.specs },
+                inventory: [],
+                turn: 0,
+                visitedTiles: [],
+            };
+
+            game2.players.push(anotherAdjacentPlayer);
+
+            const result = gameManagerService.getAdjacentPlayers(player, game2.id);
+            expect(result).toHaveLength(2);
+            expect(result).toContainEqual(adjacentPlayer);
+            expect(result).toContainEqual(anotherAdjacentPlayer);
+        });
+
+        it('should not return inactive players even if they are adjacent', () => {
+            adjacentPlayer.isActive = false;
+
+            const result = gameManagerService.getAdjacentPlayers(player, game2.id);
+            expect(result).toEqual([]);
+        });
+    });
 });

@@ -12,6 +12,7 @@ import { CountdownService } from '@app/services/countdown/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
@@ -29,10 +30,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     activePlayers: Player[];
 
     currentPlayerTurn: string;
+    startTurnCountdown: number;
     isYourTurn: boolean = false;
     delayFinished: boolean = true;
     isPulsing = false;
-    countdown: number = 30;
+    countdown: number = TURN_DURATION;
 
     socketSubscription: Subscription = new Subscription();
     playerPreview: string;
@@ -66,22 +68,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        if (this.player && this.game) {
-            this.listenForFalling();
-            this.listenForCountDown();
-            this.combatListener();
-            this.listenPlayersLeft();
-            this.listenForCurrentPlayerUpdates();
-            this.gameTurnService.listenForTurn();
-            this.gameTurnService.listenForPlayerMove();
-            this.gameTurnService.listenMoves();
-            this.activePlayers = this.game.players;
-            this.countDownService.resetCountdown();
-            this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-            this.gameId = this.game.id;
-            if (this.player.socketId === this.game.hostSocketId) {
-                this.socketService.sendMessage('startGame', this.game.id);
-            }
+        this.gameTurnService.listenForTurn();
+        this.gameTurnService.listenForPlayerMove();
+        this.gameTurnService.listenMoves();
+        this.listenForStartTurnDelay();
+        this.listenForFalling();
+        this.listenForCountDown();
+        this.listenPlayersLeft();
+        this.combatListener();
+        this.listenForCurrentPlayerUpdates();
+        this.activePlayers = this.gameService.game.players;
+        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+        if (this.playerService.player.socketId === this.game.hostSocketId) {
+            this.socketService.sendMessage('startGame', this.gameService.game.id);
         }
     }
 
@@ -204,6 +203,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     confirmExit(): void {
+        // quitter la partie
+        this.socketService.disconnect();
         this.navigateToMain();
         this.showExitModal = false;
         this.characterService.resetCharacterAvailability();
@@ -221,39 +222,37 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenForCurrentPlayerUpdates() {
         this.gameTurnService.playerTurn$.subscribe((playerName) => {
             this.currentPlayerTurn = playerName;
+            this.countdown = TURN_DURATION;
             this.isYourTurn = false;
             this.delayFinished = false;
             if (playerName === this.player.name) {
-                console.log('cest ton tour!');
                 this.isYourTurn = true;
             }
-            this.playTurn();
         });
     }
 
     listenForFalling() {
         this.gameTurnService.youFell$.subscribe((youFell) => {
-            this.countDownService.pauseCountdown();
             this.youFell = youFell;
         });
     }
 
     listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
+            console.log('UNE SECONDE');
             this.countdown = time;
             this.triggerPulse();
-            if (this.countdown === 0) {
-                this.gameTurnService.endTurn();
-            }
         });
     }
 
     listenForGameOver() {
         this.gameTurnService.playerWon$.subscribe((isGameOver) => {
             this.gameOverMessage = isGameOver;
-            setTimeout(() => {
-                this.navigateToEndOfGame();
-            }, 5000);
+            if (isGameOver) {
+                setTimeout(() => {
+                    this.navigateToEndOfGame();
+                }, 5000);
+            }
         });
     }
 
@@ -266,13 +265,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
         return this.gameTurnService.moves;
     }
 
-    playTurn() {
-        this.countDownService.resetCountdown();
-        this.countDownService.pauseCountdown();
-        setTimeout(() => {
-            this.delayFinished = true;
-            this.countDownService.startCountdown();
-        }, 3000);
+    listenForStartTurnDelay() {
+        this.socketSubscription.add(
+            this.socketService.listen<number>('delay').subscribe((delay) => {
+                this.startTurnCountdown = delay;
+                this.triggerPulse();
+                if (this.startTurnCountdown === 0) {
+                    this.delayFinished = true;
+                    this.startTurnCountdown = 3;
+                }
+            }),
+        );
     }
 
     onTileClickToMove(position: Coordinate) {
