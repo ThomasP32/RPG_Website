@@ -75,6 +75,9 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 if (data.success) {
                     this.combatFinishedByEvasion();
                 } else {
+                    if (data.waitingPlayer.socketId === this.opponent.socketId) this.player.specs.nEvasions -= 1;
+                    else if (data.waitingPlayer.socketId === this.player.socketId) this.opponent.specs.nEvasions -= 1;
+
                     this.currentTurnPlayerId = data.waitingPlayer.socketId;
                     console.log('change of turn', this.currentTurnPlayerId);
                 }
@@ -179,7 +182,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     evade() {
         if (this.isCombatPlayerTurn() && this.player.specs.nEvasions > 0) {
-            this.player.specs.nEvasions -= 1;
             this.socketService.sendMessage('startEvasion', {
                 player: this.player,
                 waitingPlayer: this.opponent,

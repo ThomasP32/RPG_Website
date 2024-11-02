@@ -20,6 +20,7 @@ export class GameManagerGateway {
             return;
         }
         const moves = this.gameManagerService.getMoves(gameId, client.id);
+        client.emit('playerPossibleMoves', moves);
     }
 
     @SubscribeMessage('moveToPosition')
