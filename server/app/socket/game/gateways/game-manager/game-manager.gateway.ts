@@ -17,7 +17,6 @@ export class GameManagerGateway {
 
     afterInit(server: Server) {
         this.journalService.initializeServer(server);
-        console.log('GameManagerGateway initialized');
     }
 
     @SubscribeMessage('getMovements')
@@ -79,10 +78,11 @@ export class GameManagerGateway {
     @SubscribeMessage('isGameFinished')
     isGameFinished(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
+        const involvedPlayers = game.players.map((player) => player.name);
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
         }
-        this.journalService.logMessage(gameId, `La partie est terminée.`, game.players);
+        this.journalService.logMessage(gameId, `La partie est terminée.`, involvedPlayers);
     }
 
     @SubscribeMessage('hasPlayerWon')
@@ -116,6 +116,9 @@ export class GameManagerGateway {
     startTurn(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
+        const involvedPlayers = game.players.map((player) => player.name);
+
+        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
 
         if (!activePlayer || !activePlayer.isActive) {
             game.currentTurn++;
@@ -126,8 +129,6 @@ export class GameManagerGateway {
         activePlayer.specs.movePoints = activePlayer.specs.speed;
 
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
-
-        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`);
 
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)

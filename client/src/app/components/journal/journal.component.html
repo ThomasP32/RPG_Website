@@ -11,7 +11,7 @@
     </div>
     <div class="journal-body"></div>
     <ul id="journalList">
-        @for (entry of journalEntries; track entry) {
+        @for (entry of filteredJournalEntries; track entry) {
         <li>
             {{ entry.message }} <span class="timestamp">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
         </li>
