@@ -1,4 +1,3 @@
-import { Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 
@@ -10,7 +9,7 @@ export class JournalService {
         this.server = server;
     }
 
-    logMessage(gameId: string, message: string, playersInvolved: Player[] = []): void {
+    logMessage(gameId: string, message: string, playersInvolved: String[]): void {
         const entry = { message, timestamp: new Date(), playersInvolved };
         this.server.to(gameId).emit('journalEntry', entry);
     }

@@ -35,11 +35,13 @@ export class JournalComponent implements OnInit {
 
     private applyFilter(): void {
         if (this.filter === 'involved-only') {
-            this.filteredJournalEntries = this.journalEntries.filter((entry) => entry.playersInvolved && entry.playersInvolved.includes(this.player));
+            this.filteredJournalEntries = this.journalEntries.filter(
+                (entry) => entry.playersInvolved && entry.playersInvolved.includes(this.player.name) && entry.message.includes(this.player.name),
+            );
         } else {
             this.filteredJournalEntries = this.journalEntries;
         }
-        console.log(`Filtered entries for player ${this.player}:`, this.filteredJournalEntries);
+        console.log(`Filtered entries for player ${this.player.name}:`, this.filteredJournalEntries);
     }
 
     ngOnDestroy(): void {
