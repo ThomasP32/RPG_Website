@@ -108,10 +108,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     isMove(rowIndex: number, colIndex: number): boolean {
         const coordinateKey = `${rowIndex},${colIndex}`;
         const move = this.moves.get(coordinateKey);
-        if (move) {
-            return true;
-        }
-        return false;
+        return move !== undefined;
     }
 
     isPreview(rowIndex: number, colIndex: number): boolean {
@@ -152,9 +149,16 @@ export class GameMapComponent implements OnInit, OnChanges {
     @HostListener('window:mouseup', ['$event'])
     onRightClickRelease(event: MouseEvent) {
         if (event.button === 2) {
-            console.log('TU TOUCHE PLUS');
             this.explanationIsVisible = false;
             this.tileDescription = '';
         }
+    }
+
+    rowByIndex(index: number) {
+        return index;
+    }
+
+    cellByIndex(index: number) {
+        return index;
     }
 }
