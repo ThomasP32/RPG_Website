@@ -5,8 +5,10 @@ import { Html2CanvasWrapperService } from '@app/services/screenshot/html2canvasw
     providedIn: 'root',
 })
 export class ScreenShotService {
-    /* eslint-disable-next-line no-unused-vars */
-    constructor(private html2CanvasWrapper: Html2CanvasWrapperService) {}
+
+    constructor(private html2CanvasWrapper: Html2CanvasWrapperService) {
+        this.html2CanvasWrapper = html2CanvasWrapper;
+    }
 
     async captureAndConvert(mapContainerId: string): Promise<string> {
         const element = document.getElementById(mapContainerId);
