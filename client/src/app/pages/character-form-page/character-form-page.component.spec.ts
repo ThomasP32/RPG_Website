@@ -242,7 +242,7 @@ describe('CharacterFormPageComponent', () => {
 
         it('should show characterNameError if character name is empty', async () => {
             component.name = 'Choisis ton nom';
-            playerServiceSpy.player={ name: '', avatar: Avatar.Avatar1 } as Player;
+            playerServiceSpy.player = { name: '', avatar: Avatar.Avatar1 } as Player;
             component.onSubmit();
             await fixture.whenStable();
             expect(component.showErrorMessage.characterNameError).toBeTrue();
@@ -455,7 +455,7 @@ describe('CharacterFormPage when joining game', () => {
                     socketId: 'mock-socket-id',
                     isActive: true,
                 } as T);
-            } else if(eventName === 'gameAlreadyStarted') {
+            } else if (eventName === 'gameAlreadyStarted') {
                 return of({} as T);
             } else {
                 return of({} as T);
@@ -487,16 +487,14 @@ describe('CharacterFormPage when joining game', () => {
 
         socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
 
-        tick(5000); 
+        tick(5000);
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
     }));
-    
 
     it('should navigate to main menu if router url does not include "create-game"', () => {
         component.onReturn();
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
     });
-
 
     describe('listenToSocketMessages', () => {
         it('should update character availability based on received players', fakeAsync(() => {
