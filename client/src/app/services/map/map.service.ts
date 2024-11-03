@@ -22,14 +22,19 @@ export class MapService {
     updateSelectedTileSource = new BehaviorSubject<string>('');
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
-    /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
         private router: Router,
-    ) {}
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.router = router;
+    }
 
     async getMap(id: string): Promise<void> {
         try {
+            // Disabling no-unused-vars here because _id, isVisible, and lastModified are intentionally extracted 
+            // to exclude them from restOfMap, even though they’re not used directly.
+            // eslint-disable-next-line no-unused-vars
             const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(
                 this.communicationMapService.basicGet<DetailedMap>(`admin/${id}`),
             );
