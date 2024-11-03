@@ -5,7 +5,7 @@ import { MapCounterService } from '@app/services/map-counter/map-counter.service
 import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile/tile.service';
-import { ItemCategory, DBMap as Map, Mode, TileCategory } from '@common/map.types';
+import { ItemCategory, DetailedMap, Mode, TileCategory } from '@common/map.types';
 import { of } from 'rxjs';
 import { MapAreaComponent } from './map-area.component';
 
@@ -63,7 +63,6 @@ describe('MapAreaComponent', () => {
         fixture.detectChanges();
     });
 
-    // Groupe 1: Tests liés à l'initialisation de la carte
     describe('Map Initialization', () => {
         it('should create the component', () => {
             expect(component).toBeTruthy();
@@ -127,7 +126,6 @@ describe('MapAreaComponent', () => {
         });
     });
 
-    // Groupe 2: Tests liés à la gestion de la carte (reset, chargement, etc.)
     describe('Map management', () => {
         it('should reset the map to default tile when mode is truthy', () => {
             component.route.snapshot.params['mode'] = 'creation';
@@ -154,7 +152,7 @@ describe('MapAreaComponent', () => {
         });
 
         it('should load map correctly', () => {
-            const mockMap: Map = {
+            const mockMap: DetailedMap = {
                 _id: '1',
                 name: 'Test Map',
                 mapSize: { x: 2, y: 2 },
@@ -177,7 +175,7 @@ describe('MapAreaComponent', () => {
         });
 
         it('should initialize the map service map based on the loaded map', () => {
-            const mockMap: Map = {
+            const mockMap: DetailedMap = {
                 _id: '1',
                 name: 'Test Map',
                 isVisible: true,
