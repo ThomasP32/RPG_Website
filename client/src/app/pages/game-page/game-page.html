@@ -19,15 +19,6 @@
             <p>Joueur actif : {{ currentPlayerTurn }}</p>
         </div>
 
-        <div class="countdown-container">
-            <h2>Temps restant</h2>
-            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
-                <h3>{{ countdown }}</h3>
-            </div>
-            <h2>secondes</h2>
-        </div>
-
-        <!-- À FAIRE EN COMPONENT -->
         <div class="player-info">
             <div class="player-info-header">
                 <img [src]="playerPreview || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
@@ -82,25 +73,26 @@
             </div>
         </div>
     </div>
+
+    <div class="countdown-container">
+        <h2>Temps restant</h2>
+        <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+            <h3>{{ countdown }}</h3>
+        </div>
+        <h2>secondes</h2>
+    </div>
+
     <div class="game-map-container">
         <app-game-map [map]="game" [moves]="moves" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
-        <!--AJOUTER LE COMPONENT -->
-        <div class="player-list">
-            <app-players-list [players]="activePlayers"></app-players-list>
-            Liste des joueurs
-        </div>
-
-        <!-- AJOUTER LE COMPONENT -->
-        <div class="chatroom">
-            <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
-        </div>
+        <div class="player-list">Liste des joueurs</div>
 
         <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
 
         <div class="action-buttons">
+            <button (click)="startCombat()">Start combat</button>
             <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
@@ -123,5 +115,12 @@
             </div>
             }
         </div>
+
+        <div class="game-page-chat">
+            <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
+        </div>
     </div>
 </div>
+@if(isCombatModalOpen){
+<app-combat-modal [player]="player" [combatRoomId]="combatRoomId" [gameId]="gameId" [opponent]="opponent"></app-combat-modal>
+}

@@ -14,52 +14,110 @@ export class CombatGateway {
     @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
 
     @SubscribeMessage('startCombat')
-    startCombat(client: Socket, data: { gameId: string; startCombatPlayer: Player; player2: Player }): void {
+    async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
+        const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
-            this.server
-                .to(data.gameId)
-                .emit('combatStarted', { message: `${data.startCombatPlayer.name} a commencé un combat contre ${data.player2.name}` });
-            let currentTurnPlayerId: string;
-            if (data.startCombatPlayer.specs.speed > data.player2.specs.speed) {
-                currentTurnPlayerId = data.startCombatPlayer.socketId;
-            } else if (data.startCombatPlayer.specs.speed === data.player2.specs.speed) {
-                currentTurnPlayerId = data.player2.socketId;
-            } else {
-                currentTurnPlayerId = data.player2.socketId;
+            const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
+            await client.join(combatRoomId);
+            const sockets = await this.server.in(data.gameId).fetchSockets();
+            const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
+            if (opponentSocket) {
+                await opponentSocket.join(combatRoomId);
             }
-            client.emit('updateTurn', { currentPlayerTurn: currentTurnPlayerId });
+            this.server.to(combatRoomId).emit('combatStarted', {
+                message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
+                combatRoomId: combatRoomId,
+                challenger: player,
+                opponent: data.opponent,
+            });
+
+            let currentTurnPlayerId: string;
+            if (player.specs.speed > data.opponent.specs.speed) {
+                currentTurnPlayerId = player.socketId;
+            } else if (player.specs.speed === data.opponent.specs.speed) {
+                currentTurnPlayerId = player.socketId;
+            } else {
+                currentTurnPlayerId = data.opponent.socketId;
+            }
+            this.server.to(combatRoomId).emit('updateTurn', { currentPlayerTurn: currentTurnPlayerId, combatRoomId: combatRoomId });
         }
     }
     @SubscribeMessage('attack')
-    attack(client: Socket, data: { attackPlayer: Player; defendPlayer: Player; gameId: string; player1Dice: number; player2Dice: number }) {
-        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.player1Dice, data.player2Dice)) {
-            client.emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
+    attack(
+        client: Socket,
+        data: { attackPlayer: Player; defendPlayer: Player; combatRoomId: string; attackDice: number; defenseDice: number },
+    ): void {
+        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.attackDice, data.defenseDice)) {
+            this.server
+                .to(data.combatRoomId)
+                .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
         } else {
-            client.emit('attackFailure', { message: `Attaque échouée de ${data.attackPlayer.name}` });
+            this.server
+                .to(data.combatRoomId)
+                .emit('attackFailure', { playerAttacked: data.defendPlayer, message: `Attaque échouée de ${data.attackPlayer.name}` });
         }
     }
 
     @SubscribeMessage('startEvasion')
-    startEvasion(client: Socket, data: { player: Player; gameId: string }): void {
+    startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): void {
         data.player.specs.nEvasions++;
         const evasionSuccess = Math.random() < 0.4;
-        if (evasionSuccess) {
-            client.emit('evasionSuccess', { success: true, message: `${data.player.name} a réussi à s'échapper du combat` });
-        } else {
-            client.emit('evasionSuccess', { success: false, message: 'Évasion échouée' });
-        }
+        this.server.to(data.combatRoomId).emit('evasionSuccess', {
+            success: evasionSuccess,
+            waitingPlayer: data.waitingPlayer,
+            message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : 'Évasion échouée',
+        });
     }
     @SubscribeMessage('combatFinishedEvasion')
-    combatFinishedByEvasion(client: Socket, data: { gameId: string; evasion: boolean; player1: Player; Player2: Player }): void {
-        if (data.evasion) {
-            client.broadcast.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
-        } else {
-            client.broadcast.to(data.gameId).emit('combatFinishedByEvasion', { message: 'Combat terminé' });
-        }
+    async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
+        this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
+        await this.cleanupCombatRoom(data.combatRoomId);
     }
     @SubscribeMessage('combatFinishedNormal')
-    combatFinishedNormally(client: Socket, data: { gameId: string; combatWinner: Player }): void {
-        client.broadcast.to(data.gameId).emit('combatFinishedNormally', { message: `Combat terminé, le gagnant est ${data.combatWinner.name}` });
+    async combatFinishedNormally(
+        client: Socket,
+        data: { gameId: string; combatWinner: Player; combatLooser: Player; combatRoomId: string },
+    ): Promise<void> {
+        this.server.to(data.gameId).emit('combatFinishedNormally', {
+            message: `Combat terminé, le gagnant est ${data.combatWinner.name}`,
+            combatWinner: data.combatWinner,
+            combatLooser: data.combatLooser,
+        });
+        this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat, continuez votre tour` });
+        await this.cleanupCombatRoom(data.combatRoomId);
+    }
+    @SubscribeMessage('rollDice')
+    rollDice(client: Socket, data: { combatRoomId: string; player: Player; opponent: Player }): void {
+        const attackingPlayerAttackDice = Math.floor(Math.random() * data.player.specs.attackBonus) + 1;
+        const attackingPlayerDefenseDice = Math.floor(Math.random() * data.player.specs.defenseBonus) + 1;
+        const opponentAttackDice = Math.floor(Math.random() * data.opponent.specs.attackBonus) + 1;
+        const opponentDefenseDice = Math.floor(Math.random() * data.opponent.specs.defenseBonus) + 1;
+        const attackDice = data.player.specs.attack + attackingPlayerAttackDice;
+        const defenseDice = data.opponent.specs.defense + opponentDefenseDice;
+        this.server.to(data.combatRoomId).emit('diceRolled', {
+            playerDiceAttack: attackingPlayerAttackDice,
+            playerDiceDefense: attackingPlayerDefenseDice,
+            opponentDiceAttack: opponentAttackDice,
+            opponentDiceDefense: opponentDefenseDice,
+            attackDice: attackDice,
+            defenseDice: defenseDice,
+        });
+    }
+    // @SubscribeMessage('updatePlayersAfterCombat')
+    // async updatePlayersAfterCombat(client: Socket, data: { gameId: string; player1: Player; player2: Player }): Promise<void> {
+    //     this.server.to(data.gameId).emit('updatedPlayersAfterCombat', { player1: data.player1, player2: data.player2 });
+    // }
+
+    private async cleanupCombatRoom(combatRoomId: string): Promise<void> {
+        try {
+            const sockets = await this.server.in(combatRoomId).fetchSockets();
+
+            for (const socketId of sockets) {
+                socketId.leave(combatRoomId);
+            }
+        } catch (error) {
+            console.error(`Error while cleaning up combat room: ${combatRoomId}:`, error);
+        }
     }
 }

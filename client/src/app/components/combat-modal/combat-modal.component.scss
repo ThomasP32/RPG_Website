@@ -4,10 +4,10 @@
 
 .modal-combat {
     display: flex;
+    position: absolute;
     flex-direction: column;
     outline: black solid 5px;
     width: 100%;
-
     .versus {
         display: flex;
         justify-content: center;
@@ -38,9 +38,7 @@
 .dice {
     width: 100px;
     height: 100px;
-    // position: relative;
-    // transform-style: preserve-3d;
-    // animation: rotate 2s infinite linear;
+    font-size: 3rem;
 }
 .face {
     position: absolute;
@@ -52,33 +50,6 @@
     font-size: 3rem;
     backface-visibility: hidden;
 }
-
-// .front {
-//     transform: translateZ(50px);
-// }
-// .back {
-//     transform: rotateY(180deg) translateZ(50px);
-// }
-// .left {
-//     transform: rotateY(-90deg) translateZ(50px);
-// }
-// .right {
-//     transform: rotateY(90deg) translateZ(50px);
-// }
-// .top {
-//     transform: rotateX(90deg) translateZ(50px);
-// }
-// .bottom {
-//     transform: rotateX(-90deg) translateZ(50px);
-// }
-// @keyframes rotation {
-//     0% {
-//         transform: rotateX(0deg)   rotateY(0deg);
-//     }
-//     100% {
-//         transform: rotateX(360deg) rotateY(360deg);
-//     }
-// }
 .button-container {
     display: flex;
     flex-direction: column;
