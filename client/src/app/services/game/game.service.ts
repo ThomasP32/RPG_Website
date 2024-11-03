@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-// import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, Player } from '@common/game';
 
