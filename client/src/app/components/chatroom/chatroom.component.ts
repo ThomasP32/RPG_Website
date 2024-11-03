@@ -1,7 +1,6 @@
 import { CommonModule, NgFor } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Message } from '@common/message';
 import { Subscription } from 'rxjs';
@@ -19,22 +18,11 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     messageText: string = '';
     messages: Message[] = [];
     messageSubscription: Subscription;
-    isChatRetracted: boolean = false;
-    isWaitingRoom: boolean;
-    isGamePage: boolean;
 
-    constructor(
-        public socketService: SocketService,
-        private router: Router,
-    ) {
-        this.socketService = socketService;
-        this.router = router;
-    }
+    //eslint-disable-next-line no-unused-vars
+    constructor(public socketService: SocketService) {}
 
     ngOnInit(): void {
-        const currentUrl = this.router.url;
-        this.isWaitingRoom = currentUrl.includes('/waiting-room');
-        this.isGamePage = currentUrl.includes('/game-page');
         this.socketService.sendMessage('joinRoom', this.gameId);
 
         this.messageSubscription = this.socketService.listen<Message[]>('previousMessages').subscribe((messages: Message[]) => {
@@ -69,10 +57,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
                 messageArea.scrollTop = messageArea.scrollHeight;
             }
         }, 5);
-    }
-
-    toggleChat() {
-        this.isChatRetracted = !this.isChatRetracted;
     }
 
     ngOnDestroy(): void {

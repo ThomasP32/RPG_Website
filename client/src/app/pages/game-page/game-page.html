@@ -92,7 +92,6 @@
         <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
 
         <div class="action-buttons">
-            <button (click)="startCombat()">Start combat</button>
             <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
@@ -121,6 +120,3 @@
         </div>
     </div>
 </div>
-@if(isCombatModalOpen){
-<app-combat-modal [player]="player" [combatRoomId]="combatRoomId" [gameId]="gameId" [opponent]="opponent"></app-combat-modal>
-}

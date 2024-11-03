@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { of, Subscription } from 'rxjs';
 import { ChatroomComponent } from './chatroom.component';
@@ -9,7 +8,6 @@ describe('ChatroomComponent', () => {
     let component: ChatroomComponent;
     let fixture: ComponentFixture<ChatroomComponent>;
     let socketServiceSpy: jasmine.SpyObj<SocketService>;
-    let mockRouter: any;
 
     beforeEach(async () => {
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
@@ -17,10 +15,7 @@ describe('ChatroomComponent', () => {
 
         await TestBed.configureTestingModule({
             imports: [FormsModule, ChatroomComponent],
-            providers: [
-                { provide: SocketService, useValue: socketServiceSpy },
-                { provide: Router, useValue: mockRouter },
-            ],
+            providers: [{ provide: SocketService, useValue: socketServiceSpy }],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ChatroomComponent);
@@ -30,35 +25,8 @@ describe('ChatroomComponent', () => {
         fixture.detectChanges();
     });
 
-    mockRouter = {
-        get url() {
-            return '/game-page';
-        },
-        navigate: jasmine.createSpy('navigate'),
-    };
-
     it('should create', () => {
         expect(component).toBeTruthy();
-    });
-
-    it('should set isGamePage to true and isWaitingRoom to false when on /game-page', () => {
-        spyOnProperty(mockRouter, 'url', 'get').and.returnValue('/game-page');
-
-        component.ngOnInit();
-        fixture.detectChanges();
-
-        expect(component.isGamePage).toBeTrue();
-        expect(component.isWaitingRoom).toBeFalse();
-    });
-
-    it('should set isWaitingRoom to true and isGamePage to false when on /waiting-room', () => {
-        spyOnProperty(mockRouter, 'url', 'get').and.returnValue('/waiting-room');
-
-        component.ngOnInit();
-        fixture.detectChanges();
-
-        expect(component.isWaitingRoom).toBeTrue();
-        expect(component.isGamePage).toBeFalse();
     });
 
     it('should initialize and join room with previous messages', () => {
