@@ -19,6 +19,7 @@ export class CombatGateway {
     async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
+        const involvedPlayers = game.players.map((player) => player.name);
         if (game) {
             const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
             await client.join(combatRoomId);
@@ -33,6 +34,7 @@ export class CombatGateway {
                 challenger: player,
                 opponent: data.opponent,
             });
+            this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
 
             let currentTurnPlayerId: string;
             if (player.specs.speed > data.opponent.specs.speed) {

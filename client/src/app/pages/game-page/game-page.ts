@@ -25,6 +25,7 @@ import { Subscription } from 'rxjs';
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+    activeView: 'chat' | 'journal' = 'chat';
     numberOfPlayers: number;
     opponent: Player;
     activePlayers: Player[];
@@ -84,6 +85,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.socketService.sendMessage('startGame', this.game.id);
             }
         }
+    }
+
+    toggleView(view: 'chat' | 'journal'): void {
+        this.activeView = view;
     }
 
     get player(): Player {
