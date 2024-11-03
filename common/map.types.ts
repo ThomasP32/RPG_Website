@@ -22,7 +22,7 @@ export enum ItemCategory {
     Random = 'random',
     Vest = 'vest',
     Acidgun = 'acidgun',
-    Flag = 'flag'
+    Flag = 'flag',
 }
 
 export interface Tile {
@@ -56,7 +56,7 @@ export interface Map {
     tiles: Tile[];
 }
 
-export interface DBMap extends Map {
+export interface DetailedMap extends Map {
     _id: Object;
     isVisible: boolean;
     lastModified: Date;

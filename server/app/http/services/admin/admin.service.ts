@@ -3,35 +3,22 @@ import { DoorTileDto } from '@app/http/model/dto/map/door.dto';
 import { MapDto } from '@app/http/model/dto/map/map.dto';
 import { ItemDto, TileDto } from '@app/http/model/dto/map/tiles.dto';
 import { MapDocument } from '@app/http/model/schemas/map/map.schema';
-import { Coordinate, DBMap, Map, TileCategory } from '@common/map.types';
+import { HALF, MapConfig, MapSize } from '@common/constants';
+import { DIRECTIONS } from '@common/directions';
+import { Coordinate, DetailedMap, Map, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-const HALF = 0.5;
-const SMALL_MAP_SIZE = 10;
-const MEDIUM_MAP_SIZE = 15;
-const LARGE_MAP_SIZE = 20;
-const SMALL_MAP_START_TILES = 2;
-const MEDIUM_MAP_START_TILES = 4;
-const LARGE_MAP_START_TILES = 6;
-
 @Injectable()
 export class AdminService {
-    private directions = [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-    ];
-
     @InjectModel(Map.name) public mapModel: Model<MapDocument>;
 
     async getAllMaps(): Promise<Map[]> {
         return await this.mapModel.find({});
     }
 
-    async getMapById(mapId: string): Promise<DBMap> {
+    async getMapById(mapId: string): Promise<DetailedMap> {
         const objectId = new Types.ObjectId(mapId);
         const map = await this.mapModel.findOne({ _id: objectId }, { __v: 0 });
         if (!map) {
@@ -84,7 +71,7 @@ export class AdminService {
         }
     }
 
-    async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DBMap> {
+    async modifyMap(mapId: string, updateMapDto: MapDto): Promise<DetailedMap> {
         await this.verifyMapModification(mapId, updateMapDto);
         try {
             this.verifyMapModification(mapId, updateMapDto);
@@ -180,12 +167,11 @@ export class AdminService {
     private dfs(coordinate: CoordinateDto, mapMatrix: boolean[][], visited: CoordinateDto[], mapSize: CoordinateDto): void {
         visited.push(coordinate);
 
-        for (const direction of this.directions) {
+        for (const direction of DIRECTIONS) {
             const newX = coordinate.x + direction.x;
             const newY = coordinate.y + direction.y;
 
-            // Vérifier si la nouvelle position est dans les limites de la carte
-            if (newX >= 0 && newX < mapSize.x && newY >= 0 && newY < mapSize.y) {
+            if (!this.isCoordinateOutOfBounds({ x: newX, y: newY }, mapSize)) {
                 if (mapMatrix[newY][newX] && !this.isVisited({ x: newX, y: newY }, visited)) {
                     this.dfs({ x: newX, y: newY }, mapMatrix, visited, mapSize);
                 }
@@ -196,7 +182,7 @@ export class AdminService {
         return coordinates.some((tile) => tile.x === coordinate.x && tile.y === coordinate.y);
     }
 
-    private isCoordinateOutOfBounds(coordinate: Coordinate, mapSize: Coordinate): boolean {
+    private isCoordinateOutOfBounds(coordinate: Coordinate | CoordinateDto, mapSize: Coordinate | CoordinateDto): boolean {
         return coordinate.x >= mapSize.x || coordinate.y >= mapSize.y || coordinate.x < 0 || coordinate.y < 0;
     }
 
@@ -251,15 +237,15 @@ export class AdminService {
             }
         }
 
-        return true; // Si toutes les portes sont valides
+        return true;
     }
 
     private areStartTilePlaced(startTiles: StartTileDto[], mapSize: CoordinateDto): boolean {
-        if (mapSize.x === SMALL_MAP_SIZE && startTiles.length === SMALL_MAP_START_TILES) {
+        if (mapSize.x === MapConfig[MapSize.SMALL].size && startTiles.length === MapConfig[MapSize.SMALL].nbItems) {
             return true;
-        } else if (mapSize.x === MEDIUM_MAP_SIZE && startTiles.length === MEDIUM_MAP_START_TILES) {
+        } else if (mapSize.x === MapConfig[MapSize.MEDIUM].size && startTiles.length === MapConfig[MapSize.MEDIUM].nbItems) {
             return true;
-        } else if (mapSize.x === LARGE_MAP_SIZE && startTiles.length === LARGE_MAP_START_TILES) {
+        } else if (mapSize.x === MapConfig[MapSize.LARGE].size && startTiles.length === MapConfig[MapSize.LARGE].nbItems) {
             return true;
         }
         return false;

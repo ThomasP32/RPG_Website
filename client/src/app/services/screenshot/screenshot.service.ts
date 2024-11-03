@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Html2CanvasWrapperService } from './html2canvaswrapper.service';
+import { Html2CanvasWrapperService } from '@app/services/screenshot/html2canvaswrapper.service';
 
 @Injectable({
     providedIn: 'root',
