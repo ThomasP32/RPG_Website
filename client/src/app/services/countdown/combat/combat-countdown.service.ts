@@ -7,10 +7,10 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 })
 export class CombatCountdownService {
     private countdownDuration = 5;
-    private noEvasionCountdownDuration = 3;
+    // private noEvasionCountdownDuration = 3;
     private socketSubscription = new Subscription();
-    private countdown = new BehaviorSubject<number>(this.countdownDuration);
-    public countdown$ = this.countdown.asObservable();
+    private combatCountdown = new BehaviorSubject<number>(this.countdownDuration);
+    public combatCountdown$ = this.combatCountdown.asObservable();
 
     constructor(private socketService: SocketService) {
         this.listenCountdown();
@@ -19,13 +19,14 @@ export class CombatCountdownService {
 
     listenCountdown() {
         this.socketSubscription.add(
-            this.socketService.listen<number>('secondPassed').subscribe((remainingTime) => {
-                this.countdown.next(remainingTime);
+            this.socketService.listen<number>('combatSecondPassed').subscribe((remainingTime) => {
+                console.log('le timer de combat fonctionne');
+                this.combatCountdown.next(remainingTime);
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen<number>('counterFinished').subscribe(() => {
-                this.countdown.next(0);
+                this.combatCountdown.next(0);
             }),
         );
     }
