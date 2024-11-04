@@ -1,5 +1,6 @@
 import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
 import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
@@ -11,6 +12,7 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./combat-modal.component.scss'],
 })
 export class CombatModalComponent implements OnInit, OnDestroy {
+    countdown: number;
     playerDiceAttack: number;
     playerDiceDefense: number;
     opponentDiceAttack: number;
@@ -40,18 +42,30 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     @Inject(GameService) private gameService: GameService;
 
-    constructor(private socketService: SocketService) {
+    constructor(
+        private socketService: SocketService,
+        private combatCountDownService: CombatCountdownService,
+    ) {
         this.socketService = socketService;
+        this.combatCountDownService = combatCountDownService;
     }
 
     ngOnInit() {
         this.configureCombatSocketFeatures();
         this.getPlayersLife();
+        this.listenForCountdown();
     }
 
     ngOnDestroy() {
         this.socketSubscription.unsubscribe();
         // this.socketService.disconnect();
+    }
+
+    listenForCountdown() {
+        this.combatCountDownService.combatCountdown$.subscribe((timeLeft: number) => {
+            console.log('le temps restant', timeLeft);
+            this.countdown = timeLeft;
+        });
     }
     //preset les niveaux de vie des joueurs du debut
     getPlayersLife(): void {

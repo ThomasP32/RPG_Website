@@ -3,15 +3,6 @@ import { Game, Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
-// const SMALL_MAP_SIZE = 10;
-// const MEDIUM_MAP_SIZE = 15;
-// const LARGE_MAP_SIZE = 20;
-// const SMALL_MAP_PLAYERS_MIN_MAX = 2;
-// const MEDIUM_MAP_PLAYERS_MIN = 2;
-// const MEDIUM_MAP_PLAYERS_MAX = 4;
-// const LARGE_MAP_PLAYERS_MIN = 2;
-// const LARGE_MAP_PLAYERS_MAX = 6;
-
 @Injectable()
 export class GameCreationService {
     private gameRooms: Record<string, Game> = {};

@@ -1,8 +1,8 @@
+import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
 import { Server } from 'socket.io';
 import { EventEmitter } from 'stream';
-import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
 
 @Injectable()
 export class CombatCountdownService extends EventEmitter {
@@ -12,7 +12,6 @@ export class CombatCountdownService extends EventEmitter {
     setServer(server: Server) {
         this.server = server;
     }
-
     initCountdown(id: string, duration: number): void {
         if (!this.countdowns.has(id)) {
             const countdown: Countdown = {
@@ -40,9 +39,8 @@ export class CombatCountdownService extends EventEmitter {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
                 this.emit('timeout', id);
-                this.server.to(id).emit('endCombatTurn');
             } else {
-                this.server.to(id).emit('combatSecondPassed', value); 
+                this.server.to(id).emit('combatSecondPassed', value);
             }
         });
     }
