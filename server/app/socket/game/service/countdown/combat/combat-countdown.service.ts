@@ -23,7 +23,7 @@ export class CombatCountdownService extends EventEmitter {
     }
 
     async startTurnCounter(id: string, hasEvasions: boolean): Promise<void> {
-        const duration = hasEvasions ? 5 : 3;
+        const duration = hasEvasions ? 3 : 5;
         let countdown = this.countdowns.get(id);
 
         if (!countdown) {
