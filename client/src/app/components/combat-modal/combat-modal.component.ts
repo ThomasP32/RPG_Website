@@ -1,5 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
 
@@ -17,6 +18,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     diceRollReceived = false;
     actionButtonsOn = false;
     attacking = false;
+    combatMessage: string;
 
     attackTotal: number;
     defenseTotal: number;
@@ -36,7 +38,10 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
-    constructor(private socketService: SocketService) {
+    constructor(
+        private socketService: SocketService,
+        private gameService: GameService,
+    ) {
         this.socketService = socketService;
     }
 
@@ -71,13 +76,14 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ success: boolean; waitingPlayer: Player }>('evasionSuccess').subscribe((data) => {
+            this.socketService.listen<{ success: boolean; waitingPlayer: Player; message: string }>('evasionSuccess').subscribe((data) => {
                 if (data.success) {
+                    this.combatMessage = data.message;
                     this.combatFinishedByEvasion();
                 } else {
                     if (data.waitingPlayer.socketId === this.opponent.socketId) this.player.specs.nEvasions -= 1;
                     else if (data.waitingPlayer.socketId === this.player.socketId) this.opponent.specs.nEvasions -= 1;
-
+                    this.combatMessage = data.message;
                     this.currentTurnPlayerId = data.waitingPlayer.socketId;
                     console.log('change of turn', this.currentTurnPlayerId);
                 }
@@ -112,7 +118,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ playerAttacked: Player }>('attackSuccess').subscribe((data) => {
+            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackSuccess').subscribe((data) => {
                 if (data.playerAttacked.socketId === this.opponent.socketId) this.opponent.specs.life -= 1;
                 else if (data.playerAttacked.socketId === this.player.socketId) this.player.specs.life -= 1;
                 if (this.player.specs.life === 0 || this.opponent.specs.life === 0) {
@@ -120,12 +126,14 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 }
                 this.currentTurnPlayerId = data.playerAttacked.socketId;
                 console.log('Attack success, change of turn', this.currentTurnPlayerId);
+                this.combatMessage = data.message;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ playerAttacked: Player }>('attackFailure').subscribe((data) => {
+            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackFailure').subscribe((data) => {
                 this.currentTurnPlayerId = data.playerAttacked.socketId;
                 console.log('Attack failure, change of turn', this.currentTurnPlayerId);
+                this.combatMessage = data.message;
             }),
         );
         this.socketSubscription.add(
@@ -185,7 +193,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.socketService.sendMessage('startEvasion', {
                 player: this.player,
                 waitingPlayer: this.opponent,
-                gameId: this.gameId,
+                gameId: this.gameService.game.id,
                 combatRoomId: this.combatRoomId,
             });
             // } else if (!this.isCombatPlayerTurn() && this.opponent.specs.nEvasions > 0) {
@@ -209,7 +217,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.combatWinStatsUpdate(this.opponent, this.player);
             this.updatePlayerStats();
             this.socketService.sendMessage('combatFinishedNormal', {
-                gameId: this.gameId,
+                gameId: this.gameService.game.id,
                 combatWinner: this.opponent,
                 combatLooser: this.player,
                 combatRoomId: this.combatRoomId,
@@ -230,7 +238,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     combatFinishedByEvasion() {
         this.socketService.sendMessage('combatFinishedEvasion', {
-            gameId: this.gameId,
+            gameId: this.gameService.game.id,
             player1: this.player,
             player2: this.opponent,
             combatRoomId: this.combatRoomId,

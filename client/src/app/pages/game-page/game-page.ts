@@ -7,8 +7,9 @@ import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
+import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { CountdownService } from '@app/services/countdown/countdown.service';
+import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
@@ -57,6 +58,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameService: GameService,
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
+        private combatService: CombatService,
     ) {
         this.router = router;
         this.socketService = socketService;
@@ -65,6 +67,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.gameTurnService = gameTurnService;
         this.countDownService = countDownService;
         this.gameService = gameService;
+        this.combatService = combatService;
     }
 
     ngOnInit() {
@@ -75,7 +78,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.listenForFalling();
         this.listenForCountDown();
         this.listenPlayersLeft();
-        this.combatListener();
+        this.combatService.combatListenerPage();
+        this.listenForIsCombatModalOpen();
+        this.listenForCombatRoomId();
+        this.listenForOpponent();
         this.listenForCurrentPlayerUpdates();
         this.activePlayers = this.gameService.game.players;
         this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
@@ -130,66 +136,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     endTurn() {
         this.gameTurnService.endTurn();
-    }
-
-    combatListener() {
-        this.socketSubscription.add(
-            this.socketService
-                .listen<{ message: string; combatRoomId: string; challenger: Player; opponent: Player }>('combatStarted')
-                .subscribe((data) => {
-                    console.log(`${data.message} in room ${data.combatRoomId}`);
-                    if (this.player.socketId === data.challenger.socketId) {
-                        this.opponent = data.opponent;
-                    } else {
-                        this.opponent = data.challenger;
-                    }
-                    this.combatRoomId = data.combatRoomId;
-                    this.isCombatModalOpen = true;
-                    this.countDownService.pauseCountdown();
-                }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ player1: Player; player2: Player; message: string }>('combatFinishedByEvasion').subscribe((data) => {
-                console.log(data.message);
-
-                if (data.player1 && data.player2) {
-                    this.game.players = this.gameService.game.players.map((player) => {
-                        if (player.socketId === data.player1.socketId || player.socketId === data.player2.socketId) {
-                            player.specs.nCombats += 1;
-                        }
-                        return player;
-                    });
-                    console.log('Players updated after combat:', this.game.players);
-                } else {
-                    console.log('No players found');
-                }
-                setTimeout(() => {
-                    this.isCombatModalOpen = false;
-                }, 3000);
-                this.countDownService.resumeCountdown();
-            }),
-        );
-        this.socketSubscription.add(
-            this.socketService.listen<{ message: string; combatWinner: Player; combatLooser: Player }>('combatFinishedNormally').subscribe((data) => {
-                console.log(data.message);
-
-                this.game.players = this.gameService.game.players.map((player) => {
-                    if (player.socketId === data.combatLooser.socketId) {
-                        return { ...player, ...data.combatLooser };
-                    } else if (player.socketId === data.combatWinner.socketId) {
-                        return { ...player, ...data.combatWinner };
-                    }
-                    return player;
-                });
-
-                console.log('Players updated after combat:', this.game.players);
-                setTimeout(() => {
-                    this.isCombatModalOpen = false;
-                }, 3000);
-                this.countDownService.resumeCountdown();
-            }),
-        );
     }
 
     navigateToMain(): void {
@@ -253,6 +199,24 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.navigateToEndOfGame();
                 }, 5000);
             }
+        });
+    }
+
+    listenForIsCombatModalOpen() {
+        this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
+            this.isCombatModalOpen = isCombatModalOpen;
+        });
+    }
+
+    listenForCombatRoomId() {
+        this.combatService.combatRoomId$.subscribe((combatRoomId) => {
+            this.combatRoomId = combatRoomId;
+        });
+    }
+
+    listenForOpponent() {
+        this.combatService.opponent$.subscribe((opponent) => {
+            this.opponent = opponent;
         });
     }
 
