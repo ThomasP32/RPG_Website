@@ -131,6 +131,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(gameId);
         if (!this.gameManagerService.isGameResumable(gameId)) {
             this.gameCreationService.deleteRoom(gameId);
+            this.gameCountdownService.deleteCountdown(gameId);
             return;
         }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);

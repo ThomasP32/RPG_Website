@@ -9,7 +9,7 @@
             <p class="player-health">Vies restantes: {{ player.specs.life }}</p>
             <!-- <p class="player-attack">Attaque: {{ player.specs.attack }}</p>
             <p class="player-defense">Défense: {{ player.specs.defense }}</p> -->
-            <p class="player-evasion">Tentatives d'évasions restantes {{ player.specs.nEvasions }}</p>
+            <p class="player-evasion">Tentatives d'évasions restantes {{ player.specs.evasions }}</p>
         </div>
 
         @if("attacking === true") {
@@ -23,10 +23,10 @@
             <p class="player-name">{{ opponent.name }}</p>
             <img class="player-avatar" src="./assets/characters/{{ opponent.avatar }}.png" alt="Player 2 avatar" />
             <p class="player-health">Vies restantes: {{ opponent.specs.life }}</p>
-            <p class="player-evasion">Tentatives d'évasion restantes {{ opponent.specs.nEvasions }}</p>
+            <p class="player-evasion">Tentatives d'évasion restantes {{ opponent.specs.evasions }}</p>
         </div>
     </div>
-    @if ("actionButtonsOn") {
+    @if (isYourTurn) {
     <div class="button-container">
         <button class="attack-button" (click)="attack()">Attaquer</button>
         <button class="evade-button" (click)="evade()">Évasion</button>

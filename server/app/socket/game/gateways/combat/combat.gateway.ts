@@ -37,13 +37,13 @@ export class CombatGateway implements OnGatewayInit {
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
             const combat = this.serverCombatService.createCombat(data.gameId, player, data.opponent);
+            console.log(combat);
             await client.join(combat.id);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
             if (opponentSocket) {
                 await opponentSocket.join(combat.id);
             }
-            this.serverCombatService.getPlayersLife(player, data.opponent);
             this.server.to(combat.id).emit('combatStarted', {
                 message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
                 combatRoomId: combat.id,
@@ -80,7 +80,8 @@ export class CombatGateway implements OnGatewayInit {
                 });
                 if (combat.opponent.specs.life === 0) {
                     this.serverCombatService.combatWinStatsUpdate(combat.challenger, combat.opponent);
-                    this.serverCombatService.setPlayerLife(combat.challenger, combat.opponent);
+                    combat.challenger.specs.life = combat.challengerLife;
+                    combat.opponent.specs.life = combat.opponentLife;
                     this.server.to(combat.id).emit('combatFinishedNormally', {
                         message: `Combat terminé, le gagnant est ${combat.challenger.name}`,
                         combatWinner: combat.challenger,
@@ -117,7 +118,8 @@ export class CombatGateway implements OnGatewayInit {
                 });
                 if (combat.challenger.specs.life === 0) {
                     this.serverCombatService.combatWinStatsUpdate(combat.opponent, combat.challenger);
-                    this.serverCombatService.setPlayerLife(combat.challenger, combat.opponent);
+                    combat.challenger.specs.life = combat.challengerLife;
+                    combat.opponent.specs.life = combat.opponentLife;
                     this.server.to(combat.id).emit('combatFinishedNormally', {
                         message: `Combat terminé, le gagnant est ${combat.opponent.name}`,
                         combatWinner: combat.opponent,
@@ -169,7 +171,10 @@ export class CombatGateway implements OnGatewayInit {
                     .emit('attackFailure', { playerAttacked: combat.challenger, message: `Attaque échouée de ${combat.opponent.name}` });
             }
         }
-        if (combat.challenger.specs.life !== 0 && combat.opponent.specs.life !== 0) this.prepareNextTurn(data.gameId);
+        if (combat.challenger.specs.life !== 0 && combat.opponent.specs.life !== 0) {
+            this.combatCountdownService.resetTimerSubscription(data.gameId);
+            this.prepareNextTurn(data.gameId);
+        }
     }
 
     prepareNextTurn(gameId: string) {
@@ -196,43 +201,52 @@ export class CombatGateway implements OnGatewayInit {
             this.server.to(combat.challenger.socketId).emit('playerTurnCombat');
         }
         console.log('Tour de :', currentPlayerTurn.name);
-        this.combatCountdownService.startTurnCounter(gameId, currentPlayerTurn.specs.nEvasions === 0 ? false : true);
+        this.combatCountdownService.startTurnCounter(gameId, currentPlayerTurn.specs.evasions === 0 ? false : true);
     }
 
     //TODO
     @SubscribeMessage('startEvasion')
-    async startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): Promise<void> {
-        const combat = this.serverCombatService.getCombatByGameId(data.gameId);
-        if (combat.challenger.socketId === data.player.socketId) {
-            if (data.player.specs.nEvasions === 0) return;
+    async startEvasion(client: Socket, gameId: string): Promise<void> {
+        console.log('une evasion a été commencée');
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        let evadingPlayer: Player;
+        if (combat.challenger.socketId === client.id) {
+            if (combat.challenger.specs.evasions === 0) return;
             else {
-                combat.challenger.specs.nEvasions--;
+                evadingPlayer = combat.challenger;
+                combat.challenger.specs.evasions--;
+                combat.challenger.specs.nEvasions++;
             }
         } else {
-            if (data.player.specs.nEvasions === 0) return;
+            if (combat.opponent.specs.evasions === 0) return;
             else {
-                combat.opponent.specs.nEvasions--;
+                evadingPlayer = combat.opponent;
+                combat.opponent.specs.evasions--;
+                combat.challenger.specs.nEvasions++;
             }
         }
         const evasionSuccess = Math.random() < 0.4;
-        this.server.to(data.combatRoomId).emit('evasionSuccess', {
+        this.server.to(combat.id).emit('evasionSuccess', {
             success: evasionSuccess,
-            waitingPlayer: data.waitingPlayer,
-            message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : `Évasion échouée de ${data.player.name}`,
+            message: evasionSuccess ? `${evadingPlayer.name} a réussi à s'échapper du combat` : `Évasion échouée de ${evadingPlayer.name}`,
         });
+
         if (evasionSuccess) {
-            this.serverCombatService.setPlayerLife(combat.challenger, combat.opponent);
+            combat.challenger.specs.life = combat.challengerLife;
+            combat.opponent.specs.life = combat.opponentLife;
             combat.challenger.specs.nCombats++;
             combat.opponent.specs.nCombats++;
-            this.server.to(data.gameId).emit('combatFinishedByEvasion', {
+            const game = this.gameCreationService.getGameById(gameId);
+            this.serverCombatService.updatePlayersInGame(game);
+            this.server.to(gameId).emit('combatFinishedByEvasion', {
                 player1: combat.challenger,
                 player2: combat.opponent,
                 message: "Évasion d'un joueur, combat terminé",
             });
-            this.gameCountdownService.resumeCountdown(data.gameId);
-            await this.cleanupCombatRoom(data.combatRoomId);
+            this.gameCountdownService.resumeCountdown(gameId);
+            await this.cleanupCombatRoom(combat.id);
         } else {
-            this.prepareNextTurn(data.gameId);
+            this.prepareNextTurn(combat.id);
         }
     }
 

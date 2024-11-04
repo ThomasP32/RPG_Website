@@ -21,6 +21,7 @@ describe('ServerCombatService', () => {
                 defense: 5,
                 attackBonus: 6,
                 defenseBonus: 4,
+                evasions: 2, 
                 movePoints: 5,
                 actions: 2,
                 nVictories: 3,
@@ -32,6 +33,7 @@ describe('ServerCombatService', () => {
             },
             inventory: [],
             position: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
             turn: 1,
             visitedTiles: [],
         };
@@ -48,6 +50,7 @@ describe('ServerCombatService', () => {
                 attackBonus: 4,
                 defenseBonus: 6,
                 movePoints: 5,
+                evasions: 2,
                 actions: 2,
                 nVictories: 4,
                 nDefeats: 2,
@@ -58,6 +61,7 @@ describe('ServerCombatService', () => {
             },
             inventory: [],
             position: { x: 1, y: 1 },
+            initialPosition: { x: 1, y: 1 },
             turn: 2,
             visitedTiles: [],
         };
@@ -83,6 +87,7 @@ describe('ServerCombatService', () => {
                 attackBonus: 6,
                 defenseBonus: 4,
                 movePoints: 5,
+                evasions: 2, 
                 actions: 2,
                 nVictories: 3,
                 nDefeats: 1,
@@ -93,6 +98,7 @@ describe('ServerCombatService', () => {
             },
             inventory: [],
             position: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
             turn: 1,
             visitedTiles: [],
         };
@@ -110,6 +116,7 @@ describe('ServerCombatService', () => {
                 defenseBonus: 6,
                 movePoints: 5,
                 actions: 2,
+                evasions: 2,
                 nVictories: 4,
                 nDefeats: 2,
                 nCombats: 6,
@@ -119,6 +126,7 @@ describe('ServerCombatService', () => {
             },
             inventory: [],
             position: { x: 1, y: 1 },
+            initialPosition: { x: 1, y: 1 },
             turn: 2,
             visitedTiles: [],
         };

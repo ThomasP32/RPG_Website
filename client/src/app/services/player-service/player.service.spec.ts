@@ -96,6 +96,7 @@ describe('PlayerService', () => {
                     defense: 5,
                     attackBonus: Bonus.D6,
                     defenseBonus: Bonus.D4,
+                    evasions: 2,
                     movePoints: 0,
                     actions: 0,
                     nVictories: 0,
@@ -109,6 +110,7 @@ describe('PlayerService', () => {
                 position: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
+                initialPosition: {x: 0, y: 0},
             };
             service.setPlayer(mockPlayer);
             expect(service.player).toEqual(mockPlayer);

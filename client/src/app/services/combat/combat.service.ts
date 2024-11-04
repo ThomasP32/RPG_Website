@@ -15,6 +15,7 @@ export class CombatService {
         avatar: 1,
         isActive: false,
         specs: {
+            evasions: 2,
             life: 0,
             speed: 0,
             attack: 0,
@@ -32,6 +33,7 @@ export class CombatService {
         },
         inventory: [],
         position: { x: 0, y: 0 },
+        initialPosition: {x:0, y:0},
         turn: 0,
         visitedTiles: [],
     };
