@@ -1,6 +1,6 @@
 import { MapDocument } from '@app/http/model/schemas/map/map.schema';
 import { AdminService } from '@app/http/services/admin/admin.service';
-import { DBMap, Mode } from '@common/map.types';
+import { DetailedMap, Mode } from '@common/map.types';
 import { ConflictException, ForbiddenException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
@@ -32,7 +32,7 @@ describe('AdminController', () => {
     });
 
     it('allMaps() should return all maps', async () => {
-        const fakeMaps: DBMap[] = [
+        const fakeMaps: DetailedMap[] = [
             {
                 _id: new Types.ObjectId(),
                 name: 'Map1',
@@ -165,7 +165,7 @@ describe('AdminController', () => {
 
     it('getMapById() should return the map with the specified ID', async () => {
         const mapId = new Types.ObjectId();
-        const fakeMap: DBMap = {
+        const fakeMap: DetailedMap = {
             _id: mapId,
             name: 'Test Map',
             description: 'This is a test map',
@@ -201,7 +201,7 @@ describe('AdminController', () => {
     });
 
     it('modifyMap() should return OK if map is successfully modified', async () => {
-        const originalMap: DBMap = {
+        const originalMap: DetailedMap = {
             _id: new Types.ObjectId(),
             name: 'Original Map',
             description: 'Original description',
@@ -348,7 +348,7 @@ describe('AdminController', () => {
 
     it('visibilityToggle() should toggle visibility of a map and return OK', async () => {
         const mapId = new Types.ObjectId().toString();
-        const fakeReturningMap: DBMap = {
+        const fakeReturningMap: DetailedMap = {
             _id: new Types.ObjectId(mapId),
             name: 'Test Map',
             description: 'This is a test map',
@@ -362,7 +362,7 @@ describe('AdminController', () => {
             isVisible: true,
             lastModified: new Date(),
         };
-        const toggledMap: DBMap = {
+        const toggledMap: DetailedMap = {
             ...fakeReturningMap,
             isVisible: !fakeReturningMap.isVisible,
         };

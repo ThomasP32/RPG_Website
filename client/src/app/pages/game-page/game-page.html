@@ -2,7 +2,10 @@
 <div class="disable-interactions"></div>
 } @if(!delayFinished) {
 <div class="disable-interactions"></div>
-<div class="turn-indicator"><h3>C'est au tour de {{currentPlayerTurn}}</h3></div>
+<div class="turn-indicator">
+    <h3>C'est au tour de {{currentPlayerTurn}} dans</h3>
+    <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{startTurnCountdown}}</span>
+</div>
 } @if(youFell) {
 <div class="disable-interactions"></div>
 <div class="turn-indicator"><h3>Vous êtes tombé, votre tour est fini.</h3></div>
@@ -85,6 +88,8 @@
 
     <div class="right-panel">
         <div class="player-list">Liste des joueurs</div>
+
+        <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
 
         <div class="action-buttons">
             <button (click)="endTurn()">Fin du tour</button>
