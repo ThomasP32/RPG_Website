@@ -5,6 +5,8 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class ServerCombatService {
     private combatRooms: Record<string, Combat> = {};
+    challengerLife: number;
+    opponentLife: number;
 
     createCombat(gameId: string, challenger: Player, opponent: Player): Combat {
         let currentTurnSocketId: string = challenger.socketId;
@@ -67,5 +69,22 @@ export class ServerCombatService {
             attackDice,
             defenseDice,
         };
+    }
+
+    combatWinStatsUpdate(winner: Player, loser: Player) {
+        winner.specs.nVictories += 1;
+        winner.specs.nCombats += 1;
+        loser.specs.nDefeats += 1;
+        loser.specs.nCombats += 1;
+    }
+
+    getPlayersLife(challenger: Player, opponent: Player) {
+        this.challengerLife = challenger.specs.life;
+        this.opponentLife = opponent.specs.life;
+    }
+
+    setPlayerLife(challenger: Player, opponent: Player) {
+        challenger.specs.life = this.challengerLife;
+        opponent.specs.life = this.opponentLife;
     }
 }
