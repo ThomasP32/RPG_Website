@@ -1,3 +1,4 @@
+import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -8,13 +9,6 @@ import { JournalService } from '../journal/journal.service';
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(JournalService) private journalService: JournalService;
-
-    private directions = [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-    ];
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -29,6 +23,7 @@ export class GameManagerService {
 
     updateTurnCounter(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
+        console.log('le tour a été mis a jour');
         game.nTurns++;
         game.currentTurn++;
         if (game.currentTurn >= game.players.length) {
@@ -154,7 +149,7 @@ export class GameManagerService {
 
     private getNeighbors(pos: Coordinate, game: Game): Coordinate[] {
         const neighbors: Coordinate[] = [];
-        this.directions.forEach((dir) => {
+        DIRECTIONS.forEach((dir) => {
             const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
             if (!this.isOutOfMap(neighbor, game.mapSize) && this.isReachableTile(neighbor, game)) {
                 neighbors.push(neighbor);
@@ -206,5 +201,30 @@ export class GameManagerService {
 
     hasFallen(moves: Coordinate[], destination: Coordinate) {
         return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
+    }
+
+    getAdjacentPlayers(player: Player, gameId: string): Player[] {
+        const game = this.gameCreationService.getGameById(gameId);
+        const adjacentPlayers: Player[] = [];
+
+        game.players.forEach((otherPlayer) => {
+            if (otherPlayer.isActive) {
+                if (otherPlayer.socketId !== player.socketId) {
+                    const isAdjacent = DIRECTIONS.some(
+                        (direction) =>
+                            otherPlayer.position.x === player.position.x + direction.x && otherPlayer.position.y === player.position.y + direction.y,
+                    );
+                    if (isAdjacent) {
+                        adjacentPlayers.push(otherPlayer);
+                    }
+                }
+            }
+        });
+
+        return adjacentPlayers;
+    }
+
+    isGameResumable(gameId: string): boolean {
+        return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
     }
 }

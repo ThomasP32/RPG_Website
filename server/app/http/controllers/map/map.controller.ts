@@ -5,8 +5,8 @@ import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 
-@ApiTags('Map') // to attach a controller to a specific tag
-@Controller('map') // marque la classe comme un contrôleur pour les routes qui commence avec map donc reponde au requete http faites vers l'url /map
+@ApiTags('Map') 
+@Controller('map')
 export class MapController {
     @Inject(MapService) private readonly mapService: MapService; 
 

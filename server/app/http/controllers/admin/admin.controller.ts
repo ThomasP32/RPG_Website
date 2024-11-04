@@ -5,12 +5,10 @@ import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, 
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-/* eslint-disable no-unused-vars */
-
-@ApiTags('Admin') // to attach a controller to a specific tag
-@Controller('admin') // marque la classe comme un contrôleur pour les routes qui commence avec map donc reponde au requete http faites vers l'url /map
+@ApiTags('Admin') 
+@Controller('admin')
 export class AdminController {
-    @Inject(AdminService) private readonly adminService: AdminService; // créé une instance de la classe avec un service de cours
+    @Inject(AdminService) private readonly adminService: AdminService; 
 
     @ApiOkResponse({
         description: 'Returns all maps',

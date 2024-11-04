@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapService } from '@app/services/map/map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { DetailedMap, Mode } from '@common/map.types';
 import { Types } from 'mongoose';
 import { MapControlBarComponent } from './map-control-bar.component';
 
@@ -13,7 +13,7 @@ describe('MapControlBarComponent', () => {
     let routerSpy: jasmine.SpyObj<Router>;
 
     const mapId = new Types.ObjectId().toString();
-    const mockMap: Map = {
+    const mockMap: DetailedMap = {
         _id: new Types.ObjectId(mapId),
         name: 'Test Map',
         description: 'This is a test map',
