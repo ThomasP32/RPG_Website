@@ -1,8 +1,8 @@
 <div class="game-map">
-    <div class="map-row" *ngFor="let row of Map; let rowIndex = index">
+    <div class="map-row" *ngFor="let row of Map; let rowIndex = index; trackBy: rowByIndex">
         <div
             class="map-cell"
-            *ngFor="let cell of row; let colIndex = index"
+            *ngFor="let cell of row; let colIndex = index; trackBy: cellByIndex"
             [class.highlight]="isMove(rowIndex, colIndex)"
             [class.preview-highlight]="isPreview(rowIndex, colIndex)"
             (mouseover)="onTileHover({ x: rowIndex, y: colIndex })"

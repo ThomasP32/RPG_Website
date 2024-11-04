@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Html2CanvasWrapperService } from './html2canvaswrapper.service';
+import { Html2CanvasWrapperService } from '@app/services/screenshot/html2canvaswrapper.service';
 
-// affiche l'erreur Unable to find element in cloned iframe thrown
 describe('Html2CanvasWrapperService', () => {
     let service: Html2CanvasWrapperService;
 

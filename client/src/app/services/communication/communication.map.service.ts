@@ -2,14 +2,15 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
-/* eslint-disable no-unused-vars */
+
 @Injectable({
     providedIn: 'root',
 })
 export class CommunicationMapService {
     private readonly baseUrl: string = environment.serverUrl;
-
-    constructor(private readonly http: HttpClient) {}
+    constructor(private readonly http: HttpClient) {
+        this.http = http;
+    }
 
     // fonction qui retourne un observable émettant soit la liste de jeux soit une erreur (emettre cest .next())
     basicGet<T>(url: string): Observable<T> {
@@ -44,8 +45,8 @@ export class CommunicationMapService {
             responseType: 'text',
         });
     }
-
-    private handleError<T>(request: string, result?: T): (error: Error) => Observable<T> {
+    private handleError<T>(request: string, result?: T): () => Observable<T> {
         return () => of(result as T);
     }
+    
 }
