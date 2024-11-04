@@ -11,6 +11,7 @@ export class JournalService {
     public journalEntries$ = this.journalEntriesSubject.asObservable();
 
     constructor(private socketService: SocketService) {
+        this.socketService = socketService;
         this.listenToJournalEvents();
     }
 
