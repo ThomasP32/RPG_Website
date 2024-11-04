@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Html2CanvasWrapperService } from './html2canvaswrapper.service';
+import { Html2CanvasWrapperService } from '@app/services/screenshot/html2canvaswrapper.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ScreenShotService {
-    /* eslint-disable-next-line no-unused-vars */
-    constructor(private html2CanvasWrapper: Html2CanvasWrapperService) {}
+
+    constructor(private html2CanvasWrapper: Html2CanvasWrapperService) {
+        this.html2CanvasWrapper = html2CanvasWrapper;
+    }
 
     async captureAndConvert(mapContainerId: string): Promise<string> {
         const element = document.getElementById(mapContainerId);

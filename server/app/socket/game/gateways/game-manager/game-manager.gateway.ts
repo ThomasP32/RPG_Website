@@ -77,7 +77,7 @@ export class GameManagerGateway implements OnGatewayInit {
     }
 
     @SubscribeMessage('isGameFinished')
-    isGameFinished(gameId: string): void {
+    isGameFinished(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
