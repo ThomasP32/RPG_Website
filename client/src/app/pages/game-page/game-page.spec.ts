@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { CountdownService } from '@app/services/countdown/countdown.service';
+import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
@@ -87,6 +87,7 @@ describe('GamePageComponent', () => {
 
         const gameSpy = jasmine.createSpyObj('GameService', ['game']);
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+        routerSpy.url = '/game-page';
         const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer']);
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
@@ -100,7 +101,7 @@ describe('GamePageComponent', () => {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,
                 playerWon$: playerWonSubject,
-                moves: new Map(),
+                moves: mockMoves,
             },
         );
 
@@ -307,7 +308,7 @@ describe('GamePageComponent', () => {
         expect(component.navigateToEndOfGame).not.toHaveBeenCalled();
     }));
 
-    it('should listen for start turn delay updates, update countdown, and handle delayFinished correctly', () => {
+    it('should listen for start turn delay updates, update countdown, and handle delayFinished correctly', fakeAsync(() => {
         spyOn(component, 'triggerPulse');
 
         const delaySubject = new Subject<number>();
@@ -316,6 +317,7 @@ describe('GamePageComponent', () => {
         component.listenForStartTurnDelay();
 
         delaySubject.next(3);
+        tick(3000);
         expect(component.startTurnCountdown).toBe(3);
         expect(component.triggerPulse).toHaveBeenCalled();
         expect(component.delayFinished).toBeFalse();
@@ -323,5 +325,5 @@ describe('GamePageComponent', () => {
         delaySubject.next(0);
         expect(component.startTurnCountdown).toBe(0);
         expect(component.delayFinished).toBeTrue();
-    });
+    }));
 });

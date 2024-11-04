@@ -1,84 +1,144 @@
-// import { Avatar, Bonus, Player } from '@common/game';
-// import { afterEach } from 'node:test';
-// import { CombatService } from './combat.service';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { CombatService } from '@app/services/combat/combat.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
+import { Mode } from '@common/map.types';
+import { Observable, of, Subject } from 'rxjs';
+import { GameService } from '../game/game.service';
+import { PlayerService } from '../player-service/player.service';
 
-// describe('CombatService', () => {
-//     let service: CombatService;
-//     let player1: Player;
-//     let player2: Player;
+describe('CombatService', () => {
+    let service: CombatService;
+    let socketServiceSpy: jasmine.SpyObj<SocketService>;
+    let playerServiceSpy: jasmine.SpyObj<PlayerService>;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
-//     beforeEach(() => {
-//         const mockMath = Object.create(global.Math);
-//         mockMath.random = () => 0.5;
-//         global.Math = mockMath;
-//         service = new CombatService();
-//         player1 = {
-//             socketId: 'player1-socket-id',
-//             name: 'Player 1',
-//             avatar: Avatar.Avatar1,
-//             isActive: true,
-//             specs: {
-//                 life: 100,
-//                 speed: 5,
-//                 attack: 8,
-//                 defense: 6,
-//                 attackBonus: { diceType: Bonus.D6, currentValue: 0 },
-//                 defenseBonus: { diceType: Bonus.D4, currentValue: 0 },
-//                 movePoints: 5,
-//                 actions: 2,
-//                 nVictories: 0,
-//                 nDefeats: 0,
-//                 nCombats: 0,
-//                 nEvasions: 0,
-//                 nLifeTaken: 0,
-//                 nLifeLost: 0,
-//             },
-//             inventory: [],
-//             position: { x: 0, y: 0 },
-//             turn: 0,
-//             visitedTiles: [],
-//         };
-//         player2 = {
-//             socketId: 'player2-socket-id',
-//             name: 'Player 2',
-//             avatar: Avatar.Avatar2,
-//             isActive: true,
-//             specs: {
-//                 life: 80,
-//                 speed: 6,
-//                 attack: 7,
-//                 defense: 7,
-//                 attackBonus: { diceType: Bonus.D4, currentValue: 0 },
-//                 defenseBonus: { diceType: Bonus.D6, currentValue: 0 },
-//                 movePoints: 4,
-//                 actions: 2,
-//                 nVictories: 0,
-//                 nDefeats: 0,
-//                 nCombats: 0,
-//                 nEvasions: 0,
-//                 nLifeTaken: 0,
-//                 nLifeLost: 0,
-//             },
-//             inventory: [],
-//             position: { x: 5, y: 5 },
-//             turn: 0,
-//             visitedTiles: [],
-//         };
-//     });
-//     afterEach(() => {
-//         global.Math = Object.getPrototypeOf(global.Math);
-//     });
+    let isCombatModalOpen = new Subject<boolean>();
+    let opponent = new Subject<Player>();
+    let combatRoomId = new Subject<string>();
 
-//     it('should roll dice and assign bonuses correctly', () => {
-//         service.rollDice(player1, player2);
-//         const expectedPlayer1AttackBonus = Math.floor(0.5 * player1.specs.attackBonus.diceType) + 1;
-//         const expectedPlayer1DefenseBonus = Math.floor(0.5 * player1.specs.defenseBonus.diceType) + 1;
-//         const expectedPlayer2AttackBonus = Math.floor(0.5 * player2.specs.attackBonus.diceType) + 1;
-//         const expectedPlayer2DefenseBonus = Math.floor(0.5 * player2.specs.defenseBonus.diceType) + 1;
+    const mockSpecs: Specs = {
+        life: 100,
+        speed: 10,
+        attack: 15,
+        defense: 10,
+        movePoints: 5,
+        attackBonus: Bonus.D4,
+        defenseBonus: Bonus.D6,
+        actions: 2,
+        nVictories: 0,
+        nDefeats: 0,
+        nCombats: 0,
+        nEvasions: 0,
+        nLifeTaken: 0,
+        nLifeLost: 0,
+    };
 
-//         expect(player1.specs.attackBonus.currentValue).toBe(expectedPlayer1AttackBonus);
-//         expect(player1.specs.defenseBonus.currentValue).toBe(expectedPlayer1DefenseBonus);
-//         expect(player2.specs.attackBonus.currentValue).toBe(expectedPlayer2AttackBonus);
-//         expect(player2.specs.defenseBonus.currentValue).toBe(expectedPlayer2DefenseBonus);
-//     });
-// });
+    const mockPlayer: Player = {
+        socketId: 'socket-1',
+        name: 'Test Player',
+        avatar: Avatar.Avatar1,
+        isActive: true,
+        position: { x: 0, y: 0 },
+        specs: mockSpecs,
+        inventory: [],
+        turn: 0,
+        visitedTiles: [],
+    };
+    const mockPlayer2: Player = {
+        socketId: 'socket-2',
+        name: 'Test Player2',
+        avatar: Avatar.Avatar1,
+        isActive: true,
+        position: { x: 0, y: 0 },
+        specs: mockSpecs,
+        inventory: [],
+        turn: 0,
+        visitedTiles: [],
+    };
+    const mockGame: Game = {
+        id: 'test-game-id',
+        hostSocketId: 'test-socket',
+        hasStarted: true,
+        currentTurn: 0,
+        mapSize: { x: 5, y: 5 },
+        tiles: [],
+        doorTiles: [],
+        startTiles: [],
+        items: [],
+        players: [mockPlayer, mockPlayer2],
+        mode: Mode.Classic,
+        nTurns: 0,
+        debug: false,
+        nDoorsManipulated: 0,
+        duration: 0,
+        isLocked: true,
+        name: 'game',
+        description: 'game description',
+        imagePreview: 'image-preview',
+    };
+
+    beforeEach(() => {
+        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayerAvatar', 'setPlayerName', 'setPlayer'], { player: mockPlayer });
+        socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['setGame']);
+        gameServiceSpy.setGame(mockGame);
+        console.log(gameServiceSpy.game);
+
+        isCombatModalOpen = new Subject<boolean>();
+        opponent = new Subject<Player>();
+        combatRoomId = new Subject<string>();
+
+        socketServiceSpy.listen.and.callFake(<T>(eventname: string): Observable<T> => {
+            switch (eventname) {
+                case 'isCombatModalOpen':
+                    return isCombatModalOpen.asObservable() as Observable<T>;
+                case 'opponent':
+                    return opponent.asObservable() as Observable<T>;
+                case 'combatRoomId':
+                    return combatRoomId.asObservable() as Observable<T>;
+                default:
+                    return of({}) as Observable<T>;
+            }
+        });
+        TestBed.configureTestingModule({
+            providers: [
+                { provide: SocketService, useValue: socketServiceSpy },
+                { provide: PlayerService, useValue: playerServiceSpy },
+                { provide: GameService, useValue: gameServiceSpy },
+            ],
+        });
+        service = TestBed.inject(CombatService);
+    });
+
+    it('should be created', () => {
+        expect(service).toBeTruthy();
+    });
+
+    it('should handle the "combatStarted" event', fakeAsync(() => {
+        const mockData = {
+            message: 'Combat initiated!',
+            combatRoomId: 'combat-room-123',
+            challenger: mockPlayer,
+            opponent: { ...mockPlayer, name: 'Opponent Player' },
+        };
+
+        socketServiceSpy.listen.and.returnValue(of(mockData));
+
+        service.combatListenerPage();
+
+        tick();
+
+        opponent.subscribe((opponent) => {
+            expect(opponent).toEqual(mockData.opponent);
+        });
+
+        combatRoomId.subscribe((roomId) => {
+            expect(roomId).toEqual(mockData.combatRoomId);
+        });
+
+        tick();
+
+        expect(socketServiceSpy.listen).toHaveBeenCalledWith('combatStarted');
+    }));
+});

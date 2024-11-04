@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { CountdownService } from './countdown.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { Subject } from 'rxjs';
 
 describe('CountdownService', () => {
@@ -17,10 +17,7 @@ describe('CountdownService', () => {
         socketServiceSpy.listen.withArgs('counterFinished').and.returnValue(counterFinishedSubject.asObservable());
 
         TestBed.configureTestingModule({
-            providers: [
-                CountdownService,
-                { provide: SocketService, useValue: socketServiceSpy }
-            ],
+            providers: [CountdownService, { provide: SocketService, useValue: socketServiceSpy }],
         });
         service = TestBed.inject(CountdownService);
     });
@@ -31,7 +28,7 @@ describe('CountdownService', () => {
 
     it('should update countdown when "secondPassed" event is emitted', () => {
         let countdownValue: number | undefined;
-        service.countdown$.subscribe(value => countdownValue = value);
+        service.countdown$.subscribe((value) => (countdownValue = value));
 
         secondPassedSubject.next(15);
         expect(countdownValue).toBe(15);
@@ -42,7 +39,7 @@ describe('CountdownService', () => {
 
     it('should set countdown to 0 when "counterFinished" event is emitted', () => {
         let countdownValue: number | undefined;
-        service.countdown$.subscribe(value => countdownValue = value);
+        service.countdown$.subscribe((value) => (countdownValue = value));
 
         counterFinishedSubject.next();
         expect(countdownValue).toBe(0);

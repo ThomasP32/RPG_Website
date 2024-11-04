@@ -66,7 +66,7 @@ export class CombatGateway {
         this.server.to(data.combatRoomId).emit('evasionSuccess', {
             success: evasionSuccess,
             waitingPlayer: data.waitingPlayer,
-            message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : 'Évasion échouée',
+            message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : `Évasion échouée de ${data.player.name}`,
         });
     }
     @SubscribeMessage('combatFinishedEvasion')
@@ -106,10 +106,6 @@ export class CombatGateway {
             defenseDice: defenseDice,
         });
     }
-    // @SubscribeMessage('updatePlayersAfterCombat')
-    // async updatePlayersAfterCombat(client: Socket, data: { gameId: string; player1: Player; player2: Player }): Promise<void> {
-    //     this.server.to(data.gameId).emit('updatedPlayersAfterCombat', { player1: data.player1, player2: data.player2 });
-    // }
 
     private async cleanupCombatRoom(combatRoomId: string): Promise<void> {
         try {
