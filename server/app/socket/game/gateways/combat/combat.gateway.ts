@@ -58,6 +58,7 @@ export class CombatGateway implements OnGatewayInit {
     }
 
     attackOnTimeOut(gameId: string) {
+        console.log('Attaque automatique commencée');
         const combat = this.serverCombatService.getCombatByGameId(gameId);
         if (combat.currentTurnSocketId === combat.challenger.socketId) {
             const rollResult = this.serverCombatService.rollDice(combat.challenger, combat.opponent);
@@ -136,23 +137,39 @@ export class CombatGateway implements OnGatewayInit {
         }
         if (combat.challenger.specs.life !== 0 && combat.opponent.specs.life !== 0) this.prepareNextTurn(gameId);
     }
-    //TODO
+    //TODO: A TESTER
     @SubscribeMessage('attack')
     attack(
         client: Socket,
         data: { gameId: string; attackPlayer: Player; defendPlayer: Player; combatRoomId: string; attackDice: number; defenseDice: number },
     ): void {
-        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.attackDice, data.defenseDice)) {
-            data.defendPlayer.specs.life--;
-            this.server
-                .to(data.combatRoomId)
-                .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
-        } else {
-            this.server
-                .to(data.combatRoomId)
-                .emit('attackFailure', { playerAttacked: data.defendPlayer, message: `Attaque échouée de ${data.attackPlayer.name}` });
+        console.log('Attaque de manuelle de :', data.attackPlayer.name);
+        const combat = this.serverCombatService.getCombatByGameId(data.gameId);
+        let success = this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.attackDice, data.defenseDice);
+        if (combat.challenger.socketId === data.attackPlayer.socketId) {
+            if (success) {
+                combat.opponent.specs.life--;
+                this.server
+                    .to(data.combatRoomId)
+                    .emit('attackSuccess', { playerAttacked: combat.opponent, message: `Attaque réussie de ${combat.challenger.name}` });
+            } else {
+                this.server
+                    .to(data.combatRoomId)
+                    .emit('attackFailure', { playerAttacked: combat.opponent, message: `Attaque échouée de ${combat.challenger.name}` });
+            }
+        } else if (combat.opponent.socketId === data.attackPlayer.socketId) {
+            if (success) {
+                combat.challenger.specs.life--;
+                this.server
+                    .to(data.combatRoomId)
+                    .emit('attackSuccess', { playerAttacked: combat.challenger, message: `Attaque réussie de ${combat.opponent.name}` });
+            } else {
+                this.server
+                    .to(data.combatRoomId)
+                    .emit('attackFailure', { playerAttacked: combat.challenger, message: `Attaque échouée de ${combat.opponent.name}` });
+            }
         }
-        if (data.attackPlayer.specs.life !== 0 && data.defendPlayer.specs.life !== 0) this.prepareNextTurn(data.gameId);
+        if (combat.challenger.specs.life !== 0 && combat.opponent.specs.life !== 0) this.prepareNextTurn(data.gameId);
     }
 
     prepareNextTurn(gameId: string) {
@@ -184,46 +201,40 @@ export class CombatGateway implements OnGatewayInit {
 
     //TODO
     @SubscribeMessage('startEvasion')
-    startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): void {
-        data.player.specs.nEvasions++;
+    async startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): Promise<void> {
+        const combat = this.serverCombatService.getCombatByGameId(data.gameId);
+        if (combat.challenger.socketId === data.player.socketId) {
+            if (data.player.specs.nEvasions === 0) return;
+            else {
+                combat.challenger.specs.nEvasions--;
+            }
+        } else {
+            if (data.player.specs.nEvasions === 0) return;
+            else {
+                combat.opponent.specs.nEvasions--;
+            }
+        }
         const evasionSuccess = Math.random() < 0.4;
         this.server.to(data.combatRoomId).emit('evasionSuccess', {
             success: evasionSuccess,
             waitingPlayer: data.waitingPlayer,
             message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : `Évasion échouée de ${data.player.name}`,
         });
-        if (!evasionSuccess) {
+        if (evasionSuccess) {
+            this.serverCombatService.setPlayerLife(combat.challenger, combat.opponent);
+            combat.challenger.specs.nCombats++;
+            combat.opponent.specs.nCombats++;
+            this.server.to(data.gameId).emit('combatFinishedByEvasion', {
+                player1: combat.challenger,
+                player2: combat.opponent,
+                message: "Évasion d'un joueur, combat terminé",
+            });
+            this.gameCountdownService.resumeCountdown(data.gameId);
+            await this.cleanupCombatRoom(data.combatRoomId);
+        } else {
             this.prepareNextTurn(data.gameId);
         }
     }
-    //TODO: Maybe delete
-    @SubscribeMessage('combatFinishedEvasion')
-    async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
-        this.server
-            .to(data.gameId)
-            .emit('combatFinishedByEvasion', { player1: data.player1, player2: data.Player2, message: "Évasion d'un joueur, combat terminé" });
-        this.gameCountdownService.resumeCountdown(data.gameId);
-        await this.cleanupCombatRoom(data.combatRoomId);
-    }
-
-    // @SubscribeMessage('combatFinishedNormal')
-    // async combatFinishedNormally(
-    //     client: Socket,
-    //     data: { gameId: string; combatWinner: Player; combatLooser: Player; combatRoomId: string },
-    // ): Promise<void> {
-    //     this.server.to(data.gameId).emit('combatFinishedNormally', {
-    //         message: `Combat terminé, le gagnant est ${data.combatWinner.name}`,
-    //         combatWinner: data.combatWinner,
-    //         combatLooser: data.combatLooser,
-    //     });
-    //     this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat` });
-    //     if (data.combatWinner === this.serverCombatService.getCombatByGameId(data.gameId).challenger) {
-    //         this.gameCountdownService.resumeCountdown(data.gameId);
-    //     } else {
-    //         this.gameCountdownService.emit('timeout', data.gameId);
-    //     }
-    //     await this.cleanupCombatRoom(data.combatRoomId);
-    // }
 
     @SubscribeMessage('rollDice')
     rollDice(client: Socket, data: { combatRoomId: string; player: Player; opponent: Player }): void {
@@ -250,3 +261,32 @@ export class CombatGateway implements OnGatewayInit {
         }
     }
 }
+
+//TODO: Maybe delete
+// @SubscribeMessage('combatFinishedEvasion')
+// async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
+//     this.server
+//         .to(data.gameId)
+//         .emit('combatFinishedByEvasion', { player1: data.player1, player2: data.Player2, message: "Évasion d'un joueur, combat terminé" });
+//     this.gameCountdownService.resumeCountdown(data.gameId);
+//     await this.cleanupCombatRoom(data.combatRoomId);
+// }
+
+// @SubscribeMessage('combatFinishedNormal')
+// async combatFinishedNormally(
+//     client: Socket,
+//     data: { gameId: string; combatWinner: Player; combatLooser: Player; combatRoomId: string },
+// ): Promise<void> {
+//     this.server.to(data.gameId).emit('combatFinishedNormally', {
+//         message: `Combat terminé, le gagnant est ${data.combatWinner.name}`,
+//         combatWinner: data.combatWinner,
+//         combatLooser: data.combatLooser,
+//     });
+//     this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat` });
+//     if (data.combatWinner === this.serverCombatService.getCombatByGameId(data.gameId).challenger) {
+//         this.gameCountdownService.resumeCountdown(data.gameId);
+//     } else {
+//         this.gameCountdownService.emit('timeout', data.gameId);
+//     }
+//     await this.cleanupCombatRoom(data.combatRoomId);
+// }
