@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { DetailedMap, Mode } from '@common/map.types';
 import { of, throwError } from 'rxjs';
 import { AdminPageComponent } from './admin-page.component';
 
@@ -15,7 +15,7 @@ describe('AdminPageComponent', () => {
     let communicationMapService: jasmine.SpyObj<CommunicationMapService>;
     let router: Router;
 
-    const mockMaps: Map[] = [
+    const mockMaps: DetailedMap[] = [
         {
             _id: '1',
             isVisible: true,
