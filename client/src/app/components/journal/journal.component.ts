@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JournalService } from '@app/services/journal/journal.service';
 import { Player } from '@common/game';
@@ -13,14 +13,16 @@ import { Subscription } from 'rxjs';
     templateUrl: './journal.component.html',
     styleUrl: './journal.component.scss',
 })
-export class JournalComponent implements OnInit {
+export class JournalComponent implements OnInit, OnDestroy {
     @Input() player: Player;
     journalEntries: JournalEntry[] = [];
     filteredJournalEntries: JournalEntry[] = [];
-    private subscription: Subscription;
+    subscription: Subscription;
     filter: 'all' | 'involved-only' = 'all';
 
-    constructor(public journalService: JournalService) {}
+    constructor(public journalService: JournalService) {
+        this.journalService = journalService;
+    }
 
     ngOnInit(): void {
         this.subscription = this.journalService.journalEntries$.subscribe((entries) => {
