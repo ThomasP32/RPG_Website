@@ -5,4 +5,6 @@ export interface Combat {
     challenger: Player;
     opponent: Player;
     currentTurnSocketId: string;
+    challengerLife: number;
+    opponentLife: number;
 }

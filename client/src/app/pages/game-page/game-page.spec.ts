@@ -19,7 +19,9 @@ const mockPlayer: Player = {
     avatar: Avatar.Avatar1,
     isActive: true,
     position: { x: 0, y: 0 },
+    initialPosition:  { x: 0, y: 0 },
     specs: {
+        evasions: 2,
         life: 100,
         speed: 10,
         attack: 10,

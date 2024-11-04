@@ -27,6 +27,7 @@ export class PlayerService {
             attackBonus: this.player.specs.attackBonus,
             defenseBonus: this.player.specs.defenseBonus,
             movePoints: this.player.specs.speed,
+            evasions: 2,
             actions: 0,
             nVictories: 0,
             nDefeats: 0,
@@ -43,6 +44,7 @@ export class PlayerService {
             specs: playerSpecs,
             inventory: [],
             position: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
         };
@@ -89,6 +91,7 @@ export class PlayerService {
             defense: defaultDefense,
             attackBonus: Bonus.D6,
             defenseBonus: Bonus.D4,
+            evasions: 2,
             movePoints: 0,
             actions: 0,
             nVictories: 0,
@@ -106,6 +109,7 @@ export class PlayerService {
             specs: playerSpecs,
             inventory: [],
             position: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
         };

@@ -48,6 +48,7 @@ describe('CombatGateway', () => {
                     attackBonus: 6,
                     defenseBonus: 4,
                     movePoints: 5,
+                    evasions: 2, 
                     actions: 2,
                     nVictories: 0,
                     nDefeats: 0,
@@ -58,6 +59,7 @@ describe('CombatGateway', () => {
                 },
                 inventory: [],
                 position: { x: 0, y: 0 },
+                initialPosition: { x: 0, y: 0 },
                 turn: 1,
                 visitedTiles: [],
             };
@@ -75,6 +77,7 @@ describe('CombatGateway', () => {
                     attackBonus: 6,
                     defenseBonus: 4,
                     movePoints: 5,
+                    evasions: 2, 
                     actions: 2,
                     nVictories: 0,
                     nDefeats: 0,
@@ -85,6 +88,7 @@ describe('CombatGateway', () => {
                 },
                 inventory: [],
                 position: { x: 1, y: 1 },
+                initialPosition: { x: 1, y: 1 },
                 turn: 1,
                 visitedTiles: [],
             };

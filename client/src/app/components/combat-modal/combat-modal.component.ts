@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
 import { GameService } from '@app/services/game/game.service';
@@ -39,13 +39,13 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
-    @Inject(GameService) private gameService: GameService;
-
     constructor(
         private socketService: SocketService,
         private combatCountDownService: CombatCountdownService,
+        private gameService: GameService
     ) {
         this.socketService = socketService;
+        this.gameService = gameService;
         this.combatCountDownService = combatCountDownService;
     }
 
@@ -177,14 +177,13 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     }
 
     evade() {
-        // if (this.isCombatPlayerTurn() && this.player.specs.nEvasions > 0) {
+        console.log('tu tentes de tevader');
         this.socketService.sendMessage('startEvasion', {
             player: this.player,
             waitingPlayer: this.opponent,
             gameId: this.gameService.game.id,
             combatRoomId: this.combatRoomId,
         });
-        // }
     }
     get turnMessage(): string {
         if (this.isYourTurn) {
