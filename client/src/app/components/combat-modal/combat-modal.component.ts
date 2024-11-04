@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
@@ -38,10 +38,9 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
-    constructor(
-        private socketService: SocketService,
-        private gameService: GameService,
-    ) {
+    @Inject(GameService) private gameService: GameService;
+
+    constructor(private socketService: SocketService) {
         this.socketService = socketService;
     }
 

@@ -50,7 +50,11 @@ export class CombatService {
         private socketService: SocketService,
         private gameService: GameService,
         private playerService: PlayerService,
-    ) {}
+    ) {
+        this.socketService = socketService;
+        this.gameService = gameService;
+        this.playerService = playerService;
+    }
 
     combatListenerPage() {
         this.socketSubscription.add(
