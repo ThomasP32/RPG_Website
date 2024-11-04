@@ -17,11 +17,12 @@ import { TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
+import { CombatModalComponent } from '../../components/combat-modal/combat-modal.component';
 
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent, CombatModalComponent],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
