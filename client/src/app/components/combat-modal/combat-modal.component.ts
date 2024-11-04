@@ -126,14 +126,11 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.socketService.listen<{ playerAttacked: Player; message: string }>('attackSuccess').subscribe((data) => {
                 if (data.playerAttacked.socketId === this.opponent.socketId) this.opponent.specs.life -= 1;
                 else if (data.playerAttacked.socketId === this.player.socketId) this.player.specs.life -= 1;
-                if (this.player.specs.life === 0 || this.opponent.specs.life === 0) {
-                    this.combatFinishedNormal();
-                }
                 this.combatMessage = data.message;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackFailure').subscribe((data) => {
+            this.socketService.listen<{ message: string }>('attackFailure').subscribe((data) => {
                 this.combatMessage = data.message;
             }),
         );
@@ -142,6 +139,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 this.opponent = player;
             }),
         );
+        //TODO: a revoir pense pas cest accurate
         this.socketSubscription.add(
             this.socketService.listen('yourTurnCombat').subscribe(() => {
                 this.isYourTurn = true;
@@ -194,25 +192,20 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             });
         }
     }
-    combatWinStatsUpdate(winner: Player, loser: Player) {
-        winner.specs.nVictories += 1;
-        winner.specs.nCombats += 1;
-        loser.specs.nDefeats += 1;
-        loser.specs.nCombats += 1;
-    }
-    combatFinishedNormal() {
-        if (this.player.specs.life === 0) {
-            this.combatWinStatsUpdate(this.opponent, this.player);
-            this.updatePlayerStats();
-            this.socketService.sendMessage('combatFinishedNormal', {
-                gameId: this.gameService.game.id,
-                combatWinner: this.opponent,
-                combatLooser: this.player,
-                combatRoomId: this.combatRoomId,
-            });
-            this.closeCombatModal();
-        }
-    }
+
+    // combatFinishedNormal() {
+    //     if (this.player.specs.life === 0) {
+    //         this.combatWinStatsUpdate(this.opponent, this.player);
+    //         this.updatePlayerStats();
+    //         this.socketService.sendMessage('combatFinishedNormal', {
+    //             gameId: this.gameService.game.id,
+    //             combatWinner: this.opponent,
+    //             combatLooser: this.player,
+    //             combatRoomId: this.combatRoomId,
+    //         });
+    //         this.closeCombatModal();
+    //     }
+    // }
 
     combatFinishedByEvasion() {
         this.socketService.sendMessage('combatFinishedEvasion', {

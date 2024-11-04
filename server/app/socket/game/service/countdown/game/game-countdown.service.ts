@@ -91,4 +91,12 @@ export class GameCountdownService extends EventEmitter {
             countdown.timerSubscription = undefined;
         }
     }
+
+    deleteCountdown(id: string): void {
+        const countdown = this.countdowns.get(id);
+        if (countdown) {
+            this.resetTimerSubscription(id);
+            this.countdowns.delete(id);
+        }
+    }
 }

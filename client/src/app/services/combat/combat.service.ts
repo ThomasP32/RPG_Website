@@ -71,7 +71,7 @@ export class CombatService {
                     this.isCombatModalOpen.next(true);
                 }),
         );
-
+        //TODO
         this.socketSubscription.add(
             this.socketService.listen<{ player1: Player; player2: Player; message: string }>('combatFinishedByEvasion').subscribe((data) => {
                 console.log(data.message);
