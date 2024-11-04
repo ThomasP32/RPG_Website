@@ -35,8 +35,6 @@ export class GameTurnService {
         private playerService: PlayerService,
         private socketService: SocketService,
     ) {
-        this.listenForTurn();
-        this.listenForPossibleCombats();
         this.gameService = gameService;
         this.playerService = playerService;
         this.socketService = socketService;
@@ -57,7 +55,6 @@ export class GameTurnService {
 
     resumeTurn(): void {
         if (this.playerTurn.getValue() === this.player.name) {
-            this.getMoves();
             if (!this.alreadyFought) {
                 this.getCombats();
             }
@@ -101,10 +98,8 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen('startTurn').subscribe(() => {
                 if (this.playerTurn.getValue() === this.player.name) {
-                    this.getMoves();
-                    if (!this.alreadyFought) {
-                        this.getCombats();
-                    }
+                    // this.getMoves();
+                    this.getCombats();
                 }
             }),
         );
@@ -174,6 +169,7 @@ export class GameTurnService {
                     this.noCombats = false;
                 }
                 this.possibleOpponents.next(possibleOpponents);
+                this.getMoves()
             }),
         );
     }

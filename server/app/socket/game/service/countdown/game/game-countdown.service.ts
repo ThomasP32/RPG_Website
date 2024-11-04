@@ -30,8 +30,6 @@ export class GameCountdownService extends EventEmitter {
             this.resetTimerSubscription(id);
             countdown.remaining = countdown.duration;
 
-            countdown.remaining = countdown.duration;
-
             let delay = 3;
 
             countdown.timerSubscription = interval(1000).subscribe(() => {
@@ -49,7 +47,6 @@ export class GameCountdownService extends EventEmitter {
                         countdown.remaining--;
                     } else {
                         this.emit('timeout', id);
-                        this.resetCountdown(id);
                     }
                 }
             });
@@ -64,7 +61,6 @@ export class GameCountdownService extends EventEmitter {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
                 this.emit('timeout', id);
-                this.resetCountdown(id);
             } else {
                 this.server.to(id).emit('secondPassed', value);
             }

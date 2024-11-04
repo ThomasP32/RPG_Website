@@ -91,8 +91,9 @@
     <div class="right-panel">
         <div class="player-list">Liste des joueurs</div>
 
+        <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
+
         <div class="action-buttons">
-            <button (click)="startCombat()">Start combat</button>
             <button (click)="endTurn()">Fin du tour</button>
             <button>Exécuter une action</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>

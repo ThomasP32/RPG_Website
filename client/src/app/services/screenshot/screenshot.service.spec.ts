@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ScreenShotService } from './screenshot.service';
-import { Html2CanvasWrapperService } from './html2canvaswrapper.service';
-import { CanvasTestHelper } from '@app/classes/canvas-test-helper';
+import { Html2CanvasWrapperService } from '@app/services/screenshot/html2canvaswrapper.service';
+import { CanvasTestHelper } from '@app/services/screenshot/classes/canvas-test-helper';
 
 describe('ScreenShotService', () => {
     let service: ScreenShotService;
