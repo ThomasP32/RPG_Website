@@ -27,7 +27,7 @@ export class CombatGateway implements OnGatewayInit {
     afterInit() {
         this.combatCountdownService.setServer(this.server);
         this.combatCountdownService.on('timeout', (gameId: string) => {
-            this.attackOnTimeout(gameId);
+            this.attackOnTimeOut(gameId);
         });
     }
 
@@ -57,18 +57,48 @@ export class CombatGateway implements OnGatewayInit {
     }
 
     attackOnTimeOut(gameId: string) {
-        const combat = this.serverCombatService.getCombatByGameId(gameId)
-        if(combat.currentTurnSocketId === combat.challenger) {
-            //this.rollDice();
-            this.serverCombatService.isAttackSuccess(combat.challenger, combat.opponent, )
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        if (combat.currentTurnSocketId === combat.challenger.socketId) {
+            const rollResult = this.serverCombatService.rollDice(combat.challenger, combat.opponent);
+            this.server.to(combat.id).emit('diceRolled', {
+                playerDiceAttack: rollResult.attackingPlayerAttackDice,
+                playerDiceDefense: rollResult.attackingPlayerDefenseDice,
+                opponentDiceAttack: rollResult.opponentAttackDice,
+                opponentDiceDefense: rollResult.opponentDefenseDice,
+                attackDice: rollResult.attackDice,
+                defenseDice: rollResult.defenseDice,
+            });
+            if (this.serverCombatService.isAttackSuccess(combat.challenger, combat.opponent, rollResult.attackDice, rollResult.defenseDice)) {
+                this.server
+                    .to(combat.id)
+                    .emit('attackSuccess', { playerAttacked: combat.opponent, message: `Attaque réussie de ${combat.opponent.name}` });
+            }
+        } else {
+            const rollResult = this.serverCombatService.rollDice(combat.opponent, combat.challenger);
+            this.server.to(combat.id).emit('diceRolled', {
+                playerDiceAttack: rollResult.attackingPlayerAttackDice,
+                playerDiceDefense: rollResult.attackingPlayerDefenseDice,
+                opponentDiceAttack: rollResult.opponentAttackDice,
+                opponentDiceDefense: rollResult.opponentDefenseDice,
+                attackDice: rollResult.attackDice,
+                defenseDice: rollResult.defenseDice,
+            });
+            if (this.serverCombatService.isAttackSuccess(combat.opponent, combat.challenger, rollResult.attackDice, rollResult.defenseDice)) {
+                this.server
+                    .to(combat.id)
+                    .emit('attackFailure', { playerAttacked: combat.challenger, message: `Attaque échouée de ${combat.challenger.name}` });
+            }
         }
-
+        this.prepareNextTurn(gameId);
     }
 
     prepareNextTurn(gameId: string) {
-        this.combatCountdownService.resetTimerSubscription(gameId);
-        this.startCombatTurns(gameId);
-        console.log('On prepare le prochain tour de combat');
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        if (combat) {
+            this.combatCountdownService.resetTimerSubscription(gameId);
+            this.startCombatTurns(gameId);
+            console.log('On prepare le prochain tour de combat');
+        }
     }
 
     startCombatTurns(gameId: string): void {
@@ -76,14 +106,17 @@ export class CombatGateway implements OnGatewayInit {
         let currentPlayerTurn: Player;
         if (combat.challenger.socketId === combat.currentTurnSocketId) {
             currentPlayerTurn = combat.challenger;
-            this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
+            combat.currentTurnSocketId = combat.opponent.socketId;
+            this.server.to(currentPlayerTurn.socketId).emit('yourTurnCombat');
             this.server.to(combat.opponent.socketId).emit('playerTurnCombat');
         } else {
             currentPlayerTurn = combat.opponent;
-            this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
+            combat.currentTurnSocketId = combat.challenger.socketId;
+            this.server.to(currentPlayerTurn.socketId).emit('yourTurnCombat');
             this.server.to(combat.challenger.socketId).emit('playerTurnCombat');
         }
-        this.combatCountdownService.startTurnCounter(gameId, currentPlayerTurn.specs.nEvasions !== 0 ? true : false);
+        console.log('Tour de :', currentPlayerTurn.name);
+        this.combatCountdownService.startTurnCounter(gameId, currentPlayerTurn.specs.nEvasions === 0 ? false : true);
     }
 
     @SubscribeMessage('attack')
@@ -147,19 +180,14 @@ export class CombatGateway implements OnGatewayInit {
 
     @SubscribeMessage('rollDice')
     rollDice(client: Socket, data: { combatRoomId: string; player: Player; opponent: Player }): void {
-        const attackingPlayerAttackDice = Math.floor(Math.random() * data.player.specs.attackBonus) + 1;
-        const attackingPlayerDefenseDice = Math.floor(Math.random() * data.player.specs.defenseBonus) + 1;
-        const opponentAttackDice = Math.floor(Math.random() * data.opponent.specs.attackBonus) + 1;
-        const opponentDefenseDice = Math.floor(Math.random() * data.opponent.specs.defenseBonus) + 1;
-        const attackDice = data.player.specs.attack + attackingPlayerAttackDice;
-        const defenseDice = data.opponent.specs.defense + opponentDefenseDice;
+        const rollResult = this.serverCombatService.rollDice(data.player, data.opponent);
         this.server.to(data.combatRoomId).emit('diceRolled', {
-            playerDiceAttack: attackingPlayerAttackDice,
-            playerDiceDefense: attackingPlayerDefenseDice,
-            opponentDiceAttack: opponentAttackDice,
-            opponentDiceDefense: opponentDefenseDice,
-            attackDice: attackDice,
-            defenseDice: defenseDice,
+            playerDiceAttack: rollResult.attackingPlayerAttackDice,
+            playerDiceDefense: rollResult.attackingPlayerDefenseDice,
+            opponentDiceAttack: rollResult.opponentAttackDice,
+            opponentDiceDefense: rollResult.opponentDefenseDice,
+            attackDice: rollResult.attackDice,
+            defenseDice: rollResult.defenseDice,
         });
     }
 

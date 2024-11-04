@@ -27,7 +27,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     @Input() gameId: string;
 
-    currentTurnPlayerId: string;
+    isYourTurn: boolean;
 
     @Input() player: Player;
     @Input() opponent: Player;
@@ -83,12 +83,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     configureCombatSocketFeatures(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ currentPlayerTurn: string }>('updateTurn').subscribe((data) => {
-                this.currentTurnPlayerId = data.currentPlayerTurn;
-                console.log('Current turn player:', this.currentTurnPlayerId);
-            }),
-        );
-        this.socketSubscription.add(
             this.socketService.listen<{ success: boolean; waitingPlayer: Player; message: string }>('evasionSuccess').subscribe((data) => {
                 if (data.success) {
                     this.combatMessage = data.message;
@@ -97,8 +91,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                     if (data.waitingPlayer.socketId === this.opponent.socketId) this.player.specs.nEvasions -= 1;
                     else if (data.waitingPlayer.socketId === this.player.socketId) this.opponent.specs.nEvasions -= 1;
                     this.combatMessage = data.message;
-                    this.currentTurnPlayerId = data.waitingPlayer.socketId;
-                    console.log('change of turn', this.currentTurnPlayerId);
                 }
             }),
         );
@@ -137,15 +129,11 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 if (this.player.specs.life === 0 || this.opponent.specs.life === 0) {
                     this.combatFinishedNormal();
                 }
-                this.currentTurnPlayerId = data.playerAttacked.socketId;
-                console.log('Attack success, change of turn', this.currentTurnPlayerId);
                 this.combatMessage = data.message;
             }),
         );
         this.socketSubscription.add(
             this.socketService.listen<{ playerAttacked: Player; message: string }>('attackFailure').subscribe((data) => {
-                this.currentTurnPlayerId = data.playerAttacked.socketId;
-                console.log('Attack failure, change of turn', this.currentTurnPlayerId);
                 this.combatMessage = data.message;
             }),
         );
@@ -154,10 +142,20 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 this.opponent = player;
             }),
         );
+        this.socketSubscription.add(
+            this.socketService.listen('yourTurnCombat').subscribe(() => {
+                this.isYourTurn = true;
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen('playerTurnCombat').subscribe(() => {
+                this.isYourTurn = false;
+            }),
+        );
     }
 
     isCombatPlayerTurn(): boolean {
-        return this.currentTurnPlayerId === this.player.socketId;
+        return this.isYourTurn;
     }
 
     getDiceRolls(player: Player, opponent: Player) {
@@ -184,21 +182,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 }
             }, 100);
         }
-        // } else {
-        //     this.getDiceRolls(this.opponent, this.player);
-        //     const interval = setInterval(() => {
-        //         if (this.diceRollReceived) {
-        //             clearInterval(interval);
-        //             this.socketService.sendMessage('attack', {
-        //                 attackPlayer: this.opponent,
-        //                 defendPlayer: this.player,
-        //                 combatRoomId: this.combatRoomId,
-        //                 attackDice: this.opponentDiceAttack,
-        //                 defenseDice: this.playerDiceDefense,
-        //             });
-        //         }
-        //     }, 100);
-        // }
     }
 
     evade() {
@@ -209,14 +192,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 gameId: this.gameService.game.id,
                 combatRoomId: this.combatRoomId,
             });
-            // } else if (!this.isCombatPlayerTurn() && this.opponent.specs.nEvasions > 0) {
-            //     this.opponent.specs.nEvasions -= 1;
-            //     this.socketService.sendMessage('startEvasion', {
-            //         player: this.opponent,
-            //         waitingPlayer: this.player,
-            //         gameId: this.gameId,
-            //         combatRoomId: this.combatRoomId,
-            //     });
         }
     }
     combatWinStatsUpdate(winner: Player, loser: Player) {
@@ -236,16 +211,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 combatRoomId: this.combatRoomId,
             });
             this.closeCombatModal();
-            // } else if (this.opponent.specs.life === 0) {
-            //     this.combatWinStatsUpdate(this.player, this.opponent);
-            //     this.updatePlayerStats();
-            //     this.closeCombatModal();
-            //     this.socketService.sendMessage('combatFinishedNormal', {
-            //         gameId: this.gameId,
-            //         combatWinner: this.player,
-            //         combatLooser: this.opponent,
-            //         combatRoomId: this.combatRoomId,
-            //     });
         }
     }
 
@@ -262,20 +227,17 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     closeCombatModal() {
         this.combatRoomId = '';
-        this.currentTurnPlayerId = '';
     }
     get turnMessage(): string {
-        if (this.currentTurnPlayerId === this.player.socketId) {
+        if (this.isYourTurn) {
             return `${this.player.name} joue présentement.`;
-        } else if (this.currentTurnPlayerId === this.opponent.socketId) {
-            return `${this.opponent.name} joue présentement.`;
         } else {
-            return '';
+            return `${this.opponent.name} joue présentement.`;
         }
     }
 
     getActionsButtonsOnTurn(): void {
-        if (this.currentTurnPlayerId === this.player.socketId) this.actionButtonsOn = true;
+        if (this.isYourTurn) this.actionButtonsOn = true;
         else this.actionButtonsOn = false;
     }
 }
