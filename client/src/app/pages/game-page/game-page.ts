@@ -67,20 +67,22 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.gameTurnService.listenForTurn();
-        this.gameTurnService.listenForPlayerMove();
-        this.gameTurnService.listenMoves();
-        this.gameTurnService.listenForPossibleCombats();
-        this.listenForPossibleOpponents();
-        this.listenForStartTurnDelay();
-        this.listenForFalling();
-        this.listenForCountDown();
-        this.listenPlayersLeft();
-        this.listenForCurrentPlayerUpdates();
-        this.activePlayers = this.gameService.game.players;
-        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        if (this.playerService.player.socketId === this.game.hostSocketId) {
-            this.socketService.sendMessage('startGame', this.gameService.game.id);
+        if (this.player && this.game) {
+            this.gameTurnService.listenForTurn();
+            this.gameTurnService.listenForPlayerMove();
+            this.gameTurnService.listenMoves();
+            this.gameTurnService.listenForPossibleCombats();
+            this.listenForPossibleOpponents();
+            this.listenForStartTurnDelay();
+            this.listenForFalling();
+            this.listenForCountDown();
+            this.listenPlayersLeft();
+            this.listenForCurrentPlayerUpdates();
+            this.activePlayers = this.gameService.game.players;
+            this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+            if (this.playerService.player.socketId === this.game.hostSocketId) {
+                this.socketService.sendMessage('startGame', this.gameService.game.id);
+            }
         }
     }
 
