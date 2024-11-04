@@ -45,6 +45,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     playerName: string;
     isStartable: boolean = false;
     isGameLocked: boolean = false;
+    counterInitialized: boolean = false;
+    gameInitialized: boolean = false;
     hover: boolean = false;
     activePlayers: Player[] = [];
     showExitModal: boolean = false;
@@ -137,6 +139,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
                 this.gameService.setGame(data.game);
+                this.gameInitialized = true;
                 this.navigateToGamePage();
             }),
         );

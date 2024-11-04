@@ -1,9 +1,9 @@
-import { ItemCategory, Item as ItemType, DBMap as MapType, Mode } from '@common/map.types';
+import { Coordinate, coordinateSchema, StartTile, startTileSchema } from '@app/http/model/schemas/map/coordinate.schema';
+import { DoorTile, doorTileSchema, Tile, tileSchema } from '@app/http/model/schemas/map/tiles.schema';
+import { ItemCategory, Item as ItemType, DetailedMap, Mode } from '@common/map.types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, Types } from 'mongoose';
-import { Coordinate, coordinateSchema, StartTile, startTileSchema } from '@app/http/model/schemas/map/coordinate.schema';
-import { DoorTile, doorTileSchema, Tile, tileSchema } from '@app/http/model/schemas/map/tiles.schema';
 
 export type MapDocument = Map & Document;
 
@@ -21,7 +21,7 @@ class Item implements ItemType {
 export const itemTileSchema = SchemaFactory.createForClass(Item);
 
 @Schema({ timestamps: { createdAt: false, updatedAt: 'lastModified' } })
-export class Map implements MapType {
+export class Map implements DetailedMap {
     @ApiProperty()
     @Prop({ type: String, required: true })
     name: string;
