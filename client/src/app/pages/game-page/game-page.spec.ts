@@ -8,7 +8,7 @@ import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
-import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
+import { Avatar, Bonus, Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
@@ -138,21 +138,6 @@ describe('GamePageComponent', () => {
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
 
-        component.activePlayers = [];
-        component.possibleOpponents = [];
-        component.currentPlayerTurn = '';
-        component.startTurnCountdown = 0;
-        component.isYourTurn = false;
-        component.delayFinished = false;
-        component.isPulsing = false;
-        component.countdown = 0;
-        component.playerPreview = '';
-        component.showExitModal = false;
-        component.showKickedModal = false;
-        component.gameOverMessage = false;
-        component.youFell = false;
-        component.specs = {} as Specs;
-
         gameSpy.game = mockGame;
         playerSpy.player = mockPlayer;
         gameTurnSpy.moves = mockMoves;
@@ -167,9 +152,6 @@ describe('GamePageComponent', () => {
                     return of();
             }
         });
-        playerService.player = mockPlayer;
-        gameService.game = mockGame;
-        gameTurnService.moves = mockMoves;
         fixture.detectChanges();
     });
 
@@ -314,6 +296,7 @@ describe('GamePageComponent', () => {
     }));
 
     it('should handle start turn delay and update countdown correctly', fakeAsync(() => {
+        component.delayFinished = false;
         const delaySubject = new Subject<number>();
         socketService.listen.and.returnValue(delaySubject.asObservable());
 
@@ -322,6 +305,7 @@ describe('GamePageComponent', () => {
         component.listenForStartTurnDelay();
 
         delaySubject.next(3);
+        tick(); 
         fixture.detectChanges();
 
         expect(component.startTurnCountdown).toBe(3);
@@ -329,10 +313,10 @@ describe('GamePageComponent', () => {
         expect(component.delayFinished).toBe(false);
 
         delaySubject.next(0);
+        tick();
         fixture.detectChanges();
-
-        expect(component.startTurnCountdown).toBe(3);
-        expect(component.delayFinished).toBe(true);
+        expect(component.startTurnCountdown).toBe(3); 
+        expect(component.delayFinished).toBe(true); 
     }));
 
     it('should call gameTurnService.movePlayer with the correct position on tile click', () => {
