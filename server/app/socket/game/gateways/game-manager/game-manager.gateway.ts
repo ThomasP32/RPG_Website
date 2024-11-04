@@ -3,19 +3,25 @@ import { GameManagerService } from '@app/socket/game/service/game-manager/game-m
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class GameManagerGateway {
+export class GameManagerGateway implements OnGatewayInit {
     @WebSocketServer()
     server: Server;
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
+    @Inject(GameCountdownService) private gameCountdownService: GameCountdownService;
     @Inject(JournalService) private journalService: JournalService;
 
     afterInit(server: Server) {
+        this.gameCountdownService.setServer(this.server);
+        this.gameCountdownService.on('timeout', (gameId: string) => {
+            this.prepareNextTurn(gameId);
+        });
         this.journalService.initializeServer(server);
     }
 
@@ -76,7 +82,7 @@ export class GameManagerGateway {
     }
 
     @SubscribeMessage('isGameFinished')
-    isGameFinished(gameId: string): void {
+    isGameFinished(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         const involvedPlayers = game.players.map((player) => player.name);
         if (game.players.length === 1 && game.hasStarted) {
@@ -86,17 +92,28 @@ export class GameManagerGateway {
     }
 
     @SubscribeMessage('hasPlayerWon')
-    hasPlayerWon(gameId: string): void {
+    hasPlayerWon(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        game.players.forEach((player) => {
-            if (player.specs.nVictories >= 3) {
-                this.server.to(gameId).emit('playerWon', { winner: player });
-            }
-        });
+        if (game) {
+            game.players.forEach((player) => {
+                if (player.specs.nVictories >= 3) {
+                    this.server.to(gameId).emit('playerWon', { winner: player });
+                }
+            });
+        }
+    }
+
+    @SubscribeMessage('getCombats')
+    getCombats(client: Socket, gameId: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        const adjacentPlayers = this.gameManagerService.getAdjacentPlayers(player, gameId);
+        this.server.to(client.id).emit('yourCombats', adjacentPlayers);
     }
 
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
+        this.gameCountdownService.initCountdown(gameId, 30);
         this.startTurn(gameId);
     }
 
@@ -107,14 +124,22 @@ export class GameManagerGateway {
         if (player.socketId !== client.id) {
             return;
         }
-
         player.specs.movePoints = player.specs.speed;
+        this.prepareNextTurn(gameId);
+    }
+
+    prepareNextTurn(gameId: string): void {
+        this.gameCountdownService.resetTimerSubscription(gameId);
         this.gameManagerService.updateTurnCounter(gameId);
         this.startTurn(gameId);
     }
 
     startTurn(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
+        if (!this.gameManagerService.isGameResumable(gameId)) {
+            this.gameCreationService.deleteRoom(gameId);
+            return;
+        }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
         const involvedPlayers = game.players.map((player) => player.name);
 
@@ -125,11 +150,8 @@ export class GameManagerGateway {
             this.startTurn(gameId);
             return;
         }
-
         activePlayer.specs.movePoints = activePlayer.specs.speed;
-
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
-
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)
             .forEach((player) => {
@@ -137,5 +159,6 @@ export class GameManagerGateway {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                 }
             });
+        this.gameCountdownService.startNewCountdown(gameId);
     }
 }
