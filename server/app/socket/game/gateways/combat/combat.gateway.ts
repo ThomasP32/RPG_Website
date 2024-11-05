@@ -4,6 +4,7 @@ import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/web
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
+import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class CombatGateway {
@@ -12,11 +13,13 @@ export class CombatGateway {
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
+    @Inject(JournalService) private journalService: JournalService;
 
     @SubscribeMessage('startCombat')
     async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
+        const involvedPlayers = game.players.map((player) => player.name);
         if (game) {
             const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
             await client.join(combatRoomId);
@@ -31,6 +34,7 @@ export class CombatGateway {
                 challenger: player,
                 opponent: data.opponent,
             });
+            this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
 
             let currentTurnPlayerId: string;
             if (player.specs.speed > data.opponent.specs.speed) {

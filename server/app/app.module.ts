@@ -7,6 +7,7 @@ import { ChatRoomGateway } from '@app/socket/game/gateways/chatroom/chatroom.gat
 import { GameGateway } from '@app/socket/game/gateways/game-creation/game-creation.gateway';
 import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
+import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -43,6 +44,7 @@ import { GameManagerService } from './socket/game/service/game-manager/game-mana
         ServerCombatService,
         GameManagerGateway,
         GameManagerService,
+        JournalService,
         GameCountdownService,
     ],
 })
