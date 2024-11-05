@@ -85,7 +85,7 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
                 this.clearMoves();
-                // this.verifyPlayerWin();
+                this.verifyPlayerWin();
                 this.actionsDone.door = false;
                 this.actionsDone.combat = false;
                 this.playerService.player = yourPlayer;
@@ -126,6 +126,10 @@ export class GameTurnService {
 
     movePlayer(position: Coordinate) {
         this.socketService.sendMessage('moveToPosition', { playerTurn: this.player.turn, gameId: this.game.id, destination: position });
+    }
+
+    verifyPlayerWin(): void {
+        this.socketService.sendMessage('hasPlayerWon', this.game.id);
     }
 
     listenMoves(): void {
