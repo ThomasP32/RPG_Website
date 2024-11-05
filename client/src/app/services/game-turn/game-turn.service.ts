@@ -176,13 +176,22 @@ export class GameTurnService {
     }
 
     listenForDoorUpdates(): void {
-        console.log('listening for door updates');
-        this.socketService.listen<{ game: Game; door: DoorTile }>('doorToggled').subscribe((data) => {
-            console.log('door toggled');
-            this.actionsDone.door = true;
+        this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
+            if (data.player.socketId === this.player.socketId) {
+                this.playerService.setPlayer(data.player);
+            }
             this.gameService.setGame(data.game);
             this.resumeTurn();
         });
+    }
+    listenForCombatStarted(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('YouStartedCombat').subscribe((player) => {
+                if (player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(player);
+                }
+            }),
+        );
     }
 
     listenForPossibleCombats(): void {
