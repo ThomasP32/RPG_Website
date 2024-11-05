@@ -50,7 +50,7 @@ export class CombatGateway implements OnGatewayInit {
                 });
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
-                
+
                 this.server.to(data.gameId).emit('combatStartedSignal');
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
@@ -92,6 +92,7 @@ export class CombatGateway implements OnGatewayInit {
             const game = this.gameCreationService.getGameById(gameId);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('evasionSuccess', evadingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${evadingPlayer.name} s'est évadé.`, [evadingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinishedByEvasion', { updatedGame: game, evadingPlayer: evadingPlayer });
                 this.combatCountdownService.deleteCountdown(gameId);
@@ -101,6 +102,7 @@ export class CombatGateway implements OnGatewayInit {
         } else {
             this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
             this.prepareNextTurn(gameId);
+            this.journalService.logMessage(combat.id, `Tentative d'évasion par ${evadingPlayer.name}: non réussie.`, [evadingPlayer.name]);
         }
     }
 
@@ -120,12 +122,19 @@ export class CombatGateway implements OnGatewayInit {
             attackDice: rollResult.attackDice,
             defenseDice: rollResult.defenseDice,
         });
+        this.journalService.logMessage(
+            combat.id,
+            `Dés roulés. Dé d'attaque: ${rollResult.attackDice}. Dé de défense: ${rollResult.defenseDice}. Résultat = ${rollResult.attackDice} - ${rollResult.defenseDice}.`,
+            [attackingPlayer.name, defendingPlayer.name],
+        );
 
         if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
             defendingPlayer.specs.life--;
             this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         } else {
             this.server.to(combat.id).emit('attackFailure', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Échec de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         }
 
         if (defendingPlayer.specs.life === 0) {
@@ -134,6 +143,7 @@ export class CombatGateway implements OnGatewayInit {
             this.serverCombatService.sendBackToInitPos(defendingPlayer, game);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
                 this.combatCountdownService.deleteCountdown(gameId);
