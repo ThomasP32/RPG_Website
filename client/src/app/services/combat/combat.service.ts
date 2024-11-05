@@ -75,6 +75,14 @@ export class CombatService {
                 }, 3000);
             }),
         );
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('combatFinishedByDisconnection').subscribe((winner) => {
+                console.log('le combat sest terminé sur la victoire par défaut de :', winner.name);
+                setTimeout(() => {
+                    this.isCombatModalOpen.next(false);
+                }, 3000);
+            }),
+        );
     }
 
     listenForEvasionInfo(): void {
