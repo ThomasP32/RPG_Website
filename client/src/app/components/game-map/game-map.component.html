@@ -1,5 +1,5 @@
 <div class="game-map">
-    <div class="map-row" *ngFor="let row of Map; let rowIndex = index; trackBy: rowByIndex">
+    <div class="map-row" *ngFor="let row of map; let rowIndex = index; trackBy: rowByIndex">
         <div
             class="map-cell"
             *ngFor="let cell of row; let colIndex = index; trackBy: cellByIndex"
@@ -11,14 +11,14 @@
             (contextmenu)="$event.preventDefault()"
             (mousedown)="onRightClickTile($event, { x: rowIndex, y: colIndex })"
         >
-            @if(cell.value) {
-            <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-tile" />
+            @if(cell.tileType) {
+            <img [src]="getTileImage(cell.tileType, rowIndex, colIndex)" alt="Tile" class="grid-tile" />
             } @if(cell.item) {
             <img [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
-            <!-- } @if(cell.item == "starting-point") {
-            <img [src]="getTileImage(cell.value, rowIndex, colIndex)" alt="Tile" class="grid-item" /> -->
+            } @if(cell.isStartingPoint) {
+            <img [src]="getStartingPointImage()" alt="Starting-Point" class="grid-starting-points" />
             } @if(cell.player) {
-            <img [src]="getAvatarImage(cell.player)" alt="Player" class="grid-item" />}
+            <img [src]="getAvatarImage(cell.player.avatar)" alt="Player" class="grid-players" />}
         </div>
     </div>
 </div>

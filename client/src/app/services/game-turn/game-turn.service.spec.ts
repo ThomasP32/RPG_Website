@@ -163,12 +163,12 @@ describe('GameTurnService', () => {
     describe('#startTurn', () => {
         it('should call getMoves and getCombats', () => {
             spyOn(service, 'getMoves');
-            spyOn(service, 'getCombats');
+            spyOn(service, 'getActions');
 
             service.startTurn();
 
             expect(service.getMoves).toHaveBeenCalled();
-            expect(service.getCombats).toHaveBeenCalled();
+            expect(service.getActions).toHaveBeenCalled();
         });
     });
 
@@ -177,23 +177,23 @@ describe('GameTurnService', () => {
             service['playerTurn'].next(mockPlayer.name);
         });
 
-        it("should call getCombats if it is the player's turn and has not already fought", () => {
-            spyOn(service, 'getCombats');
-            service['alreadyFought'] = false;
+        it("should call getActions if it is the player's turn and has not already fought", () => {
+            spyOn(service, 'getActions');
+            service['actionsLeftToDo'] = false;
 
             service.resumeTurn();
 
-            expect(service.getCombats).toHaveBeenCalled();
+            expect(service.getActions).toHaveBeenCalled();
         });
 
-        it("should only call getCombats if it is the player's turn and has already fought", () => {
-            spyOn(service, 'getCombats');
-            service['alreadyFought'] = true;
+        it("should only call getActions if it is the player's turn and has already fought", () => {
+            spyOn(service, 'getActions');
+            service['actionsLeftToDo'] = true;
             service['playerTurn'].next(mockPlayer.name);
 
             service.resumeTurn();
 
-            expect(service.getCombats).not.toHaveBeenCalled();
+            expect(service.getActions).not.toHaveBeenCalled();
         });
     });
 
@@ -237,27 +237,27 @@ describe('GameTurnService', () => {
     describe('#listenForTurn', () => {
         beforeEach(() => {
             spyOn(service, 'clearMoves');
-            spyOn(service, 'getCombats');
-            spyOn(service, 'verifyPlayerWin')
+            spyOn(service, 'getActions');
+            spyOn(service, 'verifyPlayerWin');
             service.listenForTurn();
         });
 
-        it('should handle startTurn event for the current player by calling getCombats', () => {
+        it('should handle startTurn event for the current player by calling getActions', () => {
             service['playerTurn'].next(mockPlayer.name);
             service.listenForTurn();
             playerTurnSubject.next(mockPlayer.name);
 
-            expect(service.getCombats).toHaveBeenCalled();
+            expect(service.getActions).toHaveBeenCalled();
         });
 
         it('should handle "yourTurn" event and update relevant properties', () => {
             const newPlayer: Player = { ...mockPlayer, name: 'New Player' };
-    
+
             yourTurnSubject.next(newPlayer);
-    
+
             expect(service.clearMoves).toHaveBeenCalled();
             expect(service.verifyPlayerWin).toHaveBeenCalled();
-            expect(service['alreadyFought']).toBe(false);
+            expect(service['actionsLeftToDo']).toBe(false);
             expect(service['noCombats']).toBe(false);
             expect(service['playerTurn'].getValue()).toBe(newPlayer.name);
         });
@@ -274,7 +274,7 @@ describe('GameTurnService', () => {
     describe('#getCombats', () => {
         it('should listen for possible combats and send getCombats message', () => {
             spyOn(service, 'listenForPossibleCombats');
-            service.getCombats();
+            service.getActions();
 
             expect(service.listenForPossibleCombats).toHaveBeenCalled();
             expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('getCombats', mockGame.id);
@@ -288,7 +288,7 @@ describe('GameTurnService', () => {
         });
 
         it('should update moves with received paths and call endTurn if only one move and already fought or no combats', () => {
-            service['alreadyFought'] = true;
+            service['actionsLeftToDo'] = true;
             service['noCombats'] = false;
 
             const mockPaths: [string, { path: Coordinate[]; weight: number }][] = [['player1', { path: [{ x: 0, y: 0 }], weight: 1 }]];
@@ -315,7 +315,7 @@ describe('GameTurnService', () => {
         });
 
         it('should not call endTurn if there is only one move but conditions are not met', () => {
-            service['alreadyFought'] = false;
+            service['actionsLeftToDo'] = false;
             service['noCombats'] = false;
 
             const mockPaths: [string, { path: Coordinate[]; weight: number }][] = [['player1', { path: [{ x: 0, y: 0 }], weight: 1 }]];

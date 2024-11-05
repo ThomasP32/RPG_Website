@@ -14,7 +14,7 @@ import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
-import { Coordinate, Map } from '@common/map.types';
+import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -29,6 +29,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     activePlayers: Player[];
 
     possibleOpponents: Player[];
+    possibleDoors: DoorTile[];
 
     currentPlayerTurn: string;
     startTurnCountdown: number;
@@ -40,11 +41,16 @@ export class GamePageComponent implements OnInit, OnDestroy {
     socketSubscription: Subscription = new Subscription();
     playerPreview: string;
     showExitModal = false;
+    showActionModal = false;
     showKickedModal = false;
     gameOverMessage = false;
     youFell: boolean = false;
     map: Map;
     specs: Specs;
+    actionMessage: string = 'Actions possibles';
+    doorActionAvailable: boolean = false;
+    combatAvailable: boolean = false;
+    gameMapComponent: GameMapComponent;
 
     constructor(
         // private route: ActivatedRoute,
@@ -72,7 +78,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
             this.gameTurnService.listenForPossibleCombats();
+            this.gameTurnService.listenForDoors();
+            this.gameTurnService.listenForDoorUpdates();
             this.listenForPossibleOpponents();
+            this.listenForDoorOpening();
             this.listenForStartTurnDelay();
             this.listenForFalling();
             this.listenForCountDown();
@@ -137,6 +146,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     openExitConfirmationModal(): void {
         this.showExitModal = true;
     }
+    openActionModal(): void {
+        this.showActionModal = true;
+    }
 
     closeExitModal(): void {
         this.showExitModal = false;
@@ -182,10 +194,39 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForPossibleOpponents() {
         this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
-            this.possibleOpponents = possibleOpponents;
+            if (!this.gameTurnService.actionsDone.combat && possibleOpponents.length > 0) {
+                this.combatAvailable = true;
+                this.possibleOpponents = possibleOpponents;
+            } else {
+                this.combatAvailable = false;
+                this.possibleOpponents = [];
+            }
         });
     }
 
+    listenForDoorOpening() {
+        this.gameTurnService.possibleDoors$.subscribe((possibleDoors: DoorTile[]) => {
+            if (!this.gameTurnService.actionsDone.door && possibleDoors.length > 0) {
+                this.doorActionAvailable = true;
+                this.possibleDoors = possibleDoors;
+                if (possibleDoors[0].isOpened) {
+                    this.actionMessage = 'Fermer la porte';
+                } else {
+                    this.actionMessage = 'Ouvrir la porte';
+                }
+            } else {
+                this.doorActionAvailable = false;
+                this.actionMessage = 'Actions possibles';
+                this.possibleDoors = [];
+            }
+        });
+    }
+
+    toggleDoor() {
+        if (this.doorActionAvailable) {
+            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+        }
+    }
     triggerPulse(): void {
         this.isPulsing = true;
         setTimeout(() => (this.isPulsing = false), 500);
