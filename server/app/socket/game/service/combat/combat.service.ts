@@ -1,5 +1,7 @@
+import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat } from '@common/combat';
-import { Player } from '@common/game';
+import { DIRECTIONS } from '@common/directions';
+import { Game, Player } from '@common/game';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -37,53 +39,119 @@ export class ServerCombatService {
         return gameId in this.combatRooms;
     }
 
+    executeAttack(gameId: string): { attackDice: number; defenseDice: number } {
+        const combat = this.getCombatByGameId(gameId);
+        let attackingPlayer: Player;
+        let defendingPlayer: Player;
+        if (combat.currentTurnSocketId === combat.challenger.socketId) {
+            attackingPlayer = combat.challenger;
+            defendingPlayer = combat.opponent;
+        } else {
+            attackingPlayer = combat.opponent;
+            defendingPlayer = combat.challenger;
+        }
+
+        return this.rollDice(attackingPlayer, defendingPlayer);
+    }
+
     isAttackSuccess(attackPlayer: Player, opponent: Player, attackDice: number, defenseDice: number): boolean {
         const attackTotal = attackPlayer.specs.attack + attackDice;
         const defendTotal = opponent.specs.defense + defenseDice;
         return attackTotal - defendTotal > 0;
     }
 
-    rollDice(
-        attackPlayer: Player,
-        opponent: Player,
-    ): {
-        attackingPlayerAttackDice: number;
-        attackingPlayerDefenseDice: number;
-        opponentAttackDice: number;
-        opponentDefenseDice: number;
-        attackDice: number;
-        defenseDice: number;
-    } {
+    updateTurn(gameId: string): void {
+        console.log('le tour est mis a jour');
+        const combat = this.getCombatByGameId(gameId);
+        const currentTurnSocket = combat.currentTurnSocketId;
+        if (currentTurnSocket === combat.challenger.socketId) {
+            combat.currentTurnSocketId = combat.opponent.socketId;
+        } else {
+            combat.currentTurnSocketId = combat.challenger.socketId;
+        }
+    }
+
+    rollDice(attackPlayer: Player, opponent: Player): { attackDice: number; defenseDice: number } {
         const attackingPlayerAttackDice = Math.floor(Math.random() * attackPlayer.specs.attackBonus) + 1;
-        const attackingPlayerDefenseDice = Math.floor(Math.random() * attackPlayer.specs.defenseBonus) + 1;
-        const opponentAttackDice = Math.floor(Math.random() * opponent.specs.attackBonus) + 1;
+        // const attackingPlayerDefenseDice = Math.floor(Math.random() * attackPlayer.specs.defenseBonus) + 1;
+        // const opponentAttackDice = Math.floor(Math.random() * opponent.specs.attackBonus) + 1;
         const opponentDefenseDice = Math.floor(Math.random() * opponent.specs.defenseBonus) + 1;
         const attackDice = attackPlayer.specs.attack + attackingPlayerAttackDice;
         const defenseDice = opponent.specs.defense + opponentDefenseDice;
 
         return {
-            attackingPlayerAttackDice,
-            attackingPlayerDefenseDice,
-            opponentAttackDice,
-            opponentDefenseDice,
             attackDice,
             defenseDice,
         };
     }
 
-    combatWinStatsUpdate(winner: Player, loser: Player) {
-        winner.specs.nVictories += 1;
-        winner.specs.nCombats += 1;
-        loser.specs.nDefeats += 1;
-        loser.specs.nCombats += 1;
+    combatWinStatsUpdate(winner: Player, gameId: string) {
+        if (winner.socketId === this.combatRooms[gameId].challenger.socketId) {
+            this.combatRooms[gameId].challenger.specs.nVictories += 1;
+            this.combatRooms[gameId].challenger.specs.nCombats += 1;
+            this.combatRooms[gameId].opponent.specs.nDefeats += 1;
+            this.combatRooms[gameId].opponent.specs.nCombats += 1;
+        } else {
+            this.combatRooms[gameId].opponent.specs.nVictories += 1;
+            this.combatRooms[gameId].opponent.specs.nCombats += 1;
+            this.combatRooms[gameId].challenger.specs.nDefeats += 1;
+            this.combatRooms[gameId].challenger.specs.nCombats += 1;
+        }
     }
 
-    updatePlayersInGame(game) {
+    sendBackToInitPos(player: Player, game: Game) {
+        let currentPlayer = this.combatRooms[game.id].challenger;
+
+        if (player.socketId === this.combatRooms[game.id].opponent.socketId) {
+            currentPlayer = this.combatRooms[game.id].opponent;
+        }
+
+        const isPositionOccupied = game.players.some(
+            (otherPlayer) =>
+                otherPlayer.position.x === currentPlayer.initialPosition.x &&
+                otherPlayer.position.y === currentPlayer.initialPosition.y &&
+                otherPlayer.socketId !== player.socketId,
+        );
+
+        if (!isPositionOccupied) {
+            currentPlayer.position = currentPlayer.initialPosition;
+        } else {
+            const closestPosition = this.findClosestAvailablePosition(currentPlayer.initialPosition, game);
+            if (closestPosition) {
+                currentPlayer.position = closestPosition;
+            }
+        }
+    }
+
+    findClosestAvailablePosition(initialPosition: { x: number; y: number }, game: Game): Coordinate {
+        for (let distance = 1; distance <= game.mapSize.x; distance++) {
+            for (const direction of DIRECTIONS) {
+                const newPosition = {
+                    x: initialPosition.x + direction.x * distance,
+                    y: initialPosition.y + direction.y * distance,
+                };
+
+                const isOccupied = game.players.some(
+                    (otherPlayer) => otherPlayer.position.x === newPosition.x && otherPlayer.position.y === newPosition.y,
+                );
+
+                if (!isOccupied) {
+                    return newPosition;
+                }
+            }
+        }
+    }
+
+    updatePlayersInGame(game: Game) {
         const combat = this.getCombatByGameId(game.id);
         game.players.forEach((player, index) => {
             if (player.socketId === combat.challenger.socketId) {
+                combat.challenger.specs.life = combat.challengerLife;
+                combat.challenger.specs.evasions = 2;
                 game.players[index] = combat.challenger;
             } else if (player.socketId === combat.opponent.socketId) {
+                combat.opponent.specs.life = combat.opponentLife;
+                combat.opponent.specs.evasions = 2;
                 game.players[index] = combat.opponent;
             }
         });

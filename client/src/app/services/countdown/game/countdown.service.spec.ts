@@ -6,15 +6,12 @@ import { Subject } from 'rxjs';
 describe('CountdownService', () => {
     let service: CountdownService;
     let secondPassedSubject: Subject<number>;
-    let counterFinishedSubject: Subject<void>;
 
     beforeEach(() => {
         secondPassedSubject = new Subject<number>();
-        counterFinishedSubject = new Subject<void>();
 
         const socketServiceSpy = jasmine.createSpyObj('SocketService', ['listen']);
         socketServiceSpy.listen.withArgs('secondPassed').and.returnValue(secondPassedSubject.asObservable());
-        socketServiceSpy.listen.withArgs('counterFinished').and.returnValue(counterFinishedSubject.asObservable());
 
         TestBed.configureTestingModule({
             providers: [CountdownService, { provide: SocketService, useValue: socketServiceSpy }],
@@ -35,13 +32,5 @@ describe('CountdownService', () => {
 
         secondPassedSubject.next(5);
         expect(countdownValue).toBe(5);
-    });
-
-    it('should set countdown to 0 when "counterFinished" event is emitted', () => {
-        let countdownValue: number | undefined;
-        service.countdown$.subscribe((value) => (countdownValue = value));
-
-        counterFinishedSubject.next();
-        expect(countdownValue).toBe(0);
     });
 });

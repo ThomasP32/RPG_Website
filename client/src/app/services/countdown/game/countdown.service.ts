@@ -15,18 +15,12 @@ export class CountdownService {
         this.listenCountdown();
         this.socketService = socketService;
     }
-
+    
     listenCountdown() {
         this.socketSubscription.add(
             this.socketService.listen<number>('secondPassed').subscribe((remainingTime) => {
                 this.countdown.next(remainingTime);
             }),
         );
-        this.socketSubscription.add(
-            this.socketService.listen<number>('counterFinished').subscribe(() => {
-                this.countdown.next(0);
-            }),
-        );
-        
     }
 }

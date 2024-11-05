@@ -1,6 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
+import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
 
@@ -11,130 +12,80 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./combat-modal.component.scss'],
 })
 export class CombatModalComponent implements OnInit, OnDestroy {
+    @Input() player: Player;
+    @Input() opponent: Player;
+
     countdown: number;
-    playerDiceAttack: number;
-    playerDiceDefense: number;
-    opponentDiceAttack: number;
-    opponentDiceDefense: number;
-    diceRollReceived = false;
-    actionButtonsOn = false;
-    attacking = false;
     combatMessage: string;
 
     attackTotal: number;
     defenseTotal: number;
 
+    attacking = false;
     isYourTurn: boolean;
 
-    @Input() player: Player;
-    @Input() opponent: Player;
-    playerLife: number;
-    opponentLife: number;
-
-    @Input() gameId: string;
-    @Input() combatRoomId: string;
-
     socketSubscription: Subscription = new Subscription();
-
-    // @Inject(CombatService) private combatService: CombatService;
-
-    // @Inject(GameService) private gameService: GameService;
 
     constructor(
         private socketService: SocketService,
         private combatCountDownService: CombatCountdownService,
+        private gameService: GameService,
     ) {
         this.socketService = socketService;
         this.combatCountDownService = combatCountDownService;
+        this.gameService = gameService;
     }
 
     ngOnInit() {
-        this.configureCombatSocketFeatures();
-        this.getPlayersLife();
+        this.listenForAttacks();
+        this.listenForCombatTurns();
         this.listenForCountdown();
+        this.listenForDiceRoll();
     }
 
-    ngOnDestroy() {
-        this.socketSubscription.unsubscribe();
+    get turnMessage(): string {
+        if (this.isYourTurn) {
+            return `${this.player.name} joue présentement.`;
+        } else {
+            return `${this.opponent.name} joue présentement.`;
+        }
     }
 
-    listenForCountdown() {
-        this.combatCountDownService.combatCountdown$.subscribe((timeLeft: number) => {
-            console.log('le temps restant', timeLeft);
-            this.countdown = timeLeft;
-        });
-    }
-    getPlayersLife(): void {
-        this.playerLife = this.player.specs.life;
-        this.opponentLife = this.opponent.specs.life;
-        this.player.specs.nEvasions = 2;
-        this.opponent.specs.nEvasions = 2;
-    }
-    updatePlayerStats() {
-        this.player.specs.life = this.playerLife;
-        this.opponent.specs.life = this.opponentLife;
-        this.player.specs.nEvasions = 2;
-        this.opponent.specs.nEvasions = 2;
+    attack(): void {
+        if (this.isYourTurn) {
+            this.socketService.sendMessage('attack', this.gameService.game.id);
+        }
     }
 
-    configureCombatSocketFeatures(): void {
-        this.socketSubscription.add(
-            this.socketService.listen<{ success: boolean; waitingPlayer: Player; message: string }>('evasionSuccess').subscribe((data) => {
-                if (data.success) {
-                    this.combatMessage = data.message;
-                } else {
-                    if (data.waitingPlayer.socketId === this.opponent.socketId) this.player.specs.nEvasions -= 1;
-                    else if (data.waitingPlayer.socketId === this.player.socketId) this.opponent.specs.nEvasions -= 1;
-                    this.combatMessage = data.message;
-                }
-            }),
-        );
-        this.socketSubscription.add(
-            this.socketService
-                .listen<{
-                    playerDiceAttack: number;
-                    playerDiceDefense: number;
-                    opponentDiceAttack: number;
-                    opponentDiceDefense: number;
-                    attackDice: number;
-                    defenseDice: number;
-                }>('diceRolled')
-                .subscribe((data) => {
-                    this.playerDiceAttack = data.playerDiceAttack;
-                    this.playerDiceDefense = data.playerDiceDefense;
-                    this.opponentDiceAttack = data.opponentDiceAttack;
-                    this.opponentDiceDefense = data.opponentDiceDefense;
-                    this.defenseTotal = data.defenseDice;
-                    this.attackTotal = data.attackDice;
-                    this.diceRollReceived = true;
-                    if (this.isYourTurn) {
-                        this.attacking = true;
-                    } else {
-                        this.attackTotal = data.defenseDice;
-                        this.defenseTotal = data.attackDice;
-                        this.attacking = false;
-                    }
-                }),
-        );
+    evade(): void {
+        this.socketService.sendMessage('startEvasion', this.gameService.game.id);
+    }
 
+    listenForAttacks(): void {
         this.socketSubscription.add(
             this.socketService.listen<{ playerAttacked: Player; message: string }>('attackSuccess').subscribe((data) => {
-                if (data.playerAttacked.socketId === this.opponent.socketId) this.opponent.specs.life -= 1;
-                else if (data.playerAttacked.socketId === this.player.socketId) this.player.specs.life -= 1;
+                if (data.playerAttacked.socketId === this.opponent.socketId) this.opponent = data.playerAttacked;
+                else if (data.playerAttacked.socketId === this.player.socketId) this.player = data.playerAttacked;
                 this.combatMessage = data.message;
             }),
         );
+
         this.socketSubscription.add(
-            this.socketService.listen<{ message: string }>('attackFailure').subscribe((data) => {
+            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackFailure').subscribe((data) => {
                 this.combatMessage = data.message;
             }),
         );
+    }
+
+    listenForOpponent(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player>('currentPlayer').subscribe((player: Player) => {
                 this.opponent = player;
             }),
         );
-        //TODO: a revoir pense pas cest accurate
+    }
+
+    listenForCombatTurns(): void {
         this.socketSubscription.add(
             this.socketService.listen('yourTurnCombat').subscribe(() => {
                 this.isYourTurn = true;
@@ -147,78 +98,29 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         );
     }
 
-    getDiceRolls(player: Player, opponent: Player) {
-        this.socketService.sendMessage('rollDice', {
-            combatRoomId: this.combatRoomId,
-            player: player,
-            opponent: opponent,
+    listenForDiceRoll(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<{ attackDice: number; defenseDice: number }>('diceRolled').subscribe((data) => {
+                this.defenseTotal = data.defenseDice;
+                this.attackTotal = data.attackDice;
+                if (this.isYourTurn) {
+                    this.attacking = true;
+                } else {
+                    this.attackTotal = data.defenseDice;
+                    this.defenseTotal = data.attackDice;
+                    this.attacking = false;
+                }
+            }),
+        );
+    }
+
+    listenForCountdown() {
+        this.combatCountDownService.combatCountdown$.subscribe((timeLeft: number) => {
+            this.countdown = timeLeft;
         });
     }
 
-    attack() {
-        if (this.isYourTurn) {
-            this.getDiceRolls(this.player, this.opponent);
-            const interval = setInterval(() => {
-                if (this.diceRollReceived) {
-                    clearInterval(interval);
-                    this.socketService.sendMessage('attack', {
-                        gameId: this.gameId,
-                        attackPlayer: this.player,
-                        defendPlayer: this.opponent,
-                        combatRoomId: this.combatRoomId,
-                        attackDice: this.playerDiceAttack,
-                        defenseDice: this.opponentDiceDefense,
-                    });
-                }
-            }, 100);
-        }
-    }
-
-    evade() {
-        // if (this.isCombatPlayerTurn() && this.player.specs.nEvasions > 0) {
-        this.socketService.sendMessage('startEvasion', this.gameId);
-
-        // }
-    }
-    get turnMessage(): string {
-        if (this.isYourTurn) {
-            return `${this.player.name} joue présentement.`;
-        } else {
-            return `${this.opponent.name} joue présentement.`;
-        }
-    }
-
-    getActionsButtonsOnTurn(): void {
-        if (this.isYourTurn) this.actionButtonsOn = true;
-        else this.actionButtonsOn = false;
+    ngOnDestroy() {
+        this.socketSubscription.unsubscribe();
     }
 }
-
-// combatFinishedNormal() {
-//     if (this.player.specs.life === 0) {
-//         this.combatWinStatsUpdate(this.opponent, this.player);
-//         this.updatePlayerStats();
-//         this.socketService.sendMessage('combatFinishedNormal', {
-//             gameId: this.gameService.game.id,
-//             combatWinner: this.opponent,
-//             combatLooser: this.player,
-//             combatRoomId: this.combatRoomId,
-//         });
-//         this.closeCombatModal();
-//     }
-// }
-
-// combatFinishedByEvasion() {
-//     this.socketService.sendMessage('combatFinishedEvasion', {
-//         gameId: this.gameService.game.id,
-//         player1: this.player,
-//         player2: this.opponent,
-//         combatRoomId: this.combatRoomId,
-//     });
-//     this.updatePlayerStats();
-//     this.closeCombatModal();
-// }
-
-// closeCombatModal() {
-//     this.combatRoomId = '';
-// }
