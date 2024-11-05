@@ -23,7 +23,16 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent, CombatModalComponent, JournalComponent],
+    imports: [
+        CommonModule,
+        GameMapComponent,
+        ChatroomComponent,
+        RouterLink,
+        PlayersListComponent,
+        CombatListComponent,
+        CombatModalComponent,
+        JournalComponent,
+    ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
@@ -40,7 +49,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     delayFinished: boolean = true;
 
     isPulsing = false;
-    countdown: number = TURN_DURATION;
+    countdown: number | string = TURN_DURATION;
+    startTurnCountdown: number = 3;
 
     gameId: string;
 
@@ -182,7 +192,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
-            console.log('UNE SECONDE');
             this.countdown = time;
             this.triggerPulse();
         });
@@ -246,11 +255,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenForStartTurnDelay() {
         this.socketSubscription.add(
             this.socketService.listen<number>('delay').subscribe((delay) => {
-                this.countdown = delay;
-                // this.triggerPulse();
-                if (this.countdown === 0) {
+                this.startTurnCountdown = delay;
+                if (delay === 0) {
+                    this.startTurnCountdown = 3;
                     this.delayFinished = true;
-                    this.countdown = 3;
                 }
             }),
         );

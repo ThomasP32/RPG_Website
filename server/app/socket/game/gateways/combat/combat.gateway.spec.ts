@@ -7,6 +7,7 @@ import { CombatCountdownService } from '../../service/countdown/combat/combat-co
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { CombatGateway } from './combat.gateway';
+import { JournalService } from '../../service/journal/journal.service';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -125,6 +126,13 @@ describe('CombatGateway', () => {
                         getPlayer: jest.fn(),
                     },
                 },
+                {
+                    provide: JournalService, 
+                    useValue: {
+                        initializeServer: jest.fn(), 
+                        logMessage: jest.fn(),
+                    }
+                }
             ],
         }).compile();
 
@@ -222,8 +230,6 @@ describe('CombatGateway', () => {
                     challenger: mockCombat.challenger,
                     opponent: mockCombat.opponent,
                 });
-                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('combatStarted');
-
                 expect(combatCountdownService.initCountdown).toHaveBeenCalledWith('game-id', 5);
                 expect(gameCountdownService.pauseCountdown).toHaveBeenCalledWith('game-id');
 

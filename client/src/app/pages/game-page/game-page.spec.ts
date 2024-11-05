@@ -374,13 +374,13 @@ describe('GamePageComponent', () => {
         tick();
         fixture.detectChanges();
 
-        expect(component.countdown).toBe(3);
+        expect(component.startTurnCountdown).toBe(3);
         expect(component.delayFinished).toBe(false);
 
         delaySubject.next(0);
         tick();
         fixture.detectChanges();
-        expect(component.countdown).toBe(3);
+        expect(component.startTurnCountdown).toBe(3);
         expect(component.delayFinished).toBe(true);
     }));
 

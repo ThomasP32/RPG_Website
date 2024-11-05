@@ -39,7 +39,6 @@ export class CombatGateway implements OnGatewayInit {
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
             const combat = this.serverCombatService.createCombat(data.gameId, player, data.opponent);
-            console.log(combat);
             await client.join(combat.id);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
@@ -49,11 +48,10 @@ export class CombatGateway implements OnGatewayInit {
                     challenger: player,
                     opponent: data.opponent,
                 });
-
-                const involvedPlayers = [player.name, data.opponent.name];
+                const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
                 
-                this.server.to(data.gameId).emit('combatStarted');
+                this.server.to(data.gameId).emit('combatStartedSignal');
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
                 this.startCombatTurns(data.gameId);
@@ -101,7 +99,6 @@ export class CombatGateway implements OnGatewayInit {
                 this.cleanupCombatRoom(combat.id);
             }, 3000);
         } else {
-            console.log('evasion a echoue');
             this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
             this.prepareNextTurn(gameId);
         }

@@ -6,12 +6,15 @@ import { Subject } from 'rxjs';
 describe('CountdownService', () => {
     let service: CountdownService;
     let secondPassedSubject: Subject<number>;
+    let combatStartedSubject: Subject<void>;
 
     beforeEach(() => {
         secondPassedSubject = new Subject<number>();
+        combatStartedSubject = new Subject<void>();
 
         const socketServiceSpy = jasmine.createSpyObj('SocketService', ['listen']);
         socketServiceSpy.listen.withArgs('secondPassed').and.returnValue(secondPassedSubject.asObservable());
+        socketServiceSpy.listen.withArgs('combatStartedSignal').and.returnValue(combatStartedSubject.asObservable());
 
         TestBed.configureTestingModule({
             providers: [CountdownService, { provide: SocketService, useValue: socketServiceSpy }],
@@ -24,7 +27,7 @@ describe('CountdownService', () => {
     });
 
     it('should update countdown when "secondPassed" event is emitted', () => {
-        let countdownValue: number | undefined;
+        let countdownValue: number | string | undefined;
         service.countdown$.subscribe((value) => (countdownValue = value));
 
         secondPassedSubject.next(15);
@@ -32,5 +35,13 @@ describe('CountdownService', () => {
 
         secondPassedSubject.next(5);
         expect(countdownValue).toBe(5);
+    });
+
+    it('should set countdown to "--" when "combatStartedSignal" event is emitted', () => {
+        let countdownValue: number | string | undefined;
+        service.countdown$.subscribe((value) => (countdownValue = value));
+
+        combatStartedSubject.next();
+        expect(countdownValue).toBe('--');
     });
 });
