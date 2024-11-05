@@ -69,6 +69,7 @@ export class CombatService {
     listenForCombatFinish(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player>('combatFinishedNormally').subscribe((winner) => {
+                console.log('le combat sest terminé sur la victoire de :', winner.name);
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, 3000);
@@ -80,6 +81,7 @@ export class CombatService {
         this.socketSubscription.add(
             this.socketService.listen<Player>('evasionSuccess').subscribe((evadingPlayer) => {
                 // montrer comme quoi l'évasion a passé
+                console.log('le combat sest terminé sur levasion de :', evadingPlayer.name);
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, 3000);
