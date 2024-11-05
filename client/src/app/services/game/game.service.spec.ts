@@ -23,6 +23,7 @@ describe('GameService', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        initialPosition: { x: 0, y: 0 },
     };
 
     const mockGame: Game = {

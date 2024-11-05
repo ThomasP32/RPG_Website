@@ -21,7 +21,6 @@ export class GameManagerService {
 
     updateTurnCounter(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        console.log('le tour a été mis a jour');
         game.nTurns++;
         game.currentTurn++;
         if (game.currentTurn >= game.players.length) {

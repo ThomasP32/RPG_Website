@@ -37,6 +37,7 @@ describe('PlayersListComponent', () => {
                 defenseBonus: Bonus.D4,
                 movePoints: 5,
                 actions: 2,
+                evasions: 2,
                 nVictories: 3,
                 nDefeats: 1,
                 nCombats: 4,
@@ -46,6 +47,7 @@ describe('PlayersListComponent', () => {
             },
             inventory: [ItemCategory.Hat, ItemCategory.Key],
             position: { x: 1, y: 2 },
+            initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
         },
@@ -62,6 +64,7 @@ describe('PlayersListComponent', () => {
                 attackBonus: Bonus.D6,
                 defenseBonus: Bonus.D4,
                 movePoints: 5,
+                evasions: 2,
                 actions: 2,
                 nVictories: 3,
                 nDefeats: 1,
@@ -72,8 +75,10 @@ describe('PlayersListComponent', () => {
             },
             inventory: [ItemCategory.Hat, ItemCategory.Key],
             position: { x: 1, y: 2 },
+            initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+
         },
     ];
 

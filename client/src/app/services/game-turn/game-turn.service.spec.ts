@@ -21,6 +21,9 @@ describe('GameTurnService', () => {
     let youFellSubject: Subject<Player>;
     let yourCombatsSubject: Subject<Player[]>;
 
+    let combatFinishedByEvasionSubject: Subject<{ updatedGame: Game; evadingPlayer: Player }>;
+    let combatFinishedSubject: Subject<{ updatedGame: Game; winner: Player }>;
+
     const mockSpecs: Specs = {
         life: 100,
         speed: 10,
@@ -30,6 +33,7 @@ describe('GameTurnService', () => {
         attackBonus: Bonus.D4,
         defenseBonus: Bonus.D6,
         actions: 2,
+        evasions: 2,
         nVictories: 0,
         nDefeats: 0,
         nCombats: 0,
@@ -44,6 +48,7 @@ describe('GameTurnService', () => {
         avatar: Avatar.Avatar1,
         isActive: true,
         position: { x: 0, y: 0 },
+        initialPosition: { x: 0, y: 0 },
         specs: mockSpecs,
         inventory: [],
         turn: 0,
@@ -70,6 +75,9 @@ describe('GameTurnService', () => {
         youFellSubject = new Subject<Player>();
         yourCombatsSubject = new Subject<Player[]>();
 
+        combatFinishedByEvasionSubject = new Subject<{ updatedGame: Game; evadingPlayer: Player }>();
+        combatFinishedSubject = new Subject<{ updatedGame: Game; winner: Player }>();
+
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
                 case 'yourTurn':
@@ -86,6 +94,10 @@ describe('GameTurnService', () => {
                     return youFellSubject.asObservable() as Observable<T>;
                 case 'yourCombats':
                     return yourCombatsSubject.asObservable() as Observable<T>;
+                case 'combatFinishedByEvasion':
+                    return combatFinishedByEvasionSubject.asObservable() as Observable<T>;
+                case 'combatFinished':
+                    return combatFinishedSubject.asObservable() as Observable<T>;
                 default:
                     return of({}) as Observable<T>;
             }
@@ -238,7 +250,7 @@ describe('GameTurnService', () => {
         beforeEach(() => {
             spyOn(service, 'clearMoves');
             spyOn(service, 'getCombats');
-            spyOn(service, 'verifyPlayerWin')
+            spyOn(service, 'verifyPlayerWin');
             service.listenForTurn();
         });
 
@@ -252,9 +264,9 @@ describe('GameTurnService', () => {
 
         it('should handle "yourTurn" event and update relevant properties', () => {
             const newPlayer: Player = { ...mockPlayer, name: 'New Player' };
-    
+
             yourTurnSubject.next(newPlayer);
-    
+
             expect(service.clearMoves).toHaveBeenCalled();
             expect(service.verifyPlayerWin).toHaveBeenCalled();
             expect(service['alreadyFought']).toBe(false);
@@ -356,5 +368,63 @@ describe('GameTurnService', () => {
                 expect(opponents).toEqual(mockOpponents);
             });
         });
+    });
+
+    describe('#listenForCombatConclusion', () => {
+        beforeEach(() => {
+            service.listenForCombatConclusion();
+        });
+
+        it('should update playerService and gameService on "combatFinishedByEvasion" when evading player is the same as the current player', fakeAsync(() => {
+            const evadingPlayer = { ...mockPlayer, socketId: 'socket-1' };
+            const updatedGame = { ...mockGame, players: [evadingPlayer] };
+            const combatFinishedByEvasionData = { updatedGame, evadingPlayer };
+
+            // Emit event
+            combatFinishedByEvasionSubject.next(combatFinishedByEvasionData);
+            tick(); // Ensure async events are processed
+
+            expect(playerServiceSpy.player).toEqual(evadingPlayer);
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
+
+        it('should update playerService and gameService on "combatFinishedByEvasion" when evading player is different from the current player', fakeAsync(() => {
+            const evadingPlayer = { ...mockPlayer, socketId: 'socket-2' };
+            const updatedGame = { ...mockGame, players: [mockPlayer, evadingPlayer] };
+            const combatFinishedByEvasionData = { updatedGame, evadingPlayer };
+
+            // Emit event
+            combatFinishedByEvasionSubject.next(combatFinishedByEvasionData);
+            tick(); // Ensure async events are processed
+
+            expect(playerServiceSpy.player).toEqual(mockPlayer); // current player should be set to the mock player
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
+
+        it('should update playerService and gameService on "combatFinished" when winner is the current player', fakeAsync(() => {
+            const winner = { ...mockPlayer, socketId: 'socket-1' };
+            const updatedGame = { ...mockGame, players: [winner] };
+            const combatFinishedData = { updatedGame, winner };
+
+            // Emit event
+            combatFinishedSubject.next(combatFinishedData);
+            tick(); // Ensure async events are processed
+
+            expect(playerServiceSpy.player).toEqual(winner);
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
+
+        it('should update playerService and gameService on "combatFinished" when winner is different from the current player', fakeAsync(() => {
+            const winner = { ...mockPlayer, socketId: 'socket-2' };
+            const updatedGame = { ...mockGame, players: [mockPlayer, winner] };
+            const combatFinishedData = { updatedGame, winner };
+
+            // Emit event
+            combatFinishedSubject.next(combatFinishedData);
+            tick(); // Ensure async events are processed
+
+            expect(playerServiceSpy.player).toEqual(mockPlayer); // current player should be set to the mock player
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
+        }));
     });
 });

@@ -16,6 +16,7 @@ import { GameManagerGateway } from './socket/game/gateways/game-manager/game-man
 import { ServerCombatService } from './socket/game/service/combat/combat.service';
 import { GameCountdownService } from './socket/game/service/countdown/game/game-countdown.service';
 import { GameManagerService } from './socket/game/service/game-manager/game-manager.service';
+import { CombatCountdownService } from './socket/game/service/countdown/combat/combat-countdown.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -46,6 +47,7 @@ import { GameManagerService } from './socket/game/service/game-manager/game-mana
         GameManagerService,
         JournalService,
         GameCountdownService,
+        CombatCountdownService
     ],
 })
 export class AppModule {}

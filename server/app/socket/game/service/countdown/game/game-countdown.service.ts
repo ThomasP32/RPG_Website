@@ -71,7 +71,6 @@ export class GameCountdownService extends EventEmitter {
         const countdown = this.countdowns.get(id);
         if (countdown) {
             this.resetTimerSubscription(id);
-            countdown.duration = countdown.remaining;
             this.server.to(id).emit('pausedCountDown', countdown.remaining);
         }
     }
@@ -89,6 +88,14 @@ export class GameCountdownService extends EventEmitter {
         if (countdown && countdown.timerSubscription) {
             countdown.timerSubscription.unsubscribe();
             countdown.timerSubscription = undefined;
+        }
+    }
+
+    deleteCountdown(id: string): void {
+        const countdown = this.countdowns.get(id);
+        if (countdown) {
+            this.resetTimerSubscription(id);
+            this.countdowns.delete(id);
         }
     }
 }
