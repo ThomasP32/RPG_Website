@@ -40,7 +40,7 @@ export class TileService {
         cell.tileType = this.convertTileValue(defaultTile);
 
         if (cell.item) {
-            this.mapCounterService.updateCounters(true, cell.item, 'add');
+            this.mapCounterService.updateCounters(false, cell.item, 'add');
             cell.item = undefined;
         }
 
