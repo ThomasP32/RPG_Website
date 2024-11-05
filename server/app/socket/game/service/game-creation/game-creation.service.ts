@@ -123,6 +123,8 @@ export class GameCreationService {
             const randomIndex = Math.floor(Math.random() * startTilesLeft.length);
             player.position.x = startTilesLeft[randomIndex].coordinate.x;
             player.position.y = startTilesLeft[randomIndex].coordinate.y;
+            player.initialPosition.x = startTilesLeft[randomIndex].coordinate.x;
+            player.initialPosition.y = startTilesLeft[randomIndex].coordinate.y;
             startTilesLeft.splice(randomIndex, 1);
         });
     }

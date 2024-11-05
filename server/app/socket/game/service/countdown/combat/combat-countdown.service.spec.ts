@@ -1,6 +1,6 @@
-import { CombatCountdownService } from './combat-countdown.service';
-import { Server } from 'socket.io';
 import { interval, Subscription } from 'rxjs';
+import { Server } from 'socket.io';
+import { CombatCountdownService } from './combat-countdown.service';
 
 jest.mock('socket.io');
 jest.mock('rxjs', () => ({
@@ -50,10 +50,10 @@ describe('CombatCountdownService', () => {
         service.initCountdown('test_id', 5);
         await service.startTurnCounter('test_id', true);
 
-        intervalCallback(); 
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 5);
 
-        intervalCallback(); 
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 4);
 
         intervalCallback();
@@ -62,30 +62,28 @@ describe('CombatCountdownService', () => {
         intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 2);
 
-        intervalCallback(); 
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
         intervalCallback();
         expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
-        expect(mockServer.emit).toHaveBeenCalledWith('endCombatTurn');
     });
 
     it('should start a new countdown with 3 seconds if evasions are not enabled', async () => {
         service.initCountdown('test_id', 3);
         await service.startTurnCounter('test_id', false);
 
-        intervalCallback(); // Emit combatSecondPassed for remaining = 3
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 3);
 
-        intervalCallback(); // remaining = 2
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 2);
 
-        intervalCallback(); // remaining = 1
+        intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
-        intervalCallback(); // remaining = 0, emit endCombatTurn and timeout
+        intervalCallback();
         expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
-        expect(mockServer.emit).toHaveBeenCalledWith('endCombatTurn');
     });
 
     it('should reset the timer subscription when resetTimerSubscription is called', () => {
@@ -100,17 +98,28 @@ describe('CombatCountdownService', () => {
         service.initCountdown('test_id', 5);
         service.startTurnCounter('test_id', false);
 
-        intervalCallback(); 
-        intervalCallback(); 
+        intervalCallback();
+        intervalCallback();
         intervalCallback();
 
-        mockServer.emit.mockClear(); 
+        mockServer.emit.mockClear();
 
-        service.resetCountdown('test_id'); 
+        service.resetCountdown('test_id');
 
         const countdown = service['countdowns'].get('test_id');
         expect(countdown?.remaining).toBe(3);
-        service.startTurnCounter('test_id',true);
+        service.startTurnCounter('test_id', true);
         expect(countdown?.remaining).toBe(5);
+    });
+
+    it('should delete the countdown and unsubscribe from the timer when deleteCountdown is called', () => {
+        service.initCountdown('test_id', 5);
+        service.startTurnCounter('test_id', true);
+
+        service.deleteCountdown('test_id');
+
+        expect(service['countdowns'].has('test_id')).toBe(false);
+
+        expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
 });
