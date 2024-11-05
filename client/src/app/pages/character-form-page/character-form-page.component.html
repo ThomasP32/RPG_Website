@@ -10,16 +10,15 @@
         <div class="left-side">
             <div class="player-stats">
                 <h2 class="character-name">
-                    @if(!isEditing){
-                    <span>{{ name }}</span
+                    @if(!isEditing){ <span (click)="startEditing()"> {{ name || 'Choisis ton nom' }}</span
                     >} @if(isEditing){
                     <input
                         [(ngModel)]="name"
                         class="character-name-input"
                         (blur)="stopEditing()"
-                        placeholder="Choisis ton nom"
                         (keydown.enter)="stopEditing()"
                         maxlength="25"
+                        #nameInput
                     />
                     }
 

@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -14,12 +15,14 @@ export class GameManagerGateway implements OnGatewayInit {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
     @Inject(GameCountdownService) private gameCountdownService: GameCountdownService;
+    @Inject(JournalService) private journalService: JournalService;
 
-    afterInit() {
+    afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
         this.gameCountdownService.on('timeout', (gameId: string) => {
             this.prepareNextTurn(gameId);
         });
+        this.journalService.initializeServer(server);
     }
 
     @SubscribeMessage('getMovements')
@@ -81,9 +84,11 @@ export class GameManagerGateway implements OnGatewayInit {
     @SubscribeMessage('isGameFinished')
     isGameFinished(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
+        const involvedPlayers = game.players.map((player) => player.name);
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
         }
+        this.journalService.logMessage(gameId, `La partie est terminée.`, involvedPlayers);
     }
 
     @SubscribeMessage('hasPlayerWon')
@@ -136,6 +141,9 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
+        const involvedPlayers = game.players.map((player) => player.name);
+
+        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
 
         if (!activePlayer || !activePlayer.isActive) {
             game.currentTurn++;

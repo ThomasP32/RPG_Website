@@ -6,9 +6,11 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CountdownService } from '@app/services/countdown/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
+import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
@@ -88,19 +90,20 @@ describe('GamePageComponent', () => {
     beforeEach(async () => {
         const playerTurnSubject = new Subject<string>();
         const youFellSubject = new Subject<boolean>();
-        const playerWonSubject = new Subject<boolean>();
         const playerLeftSubject = new Subject<Player[]>();
         const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
+        const playerWonSubject = new Subject<boolean>();
 
-        const gameSpy = jasmine.createSpyObj('GameService', ['game']);
+        const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer']);
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
             countdown$: new Subject<number>(),
         });
+        const journalSpy = jasmine.createSpyObj('JournalService', [], { journalEntries$: new Subject<JournalEntry[]>() });
         const gameTurnSpy = jasmine.createSpyObj(
             'GameTurnService',
             ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame', 'listenForPossibleCombats', 'getMoves'],
@@ -121,6 +124,7 @@ describe('GamePageComponent', () => {
                 { provide: CharacterService, useValue: characterSpy },
                 { provide: SocketService, useValue: socketSpy },
                 { provide: CountdownService, useValue: countdownSpy },
+                { provide: JournalService, useValue: journalSpy },
                 { provide: GameTurnService, useValue: gameTurnSpy },
                 { provide: Router, useValue: routerSpy },
             ],
@@ -158,6 +162,59 @@ describe('GamePageComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+    it('should toggle view to journal', () => {
+        component.toggleView('journal');
+        expect(component.activeView).toBe('journal');
+    });
+
+    it('should toggle view to chat', () => {
+        component.toggleView('chat');
+        expect(component.activeView).toBe('chat');
+    });
+
+    it('should initialize player preview on init', () => {
+        component.ngOnInit();
+        expect(characterService.getAvatarPreview).toHaveBeenCalledWith(mockPlayer.avatar);
+        expect(component.playerPreview).toBe(characterService.getAvatarPreview(mockPlayer.avatar));
+    });
+
+    it('should navigate to main menu on navigateToMain', () => {
+        component.navigateToMain();
+        expect(socketService.disconnect).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should navigate to end of game on navigateToEndOfGame', () => {
+        component.navigateToEndOfGame();
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should unsubscribe from socketSubscription on destroy', () => {
+        spyOn(component.socketSubscription, 'unsubscribe');
+        component.ngOnDestroy();
+        expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
+    });
+
+    it('should listen for possible opponents updates', () => {
+        component.ngOnInit();
+        const possibleOpponents: Player[] = [mockPlayer];
+        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+        expect(component.possibleOpponents).toEqual(possibleOpponents);
+    });
+
+    it('should trigger pulse on countdown update', () => {
+        spyOn(component, 'triggerPulse');
+        component.ngOnInit();
+        (countdownService.countdown$ as Subject<number>).next(10);
+        expect(component.triggerPulse).toHaveBeenCalled();
+    });
+
+    it('should set isPulsing to true and then false after triggerPulse', fakeAsync(() => {
+        component.triggerPulse();
+        expect(component.isPulsing).toBeTrue();
+        tick(500);
+        expect(component.isPulsing).toBeFalse();
+    }));
 
     it('should initialize game turn listeners on init', () => {
         spyOn(component, 'listenForFalling').and.callThrough();
@@ -218,7 +275,6 @@ describe('GamePageComponent', () => {
 
     it('should listen for player turn updates and set isYourTurn to false if playerName does not match', () => {
         component.ngOnInit();
-
         (gameTurnService.playerTurn$ as Subject<string>).next('OtherPlayer');
 
         expect(component.currentPlayerTurn).toBe('OtherPlayer');
@@ -272,7 +328,6 @@ describe('GamePageComponent', () => {
     it('should listen for game over updates and set gameOverMessage', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
         component.listenForGameOver();
-
         (gameTurnService.playerWon$ as Subject<boolean>).next(true);
 
         expect(component.gameOverMessage).toBe(true);
@@ -285,7 +340,6 @@ describe('GamePageComponent', () => {
     it('should not call navigateToEndOfGame if game is not over', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
         component.listenForGameOver();
-
         (gameTurnService.playerWon$ as Subject<boolean>).next(false);
 
         expect(component.gameOverMessage).toBe(false);
@@ -305,7 +359,7 @@ describe('GamePageComponent', () => {
         component.listenForStartTurnDelay();
 
         delaySubject.next(3);
-        tick(); 
+        tick();
         fixture.detectChanges();
 
         expect(component.startTurnCountdown).toBe(3);
@@ -315,8 +369,8 @@ describe('GamePageComponent', () => {
         delaySubject.next(0);
         tick();
         fixture.detectChanges();
-        expect(component.startTurnCountdown).toBe(3); 
-        expect(component.delayFinished).toBe(true); 
+        expect(component.startTurnCountdown).toBe(3);
+        expect(component.delayFinished).toBe(true);
     }));
 
     it('should call gameTurnService.movePlayer with the correct position on tile click', () => {
