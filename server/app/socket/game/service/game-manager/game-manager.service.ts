@@ -1,8 +1,8 @@
+import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
-import { DIRECTIONS } from '@common/directions';
 
 @Injectable()
 export class GameManagerService {

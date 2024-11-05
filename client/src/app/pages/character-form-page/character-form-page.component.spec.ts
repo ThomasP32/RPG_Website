@@ -290,11 +290,12 @@ describe('CharacterFormPageComponent', () => {
         });
 
         describe('toggleEditing()', () => {
-            it('should enable editing mode when isEditing is false', () => {
+            it('should enable editing mode and call startEditing when isEditing is false', () => {
                 component.isEditing = false;
+                spyOn(component, 'startEditing');
                 component.toggleEditing();
                 expect(component.isEditing).toBeTrue();
-                expect(component.name).toEqual(playerServiceSpy.player.name);
+                expect(component.startEditing).toHaveBeenCalled();
             });
 
             it('should disable editing mode and call stopEditing when isEditing is true', () => {

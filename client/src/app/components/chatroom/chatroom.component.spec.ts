@@ -90,4 +90,28 @@ describe('ChatroomComponent', () => {
         component.ngOnDestroy();
         expect(component.messageSubscription.unsubscribe).toHaveBeenCalled();
     });
+
+    it('should toggle isChatRetracted when toggleChat is called', () => {
+        component.isChatRetracted = false;
+        component.toggleChat();
+        expect(component.isChatRetracted).toBeTrue();
+
+        component.toggleChat();
+        expect(component.isChatRetracted).toBeFalse();
+    });
+
+    it('should scroll to bottom when scrollToBottom is called', (done) => {
+        const messageArea = document.createElement('div');
+        messageArea.id = 'messageArea';
+        document.body.appendChild(messageArea);
+        spyOn(document, 'getElementById').and.returnValue(messageArea);
+
+        component.scrollToBottom();
+
+        setTimeout(() => {
+            expect(messageArea.scrollTop).toBe(messageArea.scrollHeight);
+            document.body.removeChild(messageArea);
+            done();
+        }, 10);
+    });
 });
