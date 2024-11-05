@@ -89,33 +89,11 @@ export class GameManagerGateway implements OnGatewayInit {
                 (door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y,
             );
             if (!doorTile) {
-                console.error(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
+                console.log(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
                 return;
             }
             doorTile.isOpened = !doorTile.isOpened;
             this.server.to(data.gameId).emit('doorToggled', { game: game, door: doorTile });
-        }
-    }
-
-    @SubscribeMessage('isGameFinished')
-    isGameFinished(client: Socket, gameId: string): void {
-        const game = this.gameCreationService.getGameById(gameId);
-        const involvedPlayers = game.players.map((player) => player.name);
-        if (game.players.length === 1 && game.hasStarted) {
-            this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
-        }
-        this.journalService.logMessage(gameId, `La partie est terminée.`, involvedPlayers);
-    }
-
-    @SubscribeMessage('hasPlayerWon')
-    hasPlayerWon(client: Socket, gameId: string): void {
-        const game = this.gameCreationService.getGameById(gameId);
-        if (game) {
-            game.players.forEach((player) => {
-                if (player.specs.nVictories >= 3) {
-                    this.server.to(gameId).emit('playerWon', { winner: player });
-                }
-            });
         }
     }
 
@@ -153,9 +131,18 @@ export class GameManagerGateway implements OnGatewayInit {
     }
 
     prepareNextTurn(gameId: string): void {
-        this.gameCountdownService.resetTimerSubscription(gameId);
-        this.gameManagerService.updateTurnCounter(gameId);
-        this.startTurn(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
+        const involvedPlayers = game.players.map((player) => player.name);
+        if (game.players.filter((player) => player.isActive).length <= 1 && game.hasStarted) {
+            console.log('il ne reste plus assez de joueurs');
+            this.server.to(gameId).emit('gameFinishedNoWin');
+            this.journalService.logMessage(gameId, `La partie est terminée.`, involvedPlayers);
+            return;
+        } else {
+            this.gameCountdownService.resetTimerSubscription(gameId);
+            this.gameManagerService.updateTurnCounter(gameId);
+            this.startTurn(gameId);
+        }
     }
 
     startTurn(gameId: string): void {
@@ -168,13 +155,12 @@ export class GameManagerGateway implements OnGatewayInit {
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
         const involvedPlayers = game.players.map((player) => player.name);
 
-        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
-
         if (!activePlayer || !activePlayer.isActive) {
             game.currentTurn++;
             this.startTurn(gameId);
             return;
         }
+        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
         game.players
