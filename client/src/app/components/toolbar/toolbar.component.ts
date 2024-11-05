@@ -70,12 +70,10 @@ export class ToolbarComponent implements OnInit {
 
     startDrag(event: DragEvent, itemType: string) {
         if (itemType === 'starting-point') {
-            this.selectedTile = 'empty';
+            this.selectedTile = '';
             this.mapService.updateSelectedTile(this.selectedTile);
             if (this.mapCounterService.startingPointCounter > 0) {
-                event.dataTransfer?.setData('item', itemType);
-            } else if (itemType) {
-                event.dataTransfer?.setData('item', itemType);
+                event.dataTransfer?.setData('isStartingPoint', 'true');
             }
         } else {
             return;
@@ -103,7 +101,11 @@ export class ToolbarComponent implements OnInit {
     }
 
     getItemImage(item: string): string {
-        return this.imageService.getItemImage(item);
+        return this.imageService.getItemImageByString(item);
+    }
+
+    getStartingPointImage(): string {
+        return this.imageService.getStartingPointImage();
     }
 
     setMode() {

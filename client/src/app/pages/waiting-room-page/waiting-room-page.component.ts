@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
+import { DisconnectModalComponent } from '@app/components/disconnect-modal/disconnect-modal.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -17,12 +18,13 @@ import { firstValueFrom, Subscription } from 'rxjs';
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent, DisconnectModalComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
+    @ViewChild(DisconnectModalComponent, { static: false }) appDisconnectModalComponent!: DisconnectModalComponent;
     /* eslint-disable no-unused-vars */
     constructor(
         private communicationMapService: CommunicationMapService,
@@ -99,7 +101,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     exitGame(): void {
-        this.socketService.disconnect();
+        this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }

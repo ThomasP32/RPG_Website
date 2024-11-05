@@ -32,7 +32,7 @@ describe('ToolbarComponent', () => {
         ]);
         mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
 
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage']);
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage', 'getItemImageByString']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot'], { snapshot: { params: {} } });
         mapServiceSpy.map = { mode: Mode.Classic } as any;
 
@@ -126,18 +126,12 @@ describe('ToolbarComponent', () => {
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
     });
 
-    it('should start drag for starting point', () => {
-        const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
-        component.startDrag(mockDragEvent, 'starting-point');
-        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('item', 'starting-point');
-    });
-
     it('should start drag for starting point with counter > 0', () => {
         const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
         mapCounterServiceSpy.startingPointCounter = 2;
         component.startDrag(mockDragEvent, 'starting-point');
-        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('item', 'starting-point');
-        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
+        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('isStartingPoint', 'true');
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
     it('should NOT start drag for other item types', () => {
@@ -167,7 +161,7 @@ describe('ToolbarComponent', () => {
 
     it('should get item image', () => {
         component.getItemImage('item1');
-        expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith('item1');
+        expect(imageServiceSpy.getItemImageByString).toHaveBeenCalledWith('item1');
     });
 
     it('should update starting point counter on subscription', () => {

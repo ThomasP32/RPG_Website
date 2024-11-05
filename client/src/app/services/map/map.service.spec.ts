@@ -1,10 +1,11 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { Map, Mode } from '@common/map.types';
-import { of, throwError } from 'rxjs';
-import { MapService } from '@app/services/map/map.service';
 import { Router } from '@angular/router';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { MapService } from '@app/services/map/map.service';
+import { Cell } from '@common/map-cell';
+import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
+import { of, throwError } from 'rxjs';
 
 describe('MapService', () => {
     let service: MapService;
@@ -28,8 +29,11 @@ describe('MapService', () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPost', 'basicGet']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         TestBed.configureTestingModule({
-            providers: [MapService, { provide: CommunicationMapService, useValue: communicationServiceSpy}, { provide: Router, useValue: routerSpy }],
-
+            providers: [
+                MapService,
+                { provide: CommunicationMapService, useValue: communicationServiceSpy },
+                { provide: Router, useValue: routerSpy },
+            ],
         });
         service = TestBed.inject(MapService);
     });
@@ -60,12 +64,12 @@ describe('MapService', () => {
     it('should redirect to / when an error occurs during getMap', async () => {
         const errorResponse = new HttpErrorResponse({
             status: 404,
-            error: 'Map not found'
+            error: 'Map not found',
         });
         communicationServiceSpy.basicGet.and.returnValue(throwError(() => errorResponse));
-        
+
         await service.getMap('invalid-id');
-        
+
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     });
 
@@ -85,8 +89,8 @@ describe('MapService', () => {
         let selectedTile = '';
         service.updateSelectedTileSource.subscribe((tile: string) => (selectedTile = tile));
 
-        service.updateSelectedTile('wall');
-        expect(selectedTile).toBe('wall');
+        service.updateSelectedTile(TileCategory.Wall);
+        expect(selectedTile).toBe(TileCategory.Wall);
 
         service.updateSelectedTile('door');
         expect(selectedTile).toBe('door');
@@ -227,6 +231,129 @@ describe('MapService', () => {
             const result = await service.updateMap('1');
 
             expect(result).toBe('JSON string message');
+        });
+    });
+    describe('MapService - generateMapFromEdition', () => {
+        let service: MapService;
+
+        beforeEach(() => {
+            const mockCommunicationService = jasmine.createSpyObj('CommunicationMapService', ['basicPut', 'basicPost', 'basicGet']);
+            const mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+            service = new MapService(mockCommunicationService, mockRouter);
+            service.createMap(Mode.Classic, 10);
+        });
+
+        it('should generate map from edition with correct door tiles', () => {
+            const map: Cell[][] = [
+                [
+                    {
+                        tileType: TileCategory.Wall,
+                        door: { isDoor: true, isOpen: true },
+                        isStartingPoint: false,
+                        coordinate: { x: 0, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+                [
+                    {
+                        tileType: TileCategory.Water,
+                        door: { isDoor: false, isOpen: false },
+                        isStartingPoint: false,
+                        coordinate: { x: 1, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+            ];
+
+            service.generateMapFromEdition(map);
+
+            expect(service.map.doorTiles.length).toBe(1);
+            expect(service.map.doorTiles[0]).toEqual({ coordinate: { x: 0, y: 0 }, isOpened: true });
+        });
+
+        it('should generate map from edition with correct tiles', () => {
+            const map: Cell[][] = [
+                [
+                    {
+                        tileType: TileCategory.Wall,
+                        door: { isDoor: false, isOpen: false },
+                        isStartingPoint: false,
+                        coordinate: { x: 0, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+                [
+                    {
+                        tileType: TileCategory.Water,
+                        door: { isDoor: false, isOpen: false },
+                        isStartingPoint: false,
+                        coordinate: { x: 0, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+            ];
+
+            service.generateMapFromEdition(map);
+
+            expect(service.map.tiles.length).toBe(2);
+            expect(service.map.tiles[0]).toEqual({ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall });
+            expect(service.map.tiles[1]).toEqual({ coordinate: { x: 1, y: 0 }, category: TileCategory.Water });
+        });
+
+        it('should generate map from edition with correct items', () => {
+            const map: Cell[][] = [
+                [
+                    {
+                        tileType: TileCategory.Wall,
+                        door: { isDoor: false, isOpen: false },
+                        isStartingPoint: true,
+                        item: ItemCategory.Key,
+                        coordinate: { x: 0, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+            ];
+
+            service.generateMapFromEdition(map);
+
+            expect(service.map.items.length).toBe(1);
+            expect(service.map.items[0]).toEqual({ coordinate: { x: 0, y: 0 }, category: ItemCategory.Key });
+        });
+
+        it('should generate map from edition with correct start tiles', () => {
+            const map: Cell[][] = [
+                [
+                    {
+                        tileType: TileCategory.Wall,
+                        door: { isDoor: false, isOpen: false },
+                        isStartingPoint: true,
+                        coordinate: { x: 0, y: 0 },
+                        isOccupied: false,
+                        isHovered: false,
+                    },
+                ],
+            ];
+
+            service.generateMapFromEdition(map);
+
+            expect(service.map.startTiles.length).toBe(1);
+            expect(service.map.startTiles[0]).toEqual({ coordinate: { x: 0, y: 0 } });
+        });
+
+        it('should handle empty map', () => {
+            const map: Cell[][] = [];
+
+            service.generateMapFromEdition(map);
+
+            expect(service.map.doorTiles.length).toBe(0);
+            expect(service.map.tiles.length).toBe(0);
+            expect(service.map.items.length).toBe(0);
+            expect(service.map.startTiles.length).toBe(0);
         });
     });
 });

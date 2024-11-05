@@ -1,3 +1,4 @@
+import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
@@ -79,6 +80,23 @@ export class GameManagerGateway implements OnGatewayInit {
         }
     }
 
+    @SubscribeMessage('toggleDoor')
+    toggleDoor(client: Socket, data: { gameId: string; door: DoorTile }): void {
+        const game = this.gameCreationService.getGameById(data.gameId);
+        const isPlayerOnDoor = this.gameManagerService.isPlayerOnTile(game, data.door.coordinate);
+        if (!isPlayerOnDoor) {
+            const doorTile = game.doorTiles.find(
+                (door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y,
+            );
+            if (!doorTile) {
+                console.error(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
+                return;
+            }
+            doorTile.isOpened = !doorTile.isOpened;
+            this.server.to(data.gameId).emit('doorToggled', { game: game, door: doorTile });
+        }
+    }
+
     @SubscribeMessage('isGameFinished')
     isGameFinished(client: Socket, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -107,6 +125,14 @@ export class GameManagerGateway implements OnGatewayInit {
         const player = game.players.find((player) => player.socketId === client.id);
         const adjacentPlayers = this.gameManagerService.getAdjacentPlayers(player, gameId);
         this.server.to(client.id).emit('yourCombats', adjacentPlayers);
+    }
+
+    @SubscribeMessage('getAdjacentDoors')
+    getAdjacentDoors(client: Socket, gameId: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        const adjacentDoors = this.gameManagerService.getAdjacentDoors(player, gameId);
+        this.server.to(client.id).emit('yourDoors', adjacentDoors);
     }
 
     @SubscribeMessage('startGame')

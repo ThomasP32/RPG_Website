@@ -89,7 +89,7 @@
         <div class="starting-point-section">
             <div class="tile" [class.disabled]="mapCounterService.startingPointCounter === 0">
                 <img
-                    [src]="getItemImage('starting-point')"
+                    [src]="getStartingPointImage()"
                     alt="point de départ"
                     [draggable]="mapCounterService.startingPointCounter > 0"
                     (dragstart)="startDrag($event, 'starting-point')"

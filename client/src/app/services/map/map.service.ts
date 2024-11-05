@@ -2,7 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DetailedMap, Map, Mode } from '@common/map.types';
+import { Cell } from '@common/map-cell';
+import { DetailedMap, ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -32,8 +33,6 @@ export class MapService {
 
     async getMap(id: string): Promise<void> {
         try {
-            // Disabling no-unused-vars here because _id, isVisible, and lastModified are intentionally extracted 
-            // to exclude them from restOfMap, even though they’re not used directly.
             // eslint-disable-next-line no-unused-vars
             const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(
                 this.communicationMapService.basicGet<DetailedMap>(`admin/${id}`),
@@ -60,6 +59,47 @@ export class MapService {
 
     generateMap() {
         this.generateMapSource.next();
+    }
+
+    generateMapFromEdition(map: Cell[][]): void {
+        this.map.doorTiles = [];
+        this.map.tiles = [];
+        this.map.items = [];
+        this.map.startTiles = [];
+
+        for (let rowIndex = 0; rowIndex < map.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < map[rowIndex].length; colIndex++) {
+                const cell = map[rowIndex][colIndex];
+                const coordinate = { x: rowIndex, y: colIndex };
+
+                if (cell && cell.tileType) {
+                    if (cell.door?.isDoor) {
+                        this.map.doorTiles.push({
+                            coordinate,
+                            isOpened: cell.door.isOpen === true,
+                        });
+                    } else if (['water', 'ice', 'wall'].includes(cell.tileType)) {
+                        this.map.tiles.push({
+                            coordinate,
+                            category: cell.tileType as TileCategory,
+                        });
+                    }
+
+                    if (cell.item && cell.item != undefined && cell.isStartingPoint) {
+                        this.map.items.push({
+                            coordinate,
+                            category: cell.item as ItemCategory,
+                        });
+                    }
+
+                    if (cell.isStartingPoint) {
+                        this.map.startTiles.push({
+                            coordinate,
+                        });
+                    }
+                }
+            }
+        }
     }
 
     resetMap() {

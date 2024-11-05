@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { TileCategory } from '@common/map.types';
+import { Cell } from '@common/map-cell';
+import { ItemCategory, TileCategory } from '@common/map.types';
 import { MapCounterService } from '../map-counter/map-counter.service';
 import { TileService } from './tile.service';
 
@@ -20,78 +21,162 @@ describe('TileService', () => {
     });
 
     it('should place a tile', () => {
-        const mockMap = [[{ value: 'floor', item: undefined }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mockMap[0][0].value).toBe('wall');
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
+        ];
+        service.placeTile(mockMap, 0, 0, TileCategory.Wall);
+        expect(mockMap[0][0].tileType).toBe(TileCategory.Wall);
     });
 
-    it('should place a tile and update counters if replacing an item', () => {
-        const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith('item1', 'add');
-        expect(mockMap[0][0].value).toBe('wall');
+    it('should place a tile and update counters if replacing a starting-point', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: true,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
+        ];
+        service.placeTile(mockMap, 0, 0, TileCategory.Wall);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, undefined, 'add');
+        expect(mockMap[0][0].tileType).toBe(TileCategory.Wall);
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
     it('should toggle doorState between open and closed', () => {
-        const mockMap: Array<{ value: string; doorState?: 'open' | 'closed'; item: undefined }>[] = [
-            [{ value: 'door', doorState: 'closed', item: undefined }],
-            [{ value: 'floor', item: undefined }],
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Door,
+                    door: { isOpen: false, isDoor: true },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
         ];
-
-        service.placeTile(mockMap, 0, 0, 'door');
-        expect(mockMap[0][0].doorState).toBe('open');
-        service.placeTile(mockMap, 0, 0, 'door');
-        expect(mockMap[0][0].doorState).toBe('closed');
+        service.placeTile(mockMap, 0, 0, TileCategory.Door);
+        expect(mockMap[0][0].door.isOpen).toBe(true);
+        service.placeTile(mockMap, 0, 0, TileCategory.Door);
+        expect(mockMap[0][0].door.isOpen).toBe(false);
     });
 
     it('should erase a tile', () => {
-        const mockMap = [[{ value: 'wall', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.eraseTile(mockMap, 0, 0, 'floor');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith('item1', 'add');
-        expect(mockMap[0][0].value).toBe('floor');
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Wall,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    item: ItemCategory.Hat,
+                },
+            ],
+        ];
+        service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(false, ItemCategory.Hat, 'add');
+        expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
     it('should move an item', () => {
-        const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    item: ItemCategory.Hat,
+                },
+            ],
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 1, y: 0 },
+                },
+            ],
+        ];
         service.moveItem(mockMap, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 0 });
         expect(mockMap[0][0].item).toBeUndefined();
-        expect(mockMap[1][0].item).toBe('item1');
+        expect(mockMap[1][0].item).toBe(ItemCategory.Hat);
     });
 
     it('should set an item', () => {
-        const mockMap = [[{ value: 'floor', item: 'acidgun' }], [{ value: 'floor', item: TileCategory }]];
-        service.setItem(mockMap, 'item2', { rowIndex: 1, colIndex: 0 });
-        expect(mockMap[1][0].item).toBe('item2');
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    item: ItemCategory.Hat,
+                },
+            ],
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 1, y: 0 },
+                },
+            ],
+        ];
+        service.setItem(mockMap, ItemCategory.Flag, { rowIndex: 1, colIndex: 0 });
+        expect(mockMap[1][0].item).toBe(ItemCategory.Flag);
     });
 
     it('should place a tile and NOT update counters if replacing a tile with another tile', () => {
-        const mockMap = [[{ value: 'floor', item: undefined }], [{ value: 'wall', item: undefined }]];
-        service.placeTile(mockMap, 1, 0, 'door');
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
+            [
+                {
+                    tileType: TileCategory.Wall,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 1, y: 0 },
+                },
+            ],
+        ];
+        service.placeTile(mockMap, 1, 0, TileCategory.Door);
         expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
-        expect(mockMap[1][0].value).toBe('door');
-        expect(mockMap[1][0].item).toBeUndefined();
-    });
-
-    it('should place a tile', () => {
-        const mockMap = [[{ value: 'floor', item: undefined }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mockMap[0][0].value).toBe('wall');
-    });
-
-    it('should place a tile and update counters if replacing an item with a wall or door', () => {
-        const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith('item1', 'add');
-        expect(mockMap[0][0].value).toBe('wall');
-        expect(mockMap[0][0].item).toBeUndefined();
-    });
-
-    it('should place a tile and NOT update counters if replacing an item with a tile other than wall or door', () => {
-        const mockMap = [[{ value: 'floor', item: 'item1' }], [{ value: 'floor', item: undefined }]];
-        service.placeTile(mockMap, 0, 0, 'floor');
-        expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
-        expect(mockMap[0][0].value).toBe('floor');
+        expect(mockMap[1][0].tileType).toBe(TileCategory.Door);
     });
 });

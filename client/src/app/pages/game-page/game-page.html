@@ -85,17 +85,17 @@
     </div>
 
     <div class="game-map-container">
-        <app-game-map [map]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
+        <app-game-map [loadedMap]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
         <div class="player-list">Liste des joueurs</div>
-
+        @if(combatAvailable) {
         <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
-
+        }
         <div class="action-buttons">
             <button (click)="endTurn()">Fin du tour</button>
-            <button>Exécuter une action</button>
+            <button (click)="toggleDoor()">{{actionMessage}}</button>
             <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
 
             @if(showExitModal) {

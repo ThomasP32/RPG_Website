@@ -24,6 +24,8 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    outline: 2px solid rgba(0, 0, 0, 0.5);
+    outline-offset: -2px;
 }
 
 .map-cell.highlight::before,
@@ -40,7 +42,8 @@
 
 .map-cell.highlight::before {
     background-color: rgba(60, 60, 60, 0.5);
-    border: 2px solid rgba(243, 156, 18, 0.5);
+    outline: 2px solid rgba(243, 156, 18, 0.5);
+    outline-offset: -2px;
 }
 
 .map-cell.preview-highlight::before {
@@ -57,9 +60,8 @@
     background-size: 10px 10px;
 
     background-color: rgba(243, 156, 18, 0.2);
-
-    border: 2px solid rgba(243, 156, 18, 0.5);
-    box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+    outline: 2px solid rgba(243, 156, 18, 0.5);
+    outline-offset: -2px;
 }
 
 .map-cell img {
@@ -67,7 +69,6 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    z-index: 1;
 }
 
 .map-cell .grid-item {
@@ -77,9 +78,36 @@
     transform: translate(-50%, -50%);
     width: 60%;
     height: 60%;
+    z-index: 10;
+}
+
+.map-cell .grid-starting-points {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
     z-index: 3;
 }
 
+.map-cell .grid-tile {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    object-fit: cover;
+    display: block;
+}
+
+.map-cell .grid-players {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    object-fit: cover;
+    display: block;
+}
 .tooltip {
     position: absolute;
     max-width: 5cm;

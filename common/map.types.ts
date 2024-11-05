@@ -7,6 +7,8 @@ export enum TileCategory {
     Water = 'water',
     Ice = 'ice',
     Wall = 'wall',
+    Floor = 'floor',
+    Door = 'door',
 }
 
 export enum Mode {

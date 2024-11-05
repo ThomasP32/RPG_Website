@@ -71,7 +71,7 @@ export class GameCreationService {
         return this.getGameById(gameId).hostSocketId === socketId;
     }
 
-    handlePlayerDisconnect(client: Socket, gameId: string): Game {
+    handlePlayerLeaving(client: Socket, gameId: string): Game {
         const game = this.getGameById(gameId);
         if (game.hasStarted) {
             game.players = game.players.map((player) => {
@@ -128,32 +128,6 @@ export class GameCreationService {
             startTilesLeft.splice(randomIndex, 1);
         });
     }
-
-    // isGameStartable(gameId: string): boolean {
-    //     const game = this.getGameById(gameId);
-    //     if (game.mapSize.x === SMALL_MAP_SIZE) {
-    //         return game.players.filter((player) => player.isActive).length === SMALL_MAP_PLAYERS_MIN_MAX;
-    //     } else if (game.mapSize.x === MEDIUM_MAP_SIZE) {
-    //         return game.players.filter((player) => player.isActive).length >= MEDIUM_MAP_PLAYERS_MIN;
-    //     } else if (game.mapSize.x === LARGE_MAP_SIZE) {
-    //         return game.players.filter((player) => player.isActive).length >= LARGE_MAP_PLAYERS_MIN;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
-    // isMaxPlayersReached(players: Player[], gameId: string): boolean {
-    //     const game = this.getGameById(gameId);
-    //     if (game.mapSize.x === MapSettings.SMALL_MAP_SIZE) {
-    //         return players.length === MapSettings.SMALL_MAP_PLAYERS_MIN_MAX;
-    //     } else if (game.mapSize.x === MapSettings.MEDIUM_MAP_SIZE) {
-    //         return players.length === MapSettings.MEDIUM_MAP_PLAYERS_MAX;
-    //     } else if (game.mapSize.x === MapSettings.LARGE_MAP_SIZE) {
-    //         return players.length === MapSettings.LARGE_MAP_PLAYERS_MAX;
-    //     } else {
-    //         return false;
-    //     }
-    // }
 
     isGameStartable(gameId: string): boolean {
         const game = this.getGameById(gameId);

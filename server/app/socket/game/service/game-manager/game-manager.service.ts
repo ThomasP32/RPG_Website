@@ -1,3 +1,4 @@
+import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, TileCategory } from '@common/map.types';
@@ -219,6 +220,26 @@ export class GameManagerService {
         });
 
         return adjacentPlayers;
+    }
+
+    getAdjacentDoors(player: Player, gameId: string): DoorTile[] {
+        const game = this.gameCreationService.getGameById(gameId);
+        const adjacentDoors: DoorTile[] = [];
+
+        game.doorTiles.forEach((door) => {
+            const isAdjacent = DIRECTIONS.some(
+                (direction) => door.coordinate.x === player.position.x + direction.x && door.coordinate.y === player.position.y + direction.y,
+            );
+            if (isAdjacent) {
+                adjacentDoors.push(door);
+            }
+        });
+
+        return adjacentDoors;
+    }
+
+    isPlayerOnTile(game: Game, position: Coordinate): boolean {
+        return !!game.players.find((player) => player.position.x === position.x && player.position.y === position.y);
     }
 
     isGameResumable(gameId: string): boolean {

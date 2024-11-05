@@ -189,15 +189,15 @@ describe('GameGateway', () => {
         it('should lock the game when max players are reached', () => {
             const newPlayer: Player = { name: 'Player2', socketId: socket.id, isActive: true } as Player;
             const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
-    
+
             // Mock methods to simulate a full game
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGameById.returns(gameRoom);
             gameCreationService.addPlayerToGame.returns(updatedGame);
-            gameCreationService.isMaxPlayersReached.returns(true); 
-    
+            gameCreationService.isMaxPlayersReached.returns(true);
+
             gateway.handleJoinGame(socket, { player: newPlayer, gameId: gameRoom.id });
-    
+
             expect(gameCreationService.doesGameExist.calledWith(gameRoom.id)).toBeTruthy();
             expect(gameCreationService.addPlayerToGame.calledWith(newPlayer, gameRoom.id)).toBeTruthy();
             expect(gameCreationService.lockGame.calledWith(gameRoom.id)).toBeTruthy();
@@ -256,12 +256,12 @@ describe('GameGateway', () => {
 
             gameCreationService.isPlayerHost.returns(false);
 
-            gameCreationService.handlePlayerDisconnect.returns(updatedGame);
+            gameCreationService.handlePlayerLeaving.returns(updatedGame);
             gateway.handleDisconnect(socket);
 
             expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameRoom.id)).toBeTruthy();
 
-            expect(gameCreationService.handlePlayerDisconnect.calledWith(socket, gameRoom.id)).toBeTruthy();
+            expect(gameCreationService.handlePlayerLeaving.calledWith(socket, gameRoom.id)).toBeTruthy();
         });
     });
 
@@ -388,6 +388,38 @@ describe('GameGateway', () => {
 
             expect(gameCreationService.isGameStartable.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('isStartable', { game: game })).toBeFalsy();
+        });
+        describe('getGame', () => {
+            it('should emit currentGameData if the game exists', () => {
+                const gameId = 'room-1';
+                gameCreationService.doesGameExist.returns(true);
+                gameCreationService.getGameById.returns(gameRoom);
+
+                gateway.getGame(socket, gameId);
+
+                expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+                expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
+                expect(socket.emit.calledWith('currentGameData', { game: gameRoom, name: gameRoom.name, size: gameRoom.mapSize.x })).toBeTruthy();
+            });
+
+            it('should emit gameNotFound if the game does not exist', () => {
+                const gameId = 'non-existent-room';
+                gameCreationService.doesGameExist.returns(false);
+
+                gateway.getGame(socket, gameId);
+
+                expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+                expect(socket.emit.calledWith('gameNotFound', { reason: 'La partie a été fermée' })).toBeTruthy();
+            });
+        });
+        describe('handleKickPlayer', () => {
+            it('should emit playerKicked to the specified player', () => {
+                const playerId = 'player-1';
+                gateway.handleKickPlayer(socket, playerId);
+                expect(serverStub.to.calledWith(playerId)).toBeTruthy();
+                const emitStub = serverStub.to(playerId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerKicked')).toBeTruthy();
+            });
         });
     });
 });
