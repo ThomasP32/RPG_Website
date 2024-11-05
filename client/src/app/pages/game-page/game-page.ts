@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
+import { JournalComponent } from '@app/components/journal/journal.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
@@ -20,11 +21,12 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent],
+    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent, JournalComponent],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+    activeView: 'chat' | 'journal' = 'chat';
     numberOfPlayers: number;
     activePlayers: Player[];
 
@@ -93,6 +95,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
         }
+    }
+
+    toggleView(view: 'chat' | 'journal'): void {
+        this.activeView = view;
     }
 
     get player(): Player {
