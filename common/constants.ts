@@ -24,4 +24,3 @@ export const WaitingRoomParameters: IWaitingRoomParameters = {
 };
 
 export const HALF = 0.5;
-

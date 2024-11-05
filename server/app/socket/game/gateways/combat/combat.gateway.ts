@@ -1,122 +1,178 @@
 import { Player } from '@common/game';
 import { Inject } from '@nestjs/common';
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
+import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
+import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class CombatGateway {
+export class CombatGateway implements OnGatewayInit {
     @WebSocketServer()
     server: Server;
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    @Inject(ServerCombatService) private serverCombatService: ServerCombatService;
     @Inject(JournalService) private journalService: JournalService;
+
+    constructor(
+        private serverCombatService: ServerCombatService,
+        private gameCountdownService: GameCountdownService,
+        private combatCountdownService: CombatCountdownService,
+    ) {
+        this.serverCombatService = serverCombatService;
+        this.combatCountdownService = combatCountdownService;
+        this.gameCountdownService = gameCountdownService;
+    }
+
+    afterInit() {
+        this.combatCountdownService.setServer(this.server);
+        this.combatCountdownService.on('timeout', (gameId: string) => {
+            this.attackOnTimeOut(gameId);
+        });
+    }
 
     @SubscribeMessage('startCombat')
     async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
-        const involvedPlayers = game.players.map((player) => player.name);
         if (game) {
-            const combatRoomId = `combat_${data.gameId}_${player.socketId}_${data.opponent.socketId}`;
-            await client.join(combatRoomId);
+            const combat = this.serverCombatService.createCombat(data.gameId, player, data.opponent);
+            await client.join(combat.id);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
             if (opponentSocket) {
-                await opponentSocket.join(combatRoomId);
+                await opponentSocket.join(combat.id);
+                this.server.to(combat.id).emit('combatStarted', {
+                    challenger: player,
+                    opponent: data.opponent,
+                });
+                const involvedPlayers = [player.name];
+                this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
+                
+                this.server.to(data.gameId).emit('combatStartedSignal');
+                this.combatCountdownService.initCountdown(data.gameId, 5);
+                this.gameCountdownService.pauseCountdown(data.gameId);
+                this.startCombatTurns(data.gameId);
             }
-            this.server.to(combatRoomId).emit('combatStarted', {
-                message: `${player.name} a commencé un combat contre ${data.opponent.name}`,
-                combatRoomId: combatRoomId,
-                challenger: player,
-                opponent: data.opponent,
-            });
-            this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
-
-            let currentTurnPlayerId: string;
-            if (player.specs.speed > data.opponent.specs.speed) {
-                currentTurnPlayerId = player.socketId;
-            } else if (player.specs.speed === data.opponent.specs.speed) {
-                currentTurnPlayerId = player.socketId;
-            } else {
-                currentTurnPlayerId = data.opponent.socketId;
-            }
-            this.server.to(combatRoomId).emit('updateTurn', { currentPlayerTurn: currentTurnPlayerId, combatRoomId: combatRoomId });
         }
     }
+
     @SubscribeMessage('attack')
-    attack(
-        client: Socket,
-        data: { attackPlayer: Player; defendPlayer: Player; combatRoomId: string; attackDice: number; defenseDice: number },
-    ): void {
-        if (this.serverCombatService.isAttackSuccess(data.attackPlayer, data.defendPlayer, data.attackDice, data.defenseDice)) {
-            this.server
-                .to(data.combatRoomId)
-                .emit('attackSuccess', { playerAttacked: data.defendPlayer, message: `Attaque réussie de ${data.attackPlayer.name}` });
-        } else {
-            this.server
-                .to(data.combatRoomId)
-                .emit('attackFailure', { playerAttacked: data.defendPlayer, message: `Attaque échouée de ${data.attackPlayer.name}` });
-        }
+    attack(client: Socket, gameId: string): void {
+        this.attackOnTimeOut(gameId);
     }
 
     @SubscribeMessage('startEvasion')
-    startEvasion(client: Socket, data: { player: Player; waitingPlayer: Player; gameId: string; combatRoomId: string }): void {
-        data.player.specs.nEvasions++;
+    async startEvasion(client: Socket, gameId: string): Promise<void> {
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        let evadingPlayer: Player;
+        if (combat.challenger.socketId === client.id) {
+            if (combat.challenger.specs.evasions === 0) return;
+            else {
+                evadingPlayer = combat.challenger;
+                combat.challenger.specs.evasions--;
+                combat.challenger.specs.nEvasions++;
+            }
+        } else {
+            if (combat.opponent.specs.evasions === 0) return;
+            else {
+                evadingPlayer = combat.opponent;
+                combat.opponent.specs.evasions--;
+                combat.challenger.specs.nEvasions++;
+            }
+        }
         const evasionSuccess = Math.random() < 0.4;
-        this.server.to(data.combatRoomId).emit('evasionSuccess', {
-            success: evasionSuccess,
-            waitingPlayer: data.waitingPlayer,
-            message: evasionSuccess ? `${data.player.name} a réussi à s'échapper du combat` : 'Évasion échouée',
-        });
+        if (evasionSuccess) {
+            combat.challenger.specs.life = combat.challengerLife;
+            combat.opponent.specs.life = combat.opponentLife;
+            combat.challenger.specs.nCombats++;
+            combat.opponent.specs.nCombats++;
+            const game = this.gameCreationService.getGameById(gameId);
+            this.serverCombatService.updatePlayersInGame(game);
+            this.server.to(combat.id).emit('evasionSuccess', evadingPlayer);
+            setTimeout(() => {
+                this.server.to(gameId).emit('combatFinishedByEvasion', { updatedGame: game, evadingPlayer: evadingPlayer });
+                this.combatCountdownService.deleteCountdown(gameId);
+                this.gameCountdownService.resumeCountdown(gameId);
+                this.cleanupCombatRoom(combat.id);
+            }, 3000);
+        } else {
+            this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
+            this.prepareNextTurn(gameId);
+        }
     }
-    @SubscribeMessage('combatFinishedEvasion')
-    async combatFinishedByEvasion(client: Socket, data: { gameId: string; player1: Player; Player2: Player; combatRoomId: string }): Promise<void> {
-        this.server.to(data.gameId).emit('combatFinishedByEvasion', { message: "Évasion d'un joueur, combat terminé" });
-        await this.cleanupCombatRoom(data.combatRoomId);
-    }
-    @SubscribeMessage('combatFinishedNormal')
-    async combatFinishedNormally(
-        client: Socket,
-        data: { gameId: string; combatWinner: Player; combatLooser: Player; combatRoomId: string },
-    ): Promise<void> {
-        this.server.to(data.gameId).emit('combatFinishedNormally', {
-            message: `Combat terminé, le gagnant est ${data.combatWinner.name}`,
-            combatWinner: data.combatWinner,
-            combatLooser: data.combatLooser,
-        });
-        this.server.to(data.combatWinner.socketId).emit('combatFinishedNormally', { message: `Vous avez gagné le combat, continuez votre tour` });
-        await this.cleanupCombatRoom(data.combatRoomId);
-    }
-    @SubscribeMessage('rollDice')
-    rollDice(client: Socket, data: { combatRoomId: string; player: Player; opponent: Player }): void {
-        const attackingPlayerAttackDice = Math.floor(Math.random() * data.player.specs.attackBonus) + 1;
-        const attackingPlayerDefenseDice = Math.floor(Math.random() * data.player.specs.defenseBonus) + 1;
-        const opponentAttackDice = Math.floor(Math.random() * data.opponent.specs.attackBonus) + 1;
-        const opponentDefenseDice = Math.floor(Math.random() * data.opponent.specs.defenseBonus) + 1;
-        const attackDice = data.player.specs.attack + attackingPlayerAttackDice;
-        const defenseDice = data.opponent.specs.defense + opponentDefenseDice;
-        this.server.to(data.combatRoomId).emit('diceRolled', {
-            playerDiceAttack: attackingPlayerAttackDice,
-            playerDiceDefense: attackingPlayerDefenseDice,
-            opponentDiceAttack: opponentAttackDice,
-            opponentDiceDefense: opponentDefenseDice,
-            attackDice: attackDice,
-            defenseDice: defenseDice,
-        });
-    }
-    // @SubscribeMessage('updatePlayersAfterCombat')
-    // async updatePlayersAfterCombat(client: Socket, data: { gameId: string; player1: Player; player2: Player }): Promise<void> {
-    //     this.server.to(data.gameId).emit('updatedPlayersAfterCombat', { player1: data.player1, player2: data.player2 });
-    // }
 
-    private async cleanupCombatRoom(combatRoomId: string): Promise<void> {
+    attackOnTimeOut(gameId: string) {
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        let attackingPlayer: Player;
+        let defendingPlayer: Player;
+        if (combat.currentTurnSocketId === combat.challenger.socketId) {
+            attackingPlayer = combat.challenger;
+            defendingPlayer = combat.opponent;
+        } else {
+            attackingPlayer = combat.opponent;
+            defendingPlayer = combat.challenger;
+        }
+        const rollResult = this.serverCombatService.rollDice(attackingPlayer, defendingPlayer);
+        this.server.to(combat.id).emit('diceRolled', {
+            attackDice: rollResult.attackDice,
+            defenseDice: rollResult.defenseDice,
+        });
+
+        if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
+            defendingPlayer.specs.life--;
+            this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
+        } else {
+            this.server.to(combat.id).emit('attackFailure', defendingPlayer);
+        }
+
+        if (defendingPlayer.specs.life === 0) {
+            const game = this.gameCreationService.getGameById(gameId);
+            this.serverCombatService.combatWinStatsUpdate(attackingPlayer, gameId);
+            this.serverCombatService.sendBackToInitPos(defendingPlayer, game);
+            this.serverCombatService.updatePlayersInGame(game);
+            this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
+            setTimeout(() => {
+                this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
+                this.combatCountdownService.deleteCountdown(gameId);
+                if (game.currentTurn === attackingPlayer.turn) {
+                    this.gameCountdownService.resumeCountdown(gameId);
+                } else {
+                    this.gameCountdownService.emit('timeout', gameId);
+                }
+                this.cleanupCombatRoom(combat.id);
+            }, 3000);
+        } else {
+            this.combatCountdownService.resetTimerSubscription(gameId);
+            this.prepareNextTurn(gameId);
+        }
+    }
+
+    prepareNextTurn(gameId: string) {
+        this.serverCombatService.updateTurn(gameId);
+        this.combatCountdownService.resetTimerSubscription(gameId);
+        this.startCombatTurns(gameId);
+    }
+
+    startCombatTurns(gameId: string): void {
+        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        let currentPlayerTurn: Player;
+        this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
+        if (combat.currentTurnSocketId === combat.challenger.socketId) {
+            currentPlayerTurn = combat.challenger;
+            this.server.to(combat.opponent.socketId).emit('playerTurnCombat');
+        } else {
+            currentPlayerTurn = combat.opponent;
+            this.server.to(combat.challenger.socketId).emit('playerTurnCombat');
+        }
+        this.combatCountdownService.startTurnCounter(gameId, currentPlayerTurn.specs.evasions === 0 ? false : true);
+    }
+
+    async cleanupCombatRoom(combatRoomId: string): Promise<void> {
         try {
             const sockets = await this.server.in(combatRoomId).fetchSockets();
-
             for (const socketId of sockets) {
                 socketId.leave(combatRoomId);
             }

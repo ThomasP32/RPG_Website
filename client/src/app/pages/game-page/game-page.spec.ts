@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { CountdownService } from '@app/services/countdown/countdown.service';
+import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { JournalService } from '@app/services/journal/journal.service';
@@ -21,7 +21,9 @@ const mockPlayer: Player = {
     avatar: Avatar.Avatar1,
     isActive: true,
     position: { x: 0, y: 0 },
+    initialPosition: { x: 0, y: 0 },
     specs: {
+        evasions: 2,
         life: 100,
         speed: 10,
         attack: 10,
@@ -75,7 +77,6 @@ const mockMoves: MovesMap = new Map([
     ['1,1', { path: [{ x: 1, y: 1 }], weight: 1 }],
     ['2,2', { path: [{ x: 2, y: 2 }], weight: 2 }],
 ]);
-
 describe('GamePageComponent', () => {
     let component: GamePageComponent;
     let fixture: ComponentFixture<GamePageComponent>;
@@ -93,6 +94,7 @@ describe('GamePageComponent', () => {
         const playerLeftSubject = new Subject<Player[]>();
         const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
+        
         const playerWonSubject = new Subject<boolean>();
 
         const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
@@ -106,13 +108,23 @@ describe('GamePageComponent', () => {
         const journalSpy = jasmine.createSpyObj('JournalService', [], { journalEntries$: new Subject<JournalEntry[]>() });
         const gameTurnSpy = jasmine.createSpyObj(
             'GameTurnService',
-            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame', 'listenForPossibleCombats', 'getMoves'],
+            [
+                'listenForTurn',
+                'endTurn',
+                'movePlayer',
+                'listenForPlayerMove',
+                'listenMoves',
+                'endGame',
+                'listenForPossibleCombats',
+                'getMoves',
+                'listenForCombatConclusion',
+            ],
             {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,
                 playerWon$: playerWonSubject,
                 possibleOpponents$: possibleOpponentsSubject,
-                moves: new Map(),
+                moves: mockMoves,
             },
         );
 
@@ -134,7 +146,6 @@ describe('GamePageComponent', () => {
         component = fixture.componentInstance;
 
         router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
         gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
         playerService = TestBed.inject(PlayerService) as jasmine.SpyObj<PlayerService>;
@@ -144,7 +155,6 @@ describe('GamePageComponent', () => {
 
         gameSpy.game = mockGame;
         playerSpy.player = mockPlayer;
-        gameTurnSpy.moves = mockMoves;
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
@@ -216,12 +226,14 @@ describe('GamePageComponent', () => {
         expect(component.isPulsing).toBeFalse();
     }));
 
-    it('should initialize game turn listeners on init', () => {
+    it('should initialize game turn and combat listeners on init', () => {
         spyOn(component, 'listenForFalling').and.callThrough();
         spyOn(component, 'listenForCountDown').and.callThrough();
         spyOn(component, 'listenPlayersLeft').and.callThrough();
         spyOn(component, 'listenForCurrentPlayerUpdates').and.callThrough();
         spyOn(component, 'listenForStartTurnDelay').and.callThrough();
+        spyOn(component, 'listenForOpponent').and.callThrough();
+        spyOn(component, 'listenForIsCombatModalOpen').and.callThrough();
 
         component.ngOnInit();
 
@@ -233,6 +245,8 @@ describe('GamePageComponent', () => {
         expect(component.listenPlayersLeft).toHaveBeenCalled();
         expect(component.listenForCurrentPlayerUpdates).toHaveBeenCalled();
         expect(component.listenForStartTurnDelay).toHaveBeenCalled();
+        expect(component.listenForOpponent).toHaveBeenCalled();
+        expect(component.listenForIsCombatModalOpen).toHaveBeenCalled();
     });
 
     it('should navigate to main menu on confirm exit', () => {
@@ -295,7 +309,7 @@ describe('GamePageComponent', () => {
         expect(component.countdown).toBe(10);
     });
 
-    it('it should call gameTurnService endTurn on endTurn', () => {
+    it('should call gameTurnService endTurn on endTurn', () => {
         component.endTurn();
         component.navigateToEndOfGame();
         expect(gameTurnService.endTurn).toHaveBeenCalled();
@@ -354,8 +368,6 @@ describe('GamePageComponent', () => {
         const delaySubject = new Subject<number>();
         socketService.listen.and.returnValue(delaySubject.asObservable());
 
-        spyOn(component, 'triggerPulse');
-
         component.listenForStartTurnDelay();
 
         delaySubject.next(3);
@@ -363,7 +375,6 @@ describe('GamePageComponent', () => {
         fixture.detectChanges();
 
         expect(component.startTurnCountdown).toBe(3);
-        expect(component.triggerPulse).toHaveBeenCalled();
         expect(component.delayFinished).toBe(false);
 
         delaySubject.next(0);

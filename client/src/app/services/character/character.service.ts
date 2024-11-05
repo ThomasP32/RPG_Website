@@ -97,12 +97,11 @@ export class CharacterService {
     ];
 
     getCharacters(): Observable<Character[]> {
-        console.log('les characters ont été requested', this.characters);
         return of(this.characters);
     }
 
     resetCharacterAvailability(): void {
-        this.characters.forEach(character => {
+        this.characters.forEach((character) => {
             character.isAvailable = true;
         });
     }

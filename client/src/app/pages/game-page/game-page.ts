@@ -3,53 +3,68 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
+import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
+import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { CountdownService } from '@app/services/countdown/countdown.service';
+import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
-import { Game, Player, Specs } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Coordinate, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, ChatroomComponent, RouterLink, PlayersListComponent, CombatListComponent, JournalComponent],
+    imports: [
+        CommonModule,
+        GameMapComponent,
+        ChatroomComponent,
+        RouterLink,
+        PlayersListComponent,
+        CombatListComponent,
+        CombatModalComponent,
+        JournalComponent,
+    ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     activeView: 'chat' | 'journal' = 'chat';
-    numberOfPlayers: number;
     activePlayers: Player[];
-
+    opponent: Player;
     possibleOpponents: Player[];
 
     currentPlayerTurn: string;
-    startTurnCountdown: number;
+    playerPreview: string;
+
     isYourTurn: boolean = false;
     delayFinished: boolean = true;
-    isPulsing = false;
-    countdown: number = TURN_DURATION;
 
-    socketSubscription: Subscription = new Subscription();
-    playerPreview: string;
+    isPulsing = false;
+    countdown: number | string = TURN_DURATION;
+    startTurnCountdown: number = 3;
+
+    gameId: string;
+
     showExitModal = false;
     showKickedModal = false;
     gameOverMessage = false;
+    isCombatModalOpen = false;
+
+    socketSubscription: Subscription = new Subscription();
+
     youFell: boolean = false;
     map: Map;
-    specs: Specs;
 
     constructor(
-        // private route: ActivatedRoute,
         private router: Router,
         private socketService: SocketService,
         private characterService: CharacterService,
@@ -57,8 +72,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameService: GameService,
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
+        private combatService: CombatService,
     ) {
-        // this.route = route;
         this.router = router;
         this.socketService = socketService;
         this.characterService = characterService;
@@ -66,6 +81,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.gameTurnService = gameTurnService;
         this.countDownService = countDownService;
         this.gameService = gameService;
+        this.combatService = combatService;
     }
 
     ngOnInit() {
@@ -74,14 +90,25 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
             this.gameTurnService.listenForPossibleCombats();
+            this.gameTurnService.listenForCombatConclusion();
+
+            this.combatService.listenCombatStart();
+            this.combatService.listenForCombatFinish();
+            this.combatService.listenForEvasionInfo();
+
+            this.listenForIsCombatModalOpen();
+            this.listenForOpponent();
             this.listenForPossibleOpponents();
             this.listenForStartTurnDelay();
             this.listenForFalling();
             this.listenForCountDown();
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
+
+            this.gameId = this.gameService.game.id;
             this.activePlayers = this.gameService.game.players;
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+
             if (this.playerService.player.socketId === this.game.hostSocketId) {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
@@ -100,21 +127,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         return this.gameService.game;
     }
 
-    listenPlayersLeft() {
-        this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
-                this.activePlayers = players.filter((player) => player.isActive);
-                this.gameService.game.players = players;
-                if (this.activePlayers.length <= 1) {
-                    this.showExitModal = false;
-                    this.showKickedModal = true;
-                    setTimeout(() => {
-                        // this.gameTurnService.endGame();
-                        this.navigateToMain();
-                    }, 3000);
-                }
-            }),
-        );
+    get moves(): MovesMap {
+        return this.gameTurnService.moves;
     }
 
     endTurn() {
@@ -148,6 +162,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.showExitModal = false;
     }
 
+    triggerPulse(): void {
+        this.isPulsing = true;
+        setTimeout(() => (this.isPulsing = false), 500);
+    }
+
+    onTileClickToMove(position: Coordinate) {
+        this.gameTurnService.movePlayer(position);
+    }
+
     listenForCurrentPlayerUpdates() {
         this.gameTurnService.playerTurn$.subscribe((playerName) => {
             this.currentPlayerTurn = playerName;
@@ -169,7 +192,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
-            console.log('UNE SECONDE');
             this.countdown = time;
             this.triggerPulse();
         });
@@ -192,30 +214,54 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
     }
 
-    triggerPulse(): void {
-        this.isPulsing = true;
-        setTimeout(() => (this.isPulsing = false), 500);
+    listenForIsCombatModalOpen() {
+        this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
+            this.isCombatModalOpen = isCombatModalOpen;
+        });
     }
 
-    get moves(): MovesMap {
-        return this.gameTurnService.moves;
+    listenForOpponent() {
+        this.combatService.opponent$.subscribe((opponent) => {
+            this.opponent = opponent;
+        });
+    }
+
+    listenPlayersLeft() {
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+                this.activePlayers = players.filter((player) => player.isActive);
+                this.gameService.game.players = players;
+                if (this.activePlayers.length <= 1) {
+                    this.showExitModal = false;
+                    this.showKickedModal = true;
+                    setTimeout(() => {
+                        // this.gameTurnService.endGame();
+                        this.navigateToMain();
+                    }, 3000);
+                }
+                this.gameService.game.players = players;
+                if (this.activePlayers.length <= 1) {
+                    this.showExitModal = false;
+                    this.showKickedModal = true;
+                    setTimeout(() => {
+                        // this.gameTurnService.endGame();
+                        this.navigateToMain();
+                    }, 3000);
+                }
+            }),
+        );
     }
 
     listenForStartTurnDelay() {
         this.socketSubscription.add(
             this.socketService.listen<number>('delay').subscribe((delay) => {
                 this.startTurnCountdown = delay;
-                this.triggerPulse();
-                if (this.startTurnCountdown === 0) {
-                    this.delayFinished = true;
+                if (delay === 0) {
                     this.startTurnCountdown = 3;
+                    this.delayFinished = true;
                 }
             }),
         );
-    }
-
-    onTileClickToMove(position: Coordinate) {
-        this.gameTurnService.movePlayer(position);
     }
 
     ngOnDestroy() {

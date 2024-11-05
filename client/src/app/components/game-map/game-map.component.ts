@@ -16,6 +16,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     @Input() map: Game;
     @Input() moves: MovesMap;
     @Output() tileClicked = new EventEmitter<Coordinate>();
+    @Input() isYourTurn: boolean;
     movePreview: Coordinate[] = [];
     Map: { value: string; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string; player?: Avatar }[][] = [];
     tileDescription: string = '';

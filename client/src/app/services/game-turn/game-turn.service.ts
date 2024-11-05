@@ -114,6 +114,18 @@ export class GameTurnService {
         this.socketService.sendMessage('getMovements', this.game.id);
     }
 
+    clearMoves(): void {
+        this.moves = new Map();
+    }
+
+    movePlayer(position: Coordinate) {
+        this.socketService.sendMessage('moveToPosition', { playerTurn: this.player.turn, gameId: this.game.id, destination: position });
+    }
+
+    verifyPlayerWin(): void {
+        this.socketService.sendMessage('hasPlayerWon', this.game.id);
+    }
+
     listenMoves(): void {
         this.socketSubscription.add(
             this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
@@ -124,14 +136,6 @@ export class GameTurnService {
                 }
             }),
         );
-    }
-
-    clearMoves(): void {
-        this.moves = new Map();
-    }
-
-    movePlayer(position: Coordinate) {
-        this.socketService.sendMessage('moveToPosition', { playerTurn: this.player.turn, gameId: this.game.id, destination: position });
     }
 
     listenForPlayerMove(): void {
@@ -162,19 +166,37 @@ export class GameTurnService {
     listenForPossibleCombats(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('yourCombats').subscribe((possibleOpponents) => {
-                console.log('voici tes combats possibles : ', possibleOpponents);
                 if (possibleOpponents.length === 0) {
                     this.noCombats = true;
                 } else {
                     this.noCombats = false;
                 }
                 this.possibleOpponents.next(possibleOpponents);
-                this.getMoves()
+                this.getMoves();
             }),
         );
     }
 
-    verifyPlayerWin(): void {
-        this.socketService.sendMessage('hasPlayerWon', this.game.id);
+    listenForCombatConclusion(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<{ updatedGame: Game; evadingPlayer: Player }>('combatFinishedByEvasion').subscribe((data) => {
+                if (data.evadingPlayer.socketId === this.player.socketId) {
+                    this.playerService.player = data.evadingPlayer;
+                } else {
+                    this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
+                }
+                this.gameService.setGame(data.updatedGame);
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<{ updatedGame: Game; winner: Player }>('combatFinished').subscribe((data) => {
+                if (data.winner.socketId === this.player.socketId) {
+                    this.playerService.player = data.winner;
+                } else {
+                    this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
+                }
+                this.gameService.setGame(data.updatedGame);
+            }),
+        );
     }
 }
