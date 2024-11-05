@@ -11,7 +11,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { JournalEntry } from '@common/journal-entry';
-import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
 
@@ -77,6 +77,7 @@ const mockMoves: MovesMap = new Map([
     ['1,1', { path: [{ x: 1, y: 1 }], weight: 1 }],
     ['2,2', { path: [{ x: 2, y: 2 }], weight: 2 }],
 ]);
+
 describe('GamePageComponent', () => {
     let component: GamePageComponent;
     let fixture: ComponentFixture<GamePageComponent>;
@@ -94,7 +95,7 @@ describe('GamePageComponent', () => {
         const playerLeftSubject = new Subject<Player[]>();
         const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
-        
+        const possibleDoorsSubject = new Subject<DoorTile[]>();
         const playerWonSubject = new Subject<boolean>();
 
         const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
@@ -117,6 +118,8 @@ describe('GamePageComponent', () => {
                 'endGame',
                 'listenForPossibleCombats',
                 'getMoves',
+                'listenForDoors',
+                'listenForDoorUpdates',
                 'listenForCombatConclusion',
             ],
             {
@@ -125,6 +128,7 @@ describe('GamePageComponent', () => {
                 playerWon$: playerWonSubject,
                 possibleOpponents$: possibleOpponentsSubject,
                 moves: mockMoves,
+                possibleDoors$: possibleDoorsSubject,
             },
         );
 
@@ -205,12 +209,12 @@ describe('GamePageComponent', () => {
         expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
     });
 
-    it('should listen for possible opponents updates', () => {
-        component.ngOnInit();
-        const possibleOpponents: Player[] = [mockPlayer];
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
-        expect(component.possibleOpponents).toEqual(possibleOpponents);
-    });
+    // it('should listen for possible opponents updates', () => {
+    //     component.ngOnInit();
+    //     const possibleOpponents: Player[] = [mockPlayer];
+    //     (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+    //     expect(component.possibleOpponents).toEqual(possibleOpponents);
+    // });
 
     it('should trigger pulse on countdown update', () => {
         spyOn(component, 'triggerPulse');

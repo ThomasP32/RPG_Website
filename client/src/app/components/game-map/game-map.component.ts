@@ -3,7 +3,8 @@ import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output
 import { MovesMap } from '@app/interfaces/moves';
 import { ImageService } from '@app/services/image/image.service';
 import { Avatar, Game } from '@common/game';
-import { Coordinate, TileCategory } from '@common/map.types';
+import { Cell } from '@common/map-cell';
+import { Coordinate, ItemCategory, TileCategory } from '@common/map.types';
 
 @Component({
     selector: 'app-game-map',
@@ -13,12 +14,12 @@ import { Coordinate, TileCategory } from '@common/map.types';
     styleUrl: './game-map.component.scss',
 })
 export class GameMapComponent implements OnInit, OnChanges {
-    @Input() map: Game;
+    @Input() loadedMap: Game;
     @Input() moves: MovesMap;
     @Output() tileClicked = new EventEmitter<Coordinate>();
     @Input() isYourTurn: boolean;
     movePreview: Coordinate[] = [];
-    Map: { value: string; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string; player?: Avatar }[][] = [];
+    map: Cell[][];
     tileDescription: string = '';
     explanationIsVisible: boolean = false;
     tooltipX: number = 0;
@@ -36,12 +37,12 @@ export class GameMapComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {
-        this.loadMap(this.map);
+        this.loadMap(this.loadedMap);
     }
 
     ngOnChanges() {
         this.clearPreview();
-        this.loadMap(this.map);
+        this.loadMap(this.loadedMap);
     }
 
     onTileHover(position: Coordinate) {
@@ -58,54 +59,64 @@ export class GameMapComponent implements OnInit, OnChanges {
         this.movePreview = [];
     }
 
-    loadMap(map: Game) {
-        this.createMap(map.mapSize.x);
+    loadMap(loadedMap: Game) {
+        this.createMap(loadedMap.mapSize.x);
 
-        map.tiles.forEach((tile) => {
-            this.Map[tile.coordinate.x][tile.coordinate.y].value = tile.category;
+        loadedMap.tiles.forEach((tile) => {
+            this.map[tile.coordinate.x][tile.coordinate.y].tileType = tile.category;
         });
 
-        map.doorTiles.forEach((door) => {
-            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
-            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
+        loadedMap.doorTiles.forEach((door) => {
+            this.map[door.coordinate.x][door.coordinate.y].tileType = TileCategory.Door;
+            this.map[door.coordinate.x][door.coordinate.y].door.isDoor = true;
+            this.map[door.coordinate.x][door.coordinate.y].door.isOpen = door.isOpened;
+        });
+        loadedMap.startTiles.forEach((start) => {
+            this.map[start.coordinate.x][start.coordinate.y].isStartingPoint = true;
         });
 
-        map.startTiles.forEach((start) => {
-            this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
+        loadedMap.items.forEach((item) => {
+            this.map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
 
-        map.items.forEach((item) => {
-            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
-        });
-
-        map.players.forEach((player) => {
+        loadedMap.players.forEach((player) => {
             if (player.isActive) {
-                this.Map[player.position.x][player.position.y].player = player.avatar;
+                this.map[player.position.x][player.position.y].player = player;
             }
         });
     }
 
     createMap(mapSize: number) {
-        this.Map = [];
+        this.map = [];
         for (let i = 0; i < mapSize; i++) {
-            const row: { value: string; isHovered: boolean }[] = [];
+            const row: Cell[] = [];
             for (let j = 0; j < mapSize; j++) {
-                row.push({ value: 'floor', isHovered: false });
+                row.push({
+                    coordinate: { x: i, y: j },
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isHovered: false,
+                    isOccupied: false,
+                    isStartingPoint: false,
+                });
             }
-            this.Map.push(row);
+            this.map.push(row);
         }
     }
-
-    getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.Map);
+    getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number): string {
+        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.map);
     }
 
-    getItemImage(item: string): string {
+    getStartingPointImage(): string {
+        return this.imageService.getStartingPointImage();
+    }
+
+    getItemImage(item: ItemCategory): string {
         return this.imageService.getItemImage(item);
     }
 
     getAvatarImage(avatar: Avatar): string {
-        return this.imageService.getPlayerImage(avatar);
+        return this.imageService.getPixelatedPlayerImage(avatar);
     }
 
     isMove(rowIndex: number, colIndex: number): boolean {
@@ -122,7 +133,7 @@ export class GameMapComponent implements OnInit, OnChanges {
         if (event.button === 2) {
             event.preventDefault();
             this.tileDescription = 'Un déplacement sur une tuile de terrain nécessite 1 point de mouvement.';
-            this.map.tiles.forEach((tile) => {
+            this.loadedMap.tiles.forEach((tile) => {
                 if (tile.category === TileCategory.Water && tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
                     this.tileDescription = "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.";
                 }
@@ -135,7 +146,7 @@ export class GameMapComponent implements OnInit, OnChanges {
                 }
             });
 
-            this.map.doorTiles.forEach((doorTile) => {
+            this.loadedMap.doorTiles.forEach((doorTile) => {
                 if (!doorTile.isOpened && doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
                     this.tileDescription = 'Une porte fermée ne peut être franchie, mais peut être ouverte par une action.';
                 }

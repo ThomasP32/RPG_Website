@@ -6,6 +6,7 @@ import { MapCounterService } from '@app/services/map-counter/map-counter.service
 import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile/tile.service';
+import { Cell } from '@common/map-cell';
 import { ItemCategory, Map, TileCategory } from '@common/map.types';
 /* eslint-disable no-unused-vars */
 @Component({
@@ -17,7 +18,7 @@ import { ItemCategory, Map, TileCategory } from '@common/map.types';
 })
 export class MapAreaComponent implements OnInit {
     selectedTile: string;
-    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
+    map: Cell[][];
 
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
@@ -25,7 +26,7 @@ export class MapAreaComponent implements OnInit {
 
     currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
 
-    defaultTile = 'floor';
+    defaultTile = TileCategory.Floor;
     randomItemCounter: number;
     startingPointCounter: number;
     itemsCounter: number;
@@ -74,14 +75,21 @@ export class MapAreaComponent implements OnInit {
     }
 
     createMap(mapSize: number) {
-        this.Map = [];
+        this.map = [];
 
         for (let i = 0; i < mapSize; i++) {
-            const row: { value: string | null; isHovered: boolean }[] = [];
+            const row: Cell[] = [];
             for (let j = 0; j < mapSize; j++) {
-                row.push({ value: 'floor', isHovered: false });
+                row.push({
+                    coordinate: { x: i, y: j },
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isHovered: false,
+                    isOccupied: false,
+                    isStartingPoint: false,
+                });
             }
-            this.Map.push(row);
+            this.map.push(row);
         }
     }
 
@@ -93,10 +101,10 @@ export class MapAreaComponent implements OnInit {
         this.isMouseDown = true;
         if (isRightClick) {
             this.isRightClickDown = true;
-            this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
+            this.tileService.eraseTile(this.map, rowIndex, colIndex, this.defaultTile);
         } else {
             this.isPlacing = true;
-            this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
+            this.tileService.placeTile(this.map, rowIndex, colIndex, this.selectedTile);
         }
     }
 
@@ -126,20 +134,20 @@ export class MapAreaComponent implements OnInit {
     placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isMouseDown) {
             if (this.isRightClickDown) {
-                this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
+                this.tileService.eraseTile(this.map, rowIndex, colIndex, this.defaultTile);
             } else if (this.selectedTile) {
-                this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
+                this.tileService.placeTile(this.map, rowIndex, colIndex, this.selectedTile);
             }
         }
     }
 
     startDrag(event: DragEvent, rowIndex: number, colIndex: number) {
-        const cell = this.Map[rowIndex][colIndex];
+        const cell = this.map[rowIndex][colIndex];
 
-        if (cell.item) {
+        if (cell.isStartingPoint) {
             this.currentDraggedItem = { rowIndex, colIndex };
 
-            event.dataTransfer?.setData('item', cell.item);
+            event.dataTransfer?.setData('isStartingPoint', 'true');
         } else {
             event.preventDefault();
         }
@@ -150,81 +158,53 @@ export class MapAreaComponent implements OnInit {
     }
 
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
-        const itemType = event.dataTransfer?.getData('item');
-        if (itemType === 'starting-point') {
-            if (this.currentDraggedItem) {
-                this.tileService.moveItem(this.Map, this.currentDraggedItem, { rowIndex, colIndex });
-                this.currentDraggedItem = null;
+        const isStartingPoint = event.dataTransfer?.getData('isStartingPoint');
+        if (isStartingPoint) {
+            const targetTile = this.map[rowIndex][colIndex];
+
+            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint) {
                 event.preventDefault();
-            } else {
-                this.tileService.setItem(this.Map, itemType, { rowIndex, colIndex });
-                this.mapCounterService.updateCounters(itemType, 'remove');
+                return;
             }
+            if (this.currentDraggedItem) {
+                this.tileService.moveItem(this.map, this.currentDraggedItem, { rowIndex, colIndex });
+                this.currentDraggedItem = null;
+            }
+            this.tileService.setStartingPoint(this.map, rowIndex, colIndex);
         }
         this.selectedTile = '';
+        event.preventDefault();
     }
 
     resetMapToDefault() {
         if (this.route.snapshot.params['mode']) {
-            for (let i = 0; i < this.Map.length; i++) {
-                for (let j = 0; j < this.Map[i].length; j++) {
-                    this.Map[i][j].value = this.defaultTile;
-                    this.Map[i][j].item = undefined;
+            for (let i = 0; i < this.map.length; i++) {
+                for (let j = 0; j < this.map[i].length; j++) {
+                    this.map[i][j].tileType = this.defaultTile;
+                    this.map[i][j].item = undefined;
                 }
             }
             this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
         } else {
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
             this.loadMap(this.mapService.map);
         }
     }
 
     generateMap() {
-        this.mapService.map.doorTiles = [];
-        this.mapService.map.tiles = [];
-        this.mapService.map.items = [];
-        this.mapService.map.startTiles = [];
-
-        for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
-            for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
-                const cell = this.Map[rowIndex][colIndex];
-                const coordinate = { x: rowIndex, y: colIndex };
-
-                if (cell && cell.value) {
-                    if (cell.value === 'door') {
-                        this.mapService.map.doorTiles.push({
-                            coordinate,
-                            isOpened: cell.doorState === 'open',
-                        });
-                    } else if (['water', 'ice', 'wall'].includes(cell.value)) {
-                        this.mapService.map.tiles.push({
-                            coordinate,
-                            category: cell.value as TileCategory,
-                        });
-                    }
-
-                    if (cell.item && cell.item !== '' && cell.item !== 'starting-point') {
-                        this.mapService.map.items.push({
-                            coordinate,
-                            category: cell.item as ItemCategory,
-                        });
-                    }
-
-                    if (cell.item === 'starting-point') {
-                        this.mapService.map.startTiles.push({
-                            coordinate,
-                        });
-                    }
-                }
-            }
-        }
+        this.mapService.generateMapFromEdition(this.map);
     }
 
-    getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.Map);
+    getTileImage(tileType: TileCategory, rowIndex: number, colIndex: number): string {
+        return this.imageService.getTileImage(tileType, rowIndex, colIndex, this.map);
     }
 
-    getItemImage(item: string): string {
+    getItemImage(item: ItemCategory): string {
         return this.imageService.getItemImage(item);
+    }
+
+    getStartingPointImage(): string {
+        return this.imageService.getStartingPointImage();
     }
 
     setCountersBasedOnMapSize(mapSize: number) {
@@ -250,24 +230,23 @@ export class MapAreaComponent implements OnInit {
         });
     }
 
-    loadMap(map: Map) {
-        this.Map = [];
-        this.createMap(map.mapSize.x);
+    loadMap(loadedmap: Map) {
+        this.createMap(loadedmap.mapSize.x);
 
-        map.tiles.forEach((tile) => {
-            this.Map[tile.coordinate.x][tile.coordinate.y].value = tile.category;
+        loadedmap.tiles.forEach((tile) => {
+            this.map[tile.coordinate.x][tile.coordinate.y].tileType = tile.category;
         });
 
-        map.doorTiles.forEach((door) => {
-            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
-            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
+        loadedmap.doorTiles.forEach((door) => {
+            this.map[door.coordinate.x][door.coordinate.y].door.isDoor = true;
+            this.map[door.coordinate.x][door.coordinate.y].door.isOpen = door.isOpened;
         });
-        map.startTiles.forEach((start) => {
-            this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
+        loadedmap.startTiles.forEach((start) => {
+            this.map[start.coordinate.x][start.coordinate.y].isStartingPoint = true;
         });
 
-        map.items.forEach((item) => {
-            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
+        loadedmap.items.forEach((item) => {
+            this.map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
     }
 }

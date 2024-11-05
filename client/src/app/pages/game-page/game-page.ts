@@ -16,8 +16,8 @@ import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
-import { Game, Player } from '@common/game';
-import { Coordinate, Map } from '@common/map.types';
+import { Game, Player, Specs } from '@common/game';
+import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -41,6 +41,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     activePlayers: Player[];
     opponent: Player;
     possibleOpponents: Player[];
+    possibleDoors: DoorTile[];
 
     currentPlayerTurn: string;
     playerPreview: string;
@@ -55,6 +56,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     gameId: string;
 
     showExitModal = false;
+    showActionModal = false;
     showKickedModal = false;
     gameOverMessage = false;
     isCombatModalOpen = false;
@@ -63,6 +65,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     youFell: boolean = false;
     map: Map;
+    specs: Specs;
+    actionMessage: string = 'Actions possibles';
+    doorActionAvailable: boolean = false;
+    combatAvailable: boolean = false;
+    gameMapComponent: GameMapComponent;
 
     constructor(
         private router: Router,
@@ -90,6 +97,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
             this.gameTurnService.listenForPossibleCombats();
+            this.gameTurnService.listenForDoors();
+            this.gameTurnService.listenForDoorUpdates();
             this.gameTurnService.listenForCombatConclusion();
 
             this.combatService.listenCombatStart();
@@ -99,6 +108,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForIsCombatModalOpen();
             this.listenForOpponent();
             this.listenForPossibleOpponents();
+            this.listenForDoorOpening();
             this.listenForStartTurnDelay();
             this.listenForFalling();
             this.listenForCountDown();
@@ -157,14 +167,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
     openExitConfirmationModal(): void {
         this.showExitModal = true;
     }
+    openActionModal(): void {
+        this.showActionModal = true;
+    }
 
     closeExitModal(): void {
         this.showExitModal = false;
-    }
-
-    triggerPulse(): void {
-        this.isPulsing = true;
-        setTimeout(() => (this.isPulsing = false), 500);
     }
 
     onTileClickToMove(position: Coordinate) {
@@ -210,8 +218,42 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForPossibleOpponents() {
         this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
-            this.possibleOpponents = possibleOpponents;
+            if (!this.gameTurnService.actionsDone.combat && possibleOpponents.length > 0) {
+                this.combatAvailable = true;
+                this.possibleOpponents = possibleOpponents;
+            } else {
+                this.combatAvailable = false;
+                this.possibleOpponents = [];
+            }
         });
+    }
+
+    listenForDoorOpening() {
+        this.gameTurnService.possibleDoors$.subscribe((possibleDoors: DoorTile[]) => {
+            if (!this.gameTurnService.actionsDone.door && possibleDoors.length > 0) {
+                this.doorActionAvailable = true;
+                this.possibleDoors = possibleDoors;
+                if (possibleDoors[0].isOpened) {
+                    this.actionMessage = 'Fermer la porte';
+                } else {
+                    this.actionMessage = 'Ouvrir la porte';
+                }
+            } else {
+                this.doorActionAvailable = false;
+                this.actionMessage = 'Actions possibles';
+                this.possibleDoors = [];
+            }
+        });
+    }
+
+    toggleDoor() {
+        if (this.doorActionAvailable) {
+            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+        }
+    }
+    triggerPulse(): void {
+        this.isPulsing = true;
+        setTimeout(() => (this.isPulsing = false), 500);
     }
 
     listenForIsCombatModalOpen() {

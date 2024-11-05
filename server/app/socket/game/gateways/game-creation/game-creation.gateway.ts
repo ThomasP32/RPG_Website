@@ -129,20 +129,40 @@ export class GameGateway implements OnGatewayDisconnect {
         }
     }
 
+    @SubscribeMessage('leaveGame')
+    handleLeaveGame(client: Socket, gameId: string): void {
+        let game = this.gameCreationService.getGameById(gameId);
+        if (!game.hasStarted) {
+            if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
+                this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                this.gameCreationService.deleteRoom(game.id);
+                return;
+            }
+        }
+        if (game.players.some((player) => player.socketId === client.id)) {
+            game = this.gameCreationService.handlePlayerLeaving(client, game.id);
+            this.server.to(game.id).emit('playerLeft', game.players);
+            return;
+        } else {
+            return;
+        }
+    }
+
     handleDisconnect(client: Socket): void {
         const games = this.gameCreationService.getGames();
         games.forEach((game) => {
+            client.emit('disconnected', { reason: 'Vous avez été déconnecté' });
+            console.log('Player disconnected');
             if (!game.hasStarted) {
                 if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
                     this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
                     this.gameCreationService.deleteRoom(game.id);
-                    // this.server.socketsLeave(game.id);
-
                     return;
                 }
             }
+
             if (game.players.some((player) => player.socketId === client.id)) {
-                game = this.gameCreationService.handlePlayerDisconnect(client, game.id);
+                game = this.gameCreationService.handlePlayerLeaving(client, game.id);
                 this.server.to(game.id).emit('playerLeft', game.players);
                 return;
             } else {
