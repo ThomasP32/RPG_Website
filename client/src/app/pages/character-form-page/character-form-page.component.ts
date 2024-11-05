@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Character } from '@app/interfaces/character';
@@ -10,6 +10,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { Bonus, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
+
 const timeLimit = 5000;
 
 @Component({
@@ -20,6 +21,7 @@ const timeLimit = 5000;
     styleUrls: ['./character-form-page.component.scss'],
 })
 export class CharacterFormPageComponent implements OnInit, OnDestroy {
+    @ViewChild('nameInput') nameInput: ElementRef;
     socketSubscription: Subscription = new Subscription();
     Bonus = Bonus;
     name: string = '';
@@ -196,11 +198,21 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     toggleEditing(): void {
         this.isEditing = !this.isEditing;
-        if (!this.isEditing) {
-            this.stopEditing();
+        if (this.isEditing) {
+            this.startEditing();
         } else {
-            this.name = this.playerService.player.name;
+            this.stopEditing();
         }
+    }
+
+    startEditing(): void {
+        this.isEditing = true;
+
+        if (this.name === 'Choisis ton nom') {
+            this.name = '';
+        }
+
+        setTimeout(() => this.nameInput.nativeElement.focus(), 0);
     }
 
     stopEditing(): void {

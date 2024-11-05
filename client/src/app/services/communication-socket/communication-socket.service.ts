@@ -43,6 +43,10 @@ export class SocketService {
             this.socket.on(eventName, (data: T) => {
                 subscriber.next(data);
             });
+
+            // return () => {
+            //     this.socket.off(event);
+            // };
         });
     }
 
