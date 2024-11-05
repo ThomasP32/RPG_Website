@@ -5,7 +5,7 @@
 <div class="disable-interactions"></div>
 <div class="turn-indicator">
     <h3>C'est au tour de {{currentPlayerTurn}} dans</h3>
-    <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{startTurnCountdown}}</span>
+    <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{countdown}}</span>
 </div>
 } @if(youFell) {
 <div class="disable-interactions"></div>
@@ -125,7 +125,7 @@
 @if(isCombatModalOpen){
 <div class="modal-overlay">
     <div class="modal-content">
-        <app-combat-modal [player]="player" [combatRoomId]="combatRoomId" [gameId]="gameId" [opponent]="opponent"> </app-combat-modal>
+        <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
     </div>
 </div>
 }

@@ -24,10 +24,5 @@ export class CombatCountdownService {
                 this.combatCountdown.next(remainingTime);
             }),
         );
-        this.socketSubscription.add(
-            this.socketService.listen<number>('counterFinished').subscribe(() => {
-                this.combatCountdown.next(0);
-            }),
-        );
     }
 }

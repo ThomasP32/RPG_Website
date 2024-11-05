@@ -19,7 +19,7 @@ const mockPlayer: Player = {
     avatar: Avatar.Avatar1,
     isActive: true,
     position: { x: 0, y: 0 },
-    initialPosition:  { x: 0, y: 0 },
+    initialPosition: { x: 0, y: 0 },
     specs: {
         evasions: 2,
         life: 100,
@@ -310,14 +310,14 @@ describe('GamePageComponent', () => {
         tick();
         fixture.detectChanges();
 
-        expect(component.startTurnCountdown).toBe(3);
+        expect(component.countdown).toBe(3);
         expect(component.triggerPulse).toHaveBeenCalled();
         expect(component.delayFinished).toBe(false);
 
         delaySubject.next(0);
         tick();
         fixture.detectChanges();
-        expect(component.startTurnCountdown).toBe(3);
+        expect(component.countdown).toBe(3);
         expect(component.delayFinished).toBe(true);
     }));
 
