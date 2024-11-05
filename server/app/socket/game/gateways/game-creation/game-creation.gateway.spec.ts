@@ -387,5 +387,37 @@ describe('GameGateway', () => {
             expect(gameCreationService.isGameStartable.calledWith(gameId)).toBeTruthy();
             expect(socket.emit.calledWith('isStartable', { game: game })).toBeFalsy();
         });
+        describe('getGame', () => {
+            it('should emit currentGameData if the game exists', () => {
+                const gameId = 'room-1';
+                gameCreationService.doesGameExist.returns(true);
+                gameCreationService.getGameById.returns(gameRoom);
+
+                gateway.getGame(socket, gameId);
+
+                expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+                expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
+                expect(socket.emit.calledWith('currentGameData', { game: gameRoom, name: gameRoom.name, size: gameRoom.mapSize.x })).toBeTruthy();
+            });
+
+            it('should emit gameNotFound if the game does not exist', () => {
+                const gameId = 'non-existent-room';
+                gameCreationService.doesGameExist.returns(false);
+
+                gateway.getGame(socket, gameId);
+
+                expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeTruthy();
+                expect(socket.emit.calledWith('gameNotFound', { reason: 'La partie a été fermée' })).toBeTruthy();
+            });
+        });
+        describe('handleKickPlayer', () => {
+            it('should emit playerKicked to the specified player', () => {
+                const playerId = 'player-1';
+                gateway.handleKickPlayer(socket, playerId);
+                expect(serverStub.to.calledWith(playerId)).toBeTruthy();
+                const emitStub = serverStub.to(playerId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerKicked')).toBeTruthy();
+            });
+        });
     });
 });
