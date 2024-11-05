@@ -17,8 +17,8 @@ export class MapCounterService {
 
     constructor() {}
 
-    updateCounters(item: string | undefined, action: 'add' | 'remove') {
-        if (item === 'starting-point') {
+    updateCounters(isStartingPoint: boolean, item: string | undefined, action: 'add' | 'remove') {
+        if (isStartingPoint) {
             this.updateStartingPointCounter(action === 'add' ? this.startingPointCounter + 1 : this.startingPointCounter - 1);
         }
     }

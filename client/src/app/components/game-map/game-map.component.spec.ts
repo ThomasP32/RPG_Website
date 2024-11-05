@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MovesMap } from '@app/interfaces/moves';
 import { ImageService } from '@app/services/image/image.service';
 import { Avatar, Game, Player } from '@common/game';
+import { Cell } from '@common/map-cell';
 import { Coordinate, ItemCategory, TileCategory } from '@common/map.types';
 import { GameMapComponent } from './game-map.component';
 
@@ -27,6 +28,8 @@ describe('GameMapComponent', () => {
         players: [{ position: { x: 2, y: 2 }, avatar: Avatar.Avatar1 } as Player],
     } as Game;
 
+    const map: Cell[][] = [];
+
     const mockMoves: MovesMap = new Map([
         ['1,1', { path: [{ x: 1, y: 1 }], weight: 1 }],
         ['2,2', { path: [{ x: 2, y: 2 }], weight: 2 }],
@@ -43,7 +46,7 @@ describe('GameMapComponent', () => {
         component = fixture.componentInstance;
         imageServiceSpy = TestBed.inject(ImageService) as jasmine.SpyObj<ImageService>;
 
-        component.map = mockMap;
+        component.map = map;
         component.moves = mockMoves;
         fixture.detectChanges();
     });
@@ -168,8 +171,8 @@ describe('GameMapComponent', () => {
     describe('#getTileImage', () => {
         it('should get tile image from image service', () => {
             imageServiceSpy.getTileImage.and.returnValue('tile-image');
-            const image = component.getTileImage('floor', 1, 1);
-            expect(imageServiceSpy.getTileImage).toHaveBeenCalledWith('floor', 1, 1, component.Map);
+            const image = component.getTileImage(TileCategory.Floor, 1, 1);
+            expect(imageServiceSpy.getTileImage).toHaveBeenCalledWith(TileCategory.Floor, 1, 1, component.map);
             expect(image).toBe('tile-image');
         });
     });
@@ -177,8 +180,8 @@ describe('GameMapComponent', () => {
     describe('#getItemImage', () => {
         it('should get item image from image service', () => {
             imageServiceSpy.getItemImage.and.returnValue('item-image');
-            const image = component.getItemImage('item1');
-            expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith('item1');
+            const image = component.getItemImage(ItemCategory.Hat);
+            expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith(ItemCategory.Hat);
             expect(image).toBe('item-image');
         });
     });

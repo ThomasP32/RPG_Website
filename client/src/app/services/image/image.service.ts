@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Avatar } from '@common/game';
+import { ItemCategory, TileCategory } from '@common/map.types';
 
 @Injectable({
     providedIn: 'root',
@@ -10,7 +11,7 @@ export class ImageService {
     loadTileImage(tile: string): string {
         switch (tile) {
             case 'door':
-                return './assets/tiles/door_y.png';
+                return './assets/tiles/door_closed.jpg';
             case 'wall':
                 return './assets/tiles/wall.png';
             case 'ice':
@@ -22,43 +23,51 @@ export class ImageService {
         }
     }
 
-    getTileImage(tileValue: string, rowIndex: number, colIndex: number, map: any[][]): string {
+    getDoorImage(isOpen: boolean): string {
+        if (isOpen) {
+            return './assets/tiles/door_opened.jpg';
+        } else {
+            return './assets/tiles/door_closed.jpg';
+        }
+    }
+
+    getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number, map: any[][]): string {
         switch (tileValue) {
-            case 'door': {
-                const doorState = map[rowIndex][colIndex].doorState;
-
-                const hasWallLeft = map[rowIndex]?.[colIndex - 1]?.value === 'wall';
-                const hasWallRight = map[rowIndex]?.[colIndex + 1]?.value === 'wall';
-                const hasWallAbove = map[rowIndex - 1]?.[colIndex]?.value === 'wall';
-                const hasWallBelow = map[rowIndex + 1]?.[colIndex]?.value === 'wall';
-
-                if (doorState === 'open') {
-                    if (hasWallLeft && hasWallRight && !(hasWallAbove && hasWallBelow)) {
-                        return './assets/tiles/door_y.png';
-                    } else if (hasWallAbove && hasWallBelow && !(hasWallLeft && hasWallRight)) {
-                        return './assets/tiles/door_x.png';
-                    }
-                } else {
-                    if (hasWallLeft && hasWallRight && !(hasWallAbove && hasWallBelow)) {
-                        return './assets/tiles/door_x.png';
-                    } else if (hasWallAbove && hasWallBelow && !(hasWallLeft && hasWallRight)) {
-                        return './assets/tiles/door_y.png';
-                    }
-                }
-                return './assets/tiles/door_y.png';
-            }
             case 'wall':
                 return './assets/tiles/wall.png';
             case 'ice':
                 return './assets/tiles/ice1.jpg';
             case 'water':
                 return './assets/tiles/water.png';
+            case 'door':
+                return this.getDoorImage(map[rowIndex][colIndex].door.isOpen);
             default:
                 return './assets/tiles/floor.png';
         }
     }
 
-    getItemImage(item: string): string {
+    getItemImage(item: ItemCategory): string {
+        switch (item) {
+            case ItemCategory.Vest:
+                return './assets/items/vest.png';
+            case ItemCategory.Mask:
+                return './assets/items/mask.png';
+            case ItemCategory.Jar:
+                return './assets/items/jar.png';
+            case ItemCategory.Acidgun:
+                return './assets/items/acidgun.png';
+            case ItemCategory.Key:
+                return './assets/items/keysilver.png';
+            case ItemCategory.Hat:
+                return './assets/items/hat.png';
+            case ItemCategory.Random:
+                return './assets/items/randomchest.png';
+            default:
+                return '';
+        }
+    }
+
+    getItemImageByString(item: string): string {
         switch (item) {
             case 'vest':
                 return './assets/items/vest.png';
@@ -74,11 +83,13 @@ export class ImageService {
                 return './assets/items/hat.png';
             case 'random':
                 return './assets/items/randomchest.png';
-            case 'starting-point':
-                return './assets/tiles/startingpoint.png';
             default:
                 return '';
         }
+    }
+
+    getStartingPointImage(): string {
+        return './assets/tiles/startingpoint.png';
     }
 
     // va falloir update les routes pour les petits avatars pixelisé
@@ -108,6 +119,37 @@ export class ImageService {
                 return './assets/characters/11.png';
             case Avatar.Avatar12:
                 return './assets/characters/12.png';
+            default:
+                return '';
+        }
+    }
+
+    getPixelatedPlayerImage(avatar: Avatar): string {
+        switch (avatar) {
+            case Avatar.Avatar1:
+                return './assets/pixelcharacters/1.png';
+            case Avatar.Avatar2:
+                return './assets/pixelcharacters/2.png';
+            case Avatar.Avatar3:
+                return './assets/pixelcharacters/3.png';
+            case Avatar.Avatar4:
+                return './assets/pixelcharacters/4.png';
+            case Avatar.Avatar5:
+                return './assets/pixelcharacters/5.png';
+            case Avatar.Avatar6:
+                return './assets/pixelcharacters/6.png';
+            case Avatar.Avatar7:
+                return './assets/pixelcharacters/7.png';
+            case Avatar.Avatar8:
+                return './assets/pixelcharacters/8.png';
+            case Avatar.Avatar9:
+                return './assets/pixelcharacters/9.png';
+            case Avatar.Avatar10:
+                return './assets/pixelcharacters/10.png';
+            case Avatar.Avatar11:
+                return './assets/pixelcharacters/11.png';
+            case Avatar.Avatar12:
+                return './assets/pixelcharacters/12.png';
             default:
                 return '';
         }
