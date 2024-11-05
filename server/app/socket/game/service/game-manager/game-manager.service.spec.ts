@@ -13,6 +13,7 @@ let specs: Specs = {
     defenseBonus: Bonus.D6,
     movePoints: 10,
     actions: 2,
+    evasions: 2,
     nVictories: 0,
     nDefeats: 0,
     nCombats: 0,
@@ -27,6 +28,7 @@ let player: Player = {
     avatar: Avatar.Avatar1,
     isActive: true,
     position: { x: 0, y: 0 },
+    initialPosition: { x: 0, y: 0 },
     specs,
     inventory: [],
     turn: 0,
@@ -278,7 +280,6 @@ describe('GameManagerService', () => {
         let game2: Game;
 
         beforeEach(async () => {
-            
             const specs: Specs = {
                 life: 10,
                 speed: 10,
@@ -286,6 +287,7 @@ describe('GameManagerService', () => {
                 defense: 5,
                 attackBonus: Bonus.D4,
                 defenseBonus: Bonus.D6,
+                evasions: 2, 
                 movePoints: 10,
                 actions: 2,
                 nVictories: 0,
@@ -302,6 +304,7 @@ describe('GameManagerService', () => {
                 avatar: Avatar.Avatar1,
                 isActive: true,
                 position: { x: 5, y: 5 },
+                initialPosition: { x: 5, y: 5 },
                 specs,
                 inventory: [],
                 turn: 0,
@@ -314,6 +317,7 @@ describe('GameManagerService', () => {
                 avatar: Avatar.Avatar2,
                 isActive: true,
                 position: { x: 5, y: 4 },
+                initialPosition: { x: 5, y: 4 },
                 specs,
                 inventory: [],
                 turn: 0,
@@ -326,6 +330,7 @@ describe('GameManagerService', () => {
                 avatar: Avatar.Avatar3,
                 isActive: true,
                 position: { x: 7, y: 7 }, // Positioned non-adjacent to player
+                initialPosition: { x: 7, y: 7 },
                 specs,
                 inventory: [],
                 turn: 0,
@@ -382,7 +387,8 @@ describe('GameManagerService', () => {
                 name: 'Player 4',
                 avatar: Avatar.Avatar4,
                 isActive: true,
-                position: { x: 6, y: 5 }, // Also adjacent to player
+                position: { x: 6, y: 5 },
+                initialPosition: { x: 6, y: 5 },
                 specs: { ...player.specs },
                 inventory: [],
                 turn: 0,

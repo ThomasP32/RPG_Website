@@ -1,6 +1,7 @@
-@if(!isYourTurn) {
+<!-- @if(!isYourTurn&&) {
 <div class="disable-interactions"></div>
-} @if(!delayFinished) {
+}  -->
+@if(!delayFinished) {
 <div class="disable-interactions"></div>
 <div class="turn-indicator">
     <h3>C'est au tour de {{currentPlayerTurn}} dans</h3>
@@ -61,6 +62,7 @@
                 <p>Dé de défense = {{ player.specs.defenseBonus }}</p>
                 <p>Mouvements restants : {{ player.specs.movePoints }}</p>
                 <p>Actions restantes : {{ player.specs.actions }}</p>
+                <p>Combats gagnés: {{player.specs.nVictories}}</p>
             </div>
 
             <div class="inventory">
@@ -83,7 +85,7 @@
     </div>
 
     <div class="game-map-container">
-        <app-game-map [loadedMap]="game" [moves]="moves" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
+        <app-game-map [loadedMap]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
     <div class="right-panel">
@@ -133,3 +135,10 @@
         </div>
     </div>
 </div>
+@if(isCombatModalOpen){
+<div class="modal-overlay">
+    <div class="modal-content">
+        <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
+    </div>
+</div>
+}
