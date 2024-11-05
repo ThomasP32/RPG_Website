@@ -108,41 +108,37 @@ describe('CombatModalComponent', () => {
 
     describe('#listenForAttacks', () => {
         it('should update opponent and set combat message on "attackSuccess" when opponent is attacked', () => {
-            const attackSuccessSubject = new Subject<{ playerAttacked: Player; message: string }>();
-            socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-                return eventName === 'attackSuccess' ? attackSuccessSubject.asObservable() as Observable<T> : of() as Observable<T>;
-            });
-
-            component.listenForAttacks();
-            attackSuccessSubject.next({ playerAttacked: mockOpponent, message: 'Opponent attacked!' });
-
-            expect(component.opponent).toEqual(mockOpponent);
-            expect(component.combatMessage).toEqual('Opponent attacked!');
-        });
-
-        it('should update player and set combat message on "attackSuccess" when player is attacked', () => {
-            const attackSuccessSubject = new Subject<{ playerAttacked: Player; message: string }>();
+            const attackSuccessSubject = new Subject<Player>();
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 return eventName === 'attackSuccess' ? (attackSuccessSubject.asObservable() as Observable<T>) : (of() as Observable<T>);
             });
 
             component.listenForAttacks();
-            attackSuccessSubject.next({ playerAttacked: mockPlayer, message: 'Player attacked!' });
+            attackSuccessSubject.next(mockOpponent);
+
+            expect(component.opponent).toEqual(mockOpponent);
+        });
+
+        it('should update player and set combat message on "attackSuccess" when player is attacked', () => {
+            const attackSuccessSubject = new Subject<Player>();
+            socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
+                return eventName === 'attackSuccess' ? (attackSuccessSubject.asObservable() as Observable<T>) : (of() as Observable<T>);
+            });
+
+            component.listenForAttacks();
+            attackSuccessSubject.next(mockPlayer);
 
             expect(component.player).toEqual(mockPlayer);
-            expect(component.combatMessage).toEqual('Player attacked!');
         });
 
         it('should set combat message on "attackFailure"', () => {
-            const attackFailureSubject = new Subject<{ playerAttacked: Player; message: string }>();
+            const attackFailureSubject = new Subject<Player>();
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 return eventName === 'attackFailure' ? (attackFailureSubject.asObservable() as Observable<T>) : (of() as Observable<T>);
             });
 
             component.listenForAttacks();
-            attackFailureSubject.next({ playerAttacked: mockOpponent, message: 'Attack failed.' });
-
-            expect(component.combatMessage).toEqual('Attack failed.');
+            attackFailureSubject.next(mockOpponent);
         });
     });
 

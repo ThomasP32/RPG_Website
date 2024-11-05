@@ -27,36 +27,20 @@ export class ServerCombatService {
     }
 
     getCombatByGameId(gameId: string): Combat {
-        const combat = this.combatRooms[gameId];
-        if (!combat) {
-            console.log(`Game with ID ${gameId} not found.`);
-            return null;
+        if (this.doesCombatExist(gameId)) {
+            return this.combatRooms[gameId];
+        } else {
+            console.log(`Combat in game with ID ${gameId} not found.`);
         }
-        return combat;
     }
 
     doesCombatExist(gameId: string): boolean {
         return gameId in this.combatRooms;
     }
 
-    executeAttack(gameId: string): { attackDice: number; defenseDice: number } {
-        const combat = this.getCombatByGameId(gameId);
-        let attackingPlayer: Player;
-        let defendingPlayer: Player;
-        if (combat.currentTurnSocketId === combat.challenger.socketId) {
-            attackingPlayer = combat.challenger;
-            defendingPlayer = combat.opponent;
-        } else {
-            attackingPlayer = combat.opponent;
-            defendingPlayer = combat.challenger;
-        }
-
-        return this.rollDice(attackingPlayer, defendingPlayer);
-    }
-
-    isAttackSuccess(attackPlayer: Player, opponent: Player, attackDice: number, defenseDice: number): boolean {
-        const attackTotal = attackPlayer.specs.attack + attackDice;
-        const defendTotal = opponent.specs.defense + defenseDice;
+    isAttackSuccess(attackPlayer: Player, opponent: Player, rollResult: { attackDice: number; defenseDice: number }): boolean {
+        const attackTotal = attackPlayer.specs.attack + rollResult.attackDice;
+        const defendTotal = opponent.specs.defense + rollResult.defenseDice;
         return attackTotal - defendTotal > 0;
     }
 
@@ -73,8 +57,6 @@ export class ServerCombatService {
 
     rollDice(attackPlayer: Player, opponent: Player): { attackDice: number; defenseDice: number } {
         const attackingPlayerAttackDice = Math.floor(Math.random() * attackPlayer.specs.attackBonus) + 1;
-        // const attackingPlayerDefenseDice = Math.floor(Math.random() * attackPlayer.specs.defenseBonus) + 1;
-        // const opponentAttackDice = Math.floor(Math.random() * opponent.specs.attackBonus) + 1;
         const opponentDefenseDice = Math.floor(Math.random() * opponent.specs.defenseBonus) + 1;
         const attackDice = attackPlayer.specs.attack + attackingPlayerAttackDice;
         const defenseDice = opponent.specs.defense + opponentDefenseDice;
