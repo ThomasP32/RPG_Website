@@ -1,12 +1,13 @@
+import { GameCountdownService } from '@app/socket/game/service/countdown/game/game-countdown.service';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
-import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameManagerGateway } from './game-manager.gateway';
 
 describe('GameManagerGateway', () => {
@@ -16,6 +17,7 @@ describe('GameManagerGateway', () => {
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
     let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
+    let journalService: SinonStubbedInstance<JournalService>;
     let serverStub: SinonStubbedInstance<Server>;
 
     beforeEach(async () => {
@@ -27,6 +29,7 @@ describe('GameManagerGateway', () => {
         gameCountdownService.startNewCountdown.callsFake(() => {
             return Promise.resolve();
         });
+        journalService = createStubInstance<JournalService>(JournalService);
         serverStub = createStubInstance<Server>(Server);
 
         const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +39,7 @@ describe('GameManagerGateway', () => {
                 { provide: GameCreationService, useValue: gameCreationService },
                 { provide: GameManagerService, useValue: gameManagerService },
                 { provide: GameCountdownService, useValue: gameCountdownService },
+                { provide: JournalService, useValue: journalService },
             ],
         }).compile();
 
@@ -147,6 +151,7 @@ describe('GameManagerGateway', () => {
 
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
             expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
+            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée.', ['Player1'])).toBeTruthy();
         });
     });
 
@@ -285,6 +290,8 @@ describe('GameManagerGateway', () => {
             gameManagerService.isGameResumable.returns(true);
 
             gateway.startTurn('game-id');
+
+            expect(journalService.logMessage.calledWith('game-id', `C'est au tour de ActivePlayer.`, ['ActivePlayer', 'OtherPlayer'])).toBeTruthy();
 
             expect(activePlayer.specs.movePoints).toBe(activePlayer.specs.speed);
 
@@ -472,7 +479,7 @@ describe('GameManagerGateway', () => {
                 return gameCountdownService;
             });
 
-            gateway.afterInit();
+            gateway.afterInit(serverStub);
 
             expect(onSpy).toHaveBeenCalledWith('timeout', expect.any(Function));
             expect(endTurnSpy).toHaveBeenCalledWith('test-game-id');
