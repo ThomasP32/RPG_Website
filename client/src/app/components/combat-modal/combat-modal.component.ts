@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
-import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
 
@@ -39,13 +38,13 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     // @Inject(CombatService) private combatService: CombatService;
 
+    // @Inject(GameService) private gameService: GameService;
+
     constructor(
         private socketService: SocketService,
         private combatCountDownService: CombatCountdownService,
-        private gameService: GameService
     ) {
         this.socketService = socketService;
-        this.gameService = gameService;
         this.combatCountDownService = combatCountDownService;
     }
 
@@ -65,7 +64,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.countdown = timeLeft;
         });
     }
-    //preset les niveaux de vie des joueurs du debut
     getPlayersLife(): void {
         this.playerLife = this.player.specs.life;
         this.opponentLife = this.opponent.specs.life;
@@ -84,7 +82,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
             this.socketService.listen<{ success: boolean; waitingPlayer: Player; message: string }>('evasionSuccess').subscribe((data) => {
                 if (data.success) {
                     this.combatMessage = data.message;
-                    // this.combatFinishedByEvasion();
                 } else {
                     if (data.waitingPlayer.socketId === this.opponent.socketId) this.player.specs.nEvasions -= 1;
                     else if (data.waitingPlayer.socketId === this.player.socketId) this.opponent.specs.nEvasions -= 1;
@@ -165,6 +162,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 if (this.diceRollReceived) {
                     clearInterval(interval);
                     this.socketService.sendMessage('attack', {
+                        gameId: this.gameId,
                         attackPlayer: this.player,
                         defendPlayer: this.opponent,
                         combatRoomId: this.combatRoomId,
@@ -177,13 +175,10 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     }
 
     evade() {
-        console.log('tu tentes de tevader');
-        this.socketService.sendMessage('startEvasion', {
-            player: this.player,
-            waitingPlayer: this.opponent,
-            gameId: this.gameService.game.id,
-            combatRoomId: this.combatRoomId,
-        });
+        // if (this.isCombatPlayerTurn() && this.player.specs.nEvasions > 0) {
+        this.socketService.sendMessage('startEvasion', this.gameId);
+
+        // }
     }
     get turnMessage(): string {
         if (this.isYourTurn) {

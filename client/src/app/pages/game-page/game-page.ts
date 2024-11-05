@@ -90,6 +90,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForCountDown();
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
+            this.gameId = this.gameService.game.id;
             this.activePlayers = this.gameService.game.players;
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
             if (this.playerService.player.socketId === this.game.hostSocketId) {
