@@ -385,4 +385,52 @@ describe('GameCreationService', () => {
             expect(result).toBe(false);
         });
     });
+
+    describe('getPlayer', () => {
+        beforeEach(() => {
+            service.addGame(gameRoom);
+            gameRoom.players.push(player);
+        });
+
+        it('should return the player with the matching socketId', () => {
+            const result = service.getPlayer(gameRoom.id, player.socketId);
+            expect(result).toEqual(player);
+        });
+
+        it('should return undefined if the player is not found', () => {
+            const result = service.getPlayer(gameRoom.id, 'nonexistent-socket');
+            expect(result).toBeUndefined();
+        });
+    });
+
+    describe('getGameById', () => {
+        it('should return the correct game if it exists', () => {
+            service.addGame(gameRoom);
+            const result = service.getGameById('room-1');
+            expect(result).toEqual(gameRoom);
+        });
+
+        it('should return null and log a message if the game does not exist', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const result = service.getGameById('nonexistent-room');
+            expect(result).toBeNull();
+            expect(consoleSpy).toHaveBeenCalledWith('Game with ID nonexistent-room not found.');
+            consoleSpy.mockRestore();
+        });
+    });
+
+    describe('addGame', () => {
+        it('should add a new game if it does not already exist', () => {
+            service.addGame(gameRoom);
+            expect(service['gameRooms']['room-1']).toEqual(gameRoom);
+        });
+
+        it('should not add the game if it already exists', () => {
+            service.addGame(gameRoom);
+            const existingGame = { ...gameRoom, name: 'Existing Game' };
+            service.addGame(existingGame);
+
+            expect(service['gameRooms']['room-1'].name).toBe('Test Room');
+        });
+    });
 });

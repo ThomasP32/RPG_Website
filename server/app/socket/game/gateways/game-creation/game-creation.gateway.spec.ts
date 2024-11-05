@@ -423,3 +423,118 @@ describe('GameGateway', () => {
         });
     });
 });
+
+describe('GameGateway', () => {
+    let gateway: GameGateway;
+    let gameCreationService: jest.Mocked<GameCreationService>;
+    let mockServer: jest.Mocked<Server>;
+    let mockSocket: jest.Mocked<Socket>;
+
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                GameGateway,
+                {
+                    provide: GameCreationService,
+                    useValue: {
+                        getGameById: jest.fn(),
+                        isPlayerHost: jest.fn(),
+                        deleteRoom: jest.fn(),
+                        handlePlayerLeaving: jest.fn(),
+                    },
+                },
+                {
+                    provide: Server,
+                    useValue: {
+                        to: jest.fn().mockReturnThis(),
+                        emit: jest.fn(),
+                    },
+                },
+            ],
+        }).compile();
+
+        gateway = module.get<GameGateway>(GameGateway);
+        gameCreationService = module.get(GameCreationService);
+        mockServer = module.get(Server);
+        gateway.server = mockServer;
+
+        mockSocket = {
+            id: 'socket-id',
+            join: jest.fn(),
+            leave: jest.fn(),
+        } as unknown as jest.Mocked<Socket>;
+    });
+
+    describe('handleLeaveGame', () => {
+        let game;
+
+        beforeEach(() => {
+            game = {
+                id: 'game-id',
+                hasStarted: false,
+                players: [{ socketId: 'socket-id', name: 'Player1' }],
+            };
+            gameCreationService.getGameById.mockReturnValue(game);
+        });
+
+        it("should emit 'gameClosed' and delete room if the host leaves before the game starts", () => {
+            gameCreationService.isPlayerHost.mockReturnValue(true);
+
+            gateway.handleLeaveGame(mockSocket, 'game-id');
+
+            expect(mockServer.to).toHaveBeenCalledWith('game-id');
+            expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameClosed', { reason: "L'organisateur a quitté la partie" });
+            expect(gameCreationService.deleteRoom).toHaveBeenCalledWith('game-id');
+        });
+
+        it("should emit 'playerLeft' and update players if a regular player leaves", () => {
+            gameCreationService.isPlayerHost.mockReturnValue(false);
+            gameCreationService.handlePlayerLeaving.mockReturnValue({
+                ...game,
+                players: [],
+            });
+
+            gateway.handleLeaveGame(mockSocket, 'game-id');
+
+            expect(mockServer.to).toHaveBeenCalledWith('game-id');
+            expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('playerLeft', []);
+            expect(gameCreationService.handlePlayerLeaving).toHaveBeenCalledWith(mockSocket, 'game-id');
+        });
+
+        it("should not emit 'playerLeft' if player is not in the game", () => {
+            game.players = [{ socketId: 'different-socket-id', name: 'OtherPlayer' }];
+            gameCreationService.handlePlayerLeaving.mockReturnValue(game);
+
+            gateway.handleLeaveGame(mockSocket, 'game-id');
+
+            expect(mockServer.to('game-id').emit).not.toHaveBeenCalledWith('playerLeft', expect.anything());
+            expect(gameCreationService.handlePlayerLeaving).not.toHaveBeenCalled();
+        });
+
+        it('should do nothing if the game does not exist', () => {
+            gameCreationService.getGameById.mockReturnValue(undefined);
+
+            gateway.handleLeaveGame(mockSocket, 'nonexistent-game-id');
+
+            expect(mockServer.to).not.toHaveBeenCalled();
+            expect(gameCreationService.deleteRoom).not.toHaveBeenCalled();
+        });
+
+        it('should not emit gameLockToggled if the client is not the host', () => {
+            const data = { isLocked: true, gameId: 'room-1' };
+
+            gateway.handleToggleGameLockState(mockSocket, data);
+
+            expect(mockServer.to).not.toHaveBeenCalled();
+        });
+
+        it('should do nothing if the game is not found', () => {
+            (gameCreationService.getGameById as jest.Mock).mockReturnValue(null);
+            const data = { isLocked: true, gameId: 'nonexistent-room' };
+
+            gateway.handleToggleGameLockState(mockSocket, data);
+
+            expect(mockServer.to).not.toHaveBeenCalled();
+        });
+    });
+});
