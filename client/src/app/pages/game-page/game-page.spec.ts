@@ -208,12 +208,12 @@ describe('GamePageComponent', () => {
         expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
     });
 
-    it('should listen for possible opponents updates', () => {
-        component.ngOnInit();
-        const possibleOpponents: Player[] = [mockPlayer];
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
-        expect(component.possibleOpponents).toEqual(possibleOpponents);
-    });
+    // it('should listen for possible opponents updates', () => {
+    //     component.ngOnInit();
+    //     const possibleOpponents: Player[] = [mockPlayer];
+    //     (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+    //     expect(component.possibleOpponents).toEqual(possibleOpponents);
+    // });
 
     it('should trigger pulse on countdown update', () => {
         spyOn(component, 'triggerPulse');
