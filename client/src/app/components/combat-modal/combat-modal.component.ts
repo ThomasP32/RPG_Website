@@ -63,16 +63,16 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForAttacks(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackSuccess').subscribe((data) => {
-                if (data.playerAttacked.socketId === this.opponent.socketId) this.opponent = data.playerAttacked;
-                else if (data.playerAttacked.socketId === this.player.socketId) this.player = data.playerAttacked;
-                this.combatMessage = data.message;
+            this.socketService.listen<Player>('attackSuccess').subscribe((playerAttacked) => {
+                if (playerAttacked.socketId === this.opponent.socketId) this.opponent = playerAttacked;
+                else if (playerAttacked.socketId === this.player.socketId) this.player = playerAttacked;
+                this.combatMessage = `${playerAttacked.name} a succombé à une attaque`;
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ playerAttacked: Player; message: string }>('attackFailure').subscribe((data) => {
-                this.combatMessage = data.message;
+            this.socketService.listen<Player>('attackFailure').subscribe((playerAttacked) => {
+                this.combatMessage = `${playerAttacked.name} a survécu à une attaque`;
             }),
         );
     }
