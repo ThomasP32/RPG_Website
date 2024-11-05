@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ItemCategory } from '@common/map.types';
 import { Subject } from 'rxjs';
 @Injectable({
     providedIn: 'root',
@@ -17,7 +18,7 @@ export class MapCounterService {
 
     constructor() {}
 
-    updateCounters(isStartingPoint: boolean, item: string | undefined, action: 'add' | 'remove') {
+    updateCounters(isStartingPoint: boolean, item: ItemCategory | undefined, action: 'add' | 'remove') {
         if (isStartingPoint) {
             this.updateStartingPointCounter(action === 'add' ? this.startingPointCounter + 1 : this.startingPointCounter - 1);
         }

@@ -5,7 +5,8 @@ import { MapCounterService } from '@app/services/map-counter/map-counter.service
 import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile/tile.service';
-import { ItemCategory, DetailedMap, Mode, TileCategory } from '@common/map.types';
+import { Cell } from '@common/map-cell';
+import { DetailedMap, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { of } from 'rxjs';
 import { MapAreaComponent } from './map-area.component';
 
@@ -21,8 +22,8 @@ describe('MapAreaComponent', () => {
     let routerSpy: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
-        tileServiceSpy = jasmine.createSpyObj('TileService', ['placeTile', 'eraseTile', 'moveItem', 'setItem']);
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'map']);
+        tileServiceSpy = jasmine.createSpyObj('TileService', ['placeTile', 'eraseTile', 'moveItem', 'setItem', 'setStartingPoint']);
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'map', 'generateMapFromEdition']);
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
@@ -129,19 +130,14 @@ describe('MapAreaComponent', () => {
     describe('Map management', () => {
         it('should reset the map to default tile when mode is truthy', () => {
             component.route.snapshot.params['mode'] = 'creation';
-            component.Map = [
-                [
-                    { value: 'wall', isHovered: false },
-                    { value: 'door', isHovered: false },
-                ],
-            ];
+            component.map = [[{ tileType: TileCategory.Wall, isHovered: false } as Cell, { tileType: TileCategory.Door, isHovered: false } as Cell]];
             component.resetMapToDefault();
 
-            expect(component.Map[0][0].value).toBe(component.defaultTile);
-            expect(component.Map[0][1].value).toBe(component.defaultTile);
+            expect(component.map[0][0].tileType).toBe(component.defaultTile);
+            expect(component.map[0][1].tileType).toBe(component.defaultTile);
 
-            expect(component.Map[0][0].item).toBeUndefined();
-            expect(component.Map[0][1].item).toBeUndefined();
+            expect(component.map[0][0].item).toBeUndefined();
+            expect(component.map[0][1].item).toBeUndefined();
         });
 
         it('should load the map from mapService when mode is falsy', () => {
@@ -167,11 +163,11 @@ describe('MapAreaComponent', () => {
                 isVisible: true,
             };
             component.loadMap(mockMap);
-            expect(component.Map[0][0].value).toBe('wall');
-            expect(component.Map[1][1].value).toBe('door');
-            expect(component.Map[1][1].doorState).toBe('open');
-            expect(component.Map[1][0].item).toBe('hat');
-            expect(component.Map[0][1].item).toBe('starting-point');
+            expect(component.map[0][0].tileType).toBe(TileCategory.Wall);
+            expect(component.map[1][1].door.isDoor).toBeTrue();
+            expect(component.map[1][1].door.isOpen).toBeTrue();
+            expect(component.map[1][0].item).toBe(ItemCategory.Hat);
+            expect(component.map[0][1].isStartingPoint).toBeTrue();
         });
 
         it('should initialize the map service map based on the loaded map', () => {
@@ -191,7 +187,7 @@ describe('MapAreaComponent', () => {
             };
             mapServiceSpy.map = mockMap;
             component.loadMap(mockMap);
-            expect(component.Map[0][0].value).toBe('wall');
+            expect(component.map[0][0].tileType).toBe(TileCategory.Wall);
         });
 
         it('should generate map', () => {
@@ -201,26 +197,34 @@ describe('MapAreaComponent', () => {
         });
 
         it('should correctly generate map with tiles, doors, items, and starting points', () => {
-            component.Map = [
+            component.map = [
                 [
-                    { value: 'wall', isHovered: false },
-                    { value: 'door', isHovered: false, doorState: 'open' },
+                    {
+                        tileType: TileCategory.Wall,
+                        isHovered: false,
+                        coordinate: { x: 0, y: 0 },
+                        door: { isOpen: false, isDoor: false },
+                        isStartingPoint: false,
+                        isOccupied: false,
+                    },
+                    {
+                        tileType: TileCategory.Door,
+                        isHovered: false,
+                        door: { isOpen: true, isDoor: true },
+                        coordinate: { x: 0, y: 1 },
+                        isStartingPoint: false,
+                        isOccupied: false,
+                    },
                 ],
                 [
-                    { value: 'floor', isHovered: false, item: 'vest' },
-                    { value: 'floor', isHovered: false, item: 'starting-point' },
+                    { tileType: TileCategory.Floor, isHovered: false, item: ItemCategory.Vest } as Cell,
+                    { tileType: TileCategory.Floor, isHovered: false, isStartingPoint: true } as Cell,
                 ],
             ];
 
             component.generateMap();
 
-            expect(mapServiceSpy.map.doorTiles).toEqual([{ coordinate: { x: 0, y: 1 }, isOpened: true }]);
-
-            expect(mapServiceSpy.map.tiles).toEqual([{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }]);
-
-            expect(mapServiceSpy.map.items).toEqual([{ coordinate: { x: 1, y: 0 }, category: ItemCategory.Vest }]);
-
-            expect(mapServiceSpy.map.startTiles).toEqual([{ coordinate: { x: 1, y: 1 } }]);
+            expect(mapServiceSpy.generateMapFromEdition).toHaveBeenCalledWith(component.map);
         });
     });
 
@@ -246,8 +250,20 @@ describe('MapAreaComponent', () => {
 
     describe('Image handling', () => {
         it('should call getItemImage with the correct item', () => {
-            const item = 'hat';
-            component.Map = [[{ value: 'floor', isHovered: false, item: item }]];
+            const item = ItemCategory.Hat;
+            component.map = [
+                [
+                    {
+                        tileType: TileCategory.Floor,
+                        isHovered: false,
+                        item: ItemCategory.Hat,
+                        coordinate: { x: 0, y: 0 },
+                        door: { isOpen: false, isDoor: false },
+                        isStartingPoint: false,
+                        isOccupied: false,
+                    } as Cell,
+                ],
+            ];
 
             spyOn(component, 'getItemImage').and.callThrough();
             const result = component.getItemImage(item);
@@ -308,7 +324,7 @@ describe('MapAreaComponent', () => {
             const rowIndex = 0;
             const colIndex = 0;
             component.startPlacingTile(rowIndex, colIndex);
-            expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.selectedTile);
+            expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.selectedTile);
         });
 
         it('should stop placing tile on mouse up', () => {
@@ -323,57 +339,21 @@ describe('MapAreaComponent', () => {
             const rowIndex = 0;
             const colIndex = 0;
             component.placeTileOnMove(rowIndex, colIndex);
-            expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.selectedTile);
+            expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.selectedTile);
         });
-        it('should call tile service to move item on drop', () => {
-            const event = new DragEvent('drop');
-
-            spyOn(event, 'preventDefault');
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('starting-point'),
-                },
-            });
-
-            component.currentDraggedItem = { rowIndex: 0, colIndex: 0 };
-
-            component.onDrop(event, 1, 1);
-
-            expect(component.currentDraggedItem).toBeNull();
-            expect(event.preventDefault).toHaveBeenCalled();
-            expect(tileServiceSpy.moveItem).toHaveBeenCalledWith(component.Map, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 1 });
-        });
-
         it('should call tile service to set item on drop', () => {
             const event = new DragEvent('drop');
 
             Object.defineProperty(event, 'dataTransfer', {
                 value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('starting-point'),
+                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
                 },
             });
 
             component.currentDraggedItem = null;
 
             component.onDrop(event, 1, 1);
-            expect(tileServiceSpy.setItem).toHaveBeenCalledWith(component.Map, 'starting-point', { rowIndex: 1, colIndex: 1 });
-        });
-
-        it('should set currentDraggedItem and add item to dataTransfer on startDrag', () => {
-            const event = new DragEvent('dragstart');
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    setData: jasmine.createSpy('setData'),
-                },
-            });
-            const rowIndex = 0;
-            const colIndex = 0;
-            component.Map = [[{ value: 'floor', isHovered: false, item: 'test-item' }]];
-
-            component.startDrag(event, rowIndex, colIndex);
-
-            expect(component.currentDraggedItem).toEqual({ rowIndex, colIndex });
-            expect(event.dataTransfer?.setData).toHaveBeenCalledWith('item', 'test-item');
+            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 1, 1);
         });
 
         it('should prevent default if no item is present on startDrag', () => {
@@ -381,7 +361,7 @@ describe('MapAreaComponent', () => {
             spyOn(event, 'preventDefault');
             const rowIndex = 0;
             const colIndex = 0;
-            component.Map = [[{ value: 'floor', isHovered: false }]];
+            component.map = [[{ tileType: TileCategory.Floor, isHovered: false } as Cell]];
 
             component.startDrag(event, rowIndex, colIndex);
 
@@ -397,12 +377,21 @@ describe('MapAreaComponent', () => {
             expect(event.preventDefault).toHaveBeenCalled();
         });
 
-        it('should handle drag start only if there is an item', () => {
+        it('should handle drag start only if there is a starting-point', () => {
             const event = new DragEvent('dragstart');
-            const cell = { value: 'floor', isHovered: false, item: 'some-item' };
-            component.Map[0] = [cell];
+            const cell: Cell = {
+                tileType: TileCategory.Floor,
+                isHovered: false,
+                coordinate: { x: 0, y: 0 },
+                door: { isOpen: false, isDoor: false },
+                isStartingPoint: false,
+                isOccupied: false,
+            };
+            component.map = [[cell]];
+
             component.startDrag(event, 0, 0);
-            expect(component.currentDraggedItem).toEqual({ rowIndex: 0, colIndex: 0 });
+
+            expect(component.currentDraggedItem).toEqual(null);
         });
 
         it('should not prevent default when dragging an element other than an image', () => {
@@ -426,7 +415,7 @@ describe('MapAreaComponent', () => {
 
             component.placeTileOnMove(rowIndex, colIndex);
 
-            expect(tileServiceSpy.eraseTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.defaultTile);
+            expect(tileServiceSpy.eraseTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.defaultTile);
             expect(tileServiceSpy.placeTile).not.toHaveBeenCalled();
         });
     });
@@ -456,7 +445,7 @@ describe('MapAreaComponent', () => {
             const colIndex = 1;
             component.startPlacingTile(rowIndex, colIndex, true);
 
-            expect(tileServiceSpy.eraseTile).toHaveBeenCalledWith(component.Map, rowIndex, colIndex, component.defaultTile);
+            expect(tileServiceSpy.eraseTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.defaultTile);
             expect(component.isRightClickDown).toBeTrue();
         });
 

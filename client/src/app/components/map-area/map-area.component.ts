@@ -93,9 +93,9 @@ export class MapAreaComponent implements OnInit {
         }
     }
 
-    // selectTile(tile: string) {
-    //     this.selectedTile = tile;
-    // }
+    selectTile(tile: string) {
+        this.selectedTile = tile;
+    }
 
     startPlacingTile(rowIndex: number, colIndex: number, isRightClick: boolean = false) {
         this.isMouseDown = true;
@@ -191,46 +191,8 @@ export class MapAreaComponent implements OnInit {
         }
     }
 
-    //A faire : mettre dans mapservice
     generateMap() {
-        this.mapService.map.doorTiles = [];
-        this.mapService.map.tiles = [];
-        this.mapService.map.items = [];
-        this.mapService.map.startTiles = [];
-
-        for (let rowIndex = 0; rowIndex < this.map.length; rowIndex++) {
-            for (let colIndex = 0; colIndex < this.map[rowIndex].length; colIndex++) {
-                const cell = this.map[rowIndex][colIndex];
-                const coordinate = { x: rowIndex, y: colIndex };
-
-                if (cell && cell.tileType) {
-                    if (cell.door?.isDoor) {
-                        this.mapService.map.doorTiles.push({
-                            coordinate,
-                            isOpened: cell.door.isOpen === true,
-                        });
-                    } else if (['water', 'ice', 'wall'].includes(cell.tileType)) {
-                        this.mapService.map.tiles.push({
-                            coordinate,
-                            category: cell.tileType as TileCategory,
-                        });
-                    }
-
-                    if (cell.item && cell.item != undefined && cell.isStartingPoint) {
-                        this.mapService.map.items.push({
-                            coordinate,
-                            category: cell.item as ItemCategory,
-                        });
-                    }
-
-                    if (cell.isStartingPoint) {
-                        this.mapService.map.startTiles.push({
-                            coordinate,
-                        });
-                    }
-                }
-            }
-        }
+        this.mapService.generateMapFromEdition(this.map);
     }
 
     getTileImage(tileType: TileCategory, rowIndex: number, colIndex: number): string {

@@ -9,7 +9,7 @@ import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { Avatar, Bonus, Game, Player } from '@common/game';
-import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
 
@@ -92,6 +92,7 @@ describe('GamePageComponent', () => {
         const playerLeftSubject = new Subject<Player[]>();
         const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
+        const possibleDoorsSubject = new Subject<DoorTile[]>();
 
         const gameSpy = jasmine.createSpyObj('GameService', ['game']);
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
@@ -103,13 +104,25 @@ describe('GamePageComponent', () => {
         });
         const gameTurnSpy = jasmine.createSpyObj(
             'GameTurnService',
-            ['listenForTurn', 'endTurn', 'movePlayer', 'listenForPlayerMove', 'listenMoves', 'endGame', 'listenForPossibleCombats', 'getMoves'],
+            [
+                'listenForTurn',
+                'endTurn',
+                'movePlayer',
+                'listenForPlayerMove',
+                'listenMoves',
+                'endGame',
+                'listenForPossibleCombats',
+                'getMoves',
+                'listenForDoors',
+                'listenForDoorUpdates',
+            ],
             {
                 playerTurn$: playerTurnSubject,
                 youFell$: youFellSubject,
                 playerWon$: playerWonSubject,
                 possibleOpponents$: possibleOpponentsSubject,
                 moves: new Map(),
+                possibleDoors$: possibleDoorsSubject,
             },
         );
 
@@ -305,7 +318,7 @@ describe('GamePageComponent', () => {
         component.listenForStartTurnDelay();
 
         delaySubject.next(3);
-        tick(); 
+        tick();
         fixture.detectChanges();
 
         expect(component.startTurnCountdown).toBe(3);
@@ -315,8 +328,8 @@ describe('GamePageComponent', () => {
         delaySubject.next(0);
         tick();
         fixture.detectChanges();
-        expect(component.startTurnCountdown).toBe(3); 
-        expect(component.delayFinished).toBe(true); 
+        expect(component.startTurnCountdown).toBe(3);
+        expect(component.delayFinished).toBe(true);
     }));
 
     it('should call gameTurnService.movePlayer with the correct position on tile click', () => {

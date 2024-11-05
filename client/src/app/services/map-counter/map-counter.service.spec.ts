@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ItemCategory } from '@common/map.types';
 import { MapCounterService } from './map-counter.service';
 
 describe('MapCounterService', () => {
@@ -17,7 +18,7 @@ describe('MapCounterService', () => {
         service.startingPointCounter = 2;
         spyOn(service, 'updateStartingPointCounter');
 
-        service.updateCounters('starting-point', 'add');
+        service.updateCounters(true, undefined, 'add');
 
         expect(service.updateStartingPointCounter).toHaveBeenCalledWith(3);
     });
@@ -26,7 +27,7 @@ describe('MapCounterService', () => {
         service.startingPointCounter = 2;
         spyOn(service, 'updateStartingPointCounter');
 
-        service.updateCounters('starting-point', 'remove');
+        service.updateCounters(true, undefined, 'remove');
 
         expect(service.updateStartingPointCounter).toHaveBeenCalledWith(1);
     });
@@ -34,7 +35,7 @@ describe('MapCounterService', () => {
     it('should not call updateStartingPointCounter if the item is not "starting-point"', () => {
         spyOn(service, 'updateStartingPointCounter');
 
-        service.updateCounters('some-other-item', 'add');
+        service.updateCounters(false, ItemCategory.Hat, 'add');
 
         expect(service.updateStartingPointCounter).not.toHaveBeenCalled();
     });
