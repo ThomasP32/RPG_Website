@@ -151,7 +151,38 @@ describe('GameManagerGateway', () => {
 
             expect(serverStub.to.calledWith('game-id')).toBeTruthy();
             expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
-            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée.', ['Player1'])).toBeTruthy();
+            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée pour Player1.', ['Player1'])).toBeTruthy();
+        });
+
+        it('should log message with all player names if more than one player is left', () => {
+            const game: Game = {
+                players: [{ name: 'Player1' }, { name: 'Player2' }] as Player[],
+                hasStarted: true,
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+            gameCreationService.getGameById.returns(game);
+
+            gateway.isGameFinished(socket, 'game-id');
+
+            expect(
+                journalService.logMessage.calledWith('game-id', 'La partie est terminée pour Player1, Player2.', ['Player1', 'Player2']),
+            ).toBeTruthy();
+        });
+
+        it('should not emit gameFinishedNoWin if the game has not started', () => {
+            const game: Game = {
+                players: [{ name: 'Player1' }] as Player[],
+                hasStarted: false,
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+            gameCreationService.getGameById.returns(game);
+
+            gateway.isGameFinished(socket, 'game-id');
+
+            expect(serverStub.to.calledWith('game-id')).toBeFalsy();
+            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée pour Player1.', ['Player1'])).toBeTruthy();
         });
     });
 

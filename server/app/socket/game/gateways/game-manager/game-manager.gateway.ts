@@ -83,6 +83,7 @@ export class GameManagerGateway implements OnGatewayInit {
     @SubscribeMessage('toggleDoor')
     toggleDoor(client: Socket, data: { gameId: string; door: DoorTile }): void {
         const game = this.gameCreationService.getGameById(data.gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
         const isPlayerOnDoor = this.gameManagerService.isPlayerOnTile(game, data.door.coordinate);
         if (!isPlayerOnDoor) {
             const doorTile = game.doorTiles.find(
@@ -94,6 +95,10 @@ export class GameManagerGateway implements OnGatewayInit {
             }
             doorTile.isOpened = !doorTile.isOpened;
             this.server.to(data.gameId).emit('doorToggled', { game: game, door: doorTile });
+
+            const action = doorTile.isOpened ? 'ouvert' : 'fermé';
+            const message = `${player.name} a ${action} une porte.`;
+            this.journalService.logMessage(data.gameId, message, [player.name]);
         }
     }
 
@@ -104,7 +109,8 @@ export class GameManagerGateway implements OnGatewayInit {
         if (game.players.length === 1 && game.hasStarted) {
             this.server.to(gameId).emit('gameFinishedNoWin', { winner: game.players[0] });
         }
-        this.journalService.logMessage(gameId, `La partie est terminée.`, involvedPlayers);
+        const playerNames = involvedPlayers.join(', ');
+        this.journalService.logMessage(gameId, `La partie est terminée pour ${playerNames}.`, involvedPlayers);
     }
 
     @SubscribeMessage('hasPlayerWon')
