@@ -50,7 +50,7 @@ export class CombatGateway implements OnGatewayInit {
                 });
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
-
+                
                 this.server.to(data.gameId).emit('combatStartedSignal');
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
@@ -104,42 +104,6 @@ export class CombatGateway implements OnGatewayInit {
         }
     }
 
-    handleDisconnect(client: Socket): void {
-        const gameId = this.gameCreationService.getGames().find((game) => game.players.some((player) => player.socketId === client.id))?.id;
-        if (gameId) {
-            const combat = this.serverCombatService.getCombatByGameId(gameId);
-
-            if (combat) {
-                const remainingPlayer = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
-                const disconnectedPlayer = client.id === combat.challenger.socketId ? combat.challenger : combat.opponent;
-
-                this.serverCombatService.combatWinStatsUpdate(remainingPlayer, gameId);
-                const game = this.gameCreationService.getGameById(gameId);
-                this.serverCombatService.sendBackToInitPos(disconnectedPlayer, game);
-                this.serverCombatService.updatePlayersInGame(game);
-
-                this.server.to(combat.id).emit('combatFinishedByDisconnection', remainingPlayer);
-                this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: remainingPlayer });
-
-                this.combatCountdownService.deleteCountdown(gameId);
-                this.cleanupCombatRoom(combat.id);
-
-                if (remainingPlayer.specs.nVictories > 2) {
-                    const involvedPlayers = game.players.map((player) => player.name);
-                    this.server.to(gameId).emit('gameFinishedPlayerWon', remainingPlayer);
-                    this.journalService.logMessage(gameId, `La partie a terminé sur la victoire de ${remainingPlayer.name}.`, involvedPlayers);
-                    return;
-                }
-
-                if (game.currentTurn === remainingPlayer.turn) {
-                    this.gameCountdownService.resumeCountdown(gameId);
-                } else {
-                    this.gameCountdownService.emit('timeout', gameId);
-                }
-            }
-        }
-    }
-
     attackOnTimeOut(gameId: string) {
         const combat = this.serverCombatService.getCombatByGameId(gameId);
         let attackingPlayer: Player;
@@ -173,15 +137,6 @@ export class CombatGateway implements OnGatewayInit {
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
                 this.combatCountdownService.deleteCountdown(gameId);
-
-                if (attackingPlayer.specs.nVictories > 2) {
-                    const involvedPlayers = game.players.map((player) => player.name);
-                    this.server.to(gameId).emit('gameFinishedPlayerWon', attackingPlayer);
-                    this.journalService.logMessage(gameId, `La partie a terminé sur la victoire de ${attackingPlayer.name}.`, involvedPlayers);
-                    this.cleanupCombatRoom(combat.id);
-                    return;
-                }
-
                 if (game.currentTurn === attackingPlayer.turn) {
                     this.gameCountdownService.resumeCountdown(gameId);
                 } else {

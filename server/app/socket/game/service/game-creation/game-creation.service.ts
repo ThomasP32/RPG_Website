@@ -74,10 +74,6 @@ export class GameCreationService {
     handlePlayerLeaving(client: Socket, gameId: string): Game {
         const game = this.getGameById(gameId);
         if (game.hasStarted) {
-            const combatRoomId = `${gameId}-combat`;
-            if (client.rooms.has(combatRoomId)) {
-                client.leave(combatRoomId);
-            }
             game.players = game.players.map((player) => {
                 if (player.socketId === client.id) {
                     return { ...player, isActive: false };

@@ -3,7 +3,7 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile } from '@common/map.types';
+import { Coordinate } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -134,6 +134,42 @@ describe('GameManagerGateway', () => {
 
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
             expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
+        });
+    });
+
+    describe('isGameFinished', () => {
+        it('should emit gameFinishedNoWin if only one player is left and the game has started', () => {
+            const game: Game = {
+                players: [{ name: 'Player1' }] as Player[],
+                hasStarted: true,
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+            gameCreationService.getGameById.returns(game);
+
+            gateway.isGameFinished(socket, 'game-id');
+
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+            expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
+            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée.', ['Player1'])).toBeTruthy();
+        });
+    });
+
+    describe('hasPlayerWon', () => {
+        it('should emit playerWon if any player has three or more victories', () => {
+            const player: Player = { specs: { nVictories: 3 } } as Player;
+            const game: Game = {
+                players: [player],
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.hasPlayerWon(socket, 'game-id');
+
+            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
+            expect((serverStub.to('game-id').emit as SinonStub).calledWith('playerWon', { winner: player })).toBeTruthy();
         });
     });
 
@@ -436,16 +472,6 @@ describe('GameManagerGateway', () => {
 
         it('should set up the timeout listener on gameCountdownService once', () => {
             const endTurnSpy = jest.spyOn(gateway, 'prepareNextTurn');
-            const game = {
-                id: 'game-id',
-                players: [
-                    { socketId: 'inactive-player', turn: 0, isActive: false, specs: { speed: 5 } as Specs },
-                    { socketId: 'active-player1', turn: 0, isActive: true, specs: { speed: 5 } as Specs },
-                    { socketId: 'active-player2', turn: 0, isActive: true, specs: { speed: 5 } as Specs },
-                ],
-                currentTurn: 0,
-            } as Game;
-            gameCreationService.getGameById.returns(game);
             const onSpy = jest.spyOn(gameCountdownService, 'on').mockImplementation((eventName, listener) => {
                 if (eventName === 'timeout') {
                     listener('test-game-id');
@@ -499,51 +525,6 @@ describe('GameManagerGateway', () => {
 
             gateway.prepareNextTurn('game-id');
             expect(gameCountdownService.resetTimerSubscription.calledWith('game-id')).toBeTruthy();
-        });
-    });
-
-    describe('toggleDoor', () => {
-        it('should toggle the door state and emit doorToggled if player is not on the door', () => {
-            const gameId = 'test-game-id';
-            const door = { coordinate: { x: 2, y: 3 }, isOpened: false } as DoorTile;
-            const game = { id: gameId, doorTiles: [door] } as Game;
-
-            gameCreationService.getGameById.returns(game);
-            gameManagerService.isPlayerOnTile.returns(false);
-
-            gateway.toggleDoor(socket, { gameId, door });
-
-            expect(door.isOpened).toBe(true);
-            expect(serverStub.to.calledWith(gameId)).toBeTruthy();
-            const toStub = serverStub.to(gameId).emit as SinonStub;
-            expect(toStub.calledWith('doorToggled', { game, door })).toBeTruthy();
-        });
-
-        it('should log an error and return if the door does not exist', () => {
-            const gameId = 'test-game-id';
-            const door = { coordinate: { x: 5, y: 5 }, isOpened: false } as DoorTile;
-            const game = { id: gameId, doorTiles: [] } as Game;
-
-            gameCreationService.getGameById.returns(game);
-            gameManagerService.isPlayerOnTile.returns(false);
-
-            gateway.toggleDoor(socket, { gameId, door });
-
-            expect(serverStub.to.notCalled).toBeTruthy();
-        });
-
-        it('should not toggle the door or emit if a player is on the door', () => {
-            const gameId = 'test-game-id';
-            const door = { coordinate: { x: 2, y: 3 }, isOpened: false } as DoorTile;
-            const game = { id: gameId, doorTiles: [door] } as Game;
-
-            gameCreationService.getGameById.returns(game);
-            gameManagerService.isPlayerOnTile.returns(true);
-
-            gateway.toggleDoor(socket, { gameId, door });
-
-            expect(door.isOpened).toBe(false);
-            expect(serverStub.to.notCalled).toBeTruthy();
         });
     });
 });
