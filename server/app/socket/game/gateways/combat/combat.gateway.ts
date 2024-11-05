@@ -208,6 +208,7 @@ export class CombatGateway implements OnGatewayInit {
     @SubscribeMessage('startEvasion')
     async startEvasion(client: Socket, gameId: string): Promise<void> {
         console.log('une evasion a été commencée');
+        console.log('gameId:', gameId);
         const combat = this.serverCombatService.getCombatByGameId(gameId);
         let evadingPlayer: Player;
         if (combat.challenger.socketId === client.id) {
