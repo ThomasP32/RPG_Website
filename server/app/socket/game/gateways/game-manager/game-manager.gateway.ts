@@ -83,18 +83,15 @@ export class GameManagerGateway implements OnGatewayInit {
     @SubscribeMessage('toggleDoor')
     toggleDoor(client: Socket, data: { gameId: string; door: DoorTile }): void {
         const game = this.gameCreationService.getGameById(data.gameId);
-        const isPlayerOnDoor = this.gameManagerService.isPlayerOnTile(game, data.door.coordinate);
-        if (!isPlayerOnDoor) {
-            const doorTile = game.doorTiles.find(
-                (door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y,
-            );
-            if (!doorTile) {
-                console.error(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
-                return;
-            }
-            doorTile.isOpened = !doorTile.isOpened;
-            this.server.to(data.gameId).emit('doorToggled', { game: game, door: doorTile });
+        const player = game.players.find((player) => player.socketId === client.id);
+        const doorTile = game.doorTiles.find((door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y);
+        if (!doorTile) {
+            console.error(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
+            return;
         }
+        this.gameManagerService.updatePlayerActions(data.gameId, client.id);
+        doorTile.isOpened = !doorTile.isOpened;
+        this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
     }
 
     @SubscribeMessage('isGameFinished')
@@ -149,6 +146,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         player.specs.movePoints = player.specs.speed;
+        player.specs.actions = 1;
         this.prepareNextTurn(gameId);
     }
 
@@ -176,6 +174,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         activePlayer.specs.movePoints = activePlayer.specs.speed;
+        activePlayer.specs.actions = 1;
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)

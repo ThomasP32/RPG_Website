@@ -218,7 +218,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForPossibleOpponents() {
         this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
-            if (!this.gameTurnService.actionsDone.combat && possibleOpponents.length > 0) {
+            if (this.player.specs.actions > 0 && possibleOpponents.length > 0) {
                 this.combatAvailable = true;
                 this.possibleOpponents = possibleOpponents;
             } else {
@@ -230,7 +230,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForDoorOpening() {
         this.gameTurnService.possibleDoors$.subscribe((possibleDoors: DoorTile[]) => {
-            if (!this.gameTurnService.actionsDone.door && possibleDoors.length > 0) {
+            if (this.player.specs.actions > 0 && possibleDoors.length > 0) {
                 this.doorActionAvailable = true;
                 this.possibleDoors = possibleDoors;
                 if (possibleDoors[0].isOpened) {
