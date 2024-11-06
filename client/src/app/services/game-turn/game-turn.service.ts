@@ -3,6 +3,7 @@ import { MovesMap } from '@app/interfaces/moves';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { Coordinate, DoorTile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -78,7 +79,7 @@ export class GameTurnService {
             this.youFell.next(false);
             this.clearMoves();
             this.endTurn();
-        }, 3000);
+        }, TIME_LIMIT_DELAY);
     }
 
     listenForTurn() {
@@ -237,7 +238,5 @@ export class GameTurnService {
                 this.gameService.setGame(data.updatedGame);
             }),
         );
-
-        
     }
 }

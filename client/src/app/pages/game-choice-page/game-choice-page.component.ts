@@ -3,11 +3,9 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
+import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
-
-const TIME_LIMIT = 3000;
-
 @Component({
     selector: 'app-game-choice-page',
     standalone: true,
@@ -53,7 +51,7 @@ export class GameChoicePageComponent implements OnInit {
                 this.showErrorMessage.gameChoiceError = true;
                 setTimeout(() => {
                     this.router.navigate(['/']);
-                }, TIME_LIMIT);
+                }, TIME_LIMIT_DELAY);
             } else {
                 this.router.navigate([`create-game/${this.selectedMap}/create-character`]);
             }

@@ -71,6 +71,11 @@ export class TileService {
         }
     }
 
+    removeStartingPoint(map: any[][], rowIndex: number, colIndex: number) {
+        map[rowIndex][colIndex].isStartingPoint = false;
+        this.mapCounterService.updateCounters(true, undefined, 'add');
+    }
+
     convertTileValue(tileValue: string): TileCategory {
         switch (tileValue) {
             case 'wall':
