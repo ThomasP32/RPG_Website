@@ -229,5 +229,7 @@ export class GameTurnService {
                 this.gameService.setGame(data.updatedGame);
             }),
         );
+
+        
     }
 }

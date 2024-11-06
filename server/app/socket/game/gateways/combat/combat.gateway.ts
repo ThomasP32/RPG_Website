@@ -1,4 +1,4 @@
-import { Player } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -50,7 +50,7 @@ export class CombatGateway implements OnGatewayInit {
                 });
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
-                
+
                 this.server.to(data.gameId).emit('combatStartedSignal');
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
@@ -136,7 +136,10 @@ export class CombatGateway implements OnGatewayInit {
             this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
-                this.combatCountdownService.deleteCountdown(gameId);
+                if (this.checkForWinner(game.id, attackingPlayer)) {
+                    this.combatCountdownService.deleteCountdown(gameId);
+                    return;
+                }
                 if (game.currentTurn === attackingPlayer.turn) {
                     this.gameCountdownService.resumeCountdown(gameId);
                 } else {
@@ -148,6 +151,14 @@ export class CombatGateway implements OnGatewayInit {
             this.combatCountdownService.resetTimerSubscription(gameId);
             this.prepareNextTurn(gameId);
         }
+    }
+
+    checkForWinner(gameId: string, player: Player): boolean {
+        if (player.specs.nVictories >= 3) {
+            this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
+            return true;
+        }
+        return false;
     }
 
     prepareNextTurn(gameId: string) {
@@ -178,6 +189,46 @@ export class CombatGateway implements OnGatewayInit {
             }
         } catch (error) {
             console.error(`Error while cleaning up combat room: ${combatRoomId}:`, error);
+        }
+    }
+
+    handleDisconnect(client: Socket): void {
+        let playerGame: Game | undefined;
+
+        const games = this.gameCreationService.getGames();
+        games.forEach((game) => {
+            if (game.players.some((player) => player.socketId === client.id)) {
+                playerGame = game;
+                return;
+            }
+        });
+        if (playerGame) {
+            const combat = this.serverCombatService.getCombatByGameId(playerGame.id);
+
+            if (combat) {
+                const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
+                this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
+                this.serverCombatService.combatWinStatsUpdate(winner, combat.id);
+
+                const updatedGame = this.gameCreationService.getGameById(playerGame.id);
+                this.serverCombatService.updatePlayersInGame(updatedGame);
+
+                setTimeout(() => {
+                    this.server.to(playerGame.id).emit('combatFinished', { updatedGame, winner: winner });
+                    if (this.checkForWinner(playerGame.id, winner)) {
+                        this.combatCountdownService.deleteCountdown(playerGame.id);
+                        return;
+                    }
+                    this.combatCountdownService.deleteCountdown(playerGame.id);
+
+                    if (updatedGame.currentTurn === winner.turn) {
+                        this.gameCountdownService.resumeCountdown(playerGame.id);
+                    } else {
+                        this.gameCountdownService.emit('timeout', playerGame.id);
+                    }
+                    this.cleanupCombatRoom(combat.id);
+                }, 3000);
+            }
         }
     }
 }

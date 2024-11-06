@@ -312,17 +312,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 }, 3000);
             }),
         );
-        this.socketSubscription.add(
-            this.socketService.listen('gameFinishedNoWin').subscribe(() => {
-                console.log('la game est finieeeeee!, il reste plus assez de joueurs!! ');
-                this.showExitModal = false;
-                this.showKickedModal = true;
-                setTimeout(() => {
-                    // this.gameTurnService.endGame();
-                    this.navigateToMain();
-                }, 3000);
-            }),
-        );
     }
 
     ngOnDestroy() {
