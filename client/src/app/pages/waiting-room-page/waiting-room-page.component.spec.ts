@@ -1,241 +1,210 @@
-// import { CommonModule } from '@angular/common';
-// import { HttpClientTestingModule } from '@angular/common/http/testing';
-// import { ComponentFixture, TestBed } from '@angular/core/testing';
-// import { ActivatedRoute, Router } from '@angular/router';
-// import { CharacterService } from '@app/services/character/character.service';
-// import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-// import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-// import { PlayerService } from '@app/services/player-service/player.service';
-// import { Avatar, Bonus, Player } from '@common/game';
-// import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
-// import { Observable, of, Subject } from 'rxjs';
-// import { WaitingRoomPageComponent } from './waiting-room-page.component';
+import { CommonModule } from '@angular/common';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
+import { CharacterService } from '@app/services/character/character.service';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { CommunicationMapService } from '@app/services/communication/communication.map.service';
+import { PlayerService } from '@app/services/player-service/player.service';
+import { WaitingRoomParameters } from '@common/constants';
+import { Avatar, Bonus, Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
+import { Observable, of, Subject } from 'rxjs';
 
-// const minCode = 1000;
-// const maxCode = 9999;
+const mockPlayer: Player = {
+    socketId: 'player1-socket-id',
+    name: 'Player1',
+    avatar: Avatar.Avatar1,
+    isActive: true,
+    specs: {
+        life: 100,
+        speed: 10,
+        attack: 15,
+        defense: 12,
+        attackBonus: Bonus.D6,
+        defenseBonus: Bonus.D4,
+        movePoints: 5,
+        actions: 2,
+        nVictories: 3,
+        nDefeats: 1,
+        nCombats: 4,
+        nEvasions: 1,
+        nLifeTaken: 50,
+        nLifeLost: 30,
+        evasions: 0,
+    },
+    inventory: [ItemCategory.Hat, ItemCategory.Key],
+    position: { x: 1, y: 2 },
+    turn: 1,
+    visitedTiles: [],
+    initialPosition: { x: 0, y: 0 },
+};
 
-// const mockPlayer: Player = {
-//     socketId: 'player1-socket-id',
-//     name: 'Player1',
-//     avatar: Avatar.Avatar1,
-//     isActive: true,
-//     specs: {
-//         life: 100,
-//         speed: 10,
-//         attack: 15,
-//         defense: 12,
-//         attackBonus: Bonus.D6,
-//         defenseBonus: Bonus.D4,
-//         movePoints: 5,
-//         actions: 2,
-//         nVictories: 3,
-//         nDefeats: 1,
-//         nCombats: 4,
-//         nEvasions: 1,
-//         nLifeTaken: 50,
-//         nLifeLost: 30,
-//     },
-//     inventory: [ItemCategory.Hat, ItemCategory.Key],
-//     position: { x: 1, y: 2 },
-//     turn: 1,
-//     visitedTiles: [],
-// };
+describe('WaitingRoomPageComponent', () => {
+    let component: WaitingRoomPageComponent;
+    let fixture: ComponentFixture<WaitingRoomPageComponent>;
+    let ActivatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
+    let RouterSpy: jasmine.SpyObj<Router>;
+    let SocketServiceSpy: jasmine.SpyObj<SocketService>;
+    let playerServiceSpy: jasmine.SpyObj<PlayerService>;
+    let characterServiceSpy: jasmine.SpyObj<CharacterService>;
+    let CommunicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
+    let gameStartedSubject: Subject<Object>;
+    let playerJoinedSubject: Subject<Object>;
+    let gameLockToggled$: Subject<{ isLocked: boolean }>;
+    let playerKicked$: Subject<void>;
 
-// const mockMap: Map = {
-//     name: 'Map1',
-//     description: 'This is a mock map',
-//     imagePreview: 'mock-image.png',
-//     mode: Mode.Classic,
-//     mapSize: { x: 10, y: 10 },
-//     startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-//     items: [
-//         { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-//         { coordinate: { x: 7, y: 2 }, category: ItemCategory.Acidgun },
-//     ],
-//     doorTiles: [
-//         { coordinate: { x: 3, y: 3 }, isOpened: false },
-//         { coordinate: { x: 6, y: 6 }, isOpened: true },
-//     ],
-//     tiles: [
-//         { coordinate: { x: 0, y: 1 }, category: TileCategory.Wall },
-//         { coordinate: { x: 2, y: 3 }, category: TileCategory.Water },
-//     ],
-// };
+    beforeEach(async () => {
+        RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/join' });
+        playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer']);
+        characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
+        characterServiceSpy.getAvatarPreview.and.returnValue('avatarUrl');
+        playerServiceSpy.getPlayer.and.returnValue(mockPlayer);
+        RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/waiting-room/host' });
 
-// describe('WaitingRoomPageComponent when creating a game', () => {
-//     let component: WaitingRoomPageComponent;
-//     let fixture: ComponentFixture<WaitingRoomPageComponent>;
-//     let ActivatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
-//     let RouterSpy: jasmine.SpyObj<Router>;
-//     let SocketServiceSpy: jasmine.SpyObj<SocketService>;
-//     let CommunicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
-//     let playerServiceSpy: jasmine.SpyObj<PlayerService>;
-//     let characterServiceSpy: jasmine.SpyObj<CharacterService>;
-//     let gameStartedSubject: Subject<Object>;
-//     let playerJoinedSubject: Subject<Object>;
+        gameStartedSubject = new Subject<any>();
+        playerJoinedSubject = new Subject<any>();
 
-//     beforeEach(async () => {
-//         RouterSpy = jasmine.createSpyObj('Router', ['navigate', 'url'], { url: '/host' });
-//         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer']);
-//         playerServiceSpy.getPlayer.and.returnValue(mockPlayer);
+        gameLockToggled$ = new Subject<{ isLocked: boolean }>();
+        playerKicked$ = new Subject<void>();
 
-//         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
-//         characterServiceSpy.getAvatarPreview.and.returnValue('preview-url');
+        SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
+        SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
+            if (eventName === 'gameStarted') {
+                return gameStartedSubject.asObservable() as Observable<T>;
+            } else if (eventName === 'playerJoined') {
+                return playerJoinedSubject.asObservable() as Observable<T>;
+            } else {
+                return of([] as T);
+            }
+        });
 
-//         gameStartedSubject = new Subject<any>();
-//         playerJoinedSubject = new Subject<any>();
+        SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
+            if (eventName === 'gameLockToggled') {
+                return gameLockToggled$.asObservable() as Observable<T>;
+            }
+            return of([] as T);
+        });
 
-//         SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
-//         SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-//             if (eventName === 'gameStarted') {
-//                 return gameStartedSubject.asObservable() as Observable<T>;
-//             } else if (eventName === 'playerJoined') {
-//                 return playerJoinedSubject.asObservable() as Observable<T>;
-//             } else {
-//                 return of([] as T);
-//             }
-//         });
+        CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        ActivatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
+            snapshot: { params: { gameId: '1234', mapName: 'Map1' } },
+        });
 
-//         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
-//         CommunicationMapServiceSpy.basicGet.and.returnValue(of(mockMap));
-//         ActivatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], { snapshot: { params: { mapName: 'Map1' } } });
+        await TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule, CommonModule, WaitingRoomPageComponent],
+            providers: [
+                { provide: ActivatedRoute, useValue: ActivatedRouteSpy },
+                { provide: Router, useValue: RouterSpy },
+                { provide: SocketService, useValue: SocketServiceSpy },
+                { provide: CommunicationMapService, useValue: CommunicationMapServiceSpy },
+                { provide: PlayerService, useValue: playerServiceSpy },
+                { provide: CharacterService, useValue: characterServiceSpy },
+            ],
+        }).compileComponents();
 
-//         await TestBed.configureTestingModule({
-//             imports: [HttpClientTestingModule, CommonModule, WaitingRoomPageComponent],
-//             providers: [
-//                 { provide: ActivatedRoute, useValue: ActivatedRouteSpy },
-//                 { provide: Router, useValue: RouterSpy },
-//                 { provide: SocketService, useValue: SocketServiceSpy },
-//                 { provide: CommunicationMapService, useValue: CommunicationMapServiceSpy },
-//                 { provide: PlayerService, useValue: playerServiceSpy },
-//                 { provide: CharacterService, useValue: characterServiceSpy },
-//             ],
-//         }).compileComponents();
+        fixture = TestBed.createComponent(WaitingRoomPageComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-//         fixture = TestBed.createComponent(WaitingRoomPageComponent);
-//         component = fixture.componentInstance;
-//         fixture.detectChanges();
-//     });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-//     it('should create', () => {
-//         expect(component).toBeTruthy();
-//     });
+    it('should generate a random number within the specified range', () => {
+        const minCode = 1000;
+        const maxCode = 9999;
+        spyOnProperty(WaitingRoomParameters, 'MIN_CODE', 'get').and.returnValue(minCode);
+        spyOnProperty(WaitingRoomParameters, 'MAX_CODE', 'get').and.returnValue(maxCode);
+        component.generateRandomNumber();
+    });
 
-//     it('should call getPlayer and getAvatarPreview on ngOnInit when creating a game', async () => {
-//         component.isHost = true;
-//         await component.ngOnInit();
-//         expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
-//         expect(characterServiceSpy.getAvatarPreview).toHaveBeenCalledWith(mockPlayer.avatar);
-//         expect(component.playerPreview).toBe('preview-url');
-//         expect(component.playerName).toBe('Player1');
-//     });
+    it('should navigate to create-game if mapName is missing', () => {
+        ActivatedRouteSpy.snapshot.params.mapName = undefined;
+        component.getMapName();
+        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/create-game']);
+    });
 
-//     it('should generate a random number within the specified range', () => {
-//         component.generateRandomNumber();
-//         expect(Number(component.waitingRoomCode)).toBeGreaterThanOrEqual(minCode);
-//         expect(Number(component.waitingRoomCode)).toBeLessThanOrEqual(maxCode);
-//     });
+    it('should set mapName if present', () => {
+        component.getMapName();
+        expect(component.mapName).toBe('Map1');
+    });
 
-//     it('should navigate to create-game if mapName is missing', () => {
-//         ActivatedRouteSpy.snapshot.params.mapName = undefined;
-//         component.getMapName();
-//         expect(RouterSpy.navigate).toHaveBeenCalledWith(['/create-game']);
-//     });
+    it('should exit the game and navigate to the main menu', () => {
+        component.exitGame();
+        expect(characterServiceSpy.resetCharacterAvailability).toHaveBeenCalled();
+        expect(SocketServiceSpy.disconnect).toHaveBeenCalled();
+        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+    
+    it('should set isHost to true if route url contains "host"', () => {
+        component.ngOnInit();
+        expect(component.isHost).toBeTrue();
+    });
+    
+    it('should generate a random waiting room code within the specified range', () => {
+        const minCode = 1000;
+        const maxCode = 9999;
+        spyOnProperty(WaitingRoomParameters, 'MIN_CODE', 'get').and.returnValue(minCode);
+        spyOnProperty(WaitingRoomParameters, 'MAX_CODE', 'get').and.returnValue(maxCode);
 
-//     it('should handle playerJoined event correctly', () => {
-//         const players = [mockPlayer];
-//         playerJoinedSubject.next(players);
-//         expect(component.activePlayers).toEqual(players);
-//         expect(component.numberOfPlayers).toBe(players.length);
-//     });
+        component.generateRandomNumber();
 
-//     afterEach(() => {
-//         gameStartedSubject.complete();
-//         playerJoinedSubject.complete();
-//     });
-// });
-//     afterEach(() => {
-//         gameStartedSubject.complete();
-//         playerJoinedSubject.complete();
-//     });
-// });
+        const generatedCode = parseInt(component.waitingRoomCode, 10);
+        expect(generatedCode).toBeGreaterThanOrEqual(minCode);
+        expect(generatedCode).toBeLessThanOrEqual(maxCode);
+    });
 
-// describe('WaitingRoomPageComponent when joining a game', () => {
-//     let component: WaitingRoomPageComponent;
-//     let fixture: ComponentFixture<WaitingRoomPageComponent>;
-//     let ActivatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
-//     let RouterSpy: jasmine.SpyObj<Router>;
-//     let SocketServiceSpy: jasmine.SpyObj<SocketService>;
-//     let CommunicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
-//     let playerServiceSpy: jasmine.SpyObj<PlayerService>;
-//     let characterServiceSpy: jasmine.SpyObj<CharacterService>;
-//     let playerJoinedSubject: Subject<Object>;
+    it('should navigate to game page with correct URL on navigateToGamePage', () => {
+        component.waitingRoomCode = '1234';
+        component.mapName = 'testMap';
+        component.navigateToGamePage();
 
-//     beforeEach(async () => {
-//         RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/join' });
-//         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer']);
-//         // playerServiceSpy.getPlayer.and.returnValue(mockPlayer);
+        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/game/1234/testMap'], {
+            state: { player: component.player, gameId: '1234' },
+        });
+    });
 
-//         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
-//         characterServiceSpy.getAvatarPreview.and.returnValue('preview-url');
+    it('should set hover state to true when toggleHover is called with true', () => {
+        component.toggleHover(true);
+        expect(component.hover).toBeTrue();
+    });
 
-//         playerJoinedSubject = new Subject<any>();
-//         SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
-//         SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-//             if (eventName === 'playerJoined') {
-//                 return playerJoinedSubject.asObservable() as Observable<T>;
-//             } else {
-//                 return of([] as T);
-//             }
-//         });
+    it('should set hover state to false when toggleHover is called with false', () => {
+        component.toggleHover(false);
+        expect(component.hover).toBeFalse();
+    });
 
-//         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
-//         ActivatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
-//             snapshot: { params: { gameId: '1234', mapName: 'Map1' } },
-//         });
+    it('should toggle isGameLocked and call sendMessage with correct parameters', () => {
+        component.waitingRoomCode = '1234';
+        component.isGameLocked = false;
+        component.toggleGameLockState();
 
-//         await TestBed.configureTestingModule({
-//             imports: [HttpClientTestingModule, CommonModule, WaitingRoomPageComponent],
-//             providers: [
-//                 { provide: ActivatedRoute, useValue: ActivatedRouteSpy },
-//                 { provide: Router, useValue: RouterSpy },
-//                 { provide: SocketService, useValue: SocketServiceSpy },
-//                 { provide: CommunicationMapService, useValue: CommunicationMapServiceSpy },
-//                 { provide: PlayerService, useValue: playerServiceSpy },
-//                 { provide: CharacterService, useValue: characterServiceSpy },
-//             ],
-//         }).compileComponents();
+        expect(component.isGameLocked).toBeTrue();
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleGameLockState', {
+            isLocked: true,
+            gameId: '1234',
+        });
 
-//         fixture = TestBed.createComponent(WaitingRoomPageComponent);
-//         component = fixture.componentInstance;
-//         fixture.detectChanges();
-//     });
+        component.toggleGameLockState();
 
-//     it('should create', () => {
-//         expect(component).toBeTruthy();
-//     });
-
-//     it('should call getPlayer and getAvatarPreview on ngOnInit when joining a game', async () => {
-//         await component.ngOnInit();
-//         // expect(playerServiceSpy.getPlayer).toHaveBeenCalled();
-//         expect(characterServiceSpy.getAvatarPreview).toHaveBeenCalledWith(mockPlayer.avatar);
-//         expect(component.playerPreview).toBe('preview-url');
-//         expect(component.playerName).toBe('Player1');
-//     });
-
-//     it('should set mapName if present', () => {
-//         component.getMapName();
-//         expect(component.mapName).toBe('Map1');
-//     });
-
-//     it('should exit the game and navigate to the main menu', () => {
-//         component.exitGame();
-//         expect(characterServiceSpy.resetCharacterAvailability).toHaveBeenCalled();
-//         expect(SocketServiceSpy.disconnect).toHaveBeenCalled();
-//         expect(RouterSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
-//     });
-
-//     afterEach(() => {
-//         playerJoinedSubject.complete();
-//     });
-// });
+        expect(component.isGameLocked).toBeFalse();
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleGameLockState', {
+            isLocked: false,
+            gameId: '1234',
+        });
+    });
+    
+    afterEach(() => {
+        gameStartedSubject.complete();
+        playerJoinedSubject.complete();
+        gameLockToggled$.complete();
+        playerKicked$.complete();
+        (SocketServiceSpy.listen as jasmine.Spy).calls.reset();
+        if (component.socketSubscription) {
+            component.socketSubscription.unsubscribe();
+        }
+    });
+});

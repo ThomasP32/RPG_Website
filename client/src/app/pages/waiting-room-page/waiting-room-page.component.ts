@@ -62,8 +62,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     maxPlayers: number;
 
     async ngOnInit(): Promise<void> {
-        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        this.playerName = this.player.name;
+        const player = this.playerService.getPlayer();
+        this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
+        this.playerName = player.name;
+        this.isHost = this.router.url.includes('host');
 
         this.listenToSocketMessages();
         if (this.router.url.includes('host')) {
@@ -89,6 +91,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     get player(): Player {
         return this.playerService.player;
     }
+
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
@@ -110,6 +113,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     exitGame(): void {
         this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
+        this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
     }
 
