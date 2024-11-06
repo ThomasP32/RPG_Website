@@ -61,36 +61,40 @@ describe('GameMapComponent', () => {
         });
     });
 
-    // describe('#onTileClick', () => {
-    //     it('should emit tileClicked event when clicking on a valid move tile', () => {
-    //         spyOn(component.tileClicked, 'emit');
-    //         const position: Coordinate = { x: 1, y: 1 };
-    //         component.onTileClick(position);
-    //         expect(component.tileClicked.emit).toHaveBeenCalledWith(position);
-    //     });
+    describe('#onTileClick', () => {
+        it('should not emit tileClicked event when clicking on an invalid move tile', () => {
+            spyOn(component.tileClicked, 'emit');
+            const position: Coordinate = { x: 3, y: 3 };
+            component.onTileClick(position);
+            expect(component.tileClicked.emit).not.toHaveBeenCalled();
+        });
 
-    //     it('should not emit tileClicked event when clicking on an invalid move tile', () => {
-    //         spyOn(component.tileClicked, 'emit');
-    //         const position: Coordinate = { x: 3, y: 3 };
-    //         component.onTileClick(position);
-    //         expect(component.tileClicked.emit).not.toHaveBeenCalled();
-    //     });
-    // });
+        it('should emit tileClicked event when clicking on a valid move tile', () => {
+            spyOn(component.tileClicked, 'emit');
+            const position: Coordinate = { x: 1, y: 1 };
+            component.moves.set('1,1', { path: [], weight: 1 });
+            component.onTileClick(position);
+            expect(component.tileClicked.emit).toHaveBeenCalledWith(position);
+        });
+    });
 
-    // describe('#onTileHover', () => {
-    //     it('should set move preview when hovering over a valid move tile', () => {
-    //         const position: Coordinate = { x: 1, y: 1 };
-    //         component.onTileHover(position);
-    //         expect(component.movePreview).toEqual([{ x: 1, y: 1 }]);
-    //     });
+    describe('#onTileHover', () => {
+        it('should clear move preview when hovering over an invalid move tile', () => {
+            const position: Coordinate = { x: 0, y: 0 };
+            spyOn(component, 'clearPreview');
+            component.onTileHover(position);
+            expect(component.clearPreview).toHaveBeenCalled();
+        });
 
-    //     it('should clear move preview when hovering over an invalid move tile', () => {
-    //         const position: Coordinate = { x: 0, y: 0 };
-    //         spyOn(component, 'clearPreview');
-    //         component.onTileHover(position);
-    //         expect(component.clearPreview).toHaveBeenCalled();
-    //     });
-    // });
+        it('should set movePreview when hovering over a valid move tile', () => {
+            const position: Coordinate = { x: 1, y: 1 };
+            const path = [{ x: 1, y: 1 }, { x: 1, y: 2 }];
+            component.moves.set('1,1', { path, weight: 1 }); 
+            component.onTileHover(position);
+            expect(component.movePreview).toEqual(path);
+        });
+    
+    });
 
     describe('#onRightClickTile', () => {
         it('should display tile description on right-click for different tile categories', () => {
@@ -144,15 +148,12 @@ describe('GameMapComponent', () => {
         });
     });
 
-    // describe('#isMove', () => {
-    //     it('should return true if the tile is a valid move tile', () => {
-    //         expect(component.isMove(1, 1)).toBeTrue();
-    //     });
+    describe('#isMove', () => {
+        it('should return false if the tile is not a valid move tile', () => {
+            expect(component.isMove(0, 0)).toBeFalse();
+        });
+    });
 
-    //     it('should return false if the tile is not a valid move tile', () => {
-    //         expect(component.isMove(0, 0)).toBeFalse();
-    //     });
-    // });
 
     describe('#isPreview', () => {
         it('should return true if the tile is in move preview', () => {
@@ -183,15 +184,6 @@ describe('GameMapComponent', () => {
             expect(image).toBe('item-image');
         });
     });
-
-    // describe('#getAvatarImage', () => {
-    //     it('should get avatar image from image service', () => {
-    //         imageServiceSpy.getPlayerImage.and.returnValue('avatar-image');
-    //         const image = component.getAvatarImage(Avatar.Avatar1);
-    //         expect(imageServiceSpy.getPixelatedPlayerImage).toHaveBeenCalledWith(Avatar.Avatar1);
-    //         expect(image).toBe('avatar-image');
-    //     });
-    // });
 
     describe('#onRightClickRelease', () => {
         it('should hide tile description when right-click is released', () => {

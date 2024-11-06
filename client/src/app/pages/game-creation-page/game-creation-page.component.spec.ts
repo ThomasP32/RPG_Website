@@ -80,7 +80,7 @@ describe('GameCreationPageComponent in creation mode', () => {
         expect(component.getUrlQueryParams).toHaveBeenCalled();
     });
 
-    it('shouldnt initialize in creation mode when mode is invalid', async () => {
+    it('should not initialize in creation mode when mode is invalid', async () => {
         activatedRouteSpy.snapshot.queryParams = { mode: 'invalidmode', size: '10' };
 
         await component.ngOnInit();
@@ -88,7 +88,7 @@ describe('GameCreationPageComponent in creation mode', () => {
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     });
 
-    it('shouldnt initialize in creation mode when size is invalid', async () => {
+    it('should not initialize in creation mode when size is invalid', async () => {
         activatedRouteSpy.snapshot.queryParams = { mode: 'classique', size: '5' };
 
         await component.ngOnInit();
