@@ -224,7 +224,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatCountdownService.deleteCountdown(playerGame.id);
                         return;
                     }
-                    this.combatCountdownService.deleteCountdown(playerGame.id);
 
                     if (updatedGame.currentTurn === winner.turn) {
                         this.gameCountdownService.resumeCountdown(playerGame.id);
