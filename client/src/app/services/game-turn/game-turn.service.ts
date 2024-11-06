@@ -85,7 +85,6 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
                 this.clearMoves();
-                // this.verifyPlayerWin();
                 this.actionsDone.door = false;
                 this.actionsDone.combat = false;
                 this.playerService.player = yourPlayer;
@@ -102,7 +101,6 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen('startTurn').subscribe(() => {
                 if (this.playerTurn.getValue() === this.player.name) {
-                    // this.getMoves();
                     this.getActions();
                 }
             }),
@@ -173,7 +171,8 @@ export class GameTurnService {
 
     listenForDoorUpdates(): void {
         this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
-            if (data.player.socketId === this.player.socketId) {
+            this.actionsDone.door = true;
+            if (data.player && data.player.socketId === this.player.socketId) {
                 this.playerService.setPlayer(data.player);
             }
             this.gameService.setGame(data.game);
