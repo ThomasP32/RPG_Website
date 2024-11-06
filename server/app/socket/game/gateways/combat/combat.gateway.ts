@@ -96,6 +96,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             const game = this.gameCreationService.getGameById(gameId);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('evasionSuccess', evadingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${evadingPlayer.name} s'est évadé.`, [evadingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinishedByEvasion', { updatedGame: game, evadingPlayer: evadingPlayer });
                 this.combatCountdownService.deleteCountdown(gameId);
@@ -105,6 +106,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         } else {
             this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
             this.prepareNextTurn(gameId);
+            this.journalService.logMessage(combat.id, `Tentative d'évasion par ${evadingPlayer.name}: non réussie.`, [evadingPlayer.name]);
         }
     }
 
@@ -124,12 +126,19 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             attackDice: rollResult.attackDice,
             defenseDice: rollResult.defenseDice,
         });
+        this.journalService.logMessage(
+            combat.id,
+            `Dés roulés. Dé d'attaque: ${rollResult.attackDice}. Dé de défense: ${rollResult.defenseDice}. Résultat = ${rollResult.attackDice} - ${rollResult.defenseDice}.`,
+            [attackingPlayer.name, defendingPlayer.name],
+        );
 
         if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
             defendingPlayer.specs.life--;
             this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         } else {
             this.server.to(combat.id).emit('attackFailure', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Échec de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         }
 
         if (defendingPlayer.specs.life === 0) {
@@ -138,6 +147,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             this.serverCombatService.sendBackToInitPos(defendingPlayer, game);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
                 if (this.checkForWinner(game.id, attackingPlayer)) {
