@@ -4,7 +4,7 @@ import { ImageService } from '@app/services/image/image.service';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { MapService } from '@app/services/map/map.service';
 import { Mode } from '@common/map.types';
-/* eslint-disable no-unused-vars */
+
 @Component({
     selector: 'app-toolbar',
     standalone: true,
@@ -30,7 +30,11 @@ export class ToolbarComponent implements OnInit {
         public mapService: MapService,
         public mapCounterService: MapCounterService,
         public imageService: ImageService,
-    ) {}
+    ) {
+        this.mapService = mapService;
+        this.mapCounterService = mapCounterService;
+        this.imageService = imageService;
+    }
 
     mode: Mode;
     async ngOnInit() {

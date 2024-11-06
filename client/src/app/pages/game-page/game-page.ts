@@ -5,8 +5,8 @@ import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
+import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
-import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
@@ -28,7 +28,7 @@ import { Subscription } from 'rxjs';
         GameMapComponent,
         ChatroomComponent,
         RouterLink,
-        PlayersListComponent,
+        GamePlayersListComponent,
         CombatListComponent,
         CombatModalComponent,
         JournalComponent,
@@ -156,11 +156,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     navigateToEndOfGame(): void {
         this.navigateToMain();
-        // this.router.navigate([`/endOfGame/${this.game.id}`]);
     }
 
     confirmExit(): void {
-        // quitter la partie
         this.socketService.disconnect();
         this.navigateToMain();
         this.showExitModal = false;
@@ -281,7 +279,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {
-                        // this.gameTurnService.endGame();
                         this.navigateToMain();
                     }, 3000);
                 }

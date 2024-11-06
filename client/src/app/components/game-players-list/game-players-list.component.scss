@@ -1,0 +1,102 @@
+.game-players-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+    width: 330px;
+    height: 25vh;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: white;
+}
+
+.player {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+    padding: 5px;
+    gap: 10px;
+    font-size: 10px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.player.active-player {
+    border: 3px solid #b5651d;
+    box-shadow:
+        0 0 15px rgba(243, 156, 18, 0.6),
+        0 0 30px rgba(243, 156, 18, 0.5),
+        0 0 45px rgba(243, 156, 18, 0.4),
+        0 0 60px rgba(243, 156, 18, 0.3);
+    transition: box-shadow 0.5s ease-in-out;
+    animation: glowing 2s infinite alternate;
+}
+
+@keyframes glowing {
+    0% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 3px rgba(243, 156, 18, 0.8),
+            0 0 6px rgba(243, 156, 18, 0.7),
+            0 0 9px rgba(243, 156, 18, 0.6),
+            0 0 12px rgba(243, 156, 18, 0.5);
+    }
+    100% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+}
+
+.player.player-left {
+    color: #777; 
+    text-decoration: line-through; 
+    opacity: 0.6;
+}
+
+.host-icon {
+    font-size: 1em;
+    color: gold;
+    margin-left: 5px;
+    vertical-align: middle;
+    text-align: right;
+}
+
+.avatar-container {
+    width: 3vw;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e0e0;
+    margin-left: 5px;
+    position: relative;
+}
+
+.avatar {
+    width: 75%;
+    height: 75%;
+    object-fit: cover;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    font-size: 12px;
+    color: #e0e0e0;
+}
