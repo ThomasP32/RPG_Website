@@ -16,10 +16,14 @@ export interface IWaitingRoomParameters {
     MAX_CODE: number;
 }
 
-export const WaitingRoomParameters: IWaitingRoomParameters = {
-    MIN_CODE: 1000,
-    MAX_CODE: 9999,
-};
+export class WaitingRoomParameters {
+    static get MIN_CODE(): number {
+        return 1000;
+    }
+    static get MAX_CODE(): number {
+        return 9999;
+    }
+}
 
 export const TIME_LIMIT_DELAY: number = 3000;
 

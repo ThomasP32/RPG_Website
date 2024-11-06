@@ -51,6 +51,10 @@ export class PlayerService {
         this.player = player;
     }
 
+    getPlayer(): Player {
+        return this.player;
+    }
+
     setPlayer(player: Player): void {
         this.player = player;
     }
