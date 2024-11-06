@@ -58,6 +58,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     showExitModal = false;
     showActionModal = false;
     showKickedModal = false;
+    showEndGameModal = false;
     gameOverMessage = false;
     isCombatModalOpen = false;
 
@@ -105,6 +106,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.combatService.listenForCombatFinish();
             this.combatService.listenForEvasionInfo();
 
+            this.listenForEndOfGame();
             this.listenForIsCombatModalOpen();
             this.listenForOpponent();
             this.listenForPossibleOpponents();
@@ -146,6 +148,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     navigateToMain(): void {
+        this.playerService.resetPlayer();
+        this.characterService.resetCharacterAvailability();
         this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
     }
@@ -278,14 +282,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                         this.navigateToMain();
                     }, 3000);
                 }
-                this.gameService.game.players = players;
-                if (this.activePlayers.length <= 1) {
-                    this.showExitModal = false;
-                    this.showKickedModal = true;
-                    setTimeout(() => {
-                        this.navigateToMain();
-                    }, 3000);
-                }
             }),
         );
     }
@@ -298,6 +294,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.startTurnCountdown = 3;
                     this.delayFinished = true;
                 }
+            }),
+        );
+    }
+
+    listenForEndOfGame() {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe((winner) => {
+                console.log('la game est finieeeeee!, ce joueur a gagné : ', winner.name);
+                this.showExitModal = false;
+                this.showEndGameModal = true;
+                setTimeout(() => {
+                    this.navigateToMain();
+                }, 3000);
             }),
         );
     }
