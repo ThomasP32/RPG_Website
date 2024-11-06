@@ -1,6 +1,3 @@
-<!-- @if(!isYourTurn&&) {
-<div class="disable-interactions"></div>
-}  -->
 @if(!delayFinished) {
 <div class="disable-interactions"></div>
 <div class="turn-indicator">
@@ -76,10 +73,16 @@
         </div>
     </div>
 
-    <div class="countdown-container">
-        <h2>Temps restant</h2>
-        <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
-            <h3>{{ countdown }}</h3>
+    <div class="top-container">
+        <div class="countdown-endturn-container">
+            <div class="countdown-container">
+                <h2>Temps restant</h2>
+                <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+                    <h3>{{ countdown }}</h3>
+                </div>
+                <h2>secondes</h2>
+            </div>
+            <button (click)="endTurn()">Fin du tour</button>
         </div>
         <h2>secondes</h2>
     </div>
@@ -88,38 +91,28 @@
         <app-game-map [loadedMap]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
+    <div class="bottom-container">
+        <button (click)="openExitConfirmationModal()">Quitter la partie</button>
+    </div>
+
     <div class="right-panel">
-        <div class="player-list">Liste des joueurs</div>
+        <div class="player-list">
+            <app-game-players-list
+                [players]="game.players"
+                [hostSocketId]="game.hostSocketId"
+                [currentPlayerTurn]="currentPlayerTurn"
+            ></app-game-players-list>
+        </div>
         @if(combatAvailable) {
         <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
         }
         <div class="action-buttons">
-            <button (click)="endTurn()">Fin du tour</button>
             <button (click)="toggleDoor()">{{actionMessage}}</button>
-            <button class="quit-game-button" (click)="openExitConfirmationModal()">Quitter la partie</button>
-
-            @if(showExitModal) {
-            <div class="open-exit-confirmation-modal">
-                <div class="modal">
-                    <h2>Confirmer la sortie</h2>
-                    <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
-                    <button class="modal-button" (click)="confirmExit()">Oui</button>
-                    <button class="modal-button" (click)="closeExitModal()">Non</button>
-                </div>
-            </div>
-            } @if(showKickedModal) {
-            <div class="game-finished-modal">
-                <div class="modal">
-                    <h2>Tous les joueurs ont abandonné.</h2>
-                    <p>La partie est finie, vous serez redirigé.</p>
-                </div>
-            </div>
-            }
         </div>
 
         <div class="toggle-container">
             <div class="toggle">
-                <button [class.active]="activeView === 'chat'" (click)="toggleView('chat')">Chat</button>
+                <button [class.active]="activeView === 'chat'" (click)="toggleView('chat')">Clavardage</button>
                 <button [class.active]="activeView === 'journal'" (click)="toggleView('journal')">Journal</button>
             </div>
         </div>
@@ -135,6 +128,25 @@
         </div>
     </div>
 </div>
+
+@if(showExitModal) {
+    <div class="open-exit-confirmation-modal">
+        <div class="modal">
+            <h2>Confirmer la sortie</h2>
+            <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
+            <button class="modal-button" (click)="confirmExit()">Oui</button>
+            <button class="modal-button" (click)="closeExitModal()">Non</button>
+        </div>
+    </div>
+    } @if(showKickedModal) {
+    <div class="game-finished-modal">
+        <div class="modal">
+            <h2>Tous les joueurs ont abandonné.</h2>
+            <p>La partie est finie, vous serez redirigé.</p>
+        </div>
+    </div>
+    }
+
 @if(isCombatModalOpen){
 <div class="modal-overlay">
     <div class="modal-content">

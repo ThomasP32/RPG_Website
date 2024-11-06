@@ -7,7 +7,7 @@ import { MapService } from '@app/services/map/map.service';
 import { Map, Mode } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-/* eslint-disable no-unused-vars */
+
 @Component({
     selector: 'app-game-creation-page',
     standalone: true,
@@ -31,7 +31,11 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
         private mapService: MapService,
         private route: ActivatedRoute,
         private router: Router,
-    ) {}
+    ) {
+        this.mapService = mapService;
+        this.route = route;
+        this.router = router;
+    }
 
     async ngOnInit(): Promise<void> {
         if (this.router.url.includes('edition')) {

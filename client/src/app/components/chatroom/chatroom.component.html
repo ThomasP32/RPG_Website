@@ -1,10 +1,12 @@
 <div class="chat-container" [class.retracted]="isChatRetracted" [class.waiting-room-chat]="isWaitingRoom" [class.game-page-chat]="isGamePage">
-    <div class="chat-header" (click)="toggleChat()">
-        <strong>Clavardage</strong>
-        <span class="toggle-icon">
-            <i [ngClass]="isChatRetracted ? 'fas fa-comments' : 'fas fa-comment-dots'"></i>
-        </span>
-    </div>
+    @if (isWaitingRoom) {
+        <div class="chat-header" (click)="toggleChat()">
+            <strong>Clavardage</strong>
+            <span class="toggle-icon">
+                <i [ngClass]="isChatRetracted ? 'fas fa-comments' : 'fas fa-comment-dots'"></i>
+            </span>
+        </div>
+        }
     @if (!isChatRetracted) {
     <section>
         <strong>{{ player.name }}</strong>

@@ -183,7 +183,6 @@ describe('CombatModalComponent', () => {
             const yourTurnSubject = new Subject<void>();
             const playerTurnSubject = new Subject<void>();
 
-            // Using callFake to return different subjects based on the event name
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 switch (eventName) {
                     case 'yourTurnCombat':
@@ -197,7 +196,7 @@ describe('CombatModalComponent', () => {
 
             component.listenForCombatTurns();
             playerTurnSubject.next();
-            tick(); // Process asynchronous events
+            tick(); 
 
             expect(component.isYourTurn).toBeFalse();
         }));

@@ -39,7 +39,16 @@ export class MapAreaComponent implements OnInit {
         private imageService: ImageService,
         private router: Router,
         private screenshotService: ScreenShotService,
-    ) {}
+    ) {
+        this.tileService = tileService;
+        this.mapService = mapService;
+        this.mapCounterService = mapCounterService;
+        this.imageService = imageService;
+        this.router = router;
+        this.screenshotService = screenshotService;
+        this.route = route;
+    }
+    
     ngOnInit() {
         this.initMap();
     }
