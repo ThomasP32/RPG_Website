@@ -69,15 +69,15 @@ export class ServerCombatService {
 
     combatWinStatsUpdate(winner: Player, gameId: string) {
         if (winner.socketId === this.combatRooms[gameId].challenger.socketId) {
-            this.combatRooms[gameId].challenger.specs.nVictories += 1;
-            this.combatRooms[gameId].challenger.specs.nCombats += 1;
-            this.combatRooms[gameId].opponent.specs.nDefeats += 1;
-            this.combatRooms[gameId].opponent.specs.nCombats += 1;
+            this.combatRooms[gameId].challenger.specs.nVictories++;
+            this.combatRooms[gameId].challenger.specs.nCombats++;
+            this.combatRooms[gameId].opponent.specs.nDefeats++;
+            this.combatRooms[gameId].opponent.specs.nCombats++;
         } else {
-            this.combatRooms[gameId].opponent.specs.nVictories += 1;
-            this.combatRooms[gameId].opponent.specs.nCombats += 1;
-            this.combatRooms[gameId].challenger.specs.nDefeats += 1;
-            this.combatRooms[gameId].challenger.specs.nCombats += 1;
+            this.combatRooms[gameId].opponent.specs.nVictories++;
+            this.combatRooms[gameId].opponent.specs.nCombats++;
+            this.combatRooms[gameId].challenger.specs.nDefeats++;
+            this.combatRooms[gameId].challenger.specs.nCombats++;
         }
     }
 
