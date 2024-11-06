@@ -1,6 +1,6 @@
 import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
-import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
@@ -10,7 +10,7 @@ import { GameManagerService } from '../../service/game-manager/game-manager.serv
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class CombatGateway implements OnGatewayInit {
+export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
@@ -207,11 +207,13 @@ export class CombatGateway implements OnGatewayInit {
             }
         });
         if (playerGame) {
+            this.gameCreationService.handlePlayerLeaving(client, playerGame.id);
             const combat = this.serverCombatService.getCombatByGameId(playerGame.id);
 
             if (combat) {
                 const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
                 this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
+                this.server.to(playerGame.id).emit('playerLeft', playerGame.players);
                 this.serverCombatService.combatWinStatsUpdate(winner, combat.id);
 
                 const updatedGame = this.gameCreationService.getGameById(playerGame.id);
