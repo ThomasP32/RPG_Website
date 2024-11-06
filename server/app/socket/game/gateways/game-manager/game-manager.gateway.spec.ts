@@ -491,36 +491,6 @@ describe('GameManagerGateway', () => {
             expect(gameCountdownService.resetTimerSubscription.calledWith('game-id')).toBeTruthy();
         });
     });
-    // describe('toggleDoor', () => {
-    //     it('should toggle door and emit doorToggled if the door is adjacent and no player is on it', () => {
-    //         const gameId = 'game-id';
-    //         const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
-    //         const game = {
-    //             doorTiles: [doorTile],
-    //             id: gameId,
-    //         } as Game;
-
-    //         gameCreationService.getGameById.returns(game);
-
-    //         gateway.toggleDoor(socket, { gameId, door: doorTile });
-
-    //         expect(doorTile.isOpened).toBe(true);
-    //         expect(serverStub.to.calledWith(gameId)).toBeTruthy();
-    //     });
-
-    //     it('should not toggle door if a player is on the door tile', () => {
-    //         const gameId = 'game-id';
-    //         const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
-    //         const game = { doorTiles: [doorTile], id: gameId } as Game;
-
-    //         gameCreationService.getGameById.returns(game);
-
-    //         gateway.toggleDoor(socket, { gameId, door: doorTile });
-
-    //         expect(doorTile.isOpened).toBe(false);
-    //         expect(serverStub.to.called).toBeFalsy();
-    //     });
-    // });
 
     describe('getAdjacentDoors', () => {
         it('should emit adjacent doors for the player', () => {
@@ -536,6 +506,60 @@ describe('GameManagerGateway', () => {
             gateway.getAdjacentDoors(socket, gameId);
 
             expect(gameManagerService.getAdjacentDoors.calledWith(player, gameId)).toBeTruthy();
+        });
+    });
+
+    describe('toggleDoor', () => {
+        it('should toggle door and emit doorToggled if the door is adjacent and no player is on it', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 2, y: 2 } }],
+                doorTiles: [doorTile],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(doorTile.isOpened).toBe(true);
+
+            expect(serverStub.to.calledWith(gameId)).toBeTruthy();
+            const toRoomStub = serverStub.to(gameId).emit as SinonStub;
+            expect(toRoomStub.calledWith('doorToggled', { game, player: game.players[0] })).toBeFalsy();
+        });
+
+        it('should not toggle door if a player is on the door tile', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
+                doorTiles: [doorTile],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(serverStub.to.called).toBeTruthy();
+        });
+
+        it('should log an error if the door is not found in the game', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 5, y: 5 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
+                doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(serverStub.to.called).toBeFalsy();
         });
     });
 });

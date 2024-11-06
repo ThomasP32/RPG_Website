@@ -282,8 +282,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenPlayersLeft() {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
-                this.activePlayers = players.filter((player) => player.isActive);
                 this.gameService.game.players = players;
+                this.activePlayers = players.filter((player) => player.isActive);
                 if (this.activePlayers.length <= 1) {
                     this.showExitModal = false;
                     this.showKickedModal = true;
