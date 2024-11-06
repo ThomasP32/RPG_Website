@@ -6,8 +6,9 @@ import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
-import { CombatGateway } from './combat.gateway';
+import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
+import { CombatGateway } from './combat.gateway';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -15,6 +16,7 @@ describe('CombatGateway', () => {
     let combatCountdownService: jest.Mocked<CombatCountdownService>;
     let gameCountdownService: jest.Mocked<GameCountdownService>;
     let gameCreationService: jest.Mocked<GameCreationService>;
+    let gameManagerService: jest.Mocked<GameManagerService>;
     let mockServer: jest.Mocked<Server>;
     let mockSocket: jest.Mocked<Socket>;
     let mockOpponentSocket: jest.Mocked<Socket>;
@@ -127,12 +129,18 @@ describe('CombatGateway', () => {
                     },
                 },
                 {
-                    provide: JournalService, 
+                    provide: JournalService,
                     useValue: {
-                        initializeServer: jest.fn(), 
+                        initializeServer: jest.fn(),
                         logMessage: jest.fn(),
-                    }
-                }
+                    },
+                },
+                {
+                    provide: GameManagerService,
+                    useValue: {
+                        updatePlayerActions: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
@@ -141,6 +149,7 @@ describe('CombatGateway', () => {
         combatCountdownService = module.get(CombatCountdownService);
         gameCountdownService = module.get(GameCountdownService);
         gameCreationService = module.get(GameCreationService);
+        gameManagerService = module.get(GameManagerService);
 
         mockSocket = {
             id: 'socket-id',
@@ -239,7 +248,7 @@ describe('CombatGateway', () => {
             });
 
             it('should not proceed if the game is not found', async () => {
-                gameCreationService.getGameById.mockReturnValue(undefined); 
+                gameCreationService.getGameById.mockReturnValue(undefined);
 
                 await gateway.startCombat(mockSocket, { gameId: 'invalid-game-id', opponent: mockCombat.opponent });
 
@@ -254,7 +263,7 @@ describe('CombatGateway', () => {
                 gameCreationService.getGameById.mockReturnValue(mockGame);
                 gameCreationService.getPlayer.mockReturnValue(mockCombat.challenger);
                 mockServer.in.mockReturnValue({
-                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]), 
+                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]),
                 } as any);
 
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
