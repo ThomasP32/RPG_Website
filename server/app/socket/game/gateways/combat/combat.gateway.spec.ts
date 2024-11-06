@@ -6,8 +6,8 @@ import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
-import { CombatGateway } from './combat.gateway';
 import { JournalService } from '../../service/journal/journal.service';
+import { CombatGateway } from './combat.gateway';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -18,6 +18,7 @@ describe('CombatGateway', () => {
     let mockServer: jest.Mocked<Server>;
     let mockSocket: jest.Mocked<Socket>;
     let mockOpponentSocket: jest.Mocked<Socket>;
+    let journalService: jest.Mocked<JournalService>;
 
     const mockCombat: Combat = {
         id: 'combat-id',
@@ -127,12 +128,12 @@ describe('CombatGateway', () => {
                     },
                 },
                 {
-                    provide: JournalService, 
+                    provide: JournalService,
                     useValue: {
-                        initializeServer: jest.fn(), 
+                        initializeServer: jest.fn(),
                         logMessage: jest.fn(),
-                    }
-                }
+                    },
+                },
             ],
         }).compile();
 
@@ -141,6 +142,7 @@ describe('CombatGateway', () => {
         combatCountdownService = module.get(CombatCountdownService);
         gameCountdownService = module.get(GameCountdownService);
         gameCreationService = module.get(GameCreationService);
+        journalService = module.get(JournalService);
 
         mockSocket = {
             id: 'socket-id',
@@ -179,12 +181,33 @@ describe('CombatGateway', () => {
                 defenseDice: 3,
             });
             expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackSuccess', mockCombat.opponent);
+            expect(journalService.logMessage).toHaveBeenCalledWith(
+                mockCombat.id,
+                `Dés roulés. Dé d'attaque: 5. Dé de défense: 3. Résultat = 5 - 3.`,
+                [mockCombat.challenger.name, mockCombat.opponent.name],
+            );
+            expect(journalService.logMessage).toHaveBeenCalledWith(mockCombat.id, `Réussite de l'attaque sur ${mockCombat.opponent.name}.`, [
+                mockCombat.opponent.name,
+            ]);
+        });
+
+        it("should log to journal if the defending player's life reaches zero", () => {
+            mockCombat.opponent.specs.life = 1;
+            serverCombatService.isAttackSuccess.mockReturnValue(true);
+            gameCreationService.getGameById.mockReturnValue({ id: 'game-id' } as Game);
+
+            gateway.attackOnTimeOut('game-id');
+
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedNormally', mockCombat.challenger);
+            expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.challenger.name} est le gagnant.`, [
+                mockCombat.challenger.name,
+            ]);
         });
     });
 
     describe('startEvasion', () => {
         it('should emit evasion success and resume game countdown', async () => {
-            jest.spyOn(Math, 'random').mockReturnValue(0.3); // Mock evasion success
+            jest.spyOn(Math, 'random').mockReturnValue(0.3);
             gameCreationService.getGameById.mockReturnValue({ id: 'game-id' } as Game);
 
             await gateway.startEvasion(mockSocket, 'game-id');
@@ -194,6 +217,9 @@ describe('CombatGateway', () => {
             expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionSuccess', mockCombat.challenger);
             expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith('game-id');
+            expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.challenger.name} s'est évadé.`, [
+                mockCombat.challenger.name,
+            ]);
         });
 
         it('should not emit evasion if evasion points are zero', async () => {
@@ -214,17 +240,14 @@ describe('CombatGateway', () => {
                     fetchSockets: jest.fn().mockResolvedValue([mockSocket, mockOpponentSocket]),
                 } as any);
 
-                // Spy on startCombatTurns
                 const startCombatTurnsSpy = jest.spyOn(gateway, 'startCombatTurns');
 
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
 
-                // Check that combat was created and players joined the combat room
                 expect(serverCombatService.createCombat).toHaveBeenCalledWith('game-id', mockCombat.challenger, mockCombat.opponent);
                 expect(mockSocket.join).toHaveBeenCalledWith(mockCombat.id);
                 expect(mockOpponentSocket.join).toHaveBeenCalledWith(mockCombat.id);
 
-                // Verify that combat started event was emitted to the correct room
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
                 expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatStarted', {
                     challenger: mockCombat.challenger,
@@ -235,11 +258,17 @@ describe('CombatGateway', () => {
 
                 expect(startCombatTurnsSpy).toHaveBeenCalledWith('game-id');
 
+                expect(journalService.logMessage).toHaveBeenCalledWith(
+                    'game-id',
+                    `${mockCombat.challenger.name} a commencé un combat contre ${mockCombat.opponent.name}.`,
+                    [mockCombat.challenger.name],
+                );
+
                 startCombatTurnsSpy.mockRestore();
             });
 
             it('should not proceed if the game is not found', async () => {
-                gameCreationService.getGameById.mockReturnValue(undefined); 
+                gameCreationService.getGameById.mockReturnValue(undefined);
 
                 await gateway.startCombat(mockSocket, { gameId: 'invalid-game-id', opponent: mockCombat.opponent });
 
@@ -254,7 +283,7 @@ describe('CombatGateway', () => {
                 gameCreationService.getGameById.mockReturnValue(mockGame);
                 gameCreationService.getPlayer.mockReturnValue(mockCombat.challenger);
                 mockServer.in.mockReturnValue({
-                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]), 
+                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]),
                 } as any);
 
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
