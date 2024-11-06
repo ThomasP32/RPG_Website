@@ -182,7 +182,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((data) => {
+                        this.socketService.listen('isStartable').subscribe(() => {
                             this.isStartable = true;
                         }),
                     );
