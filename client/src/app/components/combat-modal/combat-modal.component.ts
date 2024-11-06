@@ -45,9 +45,9 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     get turnMessage(): string {
         if (this.isYourTurn) {
-            return `${this.player.name} joue présentement.`;
+            return `C'est à votre tour de jouer!`;
         } else {
-            return `${this.opponent.name} joue présentement.`;
+            return `${this.opponent.name} est entrain de jouer.`;
         }
     }
 
@@ -61,18 +61,35 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         this.socketService.sendMessage('startEvasion', this.gameService.game.id);
     }
 
+    quit(): void {
+        console.log('quit');
+    }
+
+    isItYourTurn(): boolean {
+        return !this.isYourTurn;
+    }
+
     listenForAttacks(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player>('attackSuccess').subscribe((playerAttacked) => {
                 if (playerAttacked.socketId === this.opponent.socketId) this.opponent = playerAttacked;
                 else if (playerAttacked.socketId === this.player.socketId) this.player = playerAttacked;
-                this.combatMessage = `${playerAttacked.name} a succombé à une attaque`;
+
+                if (playerAttacked.socketId === this.opponent.socketId) {
+                    this.combatMessage = `Vous avez attaqué ${this.opponent.name}`;
+                } else {
+                    this.combatMessage = `${this.opponent.name} vous a attaqué`;
+                }
             }),
         );
 
         this.socketSubscription.add(
             this.socketService.listen<Player>('attackFailure').subscribe((playerAttacked) => {
-                this.combatMessage = `${playerAttacked.name} a survécu à une attaque`;
+                if (playerAttacked.socketId === this.opponent.socketId) {
+                    this.combatMessage = `${playerAttacked.name} a survécu à votre attaque`;
+                } else {
+                    this.combatMessage = `Vous a survécu à une attaque`;
+                }
             }),
         );
     }
