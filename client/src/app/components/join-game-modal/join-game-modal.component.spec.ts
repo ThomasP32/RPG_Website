@@ -65,17 +65,6 @@ describe('JoinGameModalComponent', () => {
         expect(mockSocketService.sendMessage).toHaveBeenCalledWith('accessGame', '1234');
     });
 
-    // it('should reset the code array after calling joinGame', () => {
-    //     component.code = ['1', '2', '3', '4'];
-    //     const event = { target: { value: '4' } };
-
-    //     component.joinGame(event);
-
-    //     fixture.detectChanges();
-
-    //     expect(component.code).toEqual(['', '', '', '']);
-    // });
-
     it('should navigate to create-character on gameAccessed event', () => {
         component.code = ['1', '2', '3', '4'];
         component.gameId = '1234';
@@ -97,22 +86,6 @@ describe('JoinGameModalComponent', () => {
         gameLockedSubject.next(errorResponse);
         expect(component.errorMessage).toBe('Game is locked');
     });
-
-    // it('should move to the next input when a digit is entered', () => {
-    //     const event = { target: { value: '1' } };
-    //     component.codeInputs = {
-    //         toArray: () => [
-    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
-    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
-    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
-    //             { nativeElement: { focus: jasmine.createSpy('focus') } },
-    //         ],
-    //     } as any;
-
-    //     component.moveToNext(event, 0);
-
-    //     expect(component.codeInputs.toArray()[1].nativeElement.focus).toHaveBeenCalled();
-    // });
 
     it('should not move to the next input if the value is not a digit', () => {
         const event = { target: { value: 'a' } };
