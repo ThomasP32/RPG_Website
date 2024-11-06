@@ -76,12 +76,12 @@ describe('CombatModalComponent', () => {
     describe('#turnMessage', () => {
         it('should return player turn message when it is the player’s turn', () => {
             component.isYourTurn = true;
-            expect(component.turnMessage).toEqual('Player1 joue présentement.');
+            expect(component.turnMessage).toEqual("C'est à votre tour de jouer!");
         });
 
         it('should return opponent turn message when it is the opponent’s turn', () => {
             component.isYourTurn = false;
-            expect(component.turnMessage).toEqual('Opponent joue présentement.');
+            expect(component.turnMessage).toEqual('Opponent est entrain de jouer.');
         });
     });
 
@@ -183,7 +183,6 @@ describe('CombatModalComponent', () => {
             const yourTurnSubject = new Subject<void>();
             const playerTurnSubject = new Subject<void>();
 
-            // Using callFake to return different subjects based on the event name
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 switch (eventName) {
                     case 'yourTurnCombat':
@@ -197,7 +196,7 @@ describe('CombatModalComponent', () => {
 
             component.listenForCombatTurns();
             playerTurnSubject.next();
-            tick(); // Process asynchronous events
+            tick(); 
 
             expect(component.isYourTurn).toBeFalse();
         }));
