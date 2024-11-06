@@ -21,7 +21,11 @@ export class MapControlBarComponent implements OnInit {
         private route: ActivatedRoute,
         public mapService: MapService,
         private router: Router,
-    ) {}
+    ) {
+        this.route = route;
+        this.mapService = mapService;
+        this.router = router;
+    }
 
     ngOnInit(): void {
         if (this.route.snapshot.params['mode']) {
@@ -34,6 +38,7 @@ export class MapControlBarComponent implements OnInit {
             this.description = this.mapService.map.description;
         }
     }
+
     title: string = '';
     description: string = '';
     editMode: boolean = true;
