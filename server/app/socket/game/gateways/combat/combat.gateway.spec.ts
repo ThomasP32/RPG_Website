@@ -193,7 +193,7 @@ describe('CombatGateway', () => {
 
     describe('startEvasion', () => {
         it('should emit evasion success and resume game countdown', async () => {
-            jest.spyOn(Math, 'random').mockReturnValue(0.3); // Mock evasion success
+            jest.spyOn(Math, 'random').mockReturnValue(0.3);
             gameCreationService.getGameById.mockReturnValue({ id: 'game-id' } as Game);
 
             await gateway.startEvasion(mockSocket, 'game-id');
@@ -223,17 +223,14 @@ describe('CombatGateway', () => {
                     fetchSockets: jest.fn().mockResolvedValue([mockSocket, mockOpponentSocket]),
                 } as any);
 
-                // Spy on startCombatTurns
                 const startCombatTurnsSpy = jest.spyOn(gateway, 'startCombatTurns');
 
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
 
-                // Check that combat was created and players joined the combat room
                 expect(serverCombatService.createCombat).toHaveBeenCalledWith('game-id', mockCombat.challenger, mockCombat.opponent);
                 expect(mockSocket.join).toHaveBeenCalledWith(mockCombat.id);
                 expect(mockOpponentSocket.join).toHaveBeenCalledWith(mockCombat.id);
 
-                // Verify that combat started event was emitted to the correct room
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
                 expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatStarted', {
                     challenger: mockCombat.challenger,
@@ -312,6 +309,7 @@ describe('CombatGateway', () => {
                 });
                 expect(combatCountdownService.initCountdown).toHaveBeenCalledWith('game-id', 5);
                 expect(gameCountdownService.pauseCountdown).toHaveBeenCalledWith('game-id');
+                expect(gameManagerService.updatePlayerActions).toHaveBeenCalledWith('game-id', mockSocket.id);
             });
 
             it('should handle case where game or player is not found', async () => {
