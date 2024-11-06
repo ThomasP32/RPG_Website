@@ -154,6 +154,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/main-menu']);
     }
 
+    areModalsOpen(): boolean {
+        return this.showExitModal || this.showActionModal || this.showKickedModal || this.isCombatModalOpen;
+    }
+
     navigateToEndOfGame(): void {
         this.navigateToMain();
     }
@@ -221,7 +225,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForPossibleOpponents() {
         this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
-            if (!this.gameTurnService.actionsDone.combat && possibleOpponents.length > 0) {
+            if (this.player.specs.actions > 0 && possibleOpponents.length > 0) {
                 this.combatAvailable = true;
                 this.possibleOpponents = possibleOpponents;
             } else {
@@ -232,19 +236,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     listenForDoorOpening() {
-        this.gameTurnService.possibleDoors$.subscribe((possibleDoors: DoorTile[]) => {
-            if (!this.gameTurnService.actionsDone.door && possibleDoors.length > 0) {
+        this.gameTurnService.possibleDoors$.subscribe((doors) => {
+            if (this.gameTurnService.actionsDone.door) {
+                this.doorActionAvailable = false;
+                this.possibleDoors = [];
+                this.actionMessage = 'Actions possibles';
+            } else if (doors.length > 0) {
                 this.doorActionAvailable = true;
-                this.possibleDoors = possibleDoors;
-                if (possibleDoors[0].isOpened) {
-                    this.actionMessage = 'Fermer la porte';
-                } else {
-                    this.actionMessage = 'Ouvrir la porte';
-                }
+                this.possibleDoors = doors;
+                this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
             } else {
                 this.doorActionAvailable = false;
-                this.actionMessage = 'Actions possibles';
                 this.possibleDoors = [];
+                this.actionMessage = 'Actions possibles';
             }
         });
     }
@@ -263,6 +267,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenForIsCombatModalOpen() {
         this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
             this.isCombatModalOpen = isCombatModalOpen;
+            if (isCombatModalOpen) {
+                this.combatAvailable = false;
+            }
         });
     }
 

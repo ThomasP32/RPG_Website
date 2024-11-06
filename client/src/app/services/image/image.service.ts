@@ -92,7 +92,6 @@ export class ImageService {
         return './assets/tiles/startingpoint.png';
     }
 
-    // va falloir update les routes pour les petits avatars pixelisé
     getPlayerImage(avatar: Avatar): string {
         switch (avatar) {
             case Avatar.Avatar1:
