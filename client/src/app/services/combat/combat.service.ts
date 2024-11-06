@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -72,7 +73,7 @@ export class CombatService {
                 console.log('le combat sest terminé sur la victoire de :', winner.name);
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }),
         );
         this.socketSubscription.add(
@@ -80,7 +81,7 @@ export class CombatService {
                 console.log('le combat sest terminé sur la victoire par défaut de :', winner.name);
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }),
         );
     }
@@ -92,7 +93,7 @@ export class CombatService {
                 console.log('le combat sest terminé sur levasion de :', evadingPlayer.name);
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }),
         );
         this.socketSubscription.add(

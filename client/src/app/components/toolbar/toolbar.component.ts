@@ -3,6 +3,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ImageService } from '@app/services/image/image.service';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { MapService } from '@app/services/map/map.service';
+import { TileService } from '@app/services/tile/tile.service';
 import { Mode } from '@common/map.types';
 
 @Component({
@@ -30,10 +31,12 @@ export class ToolbarComponent implements OnInit {
         public mapService: MapService,
         public mapCounterService: MapCounterService,
         public imageService: ImageService,
+        public tileService: TileService,
     ) {
         this.mapService = mapService;
         this.mapCounterService = mapCounterService;
         this.imageService = imageService;
+        this.tileService = tileService;
     }
 
     mode: Mode;
@@ -42,7 +45,6 @@ export class ToolbarComponent implements OnInit {
         this.mapService.updateSelectedTile$.subscribe((tile) => {
             this.selectedTile = tile;
         });
-
         this.mapCounterService.startingPointCounter$.subscribe((counter) => {
             this.mapCounterService.startingPointCounter = counter;
         });
@@ -81,6 +83,18 @@ export class ToolbarComponent implements OnInit {
             }
         } else {
             return;
+        }
+    }
+
+    allowDrop(event: DragEvent) {
+        event.preventDefault();
+    }
+
+    onDrop(event: DragEvent) {
+        if (event.dataTransfer?.getData('isStartingPoint') === 'true') {
+            this.mapService.removeStartingPoint(true);
+            this.selectedTile = '';
+            event.preventDefault();
         }
     }
 

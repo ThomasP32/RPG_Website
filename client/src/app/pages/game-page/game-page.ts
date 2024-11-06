@@ -15,7 +15,7 @@ import { CountdownService } from '@app/services/countdown/game/countdown.service
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TURN_DURATION } from '@common/constants';
+import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
@@ -169,7 +169,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     openExitConfirmationModal(): void {
         this.showExitModal = true;
     }
-    
+
     openActionModal(): void {
         this.showActionModal = true;
     }
@@ -214,7 +214,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             if (isGameOver) {
                 setTimeout(() => {
                     this.navigateToEndOfGame();
-                }, 5000);
+                }, TIME_REDIRECTION);
             }
         });
     }
@@ -254,10 +254,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.toggleDoor(this.possibleDoors[0]);
         }
     }
-    
+
     triggerPulse(): void {
         this.isPulsing = true;
-        setTimeout(() => (this.isPulsing = false), 500);
+        setTimeout(() => (this.isPulsing = false), TIME_PULSE);
     }
 
     listenForIsCombatModalOpen() {
@@ -282,7 +282,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.showKickedModal = true;
                     setTimeout(() => {
                         this.navigateToMain();
-                    }, 3000);
+                    }, TIME_LIMIT_DELAY);
                 }
             }),
         );
@@ -308,7 +308,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.showEndGameModal = true;
                 setTimeout(() => {
                     this.navigateToMain();
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }),
         );
     }

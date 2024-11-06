@@ -7,11 +7,10 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { TIME_REDIRECTION } from '@common/constants';
 import { Bonus, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
-
-const timeLimit = 5000;
 
 @Component({
     selector: 'app-character-form-page',
@@ -162,7 +161,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                 setTimeout(() => {
                     this.characterService.resetCharacterAvailability();
                     this.router.navigate(['/main-menu']);
-                }, timeLimit);
+                }, TIME_REDIRECTION);
             }),
         );
     }
@@ -212,7 +211,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.name = '';
         }
 
-        setTimeout(() => this.nameInput.nativeElement.focus(), 0);
+        this.nameInput.nativeElement.focus();
     }
 
     stopEditing(): void {
@@ -240,7 +239,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                         this.showErrorMessage.selectionError = true;
                         setTimeout(() => {
                             this.router.navigate(['/create-game']);
-                        }, timeLimit);
+                        }, TIME_REDIRECTION);
                     } else {
                         this.router.navigate([`${this.mapName}/waiting-room/host`]);
                     }
@@ -248,7 +247,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     this.showErrorMessage.selectionError = true;
                     setTimeout(() => {
                         this.router.navigate(['/create-game']);
-                    }, timeLimit);
+                    }, TIME_REDIRECTION);
                 }
             } else {
                 this.socketService.sendMessage('joinGame', { player: this.playerService.player, gameId: this.gameId });
