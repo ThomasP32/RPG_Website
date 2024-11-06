@@ -6,8 +6,8 @@ import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
-import { CombatGateway } from './combat.gateway';
 import { JournalService } from '../../service/journal/journal.service';
+import { CombatGateway } from './combat.gateway';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -122,17 +122,19 @@ describe('CombatGateway', () => {
                 {
                     provide: GameCreationService,
                     useValue: {
-                        getGameById: jest.fn(),
-                        getPlayer: jest.fn(),
+                        getGames: jest.fn(),
+                        getGameById: jest.fn().mockReturnValue({ id: 'game-id' }),
+                        getPlayer: jest.fn().mockReturnValue(mockCombat.challenger),
+                        handlePlayerLeaving: jest.fn(),
                     },
                 },
                 {
-                    provide: JournalService, 
+                    provide: JournalService,
                     useValue: {
-                        initializeServer: jest.fn(), 
+                        initializeServer: jest.fn(),
                         logMessage: jest.fn(),
-                    }
-                }
+                    },
+                },
             ],
         }).compile();
 
@@ -239,7 +241,7 @@ describe('CombatGateway', () => {
             });
 
             it('should not proceed if the game is not found', async () => {
-                gameCreationService.getGameById.mockReturnValue(undefined); 
+                gameCreationService.getGameById.mockReturnValue(undefined);
 
                 await gateway.startCombat(mockSocket, { gameId: 'invalid-game-id', opponent: mockCombat.opponent });
 
@@ -254,7 +256,7 @@ describe('CombatGateway', () => {
                 gameCreationService.getGameById.mockReturnValue(mockGame);
                 gameCreationService.getPlayer.mockReturnValue(mockCombat.challenger);
                 mockServer.in.mockReturnValue({
-                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]), 
+                    fetchSockets: jest.fn().mockResolvedValue([mockSocket]),
                 } as any);
 
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
@@ -386,6 +388,63 @@ describe('CombatGateway', () => {
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
                 expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
+            });
+        });
+
+        describe('checkForWinner', () => {
+            it('should emit gameFinishedPlayerWon if player reaches required victories', () => {
+                const player = { ...mockCombat.challenger, specs: { ...mockCombat.challenger.specs, nVictories: 3 } };
+                const result = gateway.checkForWinner('game-id', player);
+
+                expect(mockServer.to).toHaveBeenCalledWith('game-id');
+                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameFinishedPlayerWon', { winner: player });
+                expect(result).toBe(true);
+            });
+
+            it('should return false if player has not reached the required victories', () => {
+                const player = { ...mockCombat.challenger, specs: { ...mockCombat.challenger.specs, nVictories: 2 } };
+                const result = gateway.checkForWinner('game-id', player);
+
+                expect(result).toBe(false);
+            });
+        });
+
+        describe('handleDisconnect', () => {
+            it('should declare opponent as winner and emit combatFinishedByDisconnection if a player disconnects', () => {
+                const mockGame = { id: 'game-id', players: [mockCombat.challenger, mockCombat.opponent] } as Game;
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.handlePlayerLeaving.mockImplementation();
+
+                gateway.handleDisconnect(mockSocket);
+
+                // Expect combat to finish due to disconnection
+                expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedByDisconnection', mockCombat.opponent);
+                expect(gameCreationService.handlePlayerLeaving).toHaveBeenCalledWith(mockSocket, mockGame.id);
+            });
+
+            it('should emit playerLeft and resume countdown if necessary after disconnection', () => {
+                const mockGame = {
+                    id: 'game-id',
+                    players: [mockCombat.challenger, mockCombat.opponent],
+                    currentTurn: mockCombat.opponent.turn,
+                } as Game;
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.getGameById.mockReturnValue(mockGame);
+
+                gateway.handleDisconnect(mockSocket);
+
+                expect(mockServer.to(mockGame.id).emit).toHaveBeenCalledWith('playerLeft', mockGame.players);
+            });
+
+            it('should not proceed if no game is found for the disconnected player', () => {
+                gameCreationService.getGames.mockReturnValue([]);
+
+                gateway.handleDisconnect(mockSocket);
+
+                expect(mockServer.to).not.toHaveBeenCalled();
+                expect(gameCreationService.handlePlayerLeaving).not.toHaveBeenCalled();
+                expect(combatCountdownService.deleteCountdown).not.toHaveBeenCalled();
             });
         });
     });
