@@ -25,7 +25,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
     @ViewChild(DisconnectModalComponent, { static: false }) appDisconnectModalComponent!: DisconnectModalComponent;
-    /* eslint-disable no-unused-vars */
+
     constructor(
         private communicationMapService: CommunicationMapService,
         private gameService: GameService,
@@ -35,7 +35,16 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private mapConversionService: MapConversionService,
-    ) {}
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.gameService = gameService;
+        this.characterService = characterService;
+        this.playerService = playerService;
+        this.socketService = socketService;
+        this.route = route;
+        this.router = router;
+        this.mapConversionService = mapConversionService;
+    }
 
     waitingRoomCode: string;
     mapName: string;
@@ -82,6 +91,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     get player(): Player {
         return this.playerService.player;
     }
+    
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
