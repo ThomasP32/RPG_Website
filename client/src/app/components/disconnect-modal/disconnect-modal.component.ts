@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { WaitingRoomParameters } from '@common/constants';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-disconnect-modal',
@@ -11,9 +12,9 @@ import { Subscription } from 'rxjs';
     styleUrl: './disconnect-modal.component.scss',
 })
 export class DisconnectModalComponent implements OnInit {
-    router: any;
-    constructor(private socketService: SocketService) {
+    constructor(private socketService: SocketService, private router: Router) {
         this.socketService = socketService;
+        this.router = router;
     }
     isPlayerDisconnected = false;
 

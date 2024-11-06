@@ -7,10 +7,9 @@ import { Map } from '@common/map.types';
 import { firstValueFrom } from 'rxjs';
 
 const TIME_LIMIT = 3000;
-/* eslint-disable no-unused-vars */
+
 @Component({
-    // eslint-disable-next-line @angular-eslint/component-selector
-    selector: 'game-choice-page',
+    selector: 'app-game-choice-page',
     standalone: true,
     templateUrl: './game-choice-page.component.html',
     styleUrls: ['./game-choice-page.component.scss'],
@@ -30,7 +29,10 @@ export class GameChoicePageComponent implements OnInit {
     constructor(
         private communicationMapService: CommunicationMapService,
         private mapConversionService: MapConversionService,
-    ) {}
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.mapConversionService = mapConversionService;
+    }
 
     async ngOnInit(): Promise<void> {
         this.maps = await firstValueFrom(this.communicationMapService.basicGet<Map[]>('map'));
