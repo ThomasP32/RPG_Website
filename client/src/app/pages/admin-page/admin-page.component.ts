@@ -1,22 +1,22 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MapComponent } from '@app/components/create-map-modal/create-map-modal.component';
+import { CreateMapModalComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap as Map } from '@common/map.types';
-/* eslint-disable no-unused-vars */
+import { DetailedMap } from '@common/map.types';
+
 @Component({
     selector: 'app-admin-page',
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, ErrorMessageComponent, MapComponent],
+    imports: [RouterLink, ErrorMessageComponent, CreateMapModalComponent],
 })
 export class AdminPageComponent implements OnInit {
     @Input() mapId: string = '';
-    @ViewChild(MapComponent, { static: false }) mapComponent!: MapComponent;
+    @ViewChild(CreateMapModalComponent, { static: false }) createMapModalComponent!: CreateMapModalComponent;
     @ViewChild(ErrorMessageComponent, { static: false }) errorMessageModal: ErrorMessageComponent;
-    maps: Map[] = [];
+    maps: DetailedMap[] = [];
     currentMapId: string | null = null;
     showDeleteModal = false;
     isCreateMapModalVisible = false;
@@ -24,7 +24,18 @@ export class AdminPageComponent implements OnInit {
     constructor(
         private router: Router,
         private communicationMapService: CommunicationMapService,
-    ) {}
+    ) {
+        this.router = router;
+        this.communicationMapService = communicationMapService;
+    }
+
+    navigateToMain(): void {
+        this.router.navigate(['/main-menu']);
+    }
+
+    ngOnInit(): void {
+        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
+    }
 
     toggleGameCreationModalVisibility(): void {
         this.isCreateMapModalVisible = true;
@@ -34,15 +45,7 @@ export class AdminPageComponent implements OnInit {
         this.isCreateMapModalVisible = false;
     }
 
-    ngOnInit(): void {
-        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
-    }
-
-    navigateToMain(): void {
-        this.router.navigate(['/main-menu']);
-    }
-
-    editMap(map: Map): void {
+    editMap(map: DetailedMap): void {
         this.router.navigate([`/edition/${map._id}`]);
     }
 
@@ -57,7 +60,7 @@ export class AdminPageComponent implements OnInit {
         });
     }
 
-    openConfirmationModal(map: Map): void {
+    openConfirmationModal(map: DetailedMap): void {
         this.currentMapId = map._id.toString();
         this.showDeleteModal = true;
     }
@@ -73,7 +76,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     updateDisplay(): void {
-        this.communicationMapService.basicGet<Map[]>('admin').subscribe((maps: Map[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
     }
 
     toggleVisibility(mapId: string): void {

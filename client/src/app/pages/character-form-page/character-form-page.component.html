@@ -1,27 +1,29 @@
 <div class="character-page-container">
     <div class="character-selection-container">
         <div class="return-to-previous-page">
+            @if(isJoiningGame) {
+            <button class="return-button" (click)="onQuit()">Quitter</button>
+            } @else {
             <button class="return-button" (click)="onReturn()">Retour</button>
+            }
         </div>
         <div class="left-side">
             <div class="player-stats">
                 <h2 class="character-name">
-                    @if(!isEditing){
-                    <span>{{ characterName }}</span
+                    @if(!isEditing){ <span (click)="startEditing()"> {{ name || 'Choisis ton nom' }}</span
                     >} @if(isEditing){
                     <input
-                        [(ngModel)]="characterName"
+                        [(ngModel)]="name"
                         class="character-name-input"
                         (blur)="stopEditing()"
-                        placeholder="Choisis ton nom"
                         (keydown.enter)="stopEditing()"
                         maxlength="25"
+                        #nameInput
                     />
                     }
 
                     <button class="edit-icon" (click)="toggleEditing()">
-                        @if(!isEditing){
-                        <i class="fas fa-pencil-alt"></i>} @if(isEditing){<i class="fas fa-save"></i>}
+                        @if(isEditing) {<i class="fas fa-save"></i>} @else { <i class="fas fa-pencil-alt"></i>}
                     </button>
                 </h2>
                 <div class="stats">
@@ -59,7 +61,7 @@
                     <label>Ajoutes un bonus +2: </label>
                 </div>
                 <div class="bonus-buttons-container">
-                    <div class="bonus-button">
+                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }">
                         <input
                             type="radio"
                             id="life"
@@ -71,7 +73,7 @@
                         />
                         <label for="life">Vie</label>
                     </div>
-                    <div class="bonus-button">
+                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }">
                         <input
                             type="radio"
                             id="speed"
@@ -87,7 +89,7 @@
                 <label>Attribues un dé à 6 faces: </label>
                 <div class="dice-buttons-container">
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button">
+                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'attack' }">
                             <input
                                 type="radio"
                                 id="attack"
@@ -100,12 +102,12 @@
                             <label for="attack"> Attaque </label>
                         </div>
                         <div class="dice-icon">
-                            @if(attackBonus === 'D4') {
-                            <i class="fas fa-dice-four"></i>} @if(attackBonus === 'D6') { <i class="fas fa-dice-six"></i>}
+                            @if (attackOrDefenseBonus) { @if(attackBonus === Bonus.D4) {
+                            <i class="fas fa-dice-four"></i>} @else if(attackBonus === Bonus.D6) { <i class="fas fa-dice-six"></i>} }
                         </div>
                     </div>
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button">
+                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'defense' }">
                             <input
                                 type="radio"
                                 id="defense"
@@ -118,8 +120,10 @@
                             <label for="defense">Defense </label>
                         </div>
                         <div class="dice-icon">
-                            @if(defenseBonus === 'D4') {
-                            <i class="fas fa-dice-four"></i>} @if(defenseBonus === 'D6') { <i class="fas fa-dice-six"></i>}
+                            @if(attackOrDefenseBonus) { @if(defenseBonus === Bonus.D4) {
+                            <i class="fas fa-dice-four"></i>
+                            } @else if(defenseBonus === Bonus.D6) {
+                            <i class="fas fa-dice-six"></i>}}
                         </div>
                     </div>
                 </div>
@@ -134,17 +138,18 @@
             <div class="selected-character">
                 <h1>CHOISIS TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
-                <h4>Avatar selectionné :</h4>
-                <h3>{{ selectedCharacter.name }}</h3>
+                @if(isJoiningGame) {
+                <button class="start-button" (click)="onSubmit()">Rejoindre la partie</button>
+                }@else {
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
-                @if (showErrorMessage.characterNameError) {
+                } @if (showErrorMessage.characterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>
                 } @if (showErrorMessage.bonusError) {
                 <div class="error-message">Ajoutez le bonus (+2 Vie ou Rapidité)</div>
                 } @if (showErrorMessage.diceError) {
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
                 } @if (showErrorMessage.selectionError) {
-                <div class="error-message">Le jeu selectionné n'est plus disponible. Vous serez bientôt redirigé.</div>
+                <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
                 }
             </div>
             <button class="arrow-button right-arrow" (click)="nextCharacter()">&#9654;</button>
@@ -152,10 +157,35 @@
 
         <div class="character-list">
             @for(character of characters; track character) {
-            <div class="character-box" (click)="selectCharacter(character)" [ngClass]="{ 'selected-character': character === selectedCharacter }">
+            <div
+                class="character-box"
+                (click)="selectCharacter(character)"
+                [ngClass]="{
+                    'disabled-character': !character.isAvailable,
+                    'selected-character': character === selectedCharacter
+                }"
+            >
                 <img [src]="character.preview" alt="{{ character.name }}" />
             </div>
             }
         </div>
     </div>
+    @if(showGameStartedModal) {
+    <div class="game-started-modal">
+        <div class="modal">
+            <h2>La partie a commencée.</h2>
+            <p>La partie a commencée sans vous, vous serez redirigé.</p>
+        </div>
+    </div>
+    } @if(gameLockedModal) {
+    <div class="game-locked-modal">
+        <div class="modal">
+            <h2>La partie est vérouillée</h2>
+            <div class="modal-button">
+                <button class="modal-button" (click)="onQuit()">menu principal</button>
+                <button class="modal-button" (click)="onSubmit()">réessayer</button>
+            </div>
+        </div>
+    </div>
+    }
 </div>

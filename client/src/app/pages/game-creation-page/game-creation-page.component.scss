@@ -1,26 +1,13 @@
-@font-face {
-    font-family: 'Timepiece';
-    src: url('../../../assets/fonts/Timepiece-RpdEW.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'Gomarice';
-    src: url('../../../assets/fonts/gomarice_no_continue.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'Press Start 2P';
-    src: url('../../../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
-}
 .game-creation-page {
     display: flex;
     height: 100vh;
     overflow: hidden;
+    font-family: 'Press Start 2P', sans-serif;
 }
 
 .left-area {
     width: 440px;
     background-color: #1d1d1d;
-    font-family: 'Press Start 2P', sans-serif;
     height: 100%;
 }
 
@@ -36,11 +23,8 @@
 
 .right-area {
     width: 300px;
-    display: flex;
-    flex-direction: column;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     border-left: 3px solid #202020;
     background-color: #1c242c;
     height: 100%;
-    font-family: 'Press Start 2P', sans-serif;
 }

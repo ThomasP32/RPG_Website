@@ -1,15 +1,90 @@
 <body>
     <div class="waiting-room-container">
-        <div class="code-display">
-            <h1>Le code de votre partie est :</h1>
-            <p id="game-code">{{ waitingRoomCode }}</p>
-        </div>
-        <div class="gear-animation">
-            <img src="assets/gear.png" alt="Gear Animation" />
+        <div class="player">
+            <div class="avatar-container">
+                <img [src]="playerPreview" alt="Player Avatar" />
+            </div>
+            <div class="player-name">
+                <h1>{{ playerName }}</h1>
+            </div>
         </div>
 
-        <div class="player-waiting">
-            <h2>En attente de joueurs...</h2>
+        <div class="exit-button">
+            <button (click)="exitGame()">Quitter la partie</button>
         </div>
+
+        @if (isHost) {
+
+        <div class="game-status">
+            <button
+                (mouseenter)="toggleHover(true)"
+                (mouseleave)="toggleHover(false)"
+                (click)="toggleGameLockState()"
+                [ngClass]="{ locked: isGameLocked, unlocked: !isGameLocked }"
+                [disabled]="isGameMaxed()"
+            >
+                {{ isGameLocked ? 'Fermée' : 'Ouverte' }}
+            </button>
+        </div>
+        } @else {
+        <div class="game-status">
+            <h2>La partie est</h2>
+            <h3>
+                {{ isGameLocked ? 'fermée' : 'ouverte' }}
+            </h3>
+        </div>
+        }
+        <div class="game">
+            <div class="game-details">
+                <div class="game-code">
+                    <p>Code:</p>
+                    <h1>{{ waitingRoomCode }}</h1>
+                </div>
+                <div class="game-map">
+                    <p>Carte:</p>
+                    <h1>{{ mapName }}</h1>
+                </div>
+            </div>
+            <div class="players-list">
+                <app-players-list [players]="activePlayers" [isHost]="isHost"></app-players-list>
+            </div>
+            @if(!isStartable){
+            <div class="player-waiting">
+                <div class="gear-animation">
+                    <img src="assets/gear.png" alt="Gear Animation" />
+                </div>
+                <h2>En attente d'autres joueurs...</h2>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
+            </div>
+            } @else { @if(isHost && isGameLocked) {
+            <div class="host-waiting">
+                <div class="button-container">
+                    <button (click)="startGame()">Commencer la partie</button>
+                </div>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
+            </div>
+
+            } @else {
+            <div class="player-waiting">
+                <div class="gear-animation">
+                    <img src="assets/gear.png" alt="Gear Animation" />
+                </div>
+                <h2>Vérouillez la salle pour commencer</h2>
+                <h1>{{ activePlayers.length }} / {{ maxPlayers }}</h1>
+            </div>
+            } }
+        </div>
+        @if(player) {
+        <div class="waiting-room-chat">
+            <app-chatroom [player]="player" [gameId]="waitingRoomCode"></app-chatroom>
+        </div>
+        } @if(showExitModal) {
+        <div class="exit-modal">
+            <div class="modal">
+                <h2>{{ dialogBoxMessage }}</h2>
+                <p>Vous serez redirigé vers le menu principal.</p>
+            </div>
+        </div>
+        }
     </div>
 </body>

@@ -7,6 +7,8 @@ export enum TileCategory {
     Water = 'water',
     Ice = 'ice',
     Wall = 'wall',
+    Floor = 'floor',
+    Door = 'door',
 }
 
 export enum Mode {
@@ -22,6 +24,7 @@ export enum ItemCategory {
     Random = 'random',
     Vest = 'vest',
     Acidgun = 'acidgun',
+    Flag = 'flag',
 }
 
 export interface Tile {
@@ -55,7 +58,7 @@ export interface Map {
     tiles: Tile[];
 }
 
-export interface DBMap extends Map {
+export interface DetailedMap extends Map {
     _id: Object;
     isVisible: boolean;
     lastModified: Date;

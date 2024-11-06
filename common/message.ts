@@ -1,4 +1,6 @@
 export interface Message {
-    title: string;
-    body: string;
+    author: string;
+    text: string;
+    timestamp: Date;
+    gameId: string;
 }
