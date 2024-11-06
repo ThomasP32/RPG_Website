@@ -3,7 +3,7 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Game, Player, Specs } from '@common/game';
-import { Coordinate } from '@common/map.types';
+import { Coordinate, DoorTile } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -136,7 +136,7 @@ describe('GameManagerGateway', () => {
             expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
         });
     });
-    
+
     describe('endTurn', () => {
         let startTurnSpy: SinonStub;
 
@@ -489,6 +489,77 @@ describe('GameManagerGateway', () => {
 
             gateway.prepareNextTurn('game-id');
             expect(gameCountdownService.resetTimerSubscription.calledWith('game-id')).toBeTruthy();
+        });
+    });
+
+    describe('getAdjacentDoors', () => {
+        it('should emit adjacent doors for the player', () => {
+            const gameId = 'game-id';
+            const clientId = 'client-id';
+            const player = { socketId: clientId, position: { x: 4, y: 4 } } as Player;
+            const doorTile = { coordinate: { x: 4, y: 5 }, isOpened: false } as DoorTile;
+
+            gameCreationService.getGameById.returns({ players: [player], doorTiles: [doorTile] } as Game);
+            gameManagerService.getAdjacentDoors.returns([doorTile]);
+            Object.defineProperty(socket, 'id', { value: clientId });
+
+            gateway.getAdjacentDoors(socket, gameId);
+
+            expect(gameManagerService.getAdjacentDoors.calledWith(player, gameId)).toBeTruthy();
+        });
+    });
+
+    describe('toggleDoor', () => {
+        it('should toggle door and emit doorToggled if the door is adjacent and no player is on it', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 2, y: 2 } }],
+                doorTiles: [doorTile],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(doorTile.isOpened).toBe(true);
+
+            expect(serverStub.to.calledWith(gameId)).toBeTruthy();
+            const toRoomStub = serverStub.to(gameId).emit as SinonStub;
+            expect(toRoomStub.calledWith('doorToggled', { game, player: game.players[0] })).toBeFalsy();
+        });
+
+        it('should not toggle door if a player is on the door tile', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
+                doorTiles: [doorTile],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(serverStub.to.called).toBeTruthy();
+        });
+
+        it('should log an error if the door is not found in the game', () => {
+            const gameId = 'game-id';
+            const doorTile: DoorTile = { coordinate: { x: 5, y: 5 }, isOpened: false };
+            const game: Game = {
+                id: gameId,
+                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
+                doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+
+            expect(serverStub.to.called).toBeFalsy();
         });
     });
 });

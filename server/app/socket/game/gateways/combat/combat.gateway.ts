@@ -1,20 +1,22 @@
 import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
-import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TIME_LIMIT_DELAY } from '../../../../../../common/constants';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
+import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class CombatGateway implements OnGatewayInit {
+export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private gameManagerService: GameManagerService;
     @Inject(JournalService) private journalService: JournalService;
 
     constructor(
@@ -49,10 +51,12 @@ export class CombatGateway implements OnGatewayInit {
                     challenger: player,
                     opponent: data.opponent,
                 });
+                this.gameManagerService.updatePlayerActions(data.gameId, client.id);
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
 
                 this.server.to(data.gameId).emit('combatStartedSignal');
+                this.server.to(client.id).emit('YouStartedCombat', player);
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
                 this.startCombatTurns(data.gameId);
@@ -93,6 +97,7 @@ export class CombatGateway implements OnGatewayInit {
             const game = this.gameCreationService.getGameById(gameId);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('evasionSuccess', evadingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${evadingPlayer.name} s'est évadé.`, [evadingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinishedByEvasion', { updatedGame: game, evadingPlayer: evadingPlayer });
                 this.combatCountdownService.deleteCountdown(gameId);
@@ -102,6 +107,7 @@ export class CombatGateway implements OnGatewayInit {
         } else {
             this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
             this.prepareNextTurn(gameId);
+            this.journalService.logMessage(combat.id, `Tentative d'évasion par ${evadingPlayer.name}: non réussie.`, [evadingPlayer.name]);
         }
     }
 
@@ -121,12 +127,19 @@ export class CombatGateway implements OnGatewayInit {
             attackDice: rollResult.attackDice,
             defenseDice: rollResult.defenseDice,
         });
+        this.journalService.logMessage(
+            combat.id,
+            `Dés roulés. Dé d'attaque: ${rollResult.attackDice}. Dé de défense: ${rollResult.defenseDice}. Résultat = ${rollResult.attackDice} - ${rollResult.defenseDice}.`,
+            [attackingPlayer.name, defendingPlayer.name],
+        );
 
         if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
             defendingPlayer.specs.life--;
             this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         } else {
             this.server.to(combat.id).emit('attackFailure', defendingPlayer);
+            this.journalService.logMessage(combat.id, `Échec de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
         }
 
         if (defendingPlayer.specs.life === 0) {
@@ -135,6 +148,7 @@ export class CombatGateway implements OnGatewayInit {
             this.serverCombatService.sendBackToInitPos(defendingPlayer, game);
             this.serverCombatService.updatePlayersInGame(game);
             this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
+            this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
             setTimeout(() => {
                 this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
                 if (this.checkForWinner(game.id, attackingPlayer)) {
@@ -204,23 +218,23 @@ export class CombatGateway implements OnGatewayInit {
             }
         });
         if (playerGame) {
+            this.gameCreationService.handlePlayerLeaving(client, playerGame.id);
             const combat = this.serverCombatService.getCombatByGameId(playerGame.id);
 
             if (combat) {
                 const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
-                this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
+                this.server.to(playerGame.id).emit('playerLeft', playerGame.players);
                 this.serverCombatService.combatWinStatsUpdate(winner, combat.id);
-
                 const updatedGame = this.gameCreationService.getGameById(playerGame.id);
                 this.serverCombatService.updatePlayersInGame(updatedGame);
+                this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
 
                 setTimeout(() => {
-                    this.server.to(playerGame.id).emit('combatFinished', { updatedGame, winner: winner });
+                    this.server.to(playerGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
                     if (this.checkForWinner(playerGame.id, winner)) {
                         this.combatCountdownService.deleteCountdown(playerGame.id);
                         return;
                     }
-                    this.combatCountdownService.deleteCountdown(playerGame.id);
 
                     if (updatedGame.currentTurn === winner.turn) {
                         this.gameCountdownService.resumeCountdown(playerGame.id);

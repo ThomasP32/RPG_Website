@@ -49,7 +49,6 @@
 
         <button class="action-button" [disabled]="isItYourTurn()" (click)="attack()">Attaquer</button>
         <button class="action-button" [disabled]="isItYourTurn()" (click)="evade()">evasion ({{ player.specs.evasions }})</button>
-        <button class="action-button" (click)="quit()">Quitter la partie</button>
         @if("attacking === true") {
         <p class="dice">{{ defenseTotal }}</p>
         } @else {
