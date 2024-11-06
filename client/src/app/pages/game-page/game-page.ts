@@ -169,6 +169,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     openExitConfirmationModal(): void {
         this.showExitModal = true;
     }
+    
     openActionModal(): void {
         this.showActionModal = true;
     }
@@ -253,6 +254,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.toggleDoor(this.possibleDoors[0]);
         }
     }
+    
     triggerPulse(): void {
         this.isPulsing = true;
         setTimeout(() => (this.isPulsing = false), 500);
@@ -301,7 +303,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenForEndOfGame() {
         this.socketSubscription.add(
             this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe((winner) => {
-                console.log('la game est finieeeeee!, ce joueur a gagné : ', winner.name);
+                console.log('La partie est terminée!, Ce joueur a gagné : ', winner.name);
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {
