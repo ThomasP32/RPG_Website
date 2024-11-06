@@ -458,9 +458,8 @@ describe('MapAreaComponent', () => {
         });
 
         it('should call stopPlacing when mouse up event is triggered', () => {
-            const event = new MouseEvent('mouseup');
             spyOn(component, 'stopPlacing');
-            component.onMouseUp(event);
+            component.onMouseUp();
             expect(component.stopPlacing).toHaveBeenCalled();
         });
     });

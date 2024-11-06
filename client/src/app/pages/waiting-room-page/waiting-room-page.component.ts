@@ -33,7 +33,16 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private mapConversionService: MapConversionService,
-    ) {}
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.gameService = gameService;
+        this.characterService = characterService;
+        this.playerService = playerService;
+        this.socketService = socketService;
+        this.route = route;
+        this.router = router;
+        this.mapConversionService = mapConversionService;
+    }
 
     waitingRoomCode: string;
     mapName: string;
@@ -167,7 +176,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((data) => {
+                        this.socketService.listen('isStartable').subscribe(() => {
                             this.isStartable = true;
                         }),
                     );

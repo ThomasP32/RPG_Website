@@ -126,7 +126,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     @HostListener('document:mouseup', ['$event'])
-    onMouseUp(event: MouseEvent) {
+    onMouseUp() {
         this.stopPlacing();
     }
 
