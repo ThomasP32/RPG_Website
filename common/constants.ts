@@ -14,7 +14,6 @@ export const MapConfig = {
 export interface IWaitingRoomParameters {
     MIN_CODE: number;
     MAX_CODE: number;
-    TIME_LIMIT: number;
 }
 
 export class WaitingRoomParameters {
@@ -24,10 +23,14 @@ export class WaitingRoomParameters {
     static get MAX_CODE(): number {
         return 9999;
     }
-    static get TIME_LIMIT(): number {
-        return 3000;
-    }
 }
 
+export const TIME_LIMIT_DELAY: number = 3000;
+
+export const TIME_REDIRECTION: number = 5000;
+
+export const TIME_PULSE: number = 500;
+
+export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const HALF = 0.5;

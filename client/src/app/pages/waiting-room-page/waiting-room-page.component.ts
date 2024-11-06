@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
-import { DisconnectModalComponent } from '@app/components/disconnect-modal/disconnect-modal.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -10,7 +9,7 @@ import { CommunicationMapService } from '@app/services/communication/communicati
 import { GameService } from '@app/services/game/game.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { WaitingRoomParameters } from '@common/constants';
+import { TIME_LIMIT_DELAY, WaitingRoomParameters } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -18,13 +17,12 @@ import { firstValueFrom, Subscription } from 'rxjs';
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [CommonModule, PlayersListComponent, ChatroomComponent, DisconnectModalComponent],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
-    @ViewChild(DisconnectModalComponent, { static: false }) appDisconnectModalComponent!: DisconnectModalComponent;
 
     constructor(
         private communicationMapService: CommunicationMapService,
@@ -140,7 +138,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                     this.showExitModal = true;
                     setTimeout(() => {
                         this.exitGame();
-                    }, WaitingRoomParameters.TIME_LIMIT);
+                    }, TIME_LIMIT_DELAY);
                 }),
             );
             this.socketSubscription.add(
@@ -199,7 +197,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 this.showExitModal = true;
                 setTimeout(() => {
                     this.router.navigate(['/main-menu']);
-                }, WaitingRoomParameters.TIME_LIMIT);
+                }, TIME_LIMIT_DELAY);
                 this.socketService.disconnect();
                 this.characterService.resetCharacterAvailability();
             }),

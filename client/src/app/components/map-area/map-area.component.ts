@@ -8,7 +8,6 @@ import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile/tile.service';
 import { Cell } from '@common/map-cell';
 import { ItemCategory, Map, TileCategory } from '@common/map.types';
-/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -20,11 +19,11 @@ export class MapAreaComponent implements OnInit {
     selectedTile: string;
     map: Cell[][];
 
+    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
+
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
     isRightClickDown = false;
-
-    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
 
     defaultTile = TileCategory.Floor;
     randomItemCounter: number;
@@ -48,7 +47,7 @@ export class MapAreaComponent implements OnInit {
         this.screenshotService = screenshotService;
         this.route = route;
     }
-    
+
     ngOnInit() {
         this.initMap();
     }
@@ -61,6 +60,9 @@ export class MapAreaComponent implements OnInit {
             this.initializeEditionMode();
         }
         this.mapService.updateSelectedTile$.subscribe((tile) => (this.selectedTile = tile));
+        this.mapService.removeStartingPoint$.subscribe((boolean) => {
+            this.removeStartingPoint(boolean);
+        });
     }
 
     isCreationMode(): boolean {
@@ -124,7 +126,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     @HostListener('document:mouseup', ['$event'])
-    onMouseUp(event: MouseEvent) {
+    onMouseUp() {
         this.stopPlacing();
     }
 
@@ -183,6 +185,13 @@ export class MapAreaComponent implements OnInit {
         }
         this.selectedTile = '';
         event.preventDefault();
+    }
+
+    removeStartingPoint(isRemoving: boolean) {
+        if (isRemoving && this.currentDraggedItem) {
+            this.tileService.removeStartingPoint(this.map, this.currentDraggedItem.rowIndex, this.currentDraggedItem.colIndex);
+        }
+        this.currentDraggedItem = null;
     }
 
     resetMapToDefault() {
