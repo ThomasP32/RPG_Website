@@ -1,19 +1,21 @@
 import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
-import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
+import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class CombatGateway implements OnGatewayInit {
+export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private gameManagerService: GameManagerService;
     @Inject(JournalService) private journalService: JournalService;
 
     constructor(
@@ -48,10 +50,12 @@ export class CombatGateway implements OnGatewayInit {
                     challenger: player,
                     opponent: data.opponent,
                 });
+                this.gameManagerService.updatePlayerActions(data.gameId, client.id);
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
 
                 this.server.to(data.gameId).emit('combatStartedSignal');
+                this.server.to(client.id).emit('YouStartedCombat', player);
                 this.combatCountdownService.initCountdown(data.gameId, 5);
                 this.gameCountdownService.pauseCountdown(data.gameId);
                 this.startCombatTurns(data.gameId);
@@ -213,11 +217,13 @@ export class CombatGateway implements OnGatewayInit {
             }
         });
         if (playerGame) {
+            this.gameCreationService.handlePlayerLeaving(client, playerGame.id);
             const combat = this.serverCombatService.getCombatByGameId(playerGame.id);
 
             if (combat) {
                 const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
                 this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
+                this.server.to(playerGame.id).emit('playerLeft', playerGame.players);
                 this.serverCombatService.combatWinStatsUpdate(winner, combat.id);
 
                 const updatedGame = this.gameCreationService.getGameById(playerGame.id);

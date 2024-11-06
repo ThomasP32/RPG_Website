@@ -428,5 +428,28 @@ describe('GameGateway', () => {
                 expect(emitStub.calledWith('playerKicked')).toBeTruthy();
             });
         });
+        it('handleToggleGameLockState', () => {
+            const gameId = 'room-1';
+            const isLocked: boolean = false;
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGameById.returns(gameRoom);
+
+            gateway.handleToggleGameLockState(socket, { gameId, isLocked });
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeFalsy();
+            expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
+        });
+        describe('HandlePlayerLeaving', () => {
+            it('should emit playerLeft to the game room', () => {
+                const gameId = 'non-existent-room';
+                gameCreationService.getGameById.returns(gameRoom);
+
+                gateway.handleLeaveGame(socket, gameId);
+                expect(gameCreationService.handlePlayerLeaving.calledWith(socket, gameId)).toBeFalsy();
+                expect(serverStub.to.calledWith(gameId)).toBeFalsy();
+                const emitStub = serverStub.to(gameId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerLeft', { player: player })).toBeFalsy();
+            });
+        });
     });
 });

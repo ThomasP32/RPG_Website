@@ -1,7 +1,7 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { Coordinate, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 
 let specs: Specs = {
@@ -287,7 +287,7 @@ describe('GameManagerService', () => {
                 defense: 5,
                 attackBonus: Bonus.D4,
                 defenseBonus: Bonus.D6,
-                evasions: 2, 
+                evasions: 2,
                 movePoints: 10,
                 actions: 2,
                 nVictories: 0,
@@ -408,6 +408,66 @@ describe('GameManagerService', () => {
 
             const result = gameManagerService.getAdjacentPlayers(player, game2.id);
             expect(result).toEqual([]);
+        });
+    });
+    describe('getAdjacentDoors', () => {
+        it('should return adjacent doors when they are next to the player', () => {
+            const doorTile: DoorTile = { coordinate: { x: 4, y: 5 }, isOpened: false };
+            game2.doorTiles = [doorTile];
+            player.position = { x: 4, y: 4 };
+
+            const adjacentDoors = gameManagerService.getAdjacentDoors(player, game2.id);
+
+            expect(adjacentDoors).toHaveLength(1);
+            expect(adjacentDoors[0]).toEqual(doorTile);
+        });
+
+        it('should return an empty array if there are no adjacent doors', () => {
+            const doorTile: DoorTile = { coordinate: { x: 6, y: 6 }, isOpened: false };
+            game2.doorTiles = [doorTile];
+            player.position = { x: 4, y: 4 };
+
+            const adjacentDoors = gameManagerService.getAdjacentDoors(player, game2.id);
+
+            expect(adjacentDoors).toEqual([]);
+        });
+
+        it('should not return doors that are not adjacent to the player', () => {
+            game2.doorTiles = [
+                { coordinate: { x: 2, y: 2 }, isOpened: false },
+                { coordinate: { x: 7, y: 7 }, isOpened: false },
+            ];
+            player.position = { x: 5, y: 5 };
+
+            const adjacentDoors = gameManagerService.getAdjacentDoors(player, game2.id);
+
+            expect(adjacentDoors).toEqual([]);
+        });
+    });
+
+    describe('isGameResumable', () => {
+        it('should return true if there is at least one active player', () => {
+            game2.players[0].isActive = true;
+
+            const result = gameManagerService.isGameResumable(game2.id);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if all players are inactive', () => {
+            game2.players.forEach((player) => (player.isActive = false));
+
+            const result = gameManagerService.isGameResumable(game2.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if there are no players in the game', () => {
+            game2.players = [];
+
+            const result = gameManagerService.isGameResumable(game2.id);
+
+            expect(result).toBe(false);
         });
     });
 });

@@ -1,8 +1,8 @@
 <div class="combat-container">
-    <div>Tes potentielles attaques</div>
+    <div>Attaques disponibles</div>
     @if(possibleOpponents && possibleOpponents.length>0){ @for(opponent of possibleOpponents; track opponent.socketId) {
     <div class="opponent-card">
-        <div class="opponent-name">{{opponent.name}}</div>
+        <div class="opponent-name">{{ opponent.name }}</div>
         <button class="attack-button" (click)="attack(opponent)">ATTAQUER</button>
     </div>
     } } @else {
