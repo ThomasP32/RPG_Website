@@ -68,16 +68,19 @@ export class ServerCombatService {
     }
 
     combatWinStatsUpdate(winner: Player, gameId: string) {
-        if (winner.socketId === this.combatRooms[gameId].challenger.socketId) {
-            this.combatRooms[gameId].challenger.specs.nVictories += 1;
-            this.combatRooms[gameId].challenger.specs.nCombats += 1;
-            this.combatRooms[gameId].opponent.specs.nDefeats += 1;
-            this.combatRooms[gameId].opponent.specs.nCombats += 1;
-        } else {
-            this.combatRooms[gameId].opponent.specs.nVictories += 1;
-            this.combatRooms[gameId].opponent.specs.nCombats += 1;
-            this.combatRooms[gameId].challenger.specs.nDefeats += 1;
-            this.combatRooms[gameId].challenger.specs.nCombats += 1;
+        const combat = this.getCombatByGameId(gameId);
+        if (combat) {
+            if (winner.socketId === this.combatRooms[gameId].challenger.socketId) {
+                this.combatRooms[gameId].challenger.specs.nVictories += 1;
+                this.combatRooms[gameId].challenger.specs.nCombats += 1;
+                this.combatRooms[gameId].opponent.specs.nDefeats += 1;
+                this.combatRooms[gameId].opponent.specs.nCombats += 1;
+            } else {
+                this.combatRooms[gameId].opponent.specs.nVictories += 1;
+                this.combatRooms[gameId].opponent.specs.nCombats += 1;
+                this.combatRooms[gameId].challenger.specs.nDefeats += 1;
+                this.combatRooms[gameId].challenger.specs.nCombats += 1;
+            }
         }
     }
 
