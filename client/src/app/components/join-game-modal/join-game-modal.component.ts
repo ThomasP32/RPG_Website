@@ -20,18 +20,18 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
     socketSubscription: Subscription = new Subscription();
 
     constructor(
-        // eslint-disable-next-line no-unused-vars
         private socketService: SocketService,
-        // eslint-disable-next-line no-unused-vars
         private router: Router,
-    ) {}
+    ) {
+        this.socketService = socketService;
+        this.router = router;
+    }
 
     ngOnInit(): void {
         this.configureJoinGameSocketFeatures();
     }
 
     ngAfterViewInit(): void {
-        // Automatically focus on the first input when the modal opens
         this.focusFirstInput();
     }
 
