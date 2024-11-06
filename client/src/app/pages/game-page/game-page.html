@@ -148,9 +148,9 @@
     }
 
 @if(isCombatModalOpen){
-<div class="modal-overlay">
-    <div class="modal-content">
-        <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
-    </div>
+<div>
+    <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
+    <!-- <app-combat-mock-modal></app-combat-mock-modal> -->
 </div>
+
 }

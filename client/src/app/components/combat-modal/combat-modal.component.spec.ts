@@ -76,12 +76,12 @@ describe('CombatModalComponent', () => {
     describe('#turnMessage', () => {
         it('should return player turn message when it is the player’s turn', () => {
             component.isYourTurn = true;
-            expect(component.turnMessage).toEqual('Player1 joue présentement.');
+            expect(component.turnMessage).toEqual("C'est à votre tour de jouer!");
         });
 
         it('should return opponent turn message when it is the opponent’s turn', () => {
             component.isYourTurn = false;
-            expect(component.turnMessage).toEqual('Opponent joue présentement.');
+            expect(component.turnMessage).toEqual('Opponent est entrain de jouer.');
         });
     });
 
