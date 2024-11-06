@@ -82,7 +82,7 @@
                 </div>
                 <h2>secondes</h2>
             </div>
-            <button (click)="endTurn()">Fin du tour</button>
+            <button class="end" [disabled]="areModalsOpen()" (click)="endTurn()">Fin du tour</button>
         </div>
     </div>
 
@@ -102,13 +102,13 @@
                 [currentPlayerTurn]="currentPlayerTurn"
             ></app-game-players-list>
         </div>
-        @if(combatAvailable) {
-        <app-combat-list [possibleOpponents]="possibleOpponents"></app-combat-list>
-        }
-        <div class="action-buttons">
-            <button (click)="toggleDoor()">{{actionMessage}}</button>
-        </div>
 
+        <div class="action-buttons">
+            <button [disabled]="areModalsOpen()" (click)="toggleDoor()">{{actionMessage}}</button>
+        </div>
+        @if(combatAvailable) {
+        <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
+        }
         <div class="toggle-container">
             <div class="toggle">
                 <button [class.active]="activeView === 'chat'" (click)="toggleView('chat')">Clavardage</button>
@@ -137,24 +137,27 @@
         <button class="modal-button" (click)="closeExitModal()">Non</button>
     </div>
 </div>
-} @if(showKickedModal) {
+} 
+@if(showKickedModal) {
 <div class="game-finished-modal">
     <div class="modal">
         <h2>Tous les joueurs ont abandonné.</h2>
         <p>La partie est finie, vous serez redirigé.</p>
     </div>
 </div>
-}@if(showEndGameModal) {
+}
+@if(showEndGameModal) {
 <div class="game-finished-modal">
     <div class="modal">
         <h2>Un joueur a gagné 3 combats.</h2>
         <p>La partie est finie, vous serez redirigé.</p>
     </div>
 </div>
-} @if(isCombatModalOpen){
-<div>
-    <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
-    <!-- <app-combat-mock-modal></app-combat-mock-modal> -->
+}
+@if(isCombatModalOpen){
+<div class="combat-modal">
+    <div>
+        <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
+    </div>
 </div>
-
 }
