@@ -25,7 +25,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
     @ViewChild(DisconnectModalComponent, { static: false }) appDisconnectModalComponent!: DisconnectModalComponent;
-    /* eslint-disable no-unused-vars */
+
     constructor(
         private communicationMapService: CommunicationMapService,
         private gameService: GameService,
@@ -35,7 +35,16 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private mapConversionService: MapConversionService,
-    ) {}
+    ) {
+        this.communicationMapService = communicationMapService;
+        this.gameService = gameService;
+        this.characterService = characterService;
+        this.playerService = playerService;
+        this.socketService = socketService;
+        this.route = route;
+        this.router = router;
+        this.mapConversionService = mapConversionService;
+    }
 
     waitingRoomCode: string;
     mapName: string;
@@ -55,8 +64,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     maxPlayers: number;
 
     async ngOnInit(): Promise<void> {
-        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
-        this.playerName = this.player.name;
+        const player = this.playerService.getPlayer();
+        this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
+        this.playerName = player.name;
+        this.isHost = this.router.url.includes('host');
 
         this.listenToSocketMessages();
         if (this.router.url.includes('host')) {
@@ -82,6 +93,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     get player(): Player {
         return this.playerService.player;
     }
+
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
         const newGame: Game = {
@@ -103,6 +115,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     exitGame(): void {
         this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
+        this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
     }
 
@@ -169,7 +182,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 if (this.isHost) {
                     this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe((data) => {
+                        this.socketService.listen('isStartable').subscribe(() => {
                             this.isStartable = true;
                         }),
                     );
