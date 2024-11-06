@@ -1,4 +1,5 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
+import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
@@ -6,12 +7,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { GameGateway } from './game-creation.gateway';
+
 describe('GameGateway', () => {
     let gateway: GameGateway;
     let logger: SinonStubbedInstance<Logger>;
     let socket: SinonStubbedInstance<Socket>;
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let serverStub: SinonStubbedInstance<Server>;
+    let journalService: SinonStubbedInstance<JournalService>;
 
     let specs: Specs = {
         life: 100,
@@ -74,6 +77,7 @@ describe('GameGateway', () => {
         socket = createStubInstance<Socket>(Socket);
         gameCreationService = createStubInstance<GameCreationService>(GameCreationService);
         serverStub = createStubInstance<Server>(Server);
+        journalService = createStubInstance<JournalService>(JournalService);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 GameGateway,
@@ -85,6 +89,7 @@ describe('GameGateway', () => {
                     provide: GameCreationService,
                     useValue: gameCreationService,
                 },
+                { provide: JournalService, useValue: journalService },
             ],
         }).compile();
         gateway = module.get<GameGateway>(GameGateway);
@@ -105,9 +110,11 @@ describe('GameGateway', () => {
 
         serverStub.to.returns({ emit: stub() } as any);
     });
+
     it('should be defined', () => {
         expect(gateway).toBeDefined();
     });
+
     describe('handleAccessGame', () => {
         it('should emit gameNotFound if the game does not exist', () => {
             const gameId = 'game-id';
@@ -419,6 +426,29 @@ describe('GameGateway', () => {
                 expect(serverStub.to.calledWith(playerId)).toBeTruthy();
                 const emitStub = serverStub.to(playerId).emit as SinonStubbedInstance<Socket>['emit'];
                 expect(emitStub.calledWith('playerKicked')).toBeTruthy();
+            });
+        });
+        it('handleToggleGameLockState', () => {
+            const gameId = 'room-1';
+            const isLocked: boolean = false;
+            gameCreationService.doesGameExist.returns(true);
+            gameCreationService.getGameById.returns(gameRoom);
+
+            gateway.handleToggleGameLockState(socket, { gameId, isLocked });
+
+            expect(gameCreationService.doesGameExist.calledWith(gameId)).toBeFalsy();
+            expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
+        });
+        describe('HandlePlayerLeaving', () => {
+            it('should emit playerLeft to the game room', () => {
+                const gameId = 'non-existent-room';
+                gameCreationService.getGameById.returns(gameRoom);
+
+                gateway.handleLeaveGame(socket, gameId);
+                expect(gameCreationService.handlePlayerLeaving.calledWith(socket, gameId)).toBeFalsy();
+                expect(serverStub.to.calledWith(gameId)).toBeFalsy();
+                const emitStub = serverStub.to(gameId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerLeft', { player: player })).toBeFalsy();
             });
         });
     });

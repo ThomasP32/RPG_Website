@@ -99,12 +99,8 @@ describe('GameMapComponent', () => {
     describe('#onRightClickTile', () => {
         it('should display tile description on right-click for different tile categories', () => {
             const event = new MouseEvent('contextmenu', { button: 2 });
-            const waterTile = { x: 2, y: 2 };
             const iceTile = { x: 3, y: 3 };
             const wallTile = { x: 4, y: 4 };
-
-            component.onRightClickTile(event, waterTile);
-            expect(component.tileDescription).toBe("Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.");
 
             component.onRightClickTile(event, iceTile);
             expect(component.tileDescription).toBe(

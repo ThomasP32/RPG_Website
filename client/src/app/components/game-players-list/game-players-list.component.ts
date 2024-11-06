@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, OnChanges} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { CharacterService } from '@app/services/character/character.service';
 import { Avatar, Player } from '@common/game';
 
@@ -16,7 +16,6 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     @Input() currentPlayerTurn: string;
     hoveredPlayerId: string | null = null;
 
-   
     constructor(private characterService: CharacterService) {
         this.characterService = characterService;
     }
@@ -45,7 +44,7 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     }
 
     initializePlayerSpecs(): void {
-        this.players = this.players.map(player => ({
+        this.players = this.players.map((player) => ({
             ...player,
             specs: player.specs || { nVictories: 0 },
         }));

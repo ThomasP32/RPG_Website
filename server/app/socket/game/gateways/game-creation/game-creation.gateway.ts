@@ -3,6 +3,7 @@ import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameGateway implements OnGatewayDisconnect {
@@ -10,6 +11,7 @@ export class GameGateway implements OnGatewayDisconnect {
     server: Server;
 
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(JournalService) private journalService: JournalService;
 
     @SubscribeMessage('createGame')
     handleCreateGame(client: Socket, newGame: Game): void {
@@ -141,6 +143,8 @@ export class GameGateway implements OnGatewayDisconnect {
         }
         if (game.players.some((player) => player.socketId === client.id)) {
             game = this.gameCreationService.handlePlayerLeaving(client, game.id);
+            client.leave(gameId);
+            client.leave(gameId+'-combat');
             this.server.to(game.id).emit('playerLeft', game.players);
             return;
         } else {
@@ -161,9 +165,11 @@ export class GameGateway implements OnGatewayDisconnect {
                 }
             }
 
-            if (game.players.some((player) => player.socketId === client.id)) {
+            const player = game.players.find((player) => player.socketId === client.id);
+            if (player) {
                 game = this.gameCreationService.handlePlayerLeaving(client, game.id);
                 this.server.to(game.id).emit('playerLeft', game.players);
+                this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
                 return;
             } else {
                 return;
