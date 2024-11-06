@@ -212,15 +212,14 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
             if (combat) {
                 const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
-                this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
                 this.server.to(playerGame.id).emit('playerLeft', playerGame.players);
                 this.serverCombatService.combatWinStatsUpdate(winner, combat.id);
-
                 const updatedGame = this.gameCreationService.getGameById(playerGame.id);
                 this.serverCombatService.updatePlayersInGame(updatedGame);
+                this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
 
                 setTimeout(() => {
-                    this.server.to(playerGame.id).emit('combatFinished', { updatedGame, winner: winner });
+                    this.server.to(playerGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
                     if (this.checkForWinner(playerGame.id, winner)) {
                         this.combatCountdownService.deleteCountdown(playerGame.id);
                         return;
