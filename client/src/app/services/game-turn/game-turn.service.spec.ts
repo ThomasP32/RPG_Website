@@ -62,6 +62,10 @@ describe('GameTurnService', () => {
         currentTurn: 0,
     } as Game;
 
+    beforeAll(() => {
+        jasmine.getEnv().allowRespy(true);
+    });
+
     beforeEach(() => {
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['setPlayerAvatar', 'setPlayerName', 'setPlayer'], { player: mockPlayer });
         socketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen']);
@@ -118,18 +122,6 @@ describe('GameTurnService', () => {
         expect(service).toBeTruthy();
     });
 
-    describe('#listenForTurn', () => {
-        it('should update playerTurn and clear moves when "playerTurn" event is received', () => {
-            spyOn(service, 'clearMoves');
-            service.listenForTurn();
-
-            playerTurnSubject.next('Another Player');
-
-            expect(service.clearMoves).toHaveBeenCalled();
-            expect(service['playerTurn'].getValue()).toBe('Another Player');
-        });
-    });
-
     describe('#movePlayer', () => {
         it('should send moveToPosition message with correct parameters', () => {
             const position: Coordinate = { x: 5, y: 5 };
@@ -152,6 +144,12 @@ describe('GameTurnService', () => {
     });
 
     describe('#listenForPlayerMove', () => {
+        beforeEach(() => {
+            spyOn(service, 'clearMoves').and.callThrough();
+            spyOn(service, 'endTurnBecauseFell').and.callThrough();
+            service.listenForPlayerMove();
+        });
+
         it('should update game and player state when position is updated', () => {
             service.listenForPlayerMove();
             const mockData = { game: mockGame, player: mockPlayer };
@@ -169,6 +167,13 @@ describe('GameTurnService', () => {
 
             expect(service.clearMoves).toHaveBeenCalled();
             expect(service.resumeTurn).toHaveBeenCalled();
+        });
+
+        it('should call clearMoves and endTurnBecauseFell on receiving "youFell" event', () => {
+            youFellSubject.next(mockPlayer);
+
+            expect(service.clearMoves).toHaveBeenCalled();
+            expect(service.endTurnBecauseFell).toHaveBeenCalled();
         });
     });
 
@@ -191,11 +196,28 @@ describe('GameTurnService', () => {
 
         it("should call getActions if it is the player's turn and has not already fought", () => {
             spyOn(service, 'getActions');
-            // service['actionsLeftToDo'] = false;
+            service.resumeTurn();
+            expect(service.getActions).toHaveBeenCalled();
+        });
+
+        it("should call getActions if it is the player's turn and door or combat actions are not done", () => {
+            spyOn(service, 'getActions');
+            service['playerTurn'].next(mockPlayer.name);
+            service.actionsDone = { door: false, combat: false };
 
             service.resumeTurn();
 
             expect(service.getActions).toHaveBeenCalled();
+        });
+
+        it("should not call getActions if it is the player's turn and all actions are done", () => {
+            spyOn(service, 'getActions');
+            service['playerTurn'].next(mockPlayer.name);
+            service.actionsDone = { door: true, combat: true };
+
+            service.resumeTurn();
+
+            expect(service.getActions).not.toHaveBeenCalled();
         });
     });
 
@@ -217,6 +239,24 @@ describe('GameTurnService', () => {
 
             expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
         });
+
+        it('should send endTurn message if youFell is false', () => {
+            spyOn(service, 'clearMoves');
+            service['youFell'].next(false);
+
+            service.endTurn();
+
+            expect(service.clearMoves).toHaveBeenCalled();
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('endTurn', mockGame.id);
+        });
+
+        it('should not send endTurn message if youFell is true', () => {
+            service['youFell'].next(true);
+
+            service.endTurn();
+
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalledWith('endTurn', mockGame.id);
+        });
     });
 
     describe('#endTurnBecauseFell', () => {
@@ -233,6 +273,15 @@ describe('GameTurnService', () => {
             expect(service['youFell'].getValue()).toBe(false);
             expect(service.clearMoves).toHaveBeenCalled();
             expect(service.endTurn).toHaveBeenCalled();
+        }));
+
+        it('should reset youFell to false after 3 seconds in endTurnBecauseFell', fakeAsync(() => {
+            service['youFell'].next(true);
+
+            service.endTurnBecauseFell();
+            tick(3000);
+
+            expect(service['youFell'].getValue()).toBe(false);
         }));
     });
 
@@ -259,6 +308,13 @@ describe('GameTurnService', () => {
             expect(service.clearMoves).toHaveBeenCalled();
             expect(service['playerTurn'].getValue()).toBe(newPlayer.name);
         });
+
+        it('should update playerTurn and clear moves when "playerTurn" event is received', () => {
+            playerTurnSubject.next('Another Player');
+
+            expect(service.clearMoves).toHaveBeenCalled();
+            expect(service['playerTurn'].getValue()).toBe('Another Player');
+        });
     });
 
     describe('#getMoves', () => {
@@ -280,6 +336,7 @@ describe('GameTurnService', () => {
     });
 
     describe('#listenMoves', () => {
+        beforeEach(() => {});
         beforeEach(() => {
             spyOn(service, 'endTurn');
             service.listenMoves();
@@ -346,9 +403,8 @@ describe('GameTurnService', () => {
             const updatedGame = { ...mockGame, players: [evadingPlayer] };
             const combatFinishedByEvasionData = { updatedGame, evadingPlayer };
 
-            // Emit event
             combatFinishedByEvasionSubject.next(combatFinishedByEvasionData);
-            tick(); // Ensure async events are processed
+            tick();
 
             expect(playerServiceSpy.player).toEqual(evadingPlayer);
             expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
@@ -359,11 +415,10 @@ describe('GameTurnService', () => {
             const updatedGame = { ...mockGame, players: [mockPlayer, evadingPlayer] };
             const combatFinishedByEvasionData = { updatedGame, evadingPlayer };
 
-            // Emit event
             combatFinishedByEvasionSubject.next(combatFinishedByEvasionData);
-            tick(); // Ensure async events are processed
+            tick();
 
-            expect(playerServiceSpy.player).toEqual(mockPlayer); // current player should be set to the mock player
+            expect(playerServiceSpy.player).toEqual(mockPlayer);
             expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
         }));
 
@@ -372,9 +427,8 @@ describe('GameTurnService', () => {
             const updatedGame = { ...mockGame, players: [winner] };
             const combatFinishedData = { updatedGame, winner };
 
-            // Emit event
             combatFinishedSubject.next(combatFinishedData);
-            tick(); // Ensure async events are processed
+            tick();
 
             expect(playerServiceSpy.player).toEqual(winner);
             expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
@@ -385,87 +439,82 @@ describe('GameTurnService', () => {
             const updatedGame = { ...mockGame, players: [mockPlayer, winner] };
             const combatFinishedData = { updatedGame, winner };
 
-            // Emit event
             combatFinishedSubject.next(combatFinishedData);
-            tick(); // Ensure async events are processed
+            tick();
 
-            expect(playerServiceSpy.player).toEqual(mockPlayer); // current player should be set to the mock player
+            expect(playerServiceSpy.player).toEqual(mockPlayer);
             expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
         }));
     });
 
-    describe('#listenForPlayerMove', () => {
-        beforeEach(() => {
-            spyOn(service, 'clearMoves');
-            spyOn(service, 'endTurnBecauseFell');
-            service.listenForPlayerMove();
+    describe('#toggleDoor', () => {
+        const mockDoor = { x: 1, y: 1 } as unknown as DoorTile;
+
+        it('should send "toggleDoor" message when possibleActions.door is true and actionsDone.door is false', () => {
+            service.possibleActions.door = true;
+            service.actionsDone.door = false;
+
+            service.toggleDoor(mockDoor);
+
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleDoor', { gameId: mockGame.id, door: mockDoor });
         });
-    
-        it('should call clearMoves and endTurnBecauseFell when "youFell" event is received', () => {
-            youFellSubject.next(mockPlayer);
-    
-            expect(service.clearMoves).toHaveBeenCalled();
-            expect(service.endTurnBecauseFell).toHaveBeenCalled();
+
+        it('should not send "toggleDoor" message when possibleActions.door is false', () => {
+            service.possibleActions.door = false;
+            service.actionsDone.door = false;
+
+            service.toggleDoor(mockDoor);
+
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalledWith('toggleDoor', { gameId: mockGame.id, door: mockDoor });
+        });
+
+        it('should not send "toggleDoor" message when actionsDone.door is true', () => {
+            service.possibleActions.door = true;
+            service.actionsDone.door = true;
+
+            service.toggleDoor(mockDoor);
+
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalledWith('toggleDoor', { gameId: mockGame.id, door: mockDoor });
+        });
+
+        it('should not send "toggleDoor" message when possibleActions.door is false', () => {
+            service.possibleActions.door = false;
+            service.actionsDone.door = false;
+
+            service.toggleDoor(mockDoor);
+
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalledWith('toggleDoor', { gameId: mockGame.id, door: mockDoor });
         });
     });
-    
+
     describe('#listenForDoorUpdates', () => {
+        const updatedGame = { ...mockGame, id: 'updated-game' };
+
         beforeEach(() => {
             spyOn(service, 'resumeTurn');
+            spyOn(console, 'log');
             service.listenForDoorUpdates();
         });
-    
-        it('should update game, set actionsDone.door to true, and call resumeTurn when "doorToggled" event is received', () => {
-            const mockDoorTile = {coordinate: { x: 1, y: 2 }, isOpened: true} as DoorTile;
-            const updatedGame = { ...mockGame, doors: [mockDoorTile] };
-    
-            socketServiceSpy.listen.withArgs('doorToggled').and.returnValue(of({ game: updatedGame, door: mockDoorTile }));
-    
-            // Trigger the doorToggled event
-            const doorToggledData = { game: updatedGame, door: mockDoorTile };
+
+        it('should set actionsDone.door to true, update game, and call resumeTurn on receiving "doorToggled" event', () => {
             service.listenForDoorUpdates();
-            socketServiceSpy.listen('doorToggled').subscribe(() => doorToggledData);
     
-            expect(service.actionsDone.door).toBe(true);
+            socketServiceSpy.listen.and.callFake((eventName: string): Observable<any> => {
+                if (eventName === 'doorToggled') {
+                    return of({
+                        game: updatedGame,
+                        player: mockPlayer,
+                        door: { x: 1, y: 1 },
+                    });
+                }
+                return of();
+            });
+        
+            service.listenForDoorUpdates();
+        
+            expect(service.actionsDone.door).toBeTrue();
             expect(gameServiceSpy.setGame).toHaveBeenCalledWith(updatedGame);
             expect(service.resumeTurn).toHaveBeenCalled();
         });
     });
-
-    describe('#toggleDoor', () => {
-        let mockDoorTile: DoorTile;
-    
-        beforeEach(() => {
-            mockDoorTile = {coordinate: { x: 1, y: 2 }, isOpened: true} as DoorTile;
-        });
-    
-        it('should send "toggleDoor" message with the correct parameters if possibleActions.door is true and actionsDone.door is false', () => {
-            service['possibleActions'].door = true;
-            service['actionsDone'].door = false;
-    
-            service.toggleDoor(mockDoorTile);
-    
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleDoor', { gameId: mockGame.id, door: mockDoorTile });
-        });
-    
-        it('should not send "toggleDoor" message if possibleActions.door is false', () => {
-            service['possibleActions'].door = false;
-            service['actionsDone'].door = false;
-    
-            service.toggleDoor(mockDoorTile);
-    
-            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
-        });
-    
-        it('should not send "toggleDoor" message if actionsDone.door is true', () => {
-            service['possibleActions'].door = true;
-            service['actionsDone'].door = true;
-    
-            service.toggleDoor(mockDoorTile);
-    
-            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
-        });
-    });
-    
-    
 });

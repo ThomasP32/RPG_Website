@@ -29,6 +29,14 @@ export class GameManagerService {
         }
     }
 
+    updatePlayerActions(gameId: string, playerSocket: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === playerSocket);
+        if (player) {
+            player.specs.actions--;
+        }
+    }
+
     getMoves(
         gameId: string,
         playerSocket: string,
@@ -226,20 +234,23 @@ export class GameManagerService {
         const game = this.gameCreationService.getGameById(gameId);
         const adjacentDoors: DoorTile[] = [];
 
+        const adjacentPlayers = this.getAdjacentPlayers(player, gameId);
+
         game.doorTiles.forEach((door) => {
             const isAdjacent = DIRECTIONS.some(
                 (direction) => door.coordinate.x === player.position.x + direction.x && door.coordinate.y === player.position.y + direction.y,
             );
-            if (isAdjacent) {
+
+            const isOccupied = adjacentPlayers.some(
+                (adjPlayer) => adjPlayer.position.x === door.coordinate.x && adjPlayer.position.y === door.coordinate.y,
+            );
+
+            if (isAdjacent && !isOccupied) {
                 adjacentDoors.push(door);
             }
         });
 
         return adjacentDoors;
-    }
-
-    isPlayerOnTile(game: Game, position: Coordinate): boolean {
-        return !!game.players.find((player) => player.position.x === position.x && player.position.y === position.y);
     }
 
     isGameResumable(gameId: string): boolean {
