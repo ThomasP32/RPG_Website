@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { Cell } from '@common/map-cell';
 import { TileCategory } from '@common/map.types';
-/* eslint-disable no-unused-vars */
+
 @Injectable({
     providedIn: 'root',
 })
 export class TileService {
-    constructor(private mapCounterService: MapCounterService) {}
+    constructor(private mapCounterService: MapCounterService) {
+        this.mapCounterService = mapCounterService;
+    }
 
     placeTile(map: Cell[][], rowIndex: number, colIndex: number, selectedTile: string) {
         const cell = map[rowIndex][colIndex];
