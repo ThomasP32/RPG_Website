@@ -1,0 +1,12 @@
+<div class="game-access-box">
+    <div class="game-code-container">
+        <h2>Veuillez entrer le code de la partie</h2>
+        <div class="input-container">
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[0]" (input)="moveToNext($event, 1)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[1]" (input)="moveToNext($event, 2)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[2]" (input)="moveToNext($event, 3)" #codeInput />
+            <input type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]" (input)="joinGame($event)" #codeInput />
+        </div>
+        <h3 class="error-message">{{ errorMessage }}</h3>
+    </div>
+</div>

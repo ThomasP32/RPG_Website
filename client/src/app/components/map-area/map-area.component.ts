@@ -1,14 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
-import { MapService } from '@app/services/map.service';
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
-import { TileService } from '@app/services/tile.service';
-import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
-/* eslint-disable no-unused-vars */
+import { TileService } from '@app/services/tile/tile.service';
+import { Cell } from '@common/map-cell';
+import { ItemCategory, Map, TileCategory } from '@common/map.types';
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -18,95 +17,91 @@ import { ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 })
 export class MapAreaComponent implements OnInit {
     selectedTile: string;
-    map!: Map;
-    Map: { value: string | null; isHovered: boolean; doorState?: 'open' | 'closed'; item?: string }[][] = [];
-    imagePreviewUrl: string = '';
+    map: Cell[][];
+
+    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
 
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
     isRightClickDown = false;
 
-    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
-
-    defaultTile = 'floor';
-    mapSize: string;
-    mode: Mode;
-    convertedMapSize: number;
-    convertedCellSize: number;
-    convertedMode: string;
-
+    defaultTile = TileCategory.Floor;
     randomItemCounter: number;
     startingPointCounter: number;
     itemsCounter: number;
 
     constructor(
         private tileService: TileService,
-        private route: ActivatedRoute,
-        private renderer: Renderer2,
-        private cdRef: ChangeDetectorRef,
+        public route: ActivatedRoute,
         private mapService: MapService,
-        private mapGetService: MapGetService,
         private mapCounterService: MapCounterService,
         private imageService: ImageService,
         private router: Router,
         private screenshotService: ScreenShotService,
-    ) {}
-
-    mapTitle: string = '';
-    mapDescription: string;
+    ) {
+        this.tileService = tileService;
+        this.mapService = mapService;
+        this.mapCounterService = mapCounterService;
+        this.imageService = imageService;
+        this.router = router;
+        this.screenshotService = screenshotService;
+        this.route = route;
+    }
 
     ngOnInit() {
         this.initMap();
     }
 
     initMap() {
-        this.mapCounterService.startingPointCounter$.subscribe((counter) => {
-            this.startingPointCounter = counter;
-        });
-        if (this.router.url.includes('creation')) {
-            this.getUrlParams();
-            this.urlConverter();
-            this.createMap(this.convertedMapSize);
-            this.setCellSize();
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
-        } else if (this.router.url.includes('edition')) {
-            this.map = this.mapGetService.map;
-            this.convertedMapSize = this.map.mapSize.x;
-            this.mode = this.map.mode;
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
-            this.startingPointCounter = this.startingPointCounter - this.map.startTiles.length;
-            this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
-            this.loadMap(this.map);
+        this.mapCounterService.startingPointCounter$.subscribe((counter) => (this.startingPointCounter = counter));
+        if (this.isCreationMode()) {
+            this.initializeCreationMode();
+        } else if (this.isEditionMode()) {
+            this.initializeEditionMode();
         }
+        this.mapService.updateSelectedTile$.subscribe((tile) => (this.selectedTile = tile));
+        this.mapService.removeStartingPoint$.subscribe((boolean) => {
+            this.removeStartingPoint(boolean);
+        });
+    }
 
-        this.mapService.mapTitle$.subscribe((title) => {
-            this.mapTitle = title;
-        });
+    isCreationMode(): boolean {
+        return this.router.url.includes('creation');
+    }
 
-        this.mapService.mapDescription$.subscribe((description) => {
-            this.mapDescription = description;
-        });
-        this.mapService.updateSelectedTile$.subscribe((tile) => {
-            this.selectedTile = tile;
-        });
+    isEditionMode(): boolean {
+        return this.router.url.includes('edition');
+    }
+
+    initializeCreationMode() {
+        this.createMap(this.mapService.map.mapSize.x);
+        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+    }
+
+    initializeEditionMode() {
+        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+        this.startingPointCounter -= this.mapService.map.startTiles.length;
+        this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
+        this.loadMap(this.mapService.map);
     }
 
     createMap(mapSize: number) {
-        this.Map = [];
+        this.map = [];
 
         for (let i = 0; i < mapSize; i++) {
-            const row: { value: string | null; isHovered: boolean }[] = [];
+            const row: Cell[] = [];
             for (let j = 0; j < mapSize; j++) {
-                row.push({ value: 'floor', isHovered: false });
+                row.push({
+                    coordinate: { x: i, y: j },
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isHovered: false,
+                    isOccupied: false,
+                    isStartingPoint: false,
+                });
             }
-            this.Map.push(row);
+            this.map.push(row);
         }
-    }
-
-    setCellSize() {
-        const root = document.querySelector(':root') as HTMLElement;
-        this.renderer.setStyle(root, '--cell-size', `${this.convertedCellSize}px`);
-        this.cdRef.detectChanges();
     }
 
     selectTile(tile: string) {
@@ -117,10 +112,10 @@ export class MapAreaComponent implements OnInit {
         this.isMouseDown = true;
         if (isRightClick) {
             this.isRightClickDown = true;
-            this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
+            this.tileService.eraseTile(this.map, rowIndex, colIndex, this.defaultTile);
         } else {
             this.isPlacing = true;
-            this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
+            this.tileService.placeTile(this.map, rowIndex, colIndex, this.selectedTile);
         }
     }
 
@@ -131,7 +126,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     @HostListener('document:mouseup', ['$event'])
-    onMouseUp(event: MouseEvent) {
+    onMouseUp() {
         this.stopPlacing();
     }
 
@@ -141,7 +136,6 @@ export class MapAreaComponent implements OnInit {
 
         if (targetElement.tagName === 'IMG') {
             const tileElement = targetElement.closest('.grid-item');
-
             if (!tileElement) {
                 event.preventDefault();
             }
@@ -151,20 +145,20 @@ export class MapAreaComponent implements OnInit {
     placeTileOnMove(rowIndex: number, colIndex: number) {
         if (this.isMouseDown) {
             if (this.isRightClickDown) {
-                this.tileService.eraseTile(this.Map, rowIndex, colIndex, this.defaultTile);
+                this.tileService.eraseTile(this.map, rowIndex, colIndex, this.defaultTile);
             } else if (this.selectedTile) {
-                this.tileService.placeTile(this.Map, rowIndex, colIndex, this.selectedTile);
+                this.tileService.placeTile(this.map, rowIndex, colIndex, this.selectedTile);
             }
         }
     }
 
     startDrag(event: DragEvent, rowIndex: number, colIndex: number) {
-        const cell = this.Map[rowIndex][colIndex];
+        const cell = this.map[rowIndex][colIndex];
 
-        if (cell.item) {
+        if (cell.isStartingPoint) {
             this.currentDraggedItem = { rowIndex, colIndex };
 
-            event.dataTransfer?.setData('item', cell.item);
+            event.dataTransfer?.setData('isStartingPoint', 'true');
         } else {
             event.preventDefault();
         }
@@ -175,153 +169,102 @@ export class MapAreaComponent implements OnInit {
     }
 
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
-        const itemType = event.dataTransfer?.getData('item');
-        if (itemType === 'starting-point') {
-            if (this.currentDraggedItem) {
-                this.tileService.moveItem(this.Map, this.currentDraggedItem, { rowIndex, colIndex });
-                this.currentDraggedItem = null;
+        const isStartingPoint = event.dataTransfer?.getData('isStartingPoint');
+        if (isStartingPoint) {
+            const targetTile = this.map[rowIndex][colIndex];
+
+            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint) {
                 event.preventDefault();
-            } else {
-                this.tileService.setItem(this.Map, itemType, { rowIndex, colIndex });
-                this.mapCounterService.updateCounters(itemType, 'remove');
+                return;
             }
+            if (this.currentDraggedItem) {
+                this.tileService.moveItem(this.map, this.currentDraggedItem, { rowIndex, colIndex });
+                this.currentDraggedItem = null;
+            }
+            this.tileService.setStartingPoint(this.map, rowIndex, colIndex);
         }
         this.selectedTile = '';
+        event.preventDefault();
+    }
+
+    removeStartingPoint(isRemoving: boolean) {
+        if (isRemoving && this.currentDraggedItem) {
+            this.tileService.removeStartingPoint(this.map, this.currentDraggedItem.rowIndex, this.currentDraggedItem.colIndex);
+        }
+        this.currentDraggedItem = null;
     }
 
     resetMapToDefault() {
         if (this.route.snapshot.params['mode']) {
-            for (let i = 0; i < this.Map.length; i++) {
-                for (let j = 0; j < this.Map[i].length; j++) {
-                    this.Map[i][j].value = this.defaultTile;
-                    this.Map[i][j].item = undefined;
+            for (let i = 0; i < this.map.length; i++) {
+                for (let j = 0; j < this.map[i].length; j++) {
+                    this.map[i][j].tileType = this.defaultTile;
+                    this.map[i][j].item = undefined;
                 }
             }
-            this.setCountersBasedOnMapSize(this.convertedMapSize);
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
         } else {
-            this.loadMap(this.map);
+            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+            this.loadMap(this.mapService.map);
         }
     }
 
-    generateMapData(): Map {
-        const mapData: Map = {
-            name: this.mapTitle,
-            description: this.mapDescription,
-            imagePreview: this.imagePreviewUrl,
-            mode: this.mode,
-            mapSize: {
-                x: this.convertedMapSize,
-                y: this.convertedMapSize,
-            },
-            tiles: [] as { coordinate: { x: number; y: number }; category: TileCategory }[],
-            doorTiles: [] as { coordinate: { x: number; y: number }; isOpened: boolean }[],
-            items: [] as { coordinate: { x: number; y: number }; category: ItemCategory }[],
-            startTiles: [] as { coordinate: { x: number; y: number } }[],
-        };
-
-        for (let rowIndex = 0; rowIndex < this.Map.length; rowIndex++) {
-            for (let colIndex = 0; colIndex < this.Map[rowIndex].length; colIndex++) {
-                const cell = this.Map[rowIndex][colIndex];
-                const coordinate = { x: rowIndex, y: colIndex };
-
-                if (cell && cell.value) {
-                    if (cell.value === 'door') {
-                        mapData.doorTiles.push({
-                            coordinate,
-                            isOpened: cell.doorState === 'open',
-                        });
-                    } else if (['water', 'ice', 'wall'].includes(cell.value)) {
-                        mapData.tiles.push({
-                            coordinate,
-                            category: cell.value as TileCategory,
-                        });
-                    }
-
-                    if (cell.item && cell.item !== '' && cell.item !== 'starting-point') {
-                        mapData.items.push({
-                            coordinate,
-                            category: cell.item as ItemCategory,
-                        });
-                    }
-
-                    if (cell.item === 'starting-point') {
-                        mapData.startTiles.push({
-                            coordinate,
-                        });
-                    }
-                }
-            }
-        }
-
-        return mapData;
+    generateMap() {
+        this.mapService.generateMapFromEdition(this.map);
     }
 
-    getTileImage(tileValue: string, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.Map);
+    getTileImage(tileType: TileCategory, rowIndex: number, colIndex: number): string {
+        return this.imageService.getTileImage(tileType, rowIndex, colIndex, this.map);
     }
 
-    getItemImage(item: string): string {
+    getItemImage(item: ItemCategory): string {
         return this.imageService.getItemImage(item);
     }
 
-    setCountersBasedOnMapSize(mapSize: number) {
-        if (mapSize === 10) {
-            this.randomItemCounter = 2;
-            this.startingPointCounter = 2;
-            this.itemsCounter = 10;
-        } else if (mapSize === 15) {
-            this.randomItemCounter = 4;
-            this.startingPointCounter = 4;
-            this.itemsCounter = 14;
-        } else if (mapSize === 20) {
-            this.randomItemCounter = 6;
-            this.startingPointCounter = 6;
-            this.itemsCounter = 18;
-        }
+    getStartingPointImage(): string {
+        return this.imageService.getStartingPointImage();
+    }
 
+    setCountersBasedOnMapSize(mapSize: number) {
+        const counters = this.getCountersForMapSize(mapSize);
+        this.randomItemCounter = counters.randomItemCounter;
+        this.startingPointCounter = counters.startingPointCounter;
+        this.itemsCounter = counters.itemsCounter;
         this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
     }
-    getUrlParams() {
-        this.route.queryParams.subscribe((params) => {
-            this.mapSize = this.route.snapshot.params['size'];
-            this.mode = this.route.snapshot.params['mode'];
-        });
-    }
 
-    urlConverter() {
-        this.convertedMode = this.mode.split('=')[1];
-        this.convertedMapSize = parseInt(this.mapSize.split('=')[1]);
-
-        if (this.convertedMode === 'classic') {
-            this.mode = Mode.Classic;
-        } else {
-            this.mode = Mode.Ctf;
-        }
+    getCountersForMapSize(mapSize: number) {
+        const sizeToCounters: Record<10 | 15 | 20, { randomItemCounter: number; startingPointCounter: number; itemsCounter: number }> = {
+            10: { randomItemCounter: 2, startingPointCounter: 2, itemsCounter: 10 },
+            15: { randomItemCounter: 4, startingPointCounter: 4, itemsCounter: 14 },
+            20: { randomItemCounter: 6, startingPointCounter: 6, itemsCounter: 18 },
+        };
+        return sizeToCounters[mapSize as 10 | 15 | 20] || { randomItemCounter: 0, startingPointCounter: 0, itemsCounter: 0 };
     }
 
     async screenMap() {
-        await this.screenshotService.captureAndUpload('screenshot-container').then((result: string) => {
-            this.imagePreviewUrl = result;
+        await this.screenshotService.captureAndConvert('screenshot-container').then((result: string) => {
+            this.mapService.map.imagePreview = result;
         });
     }
 
-    loadMap(map: Map) {
-        this.createMap(map.mapSize.x);
+    loadMap(loadedmap: Map) {
+        this.createMap(loadedmap.mapSize.x);
 
-        map.tiles.forEach((tile) => {
-            this.Map[tile.coordinate.x][tile.coordinate.y].value = tile.category;
+        loadedmap.tiles.forEach((tile) => {
+            this.map[tile.coordinate.x][tile.coordinate.y].tileType = tile.category;
         });
 
-        map.doorTiles.forEach((door) => {
-            this.Map[door.coordinate.x][door.coordinate.y].value = 'door';
-            this.Map[door.coordinate.x][door.coordinate.y].doorState = door.isOpened ? 'open' : 'closed';
+        loadedmap.doorTiles.forEach((door) => {
+            this.map[door.coordinate.x][door.coordinate.y].door.isDoor = true;
+            this.map[door.coordinate.x][door.coordinate.y].door.isOpen = door.isOpened;
         });
-        map.startTiles.forEach((start) => {
-            this.Map[start.coordinate.x][start.coordinate.y].item = 'starting-point';
+        loadedmap.startTiles.forEach((start) => {
+            this.map[start.coordinate.x][start.coordinate.y].isStartingPoint = true;
         });
 
-        map.items.forEach((item) => {
-            this.Map[item.coordinate.x][item.coordinate.y].item = item.category;
+        loadedmap.items.forEach((item) => {
+            this.map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
     }
 }

@@ -1,11 +1,10 @@
-/* eslint-disable */
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { DetailedMap, Mode } from '@common/map.types';
 import { of, throwError } from 'rxjs';
 import { AdminPageComponent } from './admin-page.component';
 
@@ -15,13 +14,13 @@ describe('AdminPageComponent', () => {
     let communicationMapService: jasmine.SpyObj<CommunicationMapService>;
     let router: Router;
 
-    const mockMaps: Map[] = [
+    const mockMaps: DetailedMap[] = [
         {
             _id: '1',
             isVisible: true,
             name: 'Map1',
             description: 'Description1',
-            imagePreview: 'image1.png',
+            imagePreview: '',
             mode: Mode.Ctf,
             mapSize: { x: 1, y: 1 },
             lastModified: new Date(),
@@ -35,7 +34,7 @@ describe('AdminPageComponent', () => {
             isVisible: true,
             name: 'Map2',
             description: 'Description2',
-            imagePreview: 'image2.png',
+            imagePreview: '',
             mode: Mode.Classic,
             mapSize: { x: 2, y: 2 },
             lastModified: new Date(),
@@ -144,5 +143,11 @@ describe('AdminPageComponent', () => {
         spyOn(router, 'navigate');
         component.navigateToMain();
         expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should navigate to the map edition page', () => {
+        spyOn(router, 'navigate');
+        component.editMap(mockMaps[0]);
+        expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
     });
 });

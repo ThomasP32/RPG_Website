@@ -1,0 +1,110 @@
+.players-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: linear-gradient(135deg, #3b3f46 30%, #282c34 100%);
+    border: 4px solid #b5651d;
+    gap: 10px;
+    padding: 15px;
+    height: 50vh;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.8);
+    overflow-x: hidden;
+}
+
+.player {
+    width: 100%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    gap: 10px;
+}
+
+.kick-button {
+    width: 7vw;
+    font-size: 0.7rem;
+    color: #e0e0e0;
+    text-align: center;
+    margin: 0;
+    background-color: #e03b3b;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+    padding: 10px 10px;
+    font-weight: bold;
+    font-family: 'Press Start 2P', sans-serif;
+    right: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.player:hover .kick-button {
+    opacity: 1;
+}
+
+.players-list .player:first-child {
+    border: 3px solid #b5651d;
+    color: white;
+    width: 100%;
+    border: 2px solid #b5651d;
+    box-shadow:
+        0 0 15px rgba(243, 156, 18, 0.6),
+        0 0 30px rgba(243, 156, 18, 0.5),
+        0 0 45px rgba(243, 156, 18, 0.4),
+        0 0 60px rgba(243, 156, 18, 0.3);
+    transition: box-shadow 0.5s ease-in-out;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    gap: 10px;
+    animation: glowing 2s infinite alternate;
+}
+
+@keyframes glowing {
+    0% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 3px rgba(243, 156, 18, 0.8),
+            0 0 6px rgba(243, 156, 18, 0.7),
+            0 0 9px rgba(243, 156, 18, 0.6),
+            0 0 12px rgba(243, 156, 18, 0.5);
+    }
+    100% {
+        box-shadow:
+            0 0 1.5px rgba(243, 156, 18, 0.6),
+            0 0 3px rgba(243, 156, 18, 0.5),
+            0 0 4.5px rgba(243, 156, 18, 0.4),
+            0 0 6px rgba(243, 156, 18, 0.3);
+    }
+}
+
+.avatar-container {
+    width: 3vw;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e0e0;
+    margin-left: 5px;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-name {
+    font-size: 1rem;
+    color: #e0e0e0;
+    text-align: center;
+}

@@ -1,8 +1,8 @@
 <div class="create-game-component">
+    <div class="return-to-previous-page">
+        <button class="return-button" (click)="onReturn()">Retour</button>
+    </div>
     <div class="header">
-        <div class="return-to-previous-page">
-            <button class="return-button" (click)="onReturn()">Retour</button>
-        </div>
         <h2>CHOISIS TON JEU</h2>
     </div>
 
@@ -12,9 +12,14 @@
                 @for(map of this.maps; track map.name) {
                 <div class="map-card" [ngClass]="{ selected: selectedMap === map.name }" (click)="selectMap(map.name)">
                     <img [src]="map.imagePreview" alt="map-preview" class="map-img" />
+                    <div class="player-count-bar">
+                        <p>{{ getMapPlayers(map.mapSize.x) }}</p>
+                    </div>
+                    <div class="description-overlay">
+                        <p class="description">{{ map.description }}</p>
+                    </div>
                     <div class="map-details">
                         <h2 class="name">{{ map.name }}</h2>
-                        <p class="description">{{ map.description }}</p>
                         <p class="mode">Mode de jeu : {{ map.mode }}</p>
                     </div>
                 </div>
@@ -24,11 +29,13 @@
     </div>
 
     <div class="footer">
+        @if (showErrorMessage.userError) {
+        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
+        } @if (showErrorMessage.gameChoiceError) {
+        <div class="error-message">Le jeu n'est plus disponible.</div>
+        }
         <div>
             <button class="next-button" (click)="next()">Suivant</button>
         </div>
-        @if (showErrorMessage.userError) {
-        <div class="error-message">Aucun jeu selectionné. Sélectionnez un jeu.</div>
-        }
     </div>
 </div>

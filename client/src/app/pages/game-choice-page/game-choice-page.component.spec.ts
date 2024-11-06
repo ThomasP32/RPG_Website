@@ -1,29 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { of } from 'rxjs';
 import { GameChoicePageComponent } from './game-choice-page.component';
 
 const mockMaps: Map[] = [
     {
-        _id: '1',
-        isVisible: true,
         name: 'Map1',
         description: 'Description1',
-        imagePreview: 'image1.png',
+        imagePreview: '',
         mode: Mode.Ctf,
         mapSize: { x: 1, y: 1 },
         startTiles: [],
         items: [],
         doorTiles: [],
         tiles: [],
-        lastModified: new Date(),
     },
     {
-        _id: '2',
-        isVisible: true,
         name: 'Map2',
         description: 'Description2',
         imagePreview: 'image2.png',
@@ -33,7 +28,6 @@ const mockMaps: Map[] = [
         items: [],
         doorTiles: [],
         tiles: [],
-        lastModified: new Date(),
     },
 ];
 
@@ -62,15 +56,16 @@ describe('GameChoicePageComponent', () => {
 
         fixture = TestBed.createComponent(GameChoicePageComponent);
         component = fixture.componentInstance;
+        communicationMapService.basicGet.and.returnValue(of(mockMaps[0]));
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should fetch all visible maps on init', () => {
+    it('should fetch all visible maps on init', async () => {
         communicationMapService.basicGet.and.returnValue(of(mockMaps));
-        component.ngOnInit();
+        await component.ngOnInit();
         expect(component.maps).toEqual(mockMaps);
     });
 
@@ -80,11 +75,11 @@ describe('GameChoicePageComponent', () => {
         expect(component.selectedMap).toBe(mapName);
     });
 
-    it('should navigate to create-character on next if map is selected', () => {
+    it('should navigate to create-character on next if map is selected', async () => {
         component.selectedMap = 'Map1';
-        component.next();
+        await component.next();
 
-        expect(router.navigate).toHaveBeenCalledWith(['/create-character'], { queryParams: { name: 'Map1' } });
+        expect(router.navigate).toHaveBeenCalledWith([`create-game/Map1/create-character`]);
     });
 
     it('should set error message if no map selected', () => {
@@ -96,6 +91,17 @@ describe('GameChoicePageComponent', () => {
 
     it('should navigate to mainmenu onReturn', () => {
         component.onReturn();
-        expect(router.navigate).toHaveBeenCalledWith(['/mainmenu']);
+        expect(router.navigate).toHaveBeenCalledWith(['/']);
     });
+
+    it('should set gameChoiceError and navigate to root if chosen map is not found', fakeAsync(async () => {
+        component.selectedMap = 'Map1';
+        communicationMapService.basicGet.and.returnValue(of(undefined));
+
+        await component.next();
+
+        expect(component.showErrorMessage.gameChoiceError).toBe(true);
+        tick(3000);
+        expect(router.navigate).toHaveBeenCalledWith(['/']);
+    }));
 });

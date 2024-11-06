@@ -1,11 +1,11 @@
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ItemCategory, DBMap as Map, Mode, TileCategory } from '@common/map.types';
+import { DetailedMap, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { environment } from 'src/environments/environment';
 import { CommunicationMapService } from './communication.map.service';
 
-const mockResponse: Map = {
+const mockResponse: DetailedMap = {
     _id: { $oid: '507f1f77bcf86cd799439011' },
     name: 'Test Map',
     description: 'A test map description',
@@ -42,7 +42,7 @@ describe('CommunicationMapService', () => {
     });
 
     it('should perform a GET request', () => {
-        service.basicGet<Map>('map/test').subscribe((response) => {
+        service.basicGet<DetailedMap>('map/test').subscribe((response) => {
             expect(response).toEqual(mockResponse);
         });
 
@@ -52,7 +52,7 @@ describe('CommunicationMapService', () => {
     });
 
     it('should handle GET request error', () => {
-        service.basicGet<Map>('map/test').subscribe((response) => {
+        service.basicGet<DetailedMap>('map/test').subscribe((response) => {
             expect(response).toBeUndefined();
         });
 
@@ -61,7 +61,7 @@ describe('CommunicationMapService', () => {
     });
 
     it('should perform a POST request', () => {
-        const mockMap: Map = { ...mockResponse };
+        const mockMap: DetailedMap = { ...mockResponse };
 
         service.basicPost('map', mockMap).subscribe((response) => {
             expect(response.body).toBe('Success');
@@ -79,6 +79,16 @@ describe('CommunicationMapService', () => {
 
         const req = httpMock.expectOne(`${environment.serverUrl}/map`);
         expect(req.request.method).toBe('PATCH');
+        req.flush('Success', { status: 200, statusText: 'OK' });
+    });
+
+    it('should perform a PUT request', () => {
+        service.basicPut('map', mockResponse).subscribe((response) => {
+            expect(response.body).toBe('Success');
+        });
+
+        const req = httpMock.expectOne(`${environment.serverUrl}/map`);
+        expect(req.request.method).toBe('PUT');
         req.flush('Success', { status: 200, statusText: 'OK' });
     });
 

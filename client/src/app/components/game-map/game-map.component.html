@@ -1,0 +1,30 @@
+<div class="game-map">
+    <div class="map-row" *ngFor="let row of map; let rowIndex = index; trackBy: rowByIndex">
+        <div
+            class="map-cell"
+            *ngFor="let cell of row; let colIndex = index; trackBy: cellByIndex"
+            [class.highlight]="isMove(rowIndex, colIndex)"
+            [class.preview-highlight]="isPreview(rowIndex, colIndex)"
+            (mouseover)="onTileHover({ x: rowIndex, y: colIndex })"
+            (mouseleave)="clearPreview()"
+            (click)="onTileClick({ x: rowIndex, y: colIndex })"
+            (contextmenu)="$event.preventDefault()"
+            (mousedown)="onRightClickTile($event, { x: rowIndex, y: colIndex })"
+            [ngClass]="{ 'no-pointer-events': !isYourTurn }"
+        >
+            @if(cell.tileType) {
+            <img [src]="getTileImage(cell.tileType, rowIndex, colIndex)" alt="Tile" class="grid-tile" />
+            } @if(cell.item) {
+            <img [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
+            } @if(cell.isStartingPoint) {
+            <img [src]="getStartingPointImage()" alt="Starting-Point" class="grid-starting-points" />
+            } @if(cell.player) {
+            <img [src]="getAvatarImage(cell.player.avatar)" alt="Player" class="grid-players" />}
+        </div>
+    </div>
+</div>
+@if(explanationIsVisible) {
+<div class="tooltip" [style.top.px]="tooltipY" [style.left.px]="tooltipX">
+    {{ tileDescription }}
+</div>
+}

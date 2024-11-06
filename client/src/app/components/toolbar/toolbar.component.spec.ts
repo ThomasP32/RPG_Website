@@ -1,55 +1,45 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
-import { MapService } from '@app/services/map.service';
-import { DBMap as Map, Mode } from '@common/map.types';
-import { of } from 'rxjs';
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
+import { Mode } from '@common/map.types';
+import { BehaviorSubject, of } from 'rxjs';
 import { ToolbarComponent } from './toolbar.component';
 
 describe('ToolbarComponent', () => {
     let component: ToolbarComponent;
     let fixture: ComponentFixture<ToolbarComponent>;
     let mapServiceSpy: jasmine.SpyObj<MapService>;
-    let mapGetServiceSpy: jasmine.SpyObj<MapGetService>;
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
     let activatedRouteSpy: jasmine.SpyObj<ActivatedRoute>;
 
-    const mockMap: Map = {
-        _id: '1',
-        name: 'Test Map',
-        isVisible: true,
-        mapSize: { x: 10, y: 10 },
-        startTiles: [],
-        items: [],
-        doorTiles: [],
-        tiles: [],
-        mode: Mode.Ctf,
-        lastModified: new Date(),
-        description: '',
-        imagePreview: '',
-    };
+    let updateSelectedTileSubject: BehaviorSubject<string>;
+    let startingPointCounterSubject: BehaviorSubject<number>;
 
     beforeEach(async () => {
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'updateSelectedTile$']);
-        mapGetServiceSpy = jasmine.createSpyObj('MapGetService', ['map']);
+        updateSelectedTileSubject = new BehaviorSubject<string>('');
+        startingPointCounterSubject = new BehaviorSubject<number>(0);
+
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile', 'removeStartingPoint']);
+        mapServiceSpy.updateSelectedTile$ = updateSelectedTileSubject.asObservable();
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
             'startingPointCounter$',
             'randomItemCounter$',
             'itemsCounter$',
             'updateStartingPointCounter',
-            'startingPointCounter',
         ]);
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage']);
+        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
+
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage', 'getItemImageByString']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot'], { snapshot: { params: {} } });
+        mapServiceSpy.map = { mode: Mode.Classic } as any;
 
         await TestBed.configureTestingModule({
             imports: [ToolbarComponent],
             providers: [
                 { provide: MapService, useValue: mapServiceSpy },
-                { provide: MapGetService, useValue: mapGetServiceSpy },
                 { provide: MapCounterService, useValue: mapCounterServiceSpy },
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
@@ -65,20 +55,35 @@ describe('ToolbarComponent', () => {
     });
 
     it('should initialize in creation mode', () => {
-        activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
+        activatedRouteSpy.snapshot.params = { mode: 'mode=classique' };
         activatedRouteSpy.queryParams = of({});
         component.ngOnInit();
 
-        expect(component.mode).toBe('classic');
+        expect(component.mode).toBe('classique');
     });
 
     it('should initialize in edition mode', () => {
-        activatedRouteSpy.snapshot.params = { id: '123' };
-        mapGetServiceSpy.map = mockMap;
+        activatedRouteSpy.snapshot.params = { id: '1' };
+        mapServiceSpy.map = { mode: Mode.Ctf } as any;
+        component.ngOnInit();
+        expect(component.mode).toBe('ctf');
+    });
 
+    it('should set mode and subscribe to updateSelectedTile$ and startingPointCounter$', () => {
+        const mockSelectedTile = 'floor';
+        const mockCounter = 3;
+
+        updateSelectedTileSubject.next(mockSelectedTile);
+        startingPointCounterSubject.next(mockCounter);
+
+        activatedRouteSpy.snapshot.params = { mode: 'classique' };
         component.ngOnInit();
 
-        expect(component.mode).toBe(Mode.Ctf);
+        expect(component.mode).toBe('classique');
+
+        expect(component.selectedTile).toBe(mockSelectedTile);
+
+        expect(mapCounterServiceSpy.startingPointCounter).toBe(mockCounter);
     });
 
     it('should toggle tiles visibility', () => {
@@ -116,24 +121,17 @@ describe('ToolbarComponent', () => {
     });
 
     it('should unselect tile', () => {
-        mapServiceSpy.updateSelectedTile$ = of('wall');
-        component.ngOnInit();
+        component.selectedTile = 'wall';
         component.selectTile('wall');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
-    });
-
-    it('should start drag for starting point', () => {
-        const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
-        component.startDrag(mockDragEvent, 'starting-point');
-        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('item', 'starting-point');
     });
 
     it('should start drag for starting point with counter > 0', () => {
         const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
         mapCounterServiceSpy.startingPointCounter = 2;
         component.startDrag(mockDragEvent, 'starting-point');
-        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('item', 'starting-point');
-        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
+        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('isStartingPoint', 'true');
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
     it('should NOT start drag for other item types', () => {
@@ -163,26 +161,80 @@ describe('ToolbarComponent', () => {
 
     it('should get item image', () => {
         component.getItemImage('item1');
-        expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith('item1');
-    });
-
-    it('should get URL parameters', () => {
-        activatedRouteSpy.snapshot.params = { mode: 'mode=classic' };
-        activatedRouteSpy.queryParams = of({});
-        component.getUrlParams();
-        expect(component.mode).toBe('mode=classic');
-    });
-
-    it('should convert mode from URL', () => {
-        component.mode = 'mode=classic';
-        component.urlConverterMode();
-        expect(component.convertedMode).toBe('classic');
-        expect(component.mode).toBe('classic');
+        expect(imageServiceSpy.getItemImageByString).toHaveBeenCalledWith('item1');
     });
 
     it('should update starting point counter on subscription', () => {
-        mapCounterServiceSpy.startingPointCounter = 5;
+        const startingPointCounterSubject = new BehaviorSubject<number>(0);
+        mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
+
         component.ngOnInit();
+
+        startingPointCounterSubject.next(5);
+
         expect(mapCounterServiceSpy.startingPointCounter).toBe(5);
+    });
+    it('should handle onDrop event and remove starting point if isStartingPoint is true', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue('true'),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).toHaveBeenCalledWith(true);
+        expect(component.selectedTile).toBe('');
+    });
+
+    it('should handle onDrop event and do nothing if isStartingPoint is false', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue('false'),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+        expect(component.selectedTile).not.toBe('');
+    });
+    it('should call preventDefault on allowDrop event', () => {
+        const mockDragEvent = {
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.allowDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+    });
+    it('should do nothing if dataTransfer is null in onDrop', () => {
+        const mockDragEvent = {
+            dataTransfer: null,
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if getData returns undefined in onDrop', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue(undefined),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
     });
 });

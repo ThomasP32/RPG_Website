@@ -89,10 +89,12 @@
         <div class="starting-point-section">
             <div class="tile" [class.disabled]="mapCounterService.startingPointCounter === 0">
                 <img
-                    [src]="getItemImage('starting-point')"
+                    [src]="getStartingPointImage()"
                     alt="point de départ"
                     [draggable]="mapCounterService.startingPointCounter > 0"
                     (dragstart)="startDrag($event, 'starting-point')"
+                    (dragover)="allowDrop($event)"
+                    (drop)="onDrop($event)"
                 />
                 <span class="description">Ceci est un point de départ où les joueurs commencent la partie.</span>
                 <span class="counter" draggable="false">{{ mapCounterService.startingPointCounter }}</span>
@@ -106,7 +108,7 @@
         </div>
         <div class="flag-section" *ngIf="isFlagVisible && mode === 'ctf'">
             <div class="item" (click)="selectItem('flag')" [class.disabled]="mapCounterService.flagCounter === 0">
-                <img src="../../../../assets/items/flag.png" alt="drapeau" />
+                <img src="./assets/items/flag.png" alt="drapeau" />
                 <span class="description">Le drapeau en mode Capture du Drapeau. Capturez-le pour gagner la partie!</span>
                 <span class="counter">{{ mapCounterService.flagCounter }}</span>
             </div>

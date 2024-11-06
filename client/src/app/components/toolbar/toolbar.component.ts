@@ -1,12 +1,11 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ImageService } from '@app/services/image.service';
-import { MapCounterService } from '@app/services/map-counter.service';
-import { MapGetService } from '@app/services/map-get.service';
-import { MapService } from '@app/services/map.service';
-import { Map } from '@common/map.types';
-/* eslint-disable no-unused-vars */
+import { ImageService } from '@app/services/image/image.service';
+import { MapCounterService } from '@app/services/map-counter/map-counter.service';
+import { MapService } from '@app/services/map/map.service';
+import { TileService } from '@app/services/tile/tile.service';
+import { Mode } from '@common/map.types';
+
 @Component({
     selector: 'app-toolbar',
     standalone: true,
@@ -21,12 +20,6 @@ export class ToolbarComponent implements OnInit {
 
     @Output() itemSelected = new EventEmitter<string>();
 
-    mode: string;
-    convertedMode: string;
-    mapId: string;
-
-    map!: Map;
-
     isTilesVisible: boolean = true;
     isItemsVisible: boolean = true;
     isFlagVisible: boolean = true;
@@ -35,25 +28,23 @@ export class ToolbarComponent implements OnInit {
     itemsUsable: boolean = false;
 
     constructor(
-        private route: ActivatedRoute,
-        private mapService: MapService,
-        private mapGetService: MapGetService,
+        public mapService: MapService,
         public mapCounterService: MapCounterService,
         public imageService: ImageService,
-    ) {}
+        public tileService: TileService,
+    ) {
+        this.mapService = mapService;
+        this.mapCounterService = mapCounterService;
+        this.imageService = imageService;
+        this.tileService = tileService;
+    }
 
+    mode: Mode;
     async ngOnInit() {
-        if (this.route.snapshot.params['mode']) {
-            this.getUrlParams();
-            this.urlConverterMode();
-        } else {
-            this.map = this.mapGetService.map;
-            this.mode = this.map.mode;
-        }
+        this.setMode();
         this.mapService.updateSelectedTile$.subscribe((tile) => {
             this.selectedTile = tile;
         });
-
         this.mapCounterService.startingPointCounter$.subscribe((counter) => {
             this.mapCounterService.startingPointCounter = counter;
         });
@@ -85,15 +76,25 @@ export class ToolbarComponent implements OnInit {
 
     startDrag(event: DragEvent, itemType: string) {
         if (itemType === 'starting-point') {
-            this.selectedTile = 'empty';
+            this.selectedTile = '';
             this.mapService.updateSelectedTile(this.selectedTile);
             if (this.mapCounterService.startingPointCounter > 0) {
-                event.dataTransfer?.setData('item', itemType);
-            } else if (itemType) {
-                event.dataTransfer?.setData('item', itemType);
+                event.dataTransfer?.setData('isStartingPoint', 'true');
             }
         } else {
             return;
+        }
+    }
+
+    allowDrop(event: DragEvent) {
+        event.preventDefault();
+    }
+
+    onDrop(event: DragEvent) {
+        if (event.dataTransfer?.getData('isStartingPoint') === 'true') {
+            this.mapService.removeStartingPoint(true);
+            this.selectedTile = '';
+            event.preventDefault();
         }
     }
 
@@ -118,17 +119,18 @@ export class ToolbarComponent implements OnInit {
     }
 
     getItemImage(item: string): string {
-        return this.imageService.getItemImage(item);
+        return this.imageService.getItemImageByString(item);
     }
 
-    getUrlParams(): void {
-        this.route.queryParams.subscribe(() => {
-            this.mode = this.route.snapshot.params['mode'];
-        });
+    getStartingPointImage(): string {
+        return this.imageService.getStartingPointImage();
     }
 
-    urlConverterMode(): void {
-        this.convertedMode = this.mode.split('=')[1];
-        this.mode = this.convertedMode;
+    setMode() {
+        if (this.mapService.map.mode === Mode.Classic) {
+            this.mode = Mode.Classic;
+        } else {
+            this.mode = Mode.Ctf;
+        }
     }
 }
