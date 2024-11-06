@@ -150,6 +150,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/main-menu']);
     }
 
+    areModalsOpen(): boolean {
+        return this.showExitModal || this.showActionModal || this.showKickedModal || this.isCombatModalOpen;
+    }
+
     navigateToEndOfGame(): void {
         this.navigateToMain();
     }
@@ -257,6 +261,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenForIsCombatModalOpen() {
         this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
             this.isCombatModalOpen = isCombatModalOpen;
+            if (isCombatModalOpen) {
+                this.combatAvailable = false;
+            }
         });
     }
 
