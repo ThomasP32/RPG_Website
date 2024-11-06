@@ -236,19 +236,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     listenForDoorOpening() {
-        this.gameTurnService.possibleDoors$.subscribe((possibleDoors: DoorTile[]) => {
-            if (this.player.specs.actions > 0 && possibleDoors.length > 0) {
+        this.gameTurnService.possibleDoors$.subscribe((doors) => {
+            if (this.gameTurnService.actionsDone.door) {
+                this.doorActionAvailable = false;
+                this.possibleDoors = [];
+                this.actionMessage = 'Actions possibles';
+            } else if (doors.length > 0) {
                 this.doorActionAvailable = true;
-                this.possibleDoors = possibleDoors;
-                if (possibleDoors[0].isOpened) {
-                    this.actionMessage = 'Fermer la porte';
-                } else {
-                    this.actionMessage = 'Ouvrir la porte';
-                }
+                this.possibleDoors = doors;
+                this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
             } else {
                 this.doorActionAvailable = false;
-                this.actionMessage = 'Actions possibles';
                 this.possibleDoors = [];
+                this.actionMessage = 'Actions possibles';
             }
         });
     }

@@ -427,9 +427,11 @@ describe('GamePageComponent', () => {
         });
 
         it('should set doorActionAvailable to false and reset actionMessage if actionsDone.door is true', () => {
-            const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
             gameTurnService.actionsDone.door = true;
 
+            component.listenForDoorOpening();
+
+            const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
 
             expect(component.doorActionAvailable).toBeFalse();
@@ -472,7 +474,7 @@ describe('GamePageComponent', () => {
 
     it('should call gameTurnService.toggleDoor with the first possible door when doorActionAvailable is true', () => {
         component.doorActionAvailable = true;
-        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }]; 
+        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
 
         component.toggleDoor();
 
@@ -481,7 +483,7 @@ describe('GamePageComponent', () => {
 
     it('should not call gameTurnService.toggleDoor when doorActionAvailable is false', () => {
         component.doorActionAvailable = false;
-        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }]; 
+        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
 
         component.toggleDoor();
 
