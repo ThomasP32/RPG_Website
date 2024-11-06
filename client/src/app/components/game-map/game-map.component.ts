@@ -154,6 +154,13 @@ export class GameMapComponent implements OnInit, OnChanges {
                     this.tileDescription = 'Une porte ouverte peut être franchie, mais peut être fermée par une action.';
                 }
             });
+
+            this.loadedMap.players.forEach((player) => {
+                if (player.position.x === position.x && player.position.y === position.y) {
+                    this.tileDescription = `nom du joueur: ${player.name}`;
+                }
+            });
+
             this.tooltipX = event.pageX + 10;
             this.tooltipY = event.pageY + 10;
             this.explanationIsVisible = true;
