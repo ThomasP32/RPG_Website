@@ -2,6 +2,7 @@ import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { TIME_LIMIT_DELAY } from '../../../../../../common/constants';
 import { ServerCombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
@@ -97,7 +98,7 @@ export class CombatGateway implements OnGatewayInit {
                 this.combatCountdownService.deleteCountdown(gameId);
                 this.gameCountdownService.resumeCountdown(gameId);
                 this.cleanupCombatRoom(combat.id);
-            }, 3000);
+            }, TIME_LIMIT_DELAY);
         } else {
             this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
             this.prepareNextTurn(gameId);
@@ -146,7 +147,7 @@ export class CombatGateway implements OnGatewayInit {
                     this.gameCountdownService.emit('timeout', gameId);
                 }
                 this.cleanupCombatRoom(combat.id);
-            }, 3000);
+            }, TIME_LIMIT_DELAY);
         } else {
             this.combatCountdownService.resetTimerSubscription(gameId);
             this.prepareNextTurn(gameId);
@@ -227,7 +228,7 @@ export class CombatGateway implements OnGatewayInit {
                         this.gameCountdownService.emit('timeout', playerGame.id);
                     }
                     this.cleanupCombatRoom(combat.id);
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }
         }
     }

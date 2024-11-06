@@ -2,6 +2,7 @@ import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { TIME_FOR_POSITION_UPDATE } from '@common/constants';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -70,7 +71,7 @@ export class GameManagerGateway implements OnGatewayInit {
                 wasOnIceTile = false;
             }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
-            await new Promise((resolve) => setTimeout(resolve, 150));
+            await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
         }
 
         if (this.gameManagerService.hasFallen(moves, data.destination)) {

@@ -23,6 +23,9 @@ export class MapService {
     updateSelectedTileSource = new BehaviorSubject<string>('');
     updateSelectedTile$ = this.updateSelectedTileSource.asObservable();
 
+    removeStartingPointSource = new Subject<boolean>();
+    removeStartingPoint$ = this.removeStartingPointSource.asObservable();
+
     constructor(
         private communicationMapService: CommunicationMapService,
         private router: Router,
@@ -108,6 +111,10 @@ export class MapService {
 
     updateSelectedTile(value: string) {
         this.updateSelectedTileSource.next(value);
+    }
+
+    removeStartingPoint(isStartingPoint: boolean) {
+        this.removeStartingPointSource.next(isStartingPoint);
     }
 
     async saveNewMap(): Promise<string> {

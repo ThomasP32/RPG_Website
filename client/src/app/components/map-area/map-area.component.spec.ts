@@ -22,10 +22,17 @@ describe('MapAreaComponent', () => {
     let routerSpy: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
-        tileServiceSpy = jasmine.createSpyObj('TileService', ['placeTile', 'eraseTile', 'moveItem', 'setItem', 'setStartingPoint']);
-        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'map', 'generateMapFromEdition']);
+        tileServiceSpy = jasmine.createSpyObj('TileService', [
+            'placeTile',
+            'eraseTile',
+            'moveItem',
+            'setItem',
+            'setStartingPoint',
+            'removeStartingPoint',
+        ]);
+        mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'removeStartingPoint$', 'map', 'generateMapFromEdition']);
         mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage']);
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
         routerSpy = jasmine.createSpyObj('Router', ['url']);
 
@@ -59,6 +66,7 @@ describe('MapAreaComponent', () => {
 
         mapCounterServiceSpy.startingPointCounter$ = of(0);
         mapServiceSpy.updateSelectedTile$ = of('floor');
+        mapServiceSpy.removeStartingPoint$ = of(false);
         Object.defineProperty(routerSpy, 'url', { get: () => '/creation' });
 
         fixture.detectChanges();
@@ -468,6 +476,90 @@ describe('MapAreaComponent', () => {
             expect(screenshotServiceSpy.captureAndConvert).toHaveBeenCalledWith('screenshot-container');
 
             expect(mapServiceSpy.map.imagePreview).toBe(mockImageUrl);
+        });
+    });
+    describe('startDrag', () => {
+        it('should prevent default if the cell is not a starting point', () => {
+            const event = new DragEvent('dragstart');
+            const rowIndex = 0;
+            const colIndex = 0;
+            component.map = [[{ isStartingPoint: false } as Cell]];
+
+            spyOn(event, 'preventDefault');
+
+            component.startDrag(event, rowIndex, colIndex);
+
+            expect(event.preventDefault).toHaveBeenCalled();
+            expect(component.currentDraggedItem).toBeNull();
+        });
+    });
+    describe('getStartingPointImage', () => {
+        it('should call imageService.getStartingPointImage and return the result', () => {
+            const mockImage = 'mock-starting-point-image';
+            imageServiceSpy.getStartingPointImage.and.returnValue(mockImage);
+
+            const result = component.getStartingPointImage();
+
+            expect(imageServiceSpy.getStartingPointImage).toHaveBeenCalled();
+            expect(result).toBe(mockImage);
+        });
+    });
+    describe('removeStartingPoint', () => {
+        it('should remove starting point if isRemoving is true and currentDraggedItem is not null', () => {
+            component.currentDraggedItem = { rowIndex: 1, colIndex: 1 };
+            component.removeStartingPoint(true);
+            expect(tileServiceSpy.removeStartingPoint).toHaveBeenCalledWith(component.map, 1, 1);
+            expect(component.currentDraggedItem).toBeNull();
+        });
+
+        it('should not remove starting point if isRemoving is false', () => {
+            component.currentDraggedItem = { rowIndex: 1, colIndex: 1 };
+            component.removeStartingPoint(false);
+            expect(tileServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+            expect(component.currentDraggedItem).toBeNull();
+        });
+
+        it('should not remove starting point if currentDraggedItem is null', () => {
+            component.currentDraggedItem = null;
+            component.removeStartingPoint(true);
+            expect(tileServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+        });
+    });
+    describe('onDrop', () => {
+        it('should call setStartingPoint on tileService when dropping a starting point', () => {
+            const event = new DragEvent('drop');
+            spyOn(event, 'preventDefault');
+
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
+                },
+            });
+
+            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false } as Cell]];
+
+            component.onDrop(event, 0, 0);
+
+            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 0, 0);
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should not call setStartingPoint if the target tile is a wall', () => {
+            const event = new DragEvent('drop');
+            spyOn(event, 'preventDefault');
+
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
+                },
+            });
+
+            component.map = [[{ tileType: TileCategory.Wall, isStartingPoint: false } as Cell]];
+
+            component.onDrop(event, 0, 0);
+
+            expect(tileServiceSpy.setStartingPoint).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalled();
         });
     });
 });

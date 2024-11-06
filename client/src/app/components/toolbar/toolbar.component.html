@@ -93,6 +93,8 @@
                     alt="point de départ"
                     [draggable]="mapCounterService.startingPointCounter > 0"
                     (dragstart)="startDrag($event, 'starting-point')"
+                    (dragover)="allowDrop($event)"
+                    (drop)="onDrop($event)"
                 />
                 <span class="description">Ceci est un point de départ où les joueurs commencent la partie.</span>
                 <span class="counter" draggable="false">{{ mapCounterService.startingPointCounter }}</span>
