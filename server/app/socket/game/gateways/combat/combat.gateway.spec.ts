@@ -153,6 +153,7 @@ describe('CombatGateway', () => {
         gameCountdownService = module.get(GameCountdownService);
         gameCreationService = module.get(GameCreationService);
         gameManagerService = module.get(GameManagerService);
+        journalService = module.get(JournalService);
 
         mockSocket = {
             id: 'socket-id',
