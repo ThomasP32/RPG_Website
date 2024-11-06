@@ -4,7 +4,6 @@ import { CreateMapModalComponent } from '@app/components/create-map-modal/create
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DetailedMap } from '@common/map.types';
-/* eslint-disable no-unused-vars */
 
 @Component({
     selector: 'app-admin-page',
@@ -25,7 +24,10 @@ export class AdminPageComponent implements OnInit {
     constructor(
         private router: Router,
         private communicationMapService: CommunicationMapService,
-    ) {}
+    ) {
+        this.router = router;
+        this.communicationMapService = communicationMapService;
+    }
 
     navigateToMain(): void {
         this.router.navigate(['/main-menu']);
