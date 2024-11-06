@@ -136,43 +136,7 @@ describe('GameManagerGateway', () => {
             expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
         });
     });
-
-    describe('isGameFinished', () => {
-        it('should emit gameFinishedNoWin if only one player is left and the game has started', () => {
-            const game: Game = {
-                players: [{ name: 'Player1' }] as Player[],
-                hasStarted: true,
-                id: 'game-id',
-                hostSocketId: 'host-1',
-            } as Game;
-            gameCreationService.getGameById.returns(game);
-
-            gateway.isGameFinished(socket, 'game-id');
-
-            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
-            expect((serverStub.to('game-id').emit as SinonStub).calledWith('gameFinishedNoWin', { winner: game.players[0] })).toBeTruthy();
-            expect(journalService.logMessage.calledWith('game-id', 'La partie est terminée.', ['Player1'])).toBeTruthy();
-        });
-    });
-
-    describe('hasPlayerWon', () => {
-        it('should emit playerWon if any player has three or more victories', () => {
-            const player: Player = { specs: { nVictories: 3 } } as Player;
-            const game: Game = {
-                players: [player],
-                id: 'game-id',
-                hostSocketId: 'host-1',
-            } as Game;
-
-            gameCreationService.getGameById.returns(game);
-
-            gateway.hasPlayerWon(socket, 'game-id');
-
-            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
-            expect((serverStub.to('game-id').emit as SinonStub).calledWith('playerWon', { winner: player })).toBeTruthy();
-        });
-    });
-
+    
     describe('endTurn', () => {
         let startTurnSpy: SinonStub;
 

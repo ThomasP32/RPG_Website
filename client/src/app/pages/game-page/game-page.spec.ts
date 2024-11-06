@@ -98,6 +98,40 @@
 //         const possibleDoorsSubject = new Subject<DoorTile[]>();
 //         const playerWonSubject = new Subject<boolean>();
 
+        // const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
+        // const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
+        // const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
+        // const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
+        // const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
+        // const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
+        //     countdown$: new Subject<number>(),
+        // });
+        // const journalSpy = jasmine.createSpyObj('JournalService', [], { journalEntries$: new Subject<JournalEntry[]>() });
+        // const gameTurnSpy = jasmine.createSpyObj(
+        //     'GameTurnService',
+        //     [
+        //         'listenForTurn',
+        //         'endTurn',
+        //         'movePlayer',
+        //         'listenForPlayerMove',
+        //         'listenMoves',
+        //         'endGame',
+        //         'listenForPossibleCombats',
+        //         'getMoves',
+        //         'listenForDoors',
+        //         'listenForDoorUpdates',
+        //         'listenForCombatConclusion',
+        //     ],
+        //     {
+        //         playerTurn$: playerTurnSubject,
+        //         youFell$: youFellSubject,
+        //         playerWon$: playerWonSubject,
+        //         possibleOpponents$: possibleOpponentsSubject,
+        //         moves: mockMoves,
+        //         possibleDoors$: possibleDoorsSubject,
+        //         actionsDone: { door: false },
+        //     },
+        // );
 //         const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
 //         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
 //         const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
@@ -209,6 +243,12 @@
 //         expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
 //     });
 
+    // it('should listen for possible opponents updates', () => {
+    //     component.ngOnInit();
+    //     const possibleOpponents: Player[] = [mockPlayer];
+    //     (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+    //     expect(component.possibleOpponents).toEqual(possibleOpponents);
+    // });
 //     it('should trigger pulse on countdown update', () => {
 //         spyOn(component, 'triggerPulse');
 //         component.ngOnInit();
@@ -386,6 +426,62 @@
 
 //         component.onTileClickToMove(position);
 
+//         component.onTileClickToMove(position);
+
+//         expect(gameTurnService.movePlayer).toHaveBeenCalledWith(position);
+//     });
+
+//     describe('#listenForDoorOpening', () => {
+//         beforeEach(() => {
+//             component.listenForDoorOpening();
+//         });
+    
+//         it('should set doorActionAvailable to true and update actionMessage to "Fermer la porte" if first door is opened', () => {
+//             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
+//             gameTurnService.actionsDone.door = false;
+    
+//             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+    
+//             expect(component.doorActionAvailable).toBeTrue();
+//             expect(component.possibleDoors).toEqual(possibleDoors);
+//             expect(component.actionMessage).toBe('Fermer la porte');
+//         });
+    
+//         it('should set doorActionAvailable to true and update actionMessage to "Ouvrir la porte" if first door is closed', () => {
+//             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
+//             gameTurnService.actionsDone.door = false;
+    
+//             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+    
+//             expect(component.doorActionAvailable).toBeTrue();
+//             expect(component.possibleDoors).toEqual(possibleDoors);
+//             expect(component.actionMessage).toBe('Ouvrir la porte');
+//         });
+    
+//         it('should set doorActionAvailable to false and reset actionMessage if actionsDone.door is true', () => {
+//             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
+//             gameTurnService.actionsDone.door = true; // Actions already done, so door action should not be available
+    
+//             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+    
+//             expect(component.doorActionAvailable).toBeFalse();
+//             expect(component.possibleDoors).toEqual([]);
+//             expect(component.actionMessage).toBe('Actions possibles');
+//         });
+    
+//         it('should set doorActionAvailable to false and reset actionMessage if no doors are available', () => {
+//             const possibleDoors: DoorTile[] = [];
+//             gameTurnService.actionsDone.door = false;
+    
+//             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+    
+//             expect(component.doorActionAvailable).toBeFalse();
+//             expect(component.possibleDoors).toEqual([]);
+//             expect(component.actionMessage).toBe('Actions possibles');
+//         });
+//     });
+    
+// });
 //         expect(gameTurnService.movePlayer).toHaveBeenCalledWith(position);
 //     });
 // });
