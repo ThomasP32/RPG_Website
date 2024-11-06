@@ -20,6 +20,7 @@ describe('CombatGateway', () => {
     let mockServer: jest.Mocked<Server>;
     let mockSocket: jest.Mocked<Socket>;
     let mockOpponentSocket: jest.Mocked<Socket>;
+    let journalService: jest.Mocked<JournalService>;
 
     const mockCombat: Combat = {
         id: 'combat-id',
@@ -152,6 +153,7 @@ describe('CombatGateway', () => {
         gameCountdownService = module.get(GameCountdownService);
         gameCreationService = module.get(GameCreationService);
         gameManagerService = module.get(GameManagerService);
+        journalService = module.get(JournalService);
 
         mockSocket = {
             id: 'socket-id',
@@ -190,6 +192,68 @@ describe('CombatGateway', () => {
                 defenseDice: 3,
             });
             expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackSuccess', mockCombat.opponent);
+            expect(journalService.logMessage).toHaveBeenCalledWith(
+                mockCombat.id,
+                `Dés roulés. Dé d'attaque: 5. Dé de défense: 3. Résultat = 5 - 3.`,
+                [mockCombat.challenger.name, mockCombat.opponent.name],
+            );
+            expect(journalService.logMessage).toHaveBeenCalledWith(mockCombat.id, `Réussite de l'attaque sur ${mockCombat.opponent.name}.`, [
+                mockCombat.opponent.name,
+            ]);
+        });
+
+        it('should emit dice roll results and attack failure', () => {
+            serverCombatService.rollDice.mockReturnValue({ attackDice: 3, defenseDice: 5 });
+            serverCombatService.isAttackSuccess.mockReturnValue(false);
+            gateway.attackOnTimeOut('game-id');
+
+            expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+                attackDice: 3,
+                defenseDice: 5,
+            });
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackFailure', mockCombat.opponent);
+            expect(journalService.logMessage).toHaveBeenCalledWith(
+                mockCombat.id,
+                `Dés roulés. Dé d'attaque: 3. Dé de défense: 5. Résultat = 3 - 5.`,
+                [mockCombat.challenger.name, mockCombat.opponent.name],
+            );
+            expect(journalService.logMessage).toHaveBeenCalledWith(mockCombat.id, `Échec de l'attaque sur ${mockCombat.opponent.name}.`, [
+                mockCombat.opponent.name,
+            ]);
+        });
+
+        it("should log to journal if the defending player's life reaches zero", () => {
+            mockCombat.opponent.specs.life = 1;
+            serverCombatService.isAttackSuccess.mockReturnValue(true);
+            gameCreationService.getGameById.mockReturnValue({ id: 'game-id' } as Game);
+
+            gateway.attackOnTimeOut('game-id');
+
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedNormally', mockCombat.challenger);
+            expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.challenger.name} est le gagnant.`, [
+                mockCombat.challenger.name,
+            ]);
+        });
+
+        it('should emit dice roll and attack success', () => {
+            gateway.attackOnTimeOut('game-id');
+
+            expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+                attackDice: 5,
+                defenseDice: 3,
+            });
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackSuccess', mockCombat.opponent);
+        });
+
+        it("should emit combatFinished if opponent's life reaches zero", () => {
+            const mockGame = { id: 'game-id', currentTurn: mockCombat.challenger.turn } as Game;
+            gameCreationService.getGameById.mockReturnValue(mockGame);
+            mockCombat.opponent.specs.life = 1;
+            gateway.attackOnTimeOut('game-id');
+
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedNormally', mockCombat.challenger);
         });
     });
 
@@ -205,6 +269,9 @@ describe('CombatGateway', () => {
             expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionSuccess', mockCombat.challenger);
             expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith('game-id');
+            expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.challenger.name} s'est évadé.`, [
+                mockCombat.challenger.name,
+            ]);
         });
 
         it('should not emit evasion if evasion points are zero', async () => {
@@ -243,6 +310,12 @@ describe('CombatGateway', () => {
 
                 expect(startCombatTurnsSpy).toHaveBeenCalledWith('game-id');
 
+                expect(journalService.logMessage).toHaveBeenCalledWith(
+                    'game-id',
+                    `${mockCombat.challenger.name} a commencé un combat contre ${mockCombat.opponent.name}.`,
+                    [mockCombat.challenger.name],
+                );
+
                 startCombatTurnsSpy.mockRestore();
             });
 
@@ -269,19 +342,6 @@ describe('CombatGateway', () => {
 
                 expect(mockOpponentSocket.join).not.toHaveBeenCalled();
                 expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith('combatStarted', expect.anything());
-            });
-        });
-
-        describe('attack', () => {
-            it('should emit dice roll and attack success on timeout', () => {
-                gateway.attack(mockSocket, 'game-id');
-
-                expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
-                    attackDice: 5,
-                    defenseDice: 3,
-                });
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackSuccess', mockCombat.opponent);
             });
         });
 
@@ -331,11 +391,9 @@ describe('CombatGateway', () => {
 
                 expect(spy).toHaveBeenCalledWith('game-id');
             });
-        });
 
-        describe('attackOnTimeOut', () => {
-            it('should emit dice roll and attack success', () => {
-                gateway.attackOnTimeOut('game-id');
+            it('should emit dice roll and attack success on timeout', () => {
+                gateway.attack(mockSocket, 'game-id');
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
                 expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
@@ -343,15 +401,6 @@ describe('CombatGateway', () => {
                     defenseDice: 3,
                 });
                 expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackSuccess', mockCombat.opponent);
-            });
-
-            it("should emit combatFinished if opponent's life reaches zero", () => {
-                const mockGame = { id: 'game-id', currentTurn: mockCombat.challenger.turn } as Game;
-                gameCreationService.getGameById.mockReturnValue(mockGame);
-                mockCombat.opponent.specs.life = 1;
-                gateway.attackOnTimeOut('game-id');
-
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedNormally', mockCombat.challenger);
             });
         });
 

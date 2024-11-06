@@ -9,8 +9,8 @@ export class JournalService {
         this.server = server;
     }
 
-    logMessage(gameId: string, message: string, playersInvolved: String[]): void {
+    logMessage(roomId: string, message: string, playersInvolved: String[]): void {
         const entry = { message, timestamp: new Date(), playersInvolved };
-        this.server.to(gameId).emit('journalEntry', entry);
+        this.server.to(roomId).emit('journalEntry', entry);
     }
 }
