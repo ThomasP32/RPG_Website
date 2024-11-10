@@ -54,11 +54,15 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     attack(): void {
         if (this.isYourTurn) {
             this.socketService.sendMessage('attack', this.gameService.game.id);
+            this.isYourTurn = false;
         }
     }
 
     evade(): void {
-        this.socketService.sendMessage('startEvasion', this.gameService.game.id);
+        if (this.isYourTurn) {
+            this.socketService.sendMessage('startEvasion', this.gameService.game.id);
+            this.isYourTurn = false;
+        }
     }
 
     quit(): void {

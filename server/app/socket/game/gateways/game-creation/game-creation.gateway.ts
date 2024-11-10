@@ -164,7 +164,6 @@ export class GameGateway implements OnGatewayDisconnect {
                     return;
                 }
             }
-
             const player = game.players.find((player) => player.socketId === client.id);
             if (player) {
                 game = this.gameCreationService.handlePlayerLeaving(client, game.id);
