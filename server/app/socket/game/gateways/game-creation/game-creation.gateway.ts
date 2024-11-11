@@ -1,12 +1,12 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
-import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-export class GameGateway implements OnGatewayDisconnect {
+export class GameGateway {
     @WebSocketServer()
     server: Server;
 
@@ -150,28 +150,5 @@ export class GameGateway implements OnGatewayDisconnect {
         } else {
             return;
         }
-    }
-
-    handleDisconnect(client: Socket): void {
-        const games = this.gameCreationService.getGames();
-        games.forEach((game) => {
-            client.emit('disconnected', { reason: 'Vous avez été déconnecté' });
-            if (!game.hasStarted) {
-                if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
-                    this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                    this.gameCreationService.deleteRoom(game.id);
-                    return;
-                }
-            }
-            const player = game.players.find((player) => player.socketId === client.id);
-            if (player) {
-                game = this.gameCreationService.handlePlayerLeaving(client, game.id);
-                this.server.to(game.id).emit('playerLeft', game.players);
-                this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
-                return;
-            } else {
-                return;
-            }
-        });
     }
 }
