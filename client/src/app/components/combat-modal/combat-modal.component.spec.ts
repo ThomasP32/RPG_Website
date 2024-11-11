@@ -189,7 +189,7 @@ describe('CombatModalComponent', () => {
 
             component.listenForCombatTurns();
             playerTurnSubject.next();
-            tick(); 
+            tick();
 
             expect(component.isYourTurn).toBeFalse();
         }));
@@ -253,42 +253,33 @@ describe('CombatModalComponent', () => {
             expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
         });
     });
-    
+
     describe('#evade', () => {
         it('should send "startEvasion" message and set isYourTurn to false if it is the player’s turn', () => {
             component.isYourTurn = true;
             component.evade();
-    
+
             expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startEvasion', 'game-id');
             expect(component.isYourTurn).toBeFalse();
         });
-    
+
         it('should not send "startEvasion" message if it is not the player’s turn', () => {
             component.isYourTurn = false;
             component.evade();
-    
+
             expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
         });
     });
-    
-    describe('#quit', () => {
-        it('should log "quit" to the console', () => {
-            const consoleSpy = spyOn(console, 'log');
-            component.quit();
-            expect(consoleSpy).toHaveBeenCalledWith('quit');
-        });
-    });
-    
+
     describe('#isItYourTurn', () => {
         it('should return true if it is not the player’s turn', () => {
             component.isYourTurn = false;
             expect(component.isItYourTurn()).toBeTrue();
         });
-    
+
         it('should return false if it is the player’s turn', () => {
             component.isYourTurn = true;
             expect(component.isItYourTurn()).toBeFalse();
         });
     });
-    
 });

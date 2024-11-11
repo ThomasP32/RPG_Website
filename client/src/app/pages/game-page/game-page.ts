@@ -282,7 +282,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     listenPlayersLeft() {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
-                console.log('un joueur qui a quitté cest a jour');
                 this.gameService.game.players = players;
                 this.activePlayers = players.filter((player) => player.isActive);
                 if (this.activePlayers.length <= 1) {
@@ -310,8 +309,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForEndOfGame() {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe((winner) => {
-                console.log('La partie est terminée!, Ce joueur a gagné : ', winner.name);
+            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe(() => {
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {

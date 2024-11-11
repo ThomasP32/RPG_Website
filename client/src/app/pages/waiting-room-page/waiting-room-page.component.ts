@@ -239,7 +239,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     navigateToGamePage() {
-        console.log('Navigating to game page with gameId:', this.waitingRoomCode, 'and mapName:', this.mapName);
         this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
             state: { player: this.player, gameId: this.waitingRoomCode },
         });

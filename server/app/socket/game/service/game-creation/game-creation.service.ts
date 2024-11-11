@@ -10,7 +10,6 @@ export class GameCreationService {
     getGameById(gameId: string): Game {
         const game = this.gameRooms[gameId];
         if (!game) {
-            console.log(`Game with ID ${gameId} not found.`);
             return null;
         }
         return game;
