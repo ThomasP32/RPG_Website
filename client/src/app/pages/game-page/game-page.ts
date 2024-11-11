@@ -309,8 +309,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForEndOfGame() {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe((winner) => {
-                console.log('La partie est terminée!, Ce joueur a gagné : ', winner.name);
+            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe(() => {
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {

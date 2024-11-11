@@ -78,7 +78,6 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
-
         },
     ];
 
@@ -140,13 +139,6 @@ describe('PlayersListComponent', () => {
             const playerId = 'player1Id';
             component.kickPlayer(playerId);
             expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', playerId);
-        });
-
-        it('should log the kicking action', () => {
-            const playerId = 'player1Id';
-            spyOn(console, 'log');
-            component.kickPlayer(playerId);
-            expect(console.log).toHaveBeenCalledWith(`Kicking player with ID: ${playerId}`);
         });
     });
 });
