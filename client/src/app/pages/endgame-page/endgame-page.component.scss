@@ -1,0 +1,23 @@
+.endgame-container {
+    display: flex;
+    flex-direction: row;
+    background-color: #1c242c;
+    color: white;
+}
+
+.stats-container {
+    flex: 1;
+}
+
+.chatroom-container {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.player-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}

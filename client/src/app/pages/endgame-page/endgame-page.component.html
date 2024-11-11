@@ -1,0 +1,43 @@
+<div class="endgame-container">
+    <div class="stats-container">
+        <p>Fin de partie</p>
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Nom</th>
+                    <th>Nombre de combats</th>
+                    <th>Nombre d'évasions</th>
+                    <th>Nombre de victoires</th>
+                    <th>Nombre de défaites</th>
+                    <th>Nombre de vie perdus</th>
+                    <th>Total points de vie enlevés aux adversaires</th>
+                    <th>Nombre d'objets ramassés</th>
+                    <th>Pourcentage des tuiles visitées</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (gamePlayer of players; track gamePlayer) {
+                <tr>
+                    <td><img [src]="playerUrls.get(gamePlayer.socketId)" alt="{{ gamePlayer.name }}'s avatar" class="player-avatar" /></td>
+                    <td>{{ gamePlayer.name }}</td>
+                    <td>{{ gamePlayer.specs.nCombats }}</td>
+                    <td>{{ gamePlayer.specs.nEvasions }}</td>
+                    <td>{{ gamePlayer.specs.nVictories }}</td>
+                    <td>{{ gamePlayer.specs.nDefeats }}</td>
+                    <td>{{ gamePlayer.specs.nLifeLost }}</td>
+                    <td>{{ gamePlayer.specs.nLifeTaken }}</td>
+                    <td>A ajouter</td>
+                    <td>A ajouter</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="chatroom-container">
+        <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
+    </div>
+    <div class="exit-button-container">
+        <button (click)="navigateToMain()">Retourner au menu princiapl</button>
+    </div>
+</div>
