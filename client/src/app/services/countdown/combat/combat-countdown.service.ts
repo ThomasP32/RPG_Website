@@ -20,7 +20,6 @@ export class CombatCountdownService {
     listenCountdown() {
         this.socketSubscription.add(
             this.socketService.listen<number>('combatSecondPassed').subscribe((remainingTime) => {
-                console.log('le timer de combat fonctionne');
                 this.combatCountdown.next(remainingTime);
             }),
         );
