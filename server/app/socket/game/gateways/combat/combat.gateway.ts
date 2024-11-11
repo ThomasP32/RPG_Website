@@ -169,7 +169,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     checkForWinner(gameId: string, player: Player): boolean {
-        if (player.specs.nVictories >= 3) {
+        if (player.specs.nVictories >= 1) {
+            //TODO: change to 3
             this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
             return true;
         }
