@@ -29,8 +29,6 @@ export class ServerCombatService {
     getCombatByGameId(gameId: string): Combat {
         if (this.doesCombatExist(gameId)) {
             return this.combatRooms[gameId];
-        } else {
-            console.log(`Combat in game with ID ${gameId} not found.`);
         }
     }
 
@@ -49,7 +47,6 @@ export class ServerCombatService {
     }
 
     updateTurn(gameId: string): void {
-        console.log('le tour est mis a jour');
         const combat = this.getCombatByGameId(gameId);
         const currentTurnSocket = combat.currentTurnSocketId;
         if (currentTurnSocket === combat.challenger.socketId) {
