@@ -180,7 +180,7 @@ export class GameManagerService {
             }
         }
         for (const player of game.players) {
-            if (player.position.x === pos.x && player.position.y === pos.y) {
+            if (player.isActive && player.position.x === pos.x && player.position.y === pos.y) {
                 return false;
             }
         }
