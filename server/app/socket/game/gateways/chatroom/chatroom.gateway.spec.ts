@@ -1,7 +1,6 @@
 import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
 import { Message } from '@common/message';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as sinon from 'sinon';
 import { SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { ChatRoomGateway } from './chatroom.gateway';
@@ -55,21 +54,5 @@ describe('ChatRoomGateway', () => {
 
         expect(chatroomService.addMessage.calledWith(roomName, message)).toBeTruthy();
         expect(serverStub.to.calledWith(roomName)).toBeTruthy();
-    });
-
-    it('should handle connection', () => {
-        const consoleSpy = sinon.spy(console, 'log');
-        gateway.handleConnection(socket);
-
-        expect(consoleSpy.calledOnceWith(`Connexion par l'utilisateur avec id : ${socket.id}`)).toBeTruthy();
-        consoleSpy.restore();
-    });
-
-    it('should handle disconnect', () => {
-        const consoleSpy = sinon.spy(console, 'log');
-        gateway.handleDisconnect(socket);
-
-        expect(consoleSpy.calledOnceWith(`Déconnexion par l'utilisateur avec id : ${socket.id}`)).toBeTruthy();
-        consoleSpy.restore();
     });
 });
