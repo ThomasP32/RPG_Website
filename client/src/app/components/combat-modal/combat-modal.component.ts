@@ -65,10 +65,6 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         }
     }
 
-    quit(): void {
-        console.log('quit');
-    }
-
     isItYourTurn(): boolean {
         return !this.isYourTurn;
     }

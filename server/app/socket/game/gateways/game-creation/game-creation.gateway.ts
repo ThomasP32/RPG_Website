@@ -144,7 +144,7 @@ export class GameGateway implements OnGatewayDisconnect {
         if (game.players.some((player) => player.socketId === client.id)) {
             game = this.gameCreationService.handlePlayerLeaving(client, game.id);
             client.leave(gameId);
-            client.leave(gameId+'-combat');
+            client.leave(gameId + '-combat');
             this.server.to(game.id).emit('playerLeft', game.players);
             return;
         } else {
@@ -156,7 +156,6 @@ export class GameGateway implements OnGatewayDisconnect {
         const games = this.gameCreationService.getGames();
         games.forEach((game) => {
             client.emit('disconnected', { reason: 'Vous avez été déconnecté' });
-            console.log('Player disconnected');
             if (!game.hasStarted) {
                 if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
                     this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });

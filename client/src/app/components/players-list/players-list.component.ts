@@ -42,7 +42,6 @@ export class PlayersListComponent implements OnInit {
     }
 
     kickPlayer(playerId: string): void {
-        console.log(`Kicking player with ID: ${playerId}`);
         this.socketService.sendMessage('kickPlayer', playerId);
     }
 }
