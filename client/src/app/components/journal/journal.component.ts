@@ -43,7 +43,6 @@ export class JournalComponent implements OnInit, OnDestroy {
         } else {
             this.filteredJournalEntries = this.journalEntries;
         }
-        console.log(`Filtered entries for player ${this.player.name}:`, this.filteredJournalEntries);
     }
 
     ngOnDestroy(): void {

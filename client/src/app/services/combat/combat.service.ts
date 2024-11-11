@@ -69,16 +69,14 @@ export class CombatService {
 
     listenForCombatFinish(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('combatFinishedNormally').subscribe((winner) => {
-                console.log('le combat sest terminé sur la victoire de :', winner.name);
+            this.socketService.listen<Player>('combatFinishedNormally').subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<Player>('combatFinishedByDisconnection').subscribe((winner) => {
-                console.log('le combat sest terminé sur la victoire par défaut de :', winner.name);
+            this.socketService.listen<Player>('combatFinishedByDisconnection').subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);
@@ -88,9 +86,7 @@ export class CombatService {
 
     listenForEvasionInfo(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('evasionSuccess').subscribe((evadingPlayer) => {
-                // montrer comme quoi l'évasion a passé
-                console.log('le combat sest terminé sur levasion de :', evadingPlayer.name);
+            this.socketService.listen<Player>('evasionSuccess').subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);

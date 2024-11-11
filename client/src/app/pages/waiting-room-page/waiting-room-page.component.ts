@@ -65,7 +65,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         const player = this.playerService.getPlayer();
         this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;
-        this.isHost = this.router.url.includes('host');
 
         this.listenToSocketMessages();
         if (this.router.url.includes('host')) {
@@ -240,7 +239,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     navigateToGamePage() {
-        console.log('Navigating to game page with gameId:', this.waitingRoomCode, 'and mapName:', this.mapName);
         this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
             state: { player: this.player, gameId: this.waitingRoomCode },
         });

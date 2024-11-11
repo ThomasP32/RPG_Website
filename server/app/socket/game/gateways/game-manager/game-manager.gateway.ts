@@ -145,13 +145,12 @@ export class GameManagerGateway implements OnGatewayInit {
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
         const involvedPlayers = game.players.map((player) => player.name);
 
-        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
-
         if (!activePlayer || !activePlayer.isActive) {
             game.currentTurn++;
             this.startTurn(gameId);
             return;
         }
+        this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         activePlayer.specs.actions = 1;
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
