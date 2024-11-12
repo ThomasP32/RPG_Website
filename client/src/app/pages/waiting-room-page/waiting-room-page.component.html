@@ -46,7 +46,12 @@
                 </div>
             </div>
             <div class="players-list">
-                <app-players-list [players]="activePlayers" [isHost]="isHost"></app-players-list>
+                <app-players-list
+                    [players]="activePlayers"
+                    [isHost]="isHost"
+                    [isGameMaxed]="isGameMaxed()"
+                    [isGameLocked]="isGameLocked"
+                ></app-players-list>
             </div>
             @if(!isStartable){
             <div class="player-waiting">
