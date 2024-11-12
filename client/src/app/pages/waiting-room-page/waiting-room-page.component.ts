@@ -223,6 +223,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     toggleHover(state: boolean): void {
         this.hover = state;
     }
+
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
         this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });

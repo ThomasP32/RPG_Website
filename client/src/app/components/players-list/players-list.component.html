@@ -9,5 +9,6 @@
         <button (click)="kickPlayer(player.socketId)" class="kick-button">exclure</button>
         }
     </div>
-    }
+    } @if(isHost && !isGameMaxed && !isGameLocked) {
+    <button (click)="addVirtualPlayer()" class="add-player-btn">+</button> }
 </div>
