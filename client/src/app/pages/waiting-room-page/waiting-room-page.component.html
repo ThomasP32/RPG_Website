@@ -51,6 +51,7 @@
                     [isHost]="isHost"
                     [isGameMaxed]="isGameMaxed()"
                     [isGameLocked]="isGameLocked"
+                    [openProfileModal]="openProfileModal.bind(this)"
                 ></app-players-list>
             </div>
             @if(!isStartable){
@@ -88,6 +89,12 @@
             <div class="modal">
                 <h2>{{ dialogBoxMessage }}</h2>
                 <p>Vous serez redirigé vers le menu principal.</p>
+            </div>
+        </div>
+        } @if (showProfileModal) {
+        <div class="profile-modal">
+            <div class="modal">
+                <app-profile-modal></app-profile-modal>
             </div>
         </div>
         }
