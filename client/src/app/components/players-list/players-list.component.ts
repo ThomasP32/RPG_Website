@@ -16,6 +16,7 @@ export class PlayersListComponent implements OnInit {
     @Input() isHost: boolean;
     @Input() isGameMaxed: boolean;
     @Input() isGameLocked: boolean;
+    @Input() openProfileModal: () => void;
     hostPlayerId: string = '';
     hoveredPlayerId: string | null = null;
 
@@ -46,12 +47,5 @@ export class PlayersListComponent implements OnInit {
 
     kickPlayer(playerId: string): void {
         this.socketService.sendMessage('kickPlayer', playerId);
-    }
-
-    addVirtualPlayer(): void {
-        // if (!this.isGameMaxed()) {
-        //     const virtualPlayer: Player;
-        //     this.activePlayers.push(virtualPlayer);
-        //
     }
 }
