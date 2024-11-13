@@ -191,7 +191,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.playerService.assignBonus(this.lifeOrSpeedBonus);
     }
 
-    assignDice() {
+    assignDice(bonusType: 'attack' | 'defense'): void {
+        this.attackOrDefenseBonus = bonusType;
         this.playerService.assignDice(this.attackOrDefenseBonus);
     }
 
