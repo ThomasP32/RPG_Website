@@ -19,4 +19,19 @@ export class MapService {
         }
         return map;
     }
+
+    async validateAndSaveMap(mapDto: Map): Promise<Map> {
+        console.log('Received map data:', mapDto);  // Log entire data to inspect structure
+
+        // Log individual fields to confirm they match expected types
+        console.log('Map name:', mapDto.name);
+        console.log('Map size:', mapDto.mapSize);
+        console.log('Mode:', mapDto.mode);
+        const map = new this.mapModel(mapDto);
+        await map.validate();
+        return await map.save();
+    }
+    catch(error) {
+        throw new Error(`Erreur de validation : ${error.message}`);
+    }
 }

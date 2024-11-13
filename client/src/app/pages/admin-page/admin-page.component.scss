@@ -13,7 +13,7 @@
 .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     width: 100%;
     padding: 10px 20px;
     box-sizing: border-box;
@@ -21,6 +21,7 @@
     font-size: 2.5em;
     height: 10vh;
     margin: 20px 0;
+    position: relative;
 
     .header-buttons {
         display: flex;
@@ -31,11 +32,12 @@
         flex-grow: 1;
         font-size: 30px;
         text-align: center;
+        
     }
 
     .return-button {
         margin-left: auto;
-        position: absolute;
+        position: relative;
         left: 20px;
         align-items: left;
         padding: 12px 20px;
@@ -51,9 +53,8 @@
 
     .create-game-button {
         margin-right: auto;
-        position: absolute;
-        align-items: right;
-        right: 20px;
+        position: relative;
+        align-items: center;
         padding: 12px 20px;
         background-color: #2c3e50;
         border: 3px solid #202020;
@@ -64,12 +65,30 @@
         font-size: 14px;
         font-family: 'Press Start 2P';
     }
-
+    
+    .import-button {
+        margin-right: 10px;
+        position: relative;
+        align-items: center;
+        padding: 12px 20px;
+        height: 6vh;
+        background-color: #2c3e50;
+        border: 3px solid #202020;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: 'Press Start 2P';
+    }
+    
     .return-button:hover {
         background-color: #3b3f46;
     }
 
     .create-game-button:hover {
+        background-color: #3b3f46;
+    }
+
+    .import-button:hover {
         background-color: #3b3f46;
     }
 }
