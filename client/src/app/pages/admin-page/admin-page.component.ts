@@ -1,10 +1,9 @@
-import { Component, Input, OnInit, ViewChild, ElementRef, EventEmitter, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CreateMapModalComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DetailedMap } from '@common/map.types';
-import { validate } from '@app/schemas/map-schema';
 import { saveAs } from 'file-saver';
 
 @Component({
@@ -16,12 +15,11 @@ import { saveAs } from 'file-saver';
 })
 export class AdminPageComponent implements OnInit {
     @Input() mapId: string = '';
-    @Output() gameImported = new EventEmitter<DetailedMap>();
     @Output() importError = new EventEmitter<string>();
     @ViewChild('fileInput') fileInput!: ElementRef;
     @ViewChild(CreateMapModalComponent, { static: false }) createMapModalComponent!: CreateMapModalComponent;
     @ViewChild(ErrorMessageComponent, { static: false }) errorMessageModal: ErrorMessageComponent;
-    
+
     maps: DetailedMap[] = [];
     currentMapId: string | null = null;
     showDeleteModal = false;
@@ -82,7 +80,10 @@ export class AdminPageComponent implements OnInit {
     }
 
     updateDisplay(): void {
-        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => {
+            this.maps = maps;
+            console.log('Maps updated after import:', this.maps);
+        });
     }
 
     toggleVisibility(mapId: string): void {
@@ -100,31 +101,12 @@ export class AdminPageComponent implements OnInit {
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     }
 
-    onGameImported(importedMap: DetailedMap): void {
-        if (this.maps.some((map) => map.name === importedMap.name)) {
-            const newName = prompt(`Un jeu avec le nom "${importedMap.name}" existe déjà. Entrez un nouveau nom :`);
-            if (newName) {
-                importedMap.name = newName;
-            } else {
-                this.errorMessageModal.open('Importation annulée : le nom est déjà utilisé.');
-                return;
-            }
-        }
-
-        importedMap.isVisible = false;
-
-        this.communicationMapService.basicPost('admin', importedMap).subscribe({
-            next: () => this.updateDisplay(),
-            error: (err) => this.errorMessageModal.open(JSON.parse(err.error).message),
-        });
-    }
-
     onImportError(error: string): void {
         this.errorMessageModal.open(error);
     }
 
     onExport(map: DetailedMap): void {
-        const { isVisible, ...exportData } = map; 
+        const { isVisible, ...exportData } = map;
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         saveAs(blob, `${map.name || 'map'}.json`);
     }
@@ -133,31 +115,38 @@ export class AdminPageComponent implements OnInit {
         this.fileInput.nativeElement.click();
     }
 
+    onGameImported(file: File): void {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        console.log('FormData contents:', formData.get('file'));
+
+        this.communicationMapService.uploadMapFile('admin/creation', formData).subscribe({
+            next: (response) => {
+                console.log('Map imported successfully:', response);
+                this.updateDisplay();
+            },
+            error: (error) => {
+                if (error.status === 409) {
+                    const newName = prompt(`Un jeu avec le nom "${file.name}" existe déjà. Entrez un nouveau nom :`);
+                    if (newName) {
+                        const updatedFile = new File([file], `${newName}.json`, { type: 'application/json' });
+                        this.onGameImported(updatedFile);
+                    } else {
+                        this.errorMessageModal.open('Importation annulée : le nom est déjà utilisé.');
+                    }
+                } else {
+                    console.error('Error importing map:', error);
+                    this.errorMessageModal.open('Erreur lors de l’importation du fichier.');
+                }
+            },
+        });
+    }
+
     onFileSelect(event: any): void {
         const file = event.target.files[0] as File;
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                try {
-                    const importedMap = JSON.parse(e.target.result) as DetailedMap;
-
-                    if (!importedMap.name || !importedMap.mapSize || !importedMap.mode) {
-                        this.importError.emit('Le fichier JSON est incomplet ou mal formaté.');
-                        return;
-                    }
-
-                    if (!validate(importedMap)) {
-                        const errorMessages = validate.errors?.map((err) => `Attribut '${err.instancePath}' ${err.message}`).join(', ');
-                        this.importError.emit(`Le fichier JSON est invalide : ${errorMessages}`);
-                        return;
-                    }
-
-                    this.gameImported.emit(importedMap);
-                } catch (error) {
-                    this.importError.emit('Erreur de format JSON');
-                }
-            };
-            reader.readAsText(file);
+            this.onGameImported(file);
         }
     }
 }

@@ -6,11 +6,11 @@
         <h2>Administration des jeux</h2>
 
         <div class="header-buttons">
-            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
             <button class="import-button" (click)="triggerFileInput()">
                 <i class="fas fa-upload"></i>
             </button>
             <input type="file" (change)="onFileSelect($event)" class="import-file-input" #fileInput style="display: none" />
+            <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
         </div>
     </div>
 
