@@ -41,32 +41,16 @@
                     </div>
                 </div>
                 <div class="bonus-text">
-                    <label>Ajoutes un bonus +2: </label>
+                    <label>Ajoutes un bonus : </label>
                 </div>
                 <div class="bonus-buttons-container">
-                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }">
-                        <input
-                            type="radio"
-                            id="life"
-                            [(ngModel)]="lifeOrSpeedBonus"
-                            name="lifeOrSpeedBonus"
-                            value="life"
-                            (change)="addBonus()"
-                            hidden
-                        />
-                        <label for="life">Vie</label>
+                    <div class="bonus-button-wrapper">
+                        <button class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }" (click)="addBonus('life')">Vie</button>
                     </div>
-                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }">
-                        <input
-                            type="radio"
-                            id="speed"
-                            [(ngModel)]="lifeOrSpeedBonus"
-                            name="lifeOrSpeedBonus"
-                            value="speed"
-                            (change)="addBonus()"
-                            hidden
-                        />
-                        <label for="speed">Rapidité</label>
+                    <div class="bonus-button-wrapper">
+                        <button class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }" (click)="addBonus('speed')">
+                            Rapidité
+                        </button>
                     </div>
                 </div>
                 <label>Attribues un dé à 6 faces: </label>
