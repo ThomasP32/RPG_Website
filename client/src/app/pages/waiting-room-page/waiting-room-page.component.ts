@@ -250,4 +250,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     openProfileModal(): void {
         this.showProfileModal = true;
     }
+    closeProfileModal(): void {
+        this.showProfileModal = false;
+    }
 }
