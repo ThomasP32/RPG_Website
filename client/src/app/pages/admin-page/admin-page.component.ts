@@ -106,7 +106,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     onExport(map: DetailedMap): void {
-        const { isVisible, ...exportData } = map;
+        const {...exportData } = map;
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         saveAs(blob, `${map.name || 'map'}.json`);
     }
