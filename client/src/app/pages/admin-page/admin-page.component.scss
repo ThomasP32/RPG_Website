@@ -152,6 +152,7 @@
     .map-image-container {
         position: relative;
         flex-shrink: 0;
+        top: 10px;
 
         .map-img {
             width: 20vw;
@@ -163,7 +164,7 @@
     .map-details {
         width: auto;
         max-width: 100%;
-        padding: 10px;
+        padding: 5px;
         text-align: center;
         color: #c0c0c0;
         z-index: 2;
@@ -182,7 +183,7 @@
 
         .mode,
         .size {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             margin: 5px 0;
             text-align: center;
             overflow: visible;
@@ -191,7 +192,7 @@
         }
 
         .visibility {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             margin: 5px 0;
             text-align: center;
             overflow: visible;
@@ -223,7 +224,8 @@
         gap: 15px;
 
         .edit-button,
-        .map-delete {
+        .map-delete,
+        .export-button {
             flex: 1;
             display: flex;
             align-items: center;
@@ -246,6 +248,10 @@
 
         .edit-button:hover {
             background-color: #3b3f46;
+        }
+
+        .export-button:hover {
+            background-color: #4d7e4b;
         }
     }
 }
