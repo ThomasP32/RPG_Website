@@ -277,7 +277,7 @@ describe('CharacterFormPageComponent', () => {
 
         describe('addBonus()', () => {
             it('should call assignBonus with the correct lifeOrSpeedBonus', () => {
-                component.addBonus();
+                component.addBonus('life');
                 expect(playerServiceSpy.assignBonus).toHaveBeenCalledWith('life');
             });
         });
