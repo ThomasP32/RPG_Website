@@ -6,6 +6,8 @@ import { CommunicationMapService } from '@app/services/communication/communicati
 import { DetailedMap } from '@common/map.types';
 import { saveAs } from 'file-saver';
 
+/* eslint-disable no-unused-vars */
+
 @Component({
     selector: 'app-admin-page',
     standalone: true,
