@@ -22,6 +22,10 @@ export class ProfileModalComponent {
         private waitingRoom: WaitingRoomPageComponent,
     ) {}
 
+    createVirtualSocketId(): void {
+        this.virtualPlayer.socketId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
     setProfile(profile: string): void {
         this.selectedProfile = profile;
         console.log('Selected profile:', profile);
@@ -114,7 +118,7 @@ export class ProfileModalComponent {
         };
         const virtualPlayer: Player = {
             name: this.virtualPlayer.name,
-            socketId: this.socketService.socket.id || '',
+            socketId: this.virtualPlayer.socketId || '',
             isActive: true,
             avatar: this.virtualPlayer.avatar,
             specs: playerSpecs,
@@ -132,6 +136,7 @@ export class ProfileModalComponent {
         this.assignRandomAvatar();
         this.assignRandomLifeOrSpeedBonus();
         this.assignRandomAttackOrDefenseBonus();
+        this.createVirtualSocketId();
 
         this.createVirtualPlayer();
         this.socketService.sendMessage('joinGame', { player: this.virtualPlayer, gameId: this.gameId });
