@@ -121,6 +121,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
             if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
                 defendingPlayer.specs.life--;
+                defendingPlayer.specs.nLifeLost++;
+                attackingPlayer.specs.nLifeTaken++;
                 this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
                 this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
             } else {
