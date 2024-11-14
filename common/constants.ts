@@ -1,4 +1,5 @@
 export const TURN_DURATION: number = 30;
+
 export enum MapSize {
     SMALL = 'SMALL',
     MEDIUM = 'MEDIUM',
@@ -34,3 +35,17 @@ export const TIME_PULSE: number = 500;
 export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const HALF = 0.5;
+
+export const DEFAULT_HP = 4;
+
+export const DEFAULT_SPEED = 4;
+
+export const DEFAULT_ATTACK = 4;
+
+export const DEFAULT_DEFENSE = 4;
+
+export const DEFAULT_EVASIONS = 2;
+
+export const DEFAULT_ACTIONS = 1;
+
+export const BONUS = 2;

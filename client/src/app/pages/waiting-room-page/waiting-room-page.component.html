@@ -94,7 +94,7 @@
         } @if (showProfileModal) {
         <div class="profile-modal">
             <div class="modal">
-                <app-profile-modal></app-profile-modal>
+                <app-profile-modal [gameId]="waitingRoomCode" [activePlayers]="activePlayers"></app-profile-modal>
             </div>
         </div>
         }
