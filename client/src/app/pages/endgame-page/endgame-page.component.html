@@ -19,7 +19,7 @@
             <tbody>
                 @for (gamePlayer of players; track gamePlayer) {
                 <tr>
-                    <td><img [src]="playerUrls.get(gamePlayer.socketId)" alt="{{ gamePlayer.name }}'s avatar" class="player-avatar" /></td>
+                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" alt="{{ gamePlayer.name }}'s avatar" class="player-avatar" /></td>
                     <td>{{ gamePlayer.name }}</td>
                     <td>{{ gamePlayer.specs.nCombats }}</td>
                     <td>{{ gamePlayer.specs.nEvasions }}</td>
@@ -27,8 +27,8 @@
                     <td>{{ gamePlayer.specs.nDefeats }}</td>
                     <td>{{ gamePlayer.specs.nLifeLost }}</td>
                     <td>{{ gamePlayer.specs.nLifeTaken }}</td>
-                    <td>A ajouter</td>
-                    <td>A ajouter</td>
+                    <td>TODO</td>
+                    <td>TODO</td>
                 </tr>
                 }
             </tbody>
@@ -37,7 +37,17 @@
     <div class="chatroom-container">
         <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
     </div>
+    <div class="global-stats-container">
+        <h1>Statistiques globales de la partie</h1>
+        <p>Durée de la partie :</p>
+        <p>Pourcentage total de tuiles visitées : TODO</p>
+        <p>Pourcentage total des portes manipulées : TODO</p>
+        <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
+        <!-- @if (game.mode === Mode.Ctf) { -->
+        <!-- <p>Nombre de joueurs différents ayant détenu le drapeau : {{game.}}</p> -->
+        <!-- } -->
+    </div>
     <div class="exit-button-container">
-        <button (click)="navigateToMain()">Retourner au menu princiapl</button>
+        <button (click)="navigateToMain()">Retourner au menu principal</button>
     </div>
 </div>
