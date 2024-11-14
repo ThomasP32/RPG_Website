@@ -46,7 +46,7 @@ describe('AdminPageComponent', () => {
     ];
 
     beforeEach(async () => {
-        const communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet', 'basicDelete', 'basicPatch']);
+        const communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet', 'basicDelete', 'basicPatch', 'basicPost']);
 
         await TestBed.configureTestingModule({
             imports: [RouterTestingModule.withRoutes([]), AdminPageComponent],
@@ -150,4 +150,64 @@ describe('AdminPageComponent', () => {
         component.editMap(mockMaps[0]);
         expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
     });
+
+    it('should trigger file input click', () => {
+        spyOn(component.fileInput.nativeElement, 'click');
+        component.triggerFileInput();
+        expect(component.fileInput.nativeElement.click).toHaveBeenCalled();
+    });
+
+    it('should open delete confirmation modal', () => {
+        component.openConfirmationModal(mockMaps[0]);
+        expect(component.showDeleteModal).toBeTrue();
+        expect(component.currentMapId).toBe('1');
+    });
+
+    it('should close delete confirmation modal', () => {
+        component.showDeleteModal = true;
+        component.currentMapId = '1';
+        component.closeDeleteModal();
+        expect(component.showDeleteModal).toBeFalse();
+        expect(component.currentMapId).toBeNull();
+    });
+
+    it('should confirm delete and close modal', () => {
+        spyOn(component, 'deleteMap');
+        spyOn(component, 'closeDeleteModal');
+        component.confirmDelete('1');
+        expect(component.deleteMap).toHaveBeenCalledWith('1');
+        expect(component.closeDeleteModal).toHaveBeenCalled();
+    });
+
+    it('should display error when delete fails', () => {
+        const errorMessage = 'Failed to delete map';
+        const mockError = new HttpErrorResponse({ status: 500, error: JSON.stringify({ message: errorMessage }) });
+        spyOn(component.errorMessageModal, 'open');
+        communicationMapService.basicDelete.and.returnValue(throwError(() => mockError));
+        component.deleteMap('1');
+        expect(component.errorMessageModal.open).toHaveBeenCalledWith(errorMessage);
+    });
+
+    it('should open create map modal', () => {
+        component.toggleGameCreationModalVisibility();
+        expect(component.isCreateMapModalVisible).toBeTrue();
+    });
+
+    it('should close create map modal', () => {
+        component.isCreateMapModalVisible = true;
+        component.onCloseModal();
+        expect(component.isCreateMapModalVisible).toBeFalse();
+    });
+
+    it('should display an error message when onImportError is called', () => {
+        const errorMessage = 'Le format ce fichier est invalide. Un fichier en format JSON est attendu.';
+        spyOn(component.errorMessageModal, 'open');
+        component.onImportError(errorMessage);
+        expect(component.errorMessageModal.open).toHaveBeenCalledWith(errorMessage);
+    });
+
+    
+
+
+    
 });
