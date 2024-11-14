@@ -302,4 +302,41 @@ describe('TileService', () => {
         service.placeTile(mockMap, 0, 0, 'wall');
         expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
     });
+
+    it('should erase a tile and update counters if cell is a starting point', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Wall,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: true,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
+        ];
+        service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, undefined, 'add');
+        expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
+        expect(mockMap[0][0].isStartingPoint).toBeFalse();
+    });
+    it('should remove starting point and update counters', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: true,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                },
+            ],
+        ];
+
+        service.removeStartingPoint(mockMap, 0, 0);
+        expect(mockMap[0][0].isStartingPoint).toBe(false);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+    });
 });

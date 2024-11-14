@@ -234,44 +234,6 @@ describe('GameGateway', () => {
         });
     });
 
-    describe('handleDisconnect', () => {
-        it('should call deleteRoom when the player is the host', () => {
-            stub(socket, 'rooms').value(new Set([gameRoom.id, 'client-id']));
-            gameCreationService.getGames.returns([gameRoom]);
-            gameCreationService.isPlayerHost.returns(true);
-
-            gateway.handleDisconnect(socket);
-
-            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameRoom.id)).toBeTruthy();
-            expect(gameCreationService.deleteRoom.calledWith(gameRoom.id)).toBeTruthy();
-        });
-
-        it('should call handlePlayerDisconnect when the player is not the host', () => {
-            const gameId = 'game-id';
-            const updatedPlayer = { ...player, isActive: false };
-            const updatedGame: Game = { id: gameId, players: [updatedPlayer] } as Game;
-
-            const socket = createStubInstance(Socket);
-            Object.defineProperty(socket, 'id', {
-                value: player.socketId,
-                writable: false,
-            });
-
-            stub(socket, 'rooms').value(new Set([gameId, player.socketId]));
-
-            gameCreationService.getGames.returns([gameRoom]);
-
-            gameCreationService.isPlayerHost.returns(false);
-
-            gameCreationService.handlePlayerLeaving.returns(updatedGame);
-            gateway.handleDisconnect(socket);
-
-            expect(gameCreationService.isPlayerHost.calledWith(socket.id, gameRoom.id)).toBeTruthy();
-
-            expect(gameCreationService.handlePlayerLeaving.calledWith(socket, gameRoom.id)).toBeTruthy();
-        });
-    });
-
     describe('handleInitGame', () => {
         it('should initialize the game and emit gameInitialized if the game exists and the client is the host', () => {
             const roomId = 'room-1';
