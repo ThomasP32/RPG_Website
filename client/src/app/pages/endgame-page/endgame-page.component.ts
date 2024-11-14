@@ -4,7 +4,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Game, Player } from '@common/game';
+import { Avatar, Game, Player } from '@common/game';
 import { Subscription } from 'rxjs';
 import { ChatroomComponent } from '../../components/chatroom/chatroom.component';
 
@@ -34,12 +34,7 @@ export class EndgamePageComponent {
         this.router = router;
     }
 
-    async ngOnInit() {
-        for (let player of this.players) {
-            const avatarUrl = await this.characterService.getAvatarPreview(player.avatar);
-            this.playerUrls.set(player.socketId, avatarUrl);
-        }
-    }
+    async ngOnInit() {}
 
     get player(): Player {
         return this.playerService.player;
@@ -51,6 +46,10 @@ export class EndgamePageComponent {
 
     get players(): Player[] {
         return this.gameService.game.players;
+    }
+
+    getAvatarPreview(avatar: Avatar): string {
+        return this.characterService.getAvatarPreview(avatar);
     }
 
     navigateToMain(): void {
