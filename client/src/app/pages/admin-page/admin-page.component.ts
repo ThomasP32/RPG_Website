@@ -106,7 +106,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     onExport(map: DetailedMap): void {
-        const {...exportData } = map;
+        const { isVisible, ...exportData } = map;
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         saveAs(blob, `${map.name || 'map'}.json`);
     }
@@ -116,37 +116,63 @@ export class AdminPageComponent implements OnInit {
     }
 
     onGameImported(file: File): void {
-        const formData = new FormData();
-        formData.append('file', file);
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                console.log('File content:', reader.result);
+                const parsedData = JSON.parse(reader.result as string);
+                const { _id, lastModified, _v, ...cleanedData } = parsedData;
 
-        console.log('FormData contents:', formData.get('file'));
-
-        this.communicationMapService.uploadMapFile('admin/creation', formData).subscribe({
-            next: (response) => {
-                console.log('Map imported successfully:', response);
-                this.updateDisplay();
-            },
-            error: (error) => {
-                if (error.status === 409) {
-                    const newName = prompt(`Un jeu avec le nom "${file.name}" existe déjà. Entrez un nouveau nom :`);
-                    if (newName) {
-                        const updatedFile = new File([file], `${newName}.json`, { type: 'application/json' });
-                        this.onGameImported(updatedFile);
-                    } else {
-                        this.errorMessageModal.open('Importation annulée : le nom est déjà utilisé.');
-                    }
-                } else {
-                    console.error('Error importing map:', error);
-                    this.errorMessageModal.open('Erreur lors de l’importation du fichier.');
-                }
-            },
-        });
+                this.communicationMapService.basicPost('map/import', cleanedData).subscribe({
+                    next: (response) => {
+                        this.updateDisplay();
+                    },
+                    error: (error) => {
+                        this.handleImportError(error, file);
+                    },
+                });
+            } catch (error) {
+                this.onImportError('Le format ce fichier est invalide. Un fichier en format JSON est attendu.');
+            }
+        };
+        reader.readAsText(file);
     }
 
     onFileSelect(event: any): void {
+        console.log('File selected:', event.target.files[0]);
         const file = event.target.files[0] as File;
         if (file) {
             this.onGameImported(file);
         }
+    }
+
+    private handleImportError(error: any, file: File): void {
+        if (error.status === 409) {
+            const newName = prompt(`Un jeu avec le nom "${file.name}" existe déjà. Entrez un nouveau nom :`);
+            if (newName) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const parsedData = JSON.parse(reader.result as string);
+                        parsedData.name = newName;
+                        const updatedContent = JSON.stringify(parsedData, null, 2);
+                        const updatedFile = new File([updatedContent], `${newName}.json`, { type: 'application/json' });
+                        this.onGameImported(updatedFile);
+                    } catch (parseError) {
+                        this.errorMessageModal.open('Erreur lors de la modification du fichier JSON.');
+                        console.error('Erreur de parsing JSON lors de la modification du nom :', parseError);
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                this.errorMessageModal.open('Importation annulée : le nom est déjà utilisé.');
+            }
+        } else if (error.status === 400) {
+            this.errorMessageModal.open('Le fichier JSON contient des erreurs de format. Veuillez vérifier et réessayer.');
+        } else {
+            this.errorMessageModal.open('Erreur lors de l’importation du fichier.');
+        }
+
+        console.error('Détails de l’erreur d’importation :', error);
     }
 }

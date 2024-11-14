@@ -70,15 +70,18 @@
         margin-right: 10px;
         position: relative;
         align-items: center;
+        display: flex;
         padding: 12px 20px;
         height: 6vh;
         background-color: #2c3e50;
         border: 3px solid #202020;
         color: white;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 18px;
         font-family: 'Press Start 2P';
     }
+
+   
     
     .return-button:hover {
         background-color: #3b3f46;

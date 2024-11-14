@@ -1,6 +1,6 @@
 import { Map } from '@app/http/model/schemas/map/map.schema';
 import { MapService } from '@app/http/services/map/map.service';
-import { BadRequestException, Body, Controller, Get, HttpStatus, Inject, Param, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Param, Post, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -45,17 +45,17 @@ export class MapController {
     }
 
     @Post('import')
-    @UsePipes(new ValidationPipe({ transform: true }))
-    async importMap(@Body() mapDto: any) {
+    async importMap(@Body() mapDto: any, @Res() response: Response) {
         try {
             const parsedMapDto = typeof mapDto === 'string' ? JSON.parse(mapDto) : mapDto;
-
-            console.log('Parsed map data:', parsedMapDto);
-
-            return this.mapService.validateAndSaveMap(parsedMapDto);
+            const savedMap = await this.mapService.validateAndSaveMap(parsedMapDto);
+            response.status(HttpStatus.CREATED).json(savedMap);
         } catch (error) {
-            console.error('Error parsing map data:', error);
-            throw new BadRequestException('Invalid JSON format');
+            if (error.message.includes('existe déjà')) {
+                response.status(HttpStatus.CONFLICT).json({ message: error.message });
+            } else {
+                response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Erreur lors de l’importation de la carte.' });
+            }
         }
     }
 }

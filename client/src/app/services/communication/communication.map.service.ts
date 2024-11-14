@@ -48,8 +48,7 @@ export class CommunicationMapService {
         return () => of(result as T);
     }
 
-    uploadMapFile(url: string, formData: FormData): Observable<HttpResponse<any>> {
-        console.log('Uploading file to:', `${this.baseUrl}/${url}`);
-        return this.http.post<HttpResponse<any>>(`${this.baseUrl}/${url}`, formData, { observe: 'response' });
+    uploadMapFile(url: string, mapData: any): Observable<HttpResponse<any>> {
+        return this.basicPost<any>(url, mapData);
     }
 }
