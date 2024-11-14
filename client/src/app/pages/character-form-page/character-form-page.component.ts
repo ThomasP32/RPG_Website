@@ -187,11 +187,13 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
-    addBonus() {
+    addBonus(bonusType: 'life' | 'speed'): void {
+        this.lifeOrSpeedBonus = bonusType;
         this.playerService.assignBonus(this.lifeOrSpeedBonus);
     }
 
-    assignDice() {
+    assignDice(bonusType: 'attack' | 'defense'): void {
+        this.attackOrDefenseBonus = bonusType;
         this.playerService.assignDice(this.attackOrDefenseBonus);
     }
 
@@ -211,7 +213,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.name = '';
         }
 
-        this.nameInput.nativeElement.focus();
+        setTimeout(() => {
+            this.nameInput.nativeElement.focus();
+        });
     }
 
     stopEditing(): void {

@@ -277,14 +277,14 @@ describe('CharacterFormPageComponent', () => {
 
         describe('addBonus()', () => {
             it('should call assignBonus with the correct lifeOrSpeedBonus', () => {
-                component.addBonus();
+                component.addBonus('life');
                 expect(playerServiceSpy.assignBonus).toHaveBeenCalledWith('life');
             });
         });
 
         describe('assignDice()', () => {
             it('should call assignDice with the correct attackOrDefenseBonus', () => {
-                component.assignDice();
+                component.assignDice('attack');
                 expect(playerServiceSpy.assignDice).toHaveBeenCalledWith('attack');
             });
         });
