@@ -46,8 +46,4 @@ export class CommunicationMapService {
     private handleError<T>(request: string, result?: T): () => Observable<T> {
         return () => of(result as T);
     }
-
-    uploadMapFile(url: string, mapData: any): Observable<HttpResponse<any>> {
-        return this.basicPost<any>(url, mapData);
-    }
 }
