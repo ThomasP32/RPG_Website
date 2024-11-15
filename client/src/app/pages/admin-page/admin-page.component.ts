@@ -84,7 +84,6 @@ export class AdminPageComponent implements OnInit {
     updateDisplay(): void {
         this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => {
             this.maps = maps;
-            console.log('Maps updated after import:', this.maps);
         });
     }
 
@@ -110,7 +109,7 @@ export class AdminPageComponent implements OnInit {
     onExport(map: DetailedMap): void {
         const { isVisible, ...exportData } = map;
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        saveAs(blob, `${map.name || 'map'}.json`);
+        saveAs(blob, `${map.name}.json`);
     }
 
     triggerFileInput(): void {
@@ -121,7 +120,6 @@ export class AdminPageComponent implements OnInit {
         const reader = new FileReader();
         reader.onload = () => {
             try {
-                console.log('File content:', reader.result);
                 const parsedData = JSON.parse(reader.result as string);
                 const { _id, lastModified, _v, ...cleanedData } = parsedData;
 
@@ -141,7 +139,6 @@ export class AdminPageComponent implements OnInit {
     }
 
     onFileSelect(event: any): void {
-        console.log('File selected:', event.target.files[0]);
         const file = event.target.files[0] as File;
         if (file) {
             this.onGameImported(file);
