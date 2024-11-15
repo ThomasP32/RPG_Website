@@ -52,6 +52,7 @@
                     [isGameMaxed]="isGameMaxed()"
                     [isGameLocked]="isGameLocked"
                     [openProfileModal]="openProfileModal.bind(this)"
+                    [gameId]="waitingRoomCode"
                 ></app-players-list>
             </div>
             @if(!isStartable){
