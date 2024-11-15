@@ -1,21 +1,27 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { CreateMapModalComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DetailedMap } from '@common/map.types';
+import { saveAs } from 'file-saver';
+
+/* eslint-disable no-unused-vars */
 
 @Component({
     selector: 'app-admin-page',
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, ErrorMessageComponent, CreateMapModalComponent],
+    imports: [ErrorMessageComponent, CreateMapModalComponent],
 })
 export class AdminPageComponent implements OnInit {
     @Input() mapId: string = '';
+    @Output() importError = new EventEmitter<string>();
+    @ViewChild('fileInput') fileInput!: ElementRef;
     @ViewChild(CreateMapModalComponent, { static: false }) createMapModalComponent!: CreateMapModalComponent;
     @ViewChild(ErrorMessageComponent, { static: false }) errorMessageModal: ErrorMessageComponent;
+
     maps: DetailedMap[] = [];
     currentMapId: string | null = null;
     showDeleteModal = false;
@@ -76,7 +82,9 @@ export class AdminPageComponent implements OnInit {
     }
 
     updateDisplay(): void {
-        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => {
+            this.maps = maps;
+        });
     }
 
     toggleVisibility(mapId: string): void {
@@ -92,5 +100,85 @@ export class AdminPageComponent implements OnInit {
         const minutes = String(date.getMinutes()).padStart(2, '0');
 
         return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
+    onImportError(error: string): void {
+        this.errorMessageModal.open(error);
+    }
+
+    onExport(map: DetailedMap): void {
+        const { isVisible, ...exportData } = map;
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        saveAs(blob, `${map.name}.json`);
+    }
+
+    triggerFileInput(): void {
+        this.fileInput.nativeElement.click();
+    }
+
+    onGameImported(file: File): void {
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const parsedData = JSON.parse(reader.result as string);
+                const { _id, lastModified, __v, ...cleanedData } = parsedData;
+
+                this.communicationMapService.basicPost('admin/import', cleanedData).subscribe({
+                    next: (response) => {
+                        this.updateDisplay();
+                    },
+                    error: (error) => {
+                        this.handleImportError(error, file);
+                    },
+                });
+            } catch (error) {
+                this.onImportError('Le format ce fichier est invalide. Un fichier en format JSON est attendu.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    onFileSelect(event: any): void {
+        const file = event.target.files[0] as File;
+        if (file) {
+            this.onGameImported(file);
+        }
+        this.resetFileInput();
+    }
+
+    private resetFileInput(): void {
+        if (this.fileInput && this.fileInput.nativeElement) {
+            this.fileInput.nativeElement.value = '';
+        }
+    }
+
+    private handleImportError(error: any, file: File): void {
+        if (error.status === 409) {
+            const newName = prompt(`Un jeu avec le nom "${file.name}" existe déjà. Entrez un nouveau nom :`);
+            if (newName) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const parsedData = JSON.parse(reader.result as string);
+                        parsedData.name = newName;
+                        const updatedContent = JSON.stringify(parsedData, null, 2);
+                        const updatedFile = new File([updatedContent], `${newName}.json`, { type: 'application/json' });
+                        this.onGameImported(updatedFile);
+                    } catch (parseError) {
+                        this.errorMessageModal.open('Erreur lors de la modification du fichier JSON.');
+                        console.error('Erreur de parsing JSON lors de la modification du nom :', parseError);
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                this.errorMessageModal.open('Importation annulée : le nom est déjà utilisé.');
+            }
+        } else if (error.status === 400) {
+            this.errorMessageModal.open('Le fichier JSON contient des erreurs de format. Veuillez vérifier et réessayer.');
+        } else {
+            this.errorMessageModal.open('Erreur lors de l’importation du fichier.');
+        }
+
+        console.error('Détails de l’erreur d’importation :', error);
     }
 }
