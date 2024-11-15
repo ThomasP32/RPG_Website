@@ -17,7 +17,6 @@ export class CommunicationMapService {
     }
 
     basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
-        console.log('Sending POST request to:', `${this.baseUrl}/${url}`);
         return this.http.post(`${this.baseUrl}/${url}`, data, {
             observe: 'response',
             responseType: 'text',
