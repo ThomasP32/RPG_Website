@@ -1,6 +1,6 @@
 import { Map } from '@app/http/model/schemas/map/map.schema';
 import { MapService } from '@app/http/services/map/map.service';
-import { Body, Controller, Get, HttpStatus, Inject, Param, Post, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Param, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
