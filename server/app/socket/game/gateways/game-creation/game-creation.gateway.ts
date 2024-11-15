@@ -57,8 +57,17 @@ export class GameGateway {
     }
 
     @SubscribeMessage('kickPlayer')
-    handleKickPlayer(client: Socket, playerId: string): void {
-        this.server.to(playerId).emit('playerKicked');
+    handleKickPlayer(client: Socket, data: { gameId: string; playerId: string }): void {
+        if (data.playerId.includes('virtualPlayer')) {
+            const game = this.gameCreationService.getGameById(data.gameId);
+            game.players = game.players.filter((player) => player.socketId !== data.playerId);
+            if (!this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
+                game.isLocked = false;
+            }
+            this.server.to(data.gameId).emit('playerLeft', game.players);
+            return;
+        }
+        this.server.to(data.playerId).emit('playerKicked');
     }
 
     @SubscribeMessage('getGameData')
