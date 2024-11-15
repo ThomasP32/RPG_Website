@@ -31,7 +31,12 @@ describe('MapAreaComponent', () => {
             'removeStartingPoint',
         ]);
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'removeStartingPoint$', 'map', 'generateMapFromEdition']);
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
+            'startingPointCounter$',
+            'updateCounters',
+            'updateStartingPointCounter',
+            'initializeCounters',
+        ]);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
         routerSpy = jasmine.createSpyObj('Router', ['url']);
@@ -102,7 +107,7 @@ describe('MapAreaComponent', () => {
         it('should initialize edition mode correctly', () => {
             const mapSize = 10;
             const startTilesLength = 3;
-            spyOn(component, 'setCountersBasedOnMapSize');
+            spyOn(component, 'initializeCreationMode');
             spyOn(component, 'loadMap');
 
             mapServiceSpy.map = {
@@ -116,22 +121,20 @@ describe('MapAreaComponent', () => {
                 items: [],
                 startTiles: new Array(startTilesLength),
             };
-            component.startingPointCounter = 5;
+            mapCounterServiceSpy.startingPointCounter = 5;
 
             component.initializeEditionMode();
 
-            expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapSize);
-            expect(component.startingPointCounter).toBe(5 - startTilesLength);
-            expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(5 - startTilesLength);
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapSize, Mode.Classic);
+            expect(mapCounterServiceSpy.startingPointCounter).toBe(5 - startTilesLength);
             expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
         });
 
         it('should initialize creation mode correctly', () => {
             spyOn(component, 'createMap');
-            spyOn(component, 'setCountersBasedOnMapSize');
             component.initializeCreationMode();
             expect(component.createMap).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
-            expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x, mapServiceSpy.map.mode);
         });
     });
 
@@ -429,14 +432,6 @@ describe('MapAreaComponent', () => {
     });
 
     describe('Map counters', () => {
-        it('should set counters based on map size', () => {
-            component.setCountersBasedOnMapSize(10);
-            expect(component.randomItemCounter).toBe(2);
-            expect(component.startingPointCounter).toBe(2);
-            expect(component.itemsCounter).toBe(10);
-            expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(2);
-        });
-
         it('should return correct counters for map size', () => {
             const countersFor10 = component.getCountersForMapSize(10);
             expect(countersFor10).toEqual({ randomItemCounter: 2, startingPointCounter: 2, itemsCounter: 10 });

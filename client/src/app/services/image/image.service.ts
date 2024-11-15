@@ -62,6 +62,8 @@ export class ImageService {
                 return './assets/items/hat.png';
             case ItemCategory.Random:
                 return './assets/items/randomchest.png';
+            case ItemCategory.Flag:
+                return './assets/items/flag.png';
             default:
                 return '';
         }
