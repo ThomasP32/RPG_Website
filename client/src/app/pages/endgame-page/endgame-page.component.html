@@ -6,20 +6,20 @@
                 <tr>
                     <th></th>
                     <th>Nom</th>
-                    <th>Nombre de combats</th>
-                    <th>Nombre d'évasions</th>
-                    <th>Nombre de victoires</th>
-                    <th>Nombre de défaites</th>
-                    <th>Nombre de vie perdus</th>
-                    <th>Total points de vie enlevés aux adversaires</th>
-                    <th>Nombre d'objets ramassés</th>
-                    <th>Pourcentage des tuiles visitées</th>
+                    <th>Combats</th>
+                    <th>Évasions</th>
+                    <th>Victoires</th>
+                    <th>Défaites</th>
+                    <th>Vie perdue</th>
+                    <th>Vie infligée</th>
+                    <th>Objets ramassés</th>
+                    <th>Tuiles visitées</th>
                 </tr>
             </thead>
             <tbody>
                 @for (gamePlayer of players; track gamePlayer) {
                 <tr>
-                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" alt="{{ gamePlayer.name }}'s avatar" class="player-avatar" /></td>
+                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" /></td>
                     <td>{{ gamePlayer.name }}</td>
                     <td>{{ gamePlayer.specs.nCombats }}</td>
                     <td>{{ gamePlayer.specs.nEvasions }}</td>
@@ -28,7 +28,7 @@
                     <td>{{ gamePlayer.specs.nLifeLost }}</td>
                     <td>{{ gamePlayer.specs.nLifeTaken }}</td>
                     <td>TODO</td>
-                    <td>TODO</td>
+                    <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }} %</td>
                 </tr>
                 }
             </tbody>
@@ -39,7 +39,8 @@
     </div>
     <div class="global-stats-container">
         <h1>Statistiques globales de la partie</h1>
-        <p>Durée de la partie :</p>
+        <p>Durée de la partie : {{ endgameService.gameDurationInMinutes(game.duration) }}</p>
+        <p>Tours de jeu : {{ game.nTurns }}</p>
         <p>Pourcentage total de tuiles visitées : TODO</p>
         <p>Pourcentage total des portes manipulées : TODO</p>
         <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
@@ -48,6 +49,6 @@
         <!-- } -->
     </div>
     <div class="exit-button-container">
-        <button (click)="navigateToMain()">Retourner au menu principal</button>
+        <button (click)="navigateToMain()">Menu principal</button>
     </div>
 </div>

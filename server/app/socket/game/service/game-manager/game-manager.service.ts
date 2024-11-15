@@ -15,6 +15,9 @@ export class GameManagerService {
         if (player) {
             path.forEach((position) => {
                 player.specs.movePoints -= this.getTileWeight(position, game);
+                if (!player.visitedTiles.some((tile) => tile.x === position.x && tile.y === position.y)) {
+                    player.visitedTiles.push(position);
+                }
             });
             player.position = path[path.length - 1];
         }
@@ -22,7 +25,7 @@ export class GameManagerService {
 
     updateTurnCounter(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        game.nTurns++;
+        // game.nTurns++;
         game.currentTurn++;
         if (game.currentTurn >= game.players.length) {
             game.currentTurn = 0;
