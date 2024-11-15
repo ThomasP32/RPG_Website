@@ -204,10 +204,5 @@ describe('AdminPageComponent', () => {
         spyOn(component.errorMessageModal, 'open');
         component.onImportError(errorMessage);
         expect(component.errorMessageModal.open).toHaveBeenCalledWith(errorMessage);
-    });
-
-    
-
-
-    
+    });    
 });

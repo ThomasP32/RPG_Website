@@ -19,14 +19,4 @@ export class MapService {
         }
         return map;
     }
-
-    async validateAndSaveMap(mapDto: Map): Promise<Map> {
-        const existingMap = await this.mapModel.findOne({ name: mapDto.name });
-        if (existingMap) {
-            throw new Error(`Une carte avec le nom "${mapDto.name}" existe déjà.`);
-        }
-        const map = new this.mapModel(mapDto);
-        await map.validate();
-        return await map.save();
-    }
 }

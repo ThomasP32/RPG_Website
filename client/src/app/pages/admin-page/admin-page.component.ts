@@ -121,9 +121,9 @@ export class AdminPageComponent implements OnInit {
         reader.onload = () => {
             try {
                 const parsedData = JSON.parse(reader.result as string);
-                const { _id, lastModified, _v, ...cleanedData } = parsedData;
-
-                this.communicationMapService.basicPost('map/import', cleanedData).subscribe({
+                const { _id, lastModified, __v, ...cleanedData } = parsedData;
+                
+                this.communicationMapService.basicPost('admin/import', cleanedData).subscribe({
                     next: (response) => {
                         this.updateDisplay();
                     },
