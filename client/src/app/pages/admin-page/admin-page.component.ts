@@ -122,7 +122,7 @@ export class AdminPageComponent implements OnInit {
             try {
                 const parsedData = JSON.parse(reader.result as string);
                 const { _id, lastModified, __v, ...cleanedData } = parsedData;
-                
+
                 this.communicationMapService.basicPost('admin/import', cleanedData).subscribe({
                     next: (response) => {
                         this.updateDisplay();
@@ -142,6 +142,13 @@ export class AdminPageComponent implements OnInit {
         const file = event.target.files[0] as File;
         if (file) {
             this.onGameImported(file);
+        }
+        this.resetFileInput();
+    }
+
+    private resetFileInput(): void {
+        if (this.fileInput && this.fileInput.nativeElement) {
+            this.fileInput.nativeElement.value = '';
         }
     }
 
