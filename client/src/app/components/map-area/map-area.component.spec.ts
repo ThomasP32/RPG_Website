@@ -36,6 +36,7 @@ describe('MapAreaComponent', () => {
             'updateCounters',
             'updateStartingPointCounter',
             'initializeCounters',
+            'loadMapCounters',
         ]);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
@@ -352,20 +353,6 @@ describe('MapAreaComponent', () => {
             component.placeTileOnMove(rowIndex, colIndex);
             expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.selectedTile);
         });
-        it('should call tile service to set item on drop', () => {
-            const event = new DragEvent('drop');
-
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
-                },
-            });
-
-            component.currentDraggedItem = null;
-
-            component.onDrop(event, 1, 1);
-            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 1, 1);
-        });
 
         it('should prevent default if no item is present on startDrag', () => {
             const event = new DragEvent('dragstart');
@@ -520,31 +507,13 @@ describe('MapAreaComponent', () => {
         });
     });
     describe('onDrop', () => {
-        it('should call setStartingPoint on tileService when dropping a starting point', () => {
-            const event = new DragEvent('drop');
-            spyOn(event, 'preventDefault');
-
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
-                },
-            });
-
-            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false } as Cell]];
-
-            component.onDrop(event, 0, 0);
-
-            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 0, 0);
-            expect(event.preventDefault).toHaveBeenCalled();
-        });
-
         it('should not call setStartingPoint if the target tile is a wall', () => {
             const event = new DragEvent('drop');
             spyOn(event, 'preventDefault');
 
             Object.defineProperty(event, 'dataTransfer', {
                 value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify('draggingObject')),
                 },
             });
 

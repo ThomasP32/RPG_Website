@@ -216,6 +216,7 @@ export class MapAreaComponent implements OnInit {
             this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, mode);
         } else {
             this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
+            this.updateMapCounters();
             this.loadMap(this.mapService.map);
         }
     }

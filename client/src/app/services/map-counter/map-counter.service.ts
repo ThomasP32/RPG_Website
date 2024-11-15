@@ -23,7 +23,7 @@ export class MapCounterService {
 
     updateCounters(isStartingPoint: boolean, action: 'add' | 'remove') {
         if (isStartingPoint) {
-            action === 'add' ? this.startingPointCounter + 1 : this.startingPointCounter - 1;
+            action === 'add' ? this.startingPointCounter++ : this.startingPointCounter--;
         }
     }
 
@@ -43,6 +43,7 @@ export class MapCounterService {
         this.items = this.items.filter((item) => !usedCategories.has(item));
 
         const randomItemCount = usedItems.filter((item) => item.category === ItemCategory.Random).length;
+        this.itemsCounter -= randomItemCount;
         this.randomItemCounter -= randomItemCount;
     }
     setAvailablesItems() {

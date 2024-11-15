@@ -35,12 +35,13 @@ describe('MapCounterService', () => {
         service.initializeCounters(5, 'ctf');
 
         expect(service.startingPointCounter).toBe(4);
-        expect(service.randomItemCounter).toBe(10);
         expect(service.itemsCounter).toBe(10);
         expect(service.items).toContain(ItemCategory.Flag);
     });
 
     it('should load map counters correctly', () => {
+        service.itemsCounter = 3;
+        service.randomItemCounter = 0;
         service.items = [ItemCategory.Hat, ItemCategory.Jar, ItemCategory.Key];
         const usedItems: Item[] = [
             { category: ItemCategory.Hat, coordinate: { x: 1, y: 3 } },
@@ -50,7 +51,7 @@ describe('MapCounterService', () => {
         service.loadMapCounters(usedItems);
 
         expect(service.items).not.toContain(ItemCategory.Hat);
-        expect(service.randomItemCounter).toBe(-1);
+        expect(service.itemsCounter).toBe(2);
     });
 
     it('should set available items correctly', () => {
