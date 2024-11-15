@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ImageService } from '@app/services/image/image.service';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { MapService } from '@app/services/map/map.service';
-import { Mode } from '@common/map.types';
+import { ItemCategory, Mode } from '@common/map.types';
 import { BehaviorSubject, of } from 'rxjs';
 import { ToolbarComponent } from './toolbar.component';
 
@@ -129,14 +129,14 @@ describe('ToolbarComponent', () => {
     it('should start drag for starting point with counter > 0', () => {
         const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
         mapCounterServiceSpy.startingPointCounter = 2;
-        component.startDrag(mockDragEvent, 'starting-point');
+        component.startDrag(mockDragEvent, ItemCategory.StartingPoint);
         expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('isStartingPoint', 'true');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
     it('should NOT start drag for other item types', () => {
         const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
-        component.startDrag(mockDragEvent, 'item1');
+        component.startDrag(mockDragEvent, ItemCategory.Random);
         expect(mockDragEvent.dataTransfer?.setData).not.toHaveBeenCalled();
         expect(mapServiceSpy.updateSelectedTile).not.toHaveBeenCalled();
     });
@@ -144,7 +144,7 @@ describe('ToolbarComponent', () => {
     it('should place starting point', () => {
         mapCounterServiceSpy.startingPointCounter = 2;
         component.placeStartingPoint();
-        expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(1);
+        expect(mapCounterServiceSpy.startingPointCounter).toBe(1);
     });
 
     it('should select item', () => {

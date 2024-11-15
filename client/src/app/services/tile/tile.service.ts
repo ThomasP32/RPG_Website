@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { Cell } from '@common/map-cell';
-import { TileCategory } from '@common/map.types';
+import { ItemCategory, TileCategory } from '@common/map.types';
 
 @Injectable({
     providedIn: 'root',
@@ -15,7 +15,7 @@ export class TileService {
         const cell = map[rowIndex][colIndex];
         if (['wall', 'water', 'ice', 'door'].includes(selectedTile)) {
             if (cell.item && ['wall', 'door'].includes(selectedTile)) {
-                this.mapCounterService.updateCounters(true, cell.item, 'add');
+                this.mapCounterService.releaseItem(cell.item);
                 cell.item = undefined;
             }
 
@@ -30,7 +30,7 @@ export class TileService {
             }
             cell.tileType = this.convertTileValue(selectedTile);
             if (cell.isStartingPoint) {
-                this.mapCounterService.updateCounters(true, undefined, 'add');
+                this.mapCounterService.updateCounters(true, 'add');
                 cell.isStartingPoint = false;
             }
         }
@@ -42,13 +42,13 @@ export class TileService {
         cell.tileType = this.convertTileValue(defaultTile);
 
         if (cell.item) {
-            this.mapCounterService.updateCounters(false, cell.item, 'add');
+            this.mapCounterService.releaseItem(cell.item);
             cell.item = undefined;
         }
 
         cell.door = { isDoor: false, isOpen: false };
         if (cell.isStartingPoint) {
-            this.mapCounterService.updateCounters(true, undefined, 'add');
+            this.mapCounterService.updateCounters(true, 'add');
             cell.isStartingPoint = false;
         }
     }
@@ -58,25 +58,30 @@ export class TileService {
         map[from.rowIndex][from.colIndex].item = undefined;
         this.setStartingPoint(map, from.rowIndex, from.colIndex);
     }
-    setItem(map: any[][], item: string, to: { rowIndex: number; colIndex: number }) {
+    setItem(map: any[][], item: ItemCategory, to: { rowIndex: number; colIndex: number }) {
         map[to.rowIndex][to.colIndex].item = item;
+        if (item === ItemCategory.Random) {
+            this.mapCounterService.randomItemCounter--;
+        } else {
+            this.mapCounterService.useItem(item);
+        }
     }
 
     setStartingPoint(map: any[][], rowIndex: number, colIndex: number) {
         map[rowIndex][colIndex].isStartingPoint = !map[rowIndex][colIndex].isStartingPoint;
         if (!map[rowIndex][colIndex].isStartingPoint) {
-            this.mapCounterService.updateCounters(true, undefined, 'add');
+            this.mapCounterService.updateCounters(true, 'add');
         } else {
-            this.mapCounterService.updateCounters(true, undefined, 'remove');
+            this.mapCounterService.updateCounters(true, 'remove');
         }
     }
 
     removeStartingPoint(map: any[][], rowIndex: number, colIndex: number) {
         map[rowIndex][colIndex].isStartingPoint = false;
-        this.mapCounterService.updateCounters(true, undefined, 'add');
+        this.mapCounterService.updateCounters(true, 'add');
     }
 
-    convertTileValue(tileValue: string): TileCategory {
+    convertTileValue(tileValue: String): TileCategory {
         switch (tileValue) {
             case 'wall':
                 return TileCategory.Wall;
