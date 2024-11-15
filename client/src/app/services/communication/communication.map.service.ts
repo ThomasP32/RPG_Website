@@ -12,12 +12,10 @@ export class CommunicationMapService {
         this.http = http;
     }
 
-    // fonction qui retourne un observable émettant soit la liste de jeux soit une erreur (emettre cest .next())
     basicGet<T>(url: string): Observable<T> {
         return this.http.get<T>(`${this.baseUrl}/${url}`).pipe(catchError(this.handleError<T>('basicGet')));
     }
 
-    // http.post renvoie un observable qui emettra la reponse du post quand elle sera recue
     basicPost<T>(url: string, data: T): Observable<HttpResponse<string>> {
         return this.http.post(`${this.baseUrl}/${url}`, data, {
             observe: 'response',
@@ -48,5 +46,4 @@ export class CommunicationMapService {
     private handleError<T>(request: string, result?: T): () => Observable<T> {
         return () => of(result as T);
     }
-    
 }
