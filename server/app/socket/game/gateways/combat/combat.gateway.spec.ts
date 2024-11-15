@@ -1,5 +1,5 @@
 import { Combat } from '@common/combat';
-import { Avatar, Bonus, Game } from '@common/game';
+import { Avatar, Bonus, Game, Player } from '@common/game';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
@@ -23,7 +23,7 @@ describe('CombatGateway', () => {
     let journalService: jest.Mocked<JournalService>;
 
     const mockCombat: Combat = {
-        id: 'combat-id',
+        id: 'game-id-combat',
         challenger: {
             socketId: 'socket-id',
             name: 'Player1',
@@ -130,6 +130,8 @@ describe('CombatGateway', () => {
                         getGameById: jest.fn().mockReturnValue({ id: 'game-id' }),
                         getPlayer: jest.fn().mockReturnValue(mockCombat.challenger),
                         handlePlayerLeaving: jest.fn(),
+                        isPlayerHost: jest.fn(),
+                        deleteRoom: jest.fn(),
                     },
                 },
                 {
@@ -295,7 +297,7 @@ describe('CombatGateway', () => {
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
             expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionFailed', mockCombat.challenger);
             expect(journalService.logMessage).toHaveBeenCalledWith(
-                'combat-id',
+                'game-id-combat',
                 `Tentative d'évasion par ${mockCombat.challenger.name}: non réussie.`,
                 [mockCombat.challenger.name],
             );
@@ -486,44 +488,131 @@ describe('CombatGateway', () => {
                 expect(result).toBe(false);
             });
         });
-
         describe('handleDisconnect', () => {
-            it('should declare opponent as winner and emit combatFinishedByDisconnection if a player disconnects', () => {
-                const mockGame = { id: 'game-id', players: [mockCombat.challenger, mockCombat.opponent] } as Game;
+            it('should emit "gameClosed" if the disconnected player is the host and game has not started', () => {
+                const mockGame = { id: 'game-id', hasStarted: false, players: [mockCombat.challenger] } as Game;
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.isPlayerHost.mockReturnValue(true);
+
+                gateway.handleDisconnect(mockSocket);
+
+                expect(mockServer.to).toHaveBeenCalledWith('game-id');
+                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                expect(gameCreationService.deleteRoom).toHaveBeenCalledWith('game-id');
+            });
+
+            it('should emit "playerLeft" if a non-host player disconnects', () => {
+                const mockGame = { id: 'game-id', hasStarted: true, players: [mockCombat.challenger] } as Game;
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.isPlayerHost.mockReturnValue(false);
+                gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+
+                gateway.handleDisconnect(mockSocket);
+
+                expect(mockServer.to).toHaveBeenCalledWith('game-id');
+                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('playerLeft', mockGame.players);
+            });
+
+            it('should emit "combatFinishedByDisconnection" if player disconnects during combat', () => {
+                const mockGame = { id: 'game-id', hasStarted: true, players: [mockCombat.challenger] } as Game;
+                const mockWinner = mockCombat.opponent;
                 gameCreationService.getGames.mockReturnValue([mockGame]);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+                serverCombatService.getCombatByGameId.mockReturnValue(mockCombat);
 
                 gateway.handleDisconnect(mockSocket);
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedByDisconnection', mockCombat.opponent);
-                expect(gameCreationService.handlePlayerLeaving).toHaveBeenCalledWith(mockSocket, mockGame.id);
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedByDisconnection', mockWinner);
+                expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             });
 
-            it('should emit playerLeft and resume countdown if necessary after disconnection', () => {
+            it('should exit early if checkForGameWinner returns true', () => {
                 const mockGame = {
                     id: 'game-id',
-                    players: [mockCombat.challenger, mockCombat.opponent],
-                    currentTurn: mockCombat.opponent.turn,
+                    hasStarted: true,
+                    currentTurn: mockCombat.challenger.turn,
+                    players: [
+                        { socketId: mockCombat.challenger.socketId, turn: mockCombat.challenger.turn, name: mockCombat.challenger.name } as Player,
+                        { socketId: mockCombat.opponent.socketId, turn: mockCombat.opponent.turn, name: mockCombat.opponent.name } as Player,
+                    ],
                 } as Game;
+
                 gameCreationService.getGames.mockReturnValue([mockGame]);
-                gameCreationService.getGameById.mockReturnValue(mockGame);
+                gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(true);
+
+                gateway.handleDisconnect(mockSocket);
+
+                expect(gameCountdownService.resumeCountdown).not.toHaveBeenCalled();
+                expect(gameCountdownService.emit).not.toHaveBeenCalled();
+            });
+
+            it('should do nothing if no conditions are met', () => {
+                const mockGame = { id: 'game-id', hasStarted: true, players: [mockCombat.challenger] } as Game;
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(false);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
 
                 gateway.handleDisconnect(mockSocket);
 
-                expect(mockServer.to(mockGame.id).emit).toHaveBeenCalledWith('playerLeft', mockGame.players);
+                expect(gameCountdownService.resumeCountdown).not.toHaveBeenCalled();
+                expect(gameCountdownService.emit).not.toHaveBeenCalled();
             });
 
-            it('should not proceed if no game is found for the disconnected player', () => {
-                gameCreationService.getGames.mockReturnValue([]);
-
+            it('should resume the game countdown if the winner’s turn matches the current turn after a player disconnects', () => {
+                jest.useFakeTimers();
+                const mockGame = {
+                    id: 'game-id',
+                    hasStarted: true,
+                    currentTurn: mockCombat.opponent.turn, // Match winner's turn (1)
+                    players: [
+                        { socketId: mockCombat.challenger.socketId, turn: mockCombat.challenger.turn, name: mockCombat.challenger.name, specs: mockCombat.challenger.specs } as Player,
+                        { socketId: mockCombat.opponent.socketId, turn: mockCombat.opponent.turn, name: mockCombat.opponent.name, specs: mockCombat.opponent.specs } as Player,
+                    ],
+                } as Game;
+            
+                mockCombat.challenger.specs.nVictories = 1; 
+                mockCombat.opponent.specs.nVictories = 1;
+            
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+                serverCombatService.getCombatByGameId.mockReturnValue(mockCombat);
+            
                 gateway.handleDisconnect(mockSocket);
-
-                expect(mockServer.to).not.toHaveBeenCalled();
-                expect(gameCreationService.handlePlayerLeaving).not.toHaveBeenCalled();
-                expect(combatCountdownService.deleteCountdown).not.toHaveBeenCalled();
+            
+                jest.runAllTimers();
+            
+                expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith(mockGame.id);
             });
+
+            it('should emit "timeout" if there is no active combat and the disconnected player’s turn matches the current game turn', () => {
+                jest.useFakeTimers();
+            
+                const mockGame = {
+                    id: 'game-id',
+                    hasStarted: true,
+                    currentTurn: mockCombat.challenger.turn, 
+                    players: [
+                        { socketId: mockCombat.challenger.socketId, turn: mockCombat.challenger.turn, name: mockCombat.challenger.name, specs: mockCombat.challenger.specs } as Player,
+                        { socketId: mockCombat.opponent.socketId, turn: mockCombat.opponent.turn, name: mockCombat.opponent.name, specs: mockCombat.opponent.specs } as Player,
+                    ],
+                } as Game;
+            
+                serverCombatService.getCombatByGameId.mockReturnValue(undefined);
+            
+               
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+            
+                gateway.handleDisconnect(mockSocket);
+                jest.runAllTimers();
+            
+                expect(gameCountdownService.emit).toHaveBeenCalledWith('timeout', mockGame.id);
+        
+            });
+            
+            
         });
     });
 });
