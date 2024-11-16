@@ -1,6 +1,6 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS } from '@common/directions';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
