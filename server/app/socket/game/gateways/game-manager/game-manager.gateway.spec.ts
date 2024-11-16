@@ -75,6 +75,27 @@ describe('GameManagerGateway', () => {
     });
 
     describe('getMove', () => {
+        it('should emit gameFinishedPlayerWon if checkForWinnerCtf returns true', async () => {
+            gameCreationService.doesGameExist.returns(true);
+        
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1' } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
+        
+            const moves = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+            ];
+            gameManagerService.getMove.returns(moves);
+            gameManagerService.checkForWinnerCtf.returns(true);
+        
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+        
+            expect(gameManagerService.checkForWinnerCtf.calledWith(player, 'game-id')).toBeTruthy();
+            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+            expect(toRoomStub.calledWith('gameFinishedPlayerWon', { winner: player })).toBeTruthy();
+        });
+        
         it('should emit gameNotFound if the game does not exist', async () => {
             gameCreationService.doesGameExist.returns(false);
 

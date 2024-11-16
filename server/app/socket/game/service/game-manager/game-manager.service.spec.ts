@@ -1,7 +1,7 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 
 let specs: Specs = {
@@ -470,4 +470,47 @@ describe('GameManagerService', () => {
             expect(result).toBe(false);
         });
     });
+
+    describe('checkForWinnerCtf', () => {
+        it('should return true if the player has the flag and is at their initial position', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Ctf;
+    
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+    
+            expect(result).toBe(true);
+        });
+    
+        it('should return false if the player has the flag but is not at their initial position', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { x: player.initialPosition.x + 1, y: player.initialPosition.y };
+            game2.mode = Mode.Ctf;
+    
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+    
+            expect(result).toBe(false);
+        });
+    
+        it('should return false if the player does not have the flag', () => {
+            player.inventory = [];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Ctf;
+    
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+    
+            expect(result).toBe(false);
+        });
+    
+        it('should return false if the game mode is not CTF', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Classic;
+    
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+    
+            expect(result).toBe(false);
+        });
+    });
+    
 });

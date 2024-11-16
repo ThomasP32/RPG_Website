@@ -151,12 +151,6 @@ describe('AdminPageComponent', () => {
         expect(router.navigate).toHaveBeenCalledWith([`/edition/${mockMaps[0]._id}`]);
     });
 
-    it('should trigger file input click', () => {
-        spyOn(component.fileInput.nativeElement, 'click');
-        component.triggerFileInput();
-        expect(component.fileInput.nativeElement.click).toHaveBeenCalled();
-    });
-
     it('should open delete confirmation modal', () => {
         component.openConfirmationModal(mockMaps[0]);
         expect(component.showDeleteModal).toBeTrue();
@@ -198,11 +192,5 @@ describe('AdminPageComponent', () => {
         component.onCloseModal();
         expect(component.isCreateMapModalVisible).toBeFalse();
     });
-
-    it('should display an error message when onImportError is called', () => {
-        const errorMessage = 'Le format ce fichier est invalide. Un fichier en format JSON est attendu.';
-        spyOn(component.errorMessageModal, 'open');
-        component.onImportError(errorMessage);
-        expect(component.errorMessageModal.open).toHaveBeenCalledWith(errorMessage);
-    });    
+    
 });

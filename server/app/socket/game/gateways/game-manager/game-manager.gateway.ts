@@ -72,6 +72,10 @@ export class GameManagerGateway implements OnGatewayInit {
             }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
+            if (this.gameManagerService.checkForWinnerCtf(player, data.gameId)) {
+                this.server.to(data.gameId).emit('gameFinishedPlayerWon', { winner: player });
+                return;
+            }
         }
 
         if (this.gameManagerService.hasFallen(moves, data.destination)) {
