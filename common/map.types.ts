@@ -25,6 +25,7 @@ export enum ItemCategory {
     Vest = 'vest',
     Acidgun = 'acidgun',
     Flag = 'flag',
+    StartingPoint = 'startingPoint',
 }
 
 export interface Tile {
