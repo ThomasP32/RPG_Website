@@ -2,11 +2,17 @@ import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat } from '@common/combat';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
+import { Mode } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
+import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class ServerCombatService {
     private combatRooms: Record<string, Combat> = {};
+
+    constructor(private gameCreationService: GameCreationService) {
+        this.gameCreationService = gameCreationService;
+    }
 
     createCombat(gameId: string, challenger: Player, opponent: Player): Combat {
         let currentTurnSocketId: string = challenger.socketId;
@@ -132,5 +138,14 @@ export class ServerCombatService {
                 game.players[index] = combat.opponent;
             }
         });
+    }
+
+    checkForGameWinner(gameId: string, player: Player): boolean {
+        if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
+            if (player.specs.nVictories >= 3) {
+                return true;
+            }
+        }
+        return false;
     }
 }
