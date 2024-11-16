@@ -193,7 +193,6 @@ export class MapAreaComponent implements OnInit {
                 event.preventDefault();
             }
         }
-        console.log(this.mapCounterService.itemsCounter);
     }
 
     removeStartingPoint(isRemoving: boolean) {
