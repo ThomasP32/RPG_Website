@@ -57,6 +57,8 @@ export class AdminController {
             await this.adminService.addMap(mapDto);
             response.status(HttpStatus.CREATED).send();
         } catch (error) {
+            console.log(error.status);
+            console.log(error.message);
             return response.status(error.status || HttpStatus.BAD_REQUEST).json({
                 status: error.status || HttpStatus.BAD_REQUEST,
                 message: error.message || 'La création du jeu a échoué',
