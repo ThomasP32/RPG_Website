@@ -4,7 +4,7 @@ import { ImageService } from '@app/services/image/image.service';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { MapService } from '@app/services/map/map.service';
 import { TileService } from '@app/services/tile/tile.service';
-import { Mode } from '@common/map.types';
+import { ItemCategory, Mode } from '@common/map.types';
 
 @Component({
     selector: 'app-toolbar',
@@ -14,6 +14,7 @@ import { Mode } from '@common/map.types';
     styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent implements OnInit {
+    protected ItemCategory = ItemCategory;
     selectedTile: string;
 
     @Output() tileSelected = new EventEmitter<string>();
@@ -28,10 +29,10 @@ export class ToolbarComponent implements OnInit {
     itemsUsable: boolean = false;
 
     constructor(
-        public mapService: MapService,
-        public mapCounterService: MapCounterService,
-        public imageService: ImageService,
-        public tileService: TileService,
+        protected mapService: MapService,
+        protected mapCounterService: MapCounterService,
+        protected imageService: ImageService,
+        protected tileService: TileService,
     ) {
         this.mapService = mapService;
         this.mapCounterService = mapCounterService;
@@ -74,15 +75,18 @@ export class ToolbarComponent implements OnInit {
         }
     }
 
-    startDrag(event: DragEvent, itemType: string) {
-        if (itemType === 'starting-point') {
-            this.selectedTile = '';
-            this.mapService.updateSelectedTile(this.selectedTile);
+    startDrag(event: DragEvent, draggingObject: ItemCategory) {
+        this.mapService.updateSelectedTile('');
+        if (draggingObject === ItemCategory.StartingPoint) {
             if (this.mapCounterService.startingPointCounter > 0) {
-                event.dataTransfer?.setData('isStartingPoint', 'true');
+                event.dataTransfer?.setData('draggingObject', JSON.stringify(draggingObject));
+            }
+        } else if (draggingObject === ItemCategory.Random) {
+            if (this.mapCounterService.randomItemCounter > 0) {
+                event.dataTransfer?.setData('draggingObject', JSON.stringify(draggingObject));
             }
         } else {
-            return;
+            event.dataTransfer?.setData('draggingObject', JSON.stringify(draggingObject));
         }
     }
 
@@ -100,7 +104,7 @@ export class ToolbarComponent implements OnInit {
 
     placeStartingPoint() {
         if (this.mapCounterService.startingPointCounter > 0) {
-            this.mapCounterService.updateStartingPointCounter(this.mapCounterService.startingPointCounter - 1);
+            this.mapCounterService.startingPointCounter--;
         }
     }
 
