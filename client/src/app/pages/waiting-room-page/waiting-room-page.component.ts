@@ -62,7 +62,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     maxPlayers: number;
 
     async ngOnInit(): Promise<void> {
-        const player = this.playerService.getPlayer();
+        const player = this.playerService.player;
         this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;
 
