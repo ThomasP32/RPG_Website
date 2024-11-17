@@ -61,7 +61,7 @@ describe('MapCounterService', () => {
             ItemCategory.IceSkates,
             ItemCategory.Key,
             ItemCategory.Mask,
-            ItemCategory.Vest,
+            ItemCategory.Armor,
             ItemCategory.Acidgun,
         ]);
     });
