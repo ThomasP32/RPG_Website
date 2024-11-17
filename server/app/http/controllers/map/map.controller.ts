@@ -4,11 +4,10 @@ import { Controller, Get, HttpStatus, Inject, Param, Res } from '@nestjs/common'
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-
-@ApiTags('Map') 
+@ApiTags('Map')
 @Controller('map')
 export class MapController {
-    @Inject(MapService) private readonly mapService: MapService; 
+    @Inject(MapService) private readonly mapService: MapService;
 
     @ApiOkResponse({
         description: 'Returns all maps',

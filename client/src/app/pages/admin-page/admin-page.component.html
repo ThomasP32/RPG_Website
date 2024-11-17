@@ -6,6 +6,10 @@
         <h2>Administration des jeux</h2>
 
         <div class="header-buttons">
+            <button class="import-button" (click)="triggerFileInput()">
+                <i class="fas fa-upload"></i>
+            </button>
+            <input type="file" (change)="onFileSelect($event)" class="import-file-input" #fileInput style="display: none" />
             <button class="create-game-button" (click)="toggleGameCreationModalVisibility()">Nouveau jeu</button>
         </div>
     </div>
@@ -67,6 +71,9 @@
                                 </div>
                             </div>
                             }
+                            <button class="export-button" (click)="onExport(map)">
+                                <i class="fas fa-download"></i>
+                            </button>
                         </div>
                         <p class="lastModified">Dernière modification le {{ formatDate(map.lastModified) }}</p>
                     </div>
