@@ -62,6 +62,7 @@ export class TileService {
         map[to.rowIndex][to.colIndex].item = item;
         if (item === ItemCategory.Random) {
             this.mapCounterService.itemsCounter--;
+            this.mapCounterService.randomItemCounter--;
         } else {
             this.mapCounterService.useItem(item);
         }

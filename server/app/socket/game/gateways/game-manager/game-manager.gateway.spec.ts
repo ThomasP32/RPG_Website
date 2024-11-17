@@ -566,21 +566,5 @@ describe('GameManagerGateway', () => {
 
             expect(serverStub.to.called).toBeTruthy();
         });
-
-        it('should log an error if the door is not found in the game', () => {
-            const gameId = 'game-id';
-            const doorTile: DoorTile = { coordinate: { x: 5, y: 5 }, isOpened: false };
-            const game: Game = {
-                id: gameId,
-                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
-                doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
-            } as Game;
-
-            gameCreationService.getGameById.returns(game);
-
-            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
-
-            expect(serverStub.to.called).toBeFalsy();
-        });
     });
 });

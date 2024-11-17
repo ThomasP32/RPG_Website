@@ -229,7 +229,7 @@ describe('MapAreaComponent', () => {
                     },
                 ],
                 [
-                    { tileType: TileCategory.Floor, isHovered: false, item: ItemCategory.Vest } as Cell,
+                    { tileType: TileCategory.Floor, isHovered: false, item: ItemCategory.Armor } as Cell,
                     { tileType: TileCategory.Floor, isHovered: false, isStartingPoint: true } as Cell,
                 ],
             ];

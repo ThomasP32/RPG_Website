@@ -18,11 +18,11 @@ export enum Mode {
 
 export enum ItemCategory {
     Hat = 'hat',
-    Jar = 'jar',
+    IceSkates = 'iceskates',
     Key = 'key',
     Mask = 'mask',
     Random = 'random',
-    Vest = 'vest',
+    Armor = 'armor',
     Acidgun = 'acidgun',
     Flag = 'flag',
     StartingPoint = 'startingPoint',
