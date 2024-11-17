@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
@@ -10,8 +10,9 @@ import { Player } from '@common/game';
     templateUrl: './combat-list.component.html',
     styleUrl: './combat-list.component.scss',
 })
-export class CombatListComponent {
+export class CombatListComponent implements OnChanges {
     @Input() possibleOpponents: Player[] = [];
+    combatAlreadyStarted = false;
 
     constructor(
         private socketService: SocketService,
@@ -21,7 +22,14 @@ export class CombatListComponent {
         this.gameService = gameService;
     }
 
+    ngOnChanges() {
+        this.combatAlreadyStarted = false;
+    }
+
     attack(opponent: Player): void {
-        this.socketService.sendMessage('startCombat', { gameId: this.gameService.game.id, opponent: opponent });
+        if (!this.combatAlreadyStarted) {
+            this.socketService.sendMessage('startCombat', { gameId: this.gameService.game.id, opponent: opponent });
+            this.combatAlreadyStarted = true;
+        }
     }
 }
