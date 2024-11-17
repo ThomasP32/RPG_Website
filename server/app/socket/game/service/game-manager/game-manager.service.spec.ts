@@ -445,6 +445,18 @@ describe('GameManagerService', () => {
         });
     });
 
+    it('should add the item to the player inventory and remove it from the game items', () => {
+        const item = { coordinate: { x: 1, y: 1 }, category: ItemCategory.Hat };
+        game2.items.push(item);
+        const player = game2.players[0];
+        player.position = { x: 1, y: 1 };
+
+        gameManagerService.pickUpItem(player.position, game2, player);
+
+        expect(player.inventory).toContain(ItemCategory.Hat);
+        expect(game2.items).not.toContain(item);
+    });
+
     describe('isGameResumable', () => {
         it('should return true if there is at least one active player', () => {
             game2.players[0].isActive = true;

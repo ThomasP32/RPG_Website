@@ -47,10 +47,11 @@ export class MapCounterService {
         this.randomItemCounter -= randomItemCount;
     }
     setAvailablesItems() {
-        this.items = [ItemCategory.Hat, ItemCategory.Jar, ItemCategory.Key, ItemCategory.Mask, ItemCategory.Vest, ItemCategory.Acidgun];
+        this.items = [ItemCategory.Hat, ItemCategory.IceSkates, ItemCategory.Key, ItemCategory.Mask, ItemCategory.Armor, ItemCategory.Acidgun];
     }
 
     isItemUsed(item: ItemCategory): boolean {
+        console.log(!this.items.includes(item));
         return !this.items.includes(item);
     }
 
@@ -59,6 +60,7 @@ export class MapCounterService {
             this.itemsCounter -= 1;
         }
         this.items = this.items.filter((i) => i !== item);
+        console.log(this.items);
     }
 
     releaseItem(item: ItemCategory) {
