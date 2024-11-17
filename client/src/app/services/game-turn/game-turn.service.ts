@@ -32,7 +32,7 @@ export class GameTurnService {
 
     isMoving = false;
 
-    actionsDone = { combat: false, door: false };
+    doorAlreadyToggled = false;
     possibleActions = { combat: false, door: false };
 
     constructor(
@@ -53,15 +53,16 @@ export class GameTurnService {
         return this.gameService.game;
     }
 
-    startTurn(): void {
-        this.getMoves();
-        this.getActions();
-    }
-
     resumeTurn(): void {
         if (this.playerTurn.getValue() === this.player.name) {
-            if (!this.actionsDone.door || !this.actionsDone.combat) {
-                this.getActions();
+            this.possibleOpponents.next([]);
+            this.possibleDoors.next([]);
+            this.possibleActions.combat = true;
+            this.possibleActions.door = true;
+            if (this.player.specs.actions !== 0) {
+                this.getCombats();
+            } else {
+                this.getMoves();
             }
         }
     }
@@ -86,8 +87,7 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
                 this.clearMoves();
-                this.actionsDone.door = false;
-                this.actionsDone.combat = false;
+                this.doorAlreadyToggled = false;
                 this.playerService.player = yourPlayer;
                 this.playerTurn.next(yourPlayer.name);
             }),
@@ -102,19 +102,23 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen('startTurn').subscribe(() => {
                 if (this.playerTurn.getValue() === this.player.name) {
-                    this.getActions();
+                    this.possibleActions.combat = true;
+                    this.possibleActions.door = true;
+                    this.getCombats();
                 }
             }),
         );
     }
 
-    getActions(): void {
+    getCombats(): void {
         this.listenForPossibleCombats();
-        this.listenForDoors();
         this.socketService.sendMessage('getCombats', this.game.id);
-        this.socketService.sendMessage('getAdjacentDoors', this.game.id);
     }
 
+    getDoors(): void {
+        this.listenForDoors();
+        this.socketService.sendMessage('getAdjacentDoors', this.game.id);
+    }
     getMoves(): void {
         this.socketService.sendMessage('getMovements', this.game.id);
     }
@@ -132,16 +136,19 @@ export class GameTurnService {
             this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
                 this.moves = new Map();
                 this.moves = new Map(paths);
-                if (this.moves.size === 1 && !this.possibleActions.combat) {
+                if (
+                    this.moves.size === 1 &&
+                    (this.playerService.player.specs.actions === 0 || (!this.possibleActions.combat && !this.possibleActions.door))
+                )
                     this.endTurn();
-                }
             }),
         );
     }
 
     toggleDoor(door: DoorTile) {
-        if (this.possibleActions.door && !this.actionsDone.door) {
+        if (this.possibleActions.door && !this.doorAlreadyToggled) {
             this.socketService.sendMessage('toggleDoor', { gameId: this.game.id, door });
+            this.doorAlreadyToggled = true;
         }
     }
 
@@ -172,14 +179,14 @@ export class GameTurnService {
 
     listenForDoorUpdates(): void {
         this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
-            this.actionsDone.door = true;
             if (data.player && data.player.socketId === this.player.socketId) {
                 this.playerService.setPlayer(data.player);
+                this.resumeTurn();
             }
             this.gameService.setGame(data.game);
-            this.resumeTurn();
         });
     }
+
     listenForCombatStarted(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player>('YouStartedCombat').subscribe((player) => {
@@ -195,11 +202,9 @@ export class GameTurnService {
             this.socketService.listen<Player[]>('yourCombats').subscribe((possibleOpponents) => {
                 if (possibleOpponents.length === 0) {
                     this.possibleActions.combat = false;
-                } else {
-                    this.possibleActions.combat = true;
                 }
                 this.possibleOpponents.next(possibleOpponents);
-                this.getMoves();
+                this.getDoors();
             }),
         );
     }
@@ -209,10 +214,9 @@ export class GameTurnService {
             this.socketService.listen<DoorTile[]>('yourDoors').subscribe((possibleDoors) => {
                 if (possibleDoors.length === 0) {
                     this.possibleActions.door = false;
-                } else {
-                    this.possibleActions.door = true;
                 }
                 this.possibleDoors.next(possibleDoors);
+                this.getMoves();
             }),
         );
     }

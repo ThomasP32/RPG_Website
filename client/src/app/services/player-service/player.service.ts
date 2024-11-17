@@ -51,10 +51,6 @@ export class PlayerService {
         this.player = player;
     }
 
-    getPlayer(): Player {
-        return this.player;
-    }
-
     setPlayer(player: Player): void {
         this.player = player;
     }
@@ -69,10 +65,10 @@ export class PlayerService {
 
     assignBonus(type: 'life' | 'speed'): void {
         if (type === 'life') {
-            this.player.specs.life += 2;
+            this.player.specs.life = defaultHp + 2;
             this.player.specs.speed = defaultSpeed;
         } else if (type === 'speed') {
-            this.player.specs.speed += 2;
+            this.player.specs.speed = defaultSpeed + 2;
             this.player.specs.life = defaultHp;
         }
     }
