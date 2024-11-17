@@ -47,7 +47,14 @@ export class MapCounterService {
         this.randomItemCounter -= randomItemCount;
     }
     setAvailablesItems() {
-        this.items = [ItemCategory.Hat, ItemCategory.Jar, ItemCategory.Key, ItemCategory.Mask, ItemCategory.Vest, ItemCategory.Acidgun];
+        this.items = [
+            ItemCategory.Armor,
+            ItemCategory.IceSkates,
+            ItemCategory.GrapplingHook,
+            ItemCategory.Flask,
+            ItemCategory.TimeTwister,
+            ItemCategory.Sword,
+        ];
     }
 
     isItemUsed(item: ItemCategory): boolean {

@@ -60,7 +60,7 @@ describe('MapCounterService', () => {
             ItemCategory.Hat,
             ItemCategory.Jar,
             ItemCategory.Key,
-            ItemCategory.Mask,
+            ItemCategory.Flask,
             ItemCategory.Vest,
             ItemCategory.Acidgun,
         ]);
@@ -69,7 +69,7 @@ describe('MapCounterService', () => {
     it('should check if item is used correctly', () => {
         service.items = [ItemCategory.Hat, ItemCategory.Jar];
         expect(service.isItemUsed(ItemCategory.Hat)).toBe(false);
-        expect(service.isItemUsed(ItemCategory.Mask)).toBe(true);
+        expect(service.isItemUsed(ItemCategory.Flask)).toBe(true);
     });
 
     it('should use item correctly', () => {
