@@ -58,9 +58,9 @@ describe('ImageService', () => {
     });
 
     it('should get item image', () => {
-        expect(service.getItemImage(ItemCategory.Vest)).toBe('./assets/items/vest.png');
+        expect(service.getItemImage(ItemCategory.Armor)).toBe('./assets/items/armor.png');
         expect(service.getItemImage(ItemCategory.Mask)).toBe('./assets/items/mask.png');
-        expect(service.getItemImage(ItemCategory.Jar)).toBe('./assets/items/jar.png');
+        expect(service.getItemImage(ItemCategory.IceSkates)).toBe('./assets/items/iceskates.png');
         expect(service.getItemImage(ItemCategory.Acidgun)).toBe('./assets/items/acidgun.png');
         expect(service.getItemImage(ItemCategory.Key)).toBe('./assets/items/keysilver.png');
         expect(service.getItemImage(ItemCategory.Hat)).toBe('./assets/items/hat.png');
@@ -84,9 +84,9 @@ describe('ImageService', () => {
     });
 
     it('should get item image by string', () => {
-        expect(service.getItemImageByString('vest')).toBe('./assets/items/vest.png');
+        expect(service.getItemImageByString('armor')).toBe('./assets/items/armor.png');
         expect(service.getItemImageByString('mask')).toBe('./assets/items/mask.png');
-        expect(service.getItemImageByString('jar')).toBe('./assets/items/jar.png');
+        expect(service.getItemImageByString('iceskates')).toBe('./assets/items/iceskates.png');
         expect(service.getItemImageByString('acidgun')).toBe('./assets/items/acidgun.png');
         expect(service.getItemImageByString('key')).toBe('./assets/items/keysilver.png');
         expect(service.getItemImageByString('hat')).toBe('./assets/items/hat.png');
