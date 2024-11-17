@@ -237,7 +237,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForDoorOpening() {
         this.gameTurnService.possibleDoors$.subscribe((doors) => {
-            if (this.gameTurnService.actionsDone.door) {
+            if (this.gameTurnService.doorAlreadyToggled) {
                 this.doorActionAvailable = false;
                 this.possibleDoors = [];
                 this.actionMessage = 'Actions possibles';
