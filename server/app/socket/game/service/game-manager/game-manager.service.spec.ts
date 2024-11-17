@@ -525,4 +525,25 @@ describe('GameManagerService', () => {
         });
     });
     
+    describe('GameManagerService - hasPickedUpFlag', () => {
+
+        it('should return true when the old inventory does not contain the flag but the new inventory does', () => {
+            const oldInventory: ItemCategory[] = [ItemCategory.Hat, ItemCategory.Acidgun];
+            const newInventory: ItemCategory[] = [ItemCategory.Hat, ItemCategory.Acidgun, ItemCategory.Flag];
+    
+            const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
+    
+            expect(result).toBe(true);
+        });
+    
+        it('should return false when both inventories contain the flag', () => {
+            const oldInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Hat];
+            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Hat, ItemCategory.Acidgun];
+    
+            const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
+    
+            expect(result).toBe(false);
+        });
+    });
+    
 });
