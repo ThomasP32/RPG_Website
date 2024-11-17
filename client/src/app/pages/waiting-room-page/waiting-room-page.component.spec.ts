@@ -60,7 +60,7 @@ describe('WaitingRoomPageComponent', () => {
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer']);
         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         characterServiceSpy.getAvatarPreview.and.returnValue('avatarUrl');
-        playerServiceSpy.getPlayer.and.returnValue(mockPlayer);
+        playerServiceSpy.player = mockPlayer;
         RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/waiting-room/host' });
 
         gameStartedSubject = new Subject<any>();
@@ -88,6 +88,8 @@ describe('WaitingRoomPageComponent', () => {
         });
 
         CommunicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
+        CommunicationMapServiceSpy.basicGet.and.returnValue(of({}));
+
         ActivatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], {
             snapshot: { params: { gameId: '1234', mapName: 'Map1' } },
         });
