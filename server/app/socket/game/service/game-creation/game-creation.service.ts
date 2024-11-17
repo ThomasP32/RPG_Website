@@ -1,5 +1,6 @@
 import { MapConfig, MapSize } from '@common/constants';
 import { Game, Player } from '@common/game';
+import { TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
@@ -124,6 +125,17 @@ export class GameCreationService {
             player.position.y = startTilesLeft[randomIndex].coordinate.y;
             player.initialPosition.x = startTilesLeft[randomIndex].coordinate.x;
             player.initialPosition.y = startTilesLeft[randomIndex].coordinate.y;
+            if (
+                game.tiles.some(
+                    (tile) =>
+                        tile.coordinate.x === startTilesLeft[randomIndex].coordinate.x &&
+                        tile.coordinate.y === startTilesLeft[randomIndex].coordinate.y &&
+                        tile.category === TileCategory.Ice,
+                )
+            ) {
+                player.specs.attack -= 2;
+                player.specs.defense -= 2;
+            }
             startTilesLeft.splice(randomIndex, 1);
         });
     }
