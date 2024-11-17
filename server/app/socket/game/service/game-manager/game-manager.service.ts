@@ -1,6 +1,6 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS } from '@common/directions';
-import { Game, GameCtf, Player } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
@@ -231,6 +231,11 @@ export class GameManagerService {
 
     hasFallen(moves: Coordinate[], destination: Coordinate) {
         return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
+    }
+
+    hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
+        if (!oldInventory.some((item) => item === ItemCategory.Flag) && newInventory.some((item) => item === ItemCategory.Flag)) return true;
+        return false;
     }
 
     getAdjacentPlayers(player: Player, gameId: string): Player[] {

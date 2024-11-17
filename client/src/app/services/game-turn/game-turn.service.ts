@@ -239,4 +239,12 @@ export class GameTurnService {
             }),
         );
     }
+
+    listenForFlagDetentor(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Game>('flagPickedUp').subscribe((game) => {
+                this.gameService.setGame(game);
+            }),
+        );
+    }
 }

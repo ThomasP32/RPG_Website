@@ -136,7 +136,7 @@ describe('AdminServiceEndToEnd', () => {
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
             items: [
-                { coordinate: { x: 1, y: 0 }, category: ItemCategory.Jar },
+                { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
                 { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
             ],
             tiles: [],
@@ -240,7 +240,7 @@ describe('AdminServiceEndToEnd', () => {
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
-            { coordinate: { x: 1, y: 0 }, category: ItemCategory.Jar },
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
             { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
         ],
         tiles: [
@@ -258,7 +258,7 @@ describe('AdminServiceEndToEnd', () => {
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
-            { coordinate: { x: 1, y: 0 }, category: ItemCategory.Jar },
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
             { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
         ],
         tiles: [
@@ -484,7 +484,7 @@ describe('AdminServiceEndToEnd', () => {
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
         items: [
-            { coordinate: { x: 1, y: 0 }, category: ItemCategory.Jar },
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
@@ -501,8 +501,8 @@ describe('AdminServiceEndToEnd', () => {
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
         items: [
-            { coordinate: { x: 1, y: 0 }, category: ItemCategory.Jar },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Key },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
