@@ -1,4 +1,4 @@
-import { Coordinate, ItemCategory, Map } from '@common/map.types';
+import { Coordinate, Item, Map } from '@common/map.types';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -44,7 +44,7 @@ export interface Player {
     avatar: Avatar;
     isActive: boolean;
     specs: Specs;
-    inventory: ItemCategory[];
+    inventory: Item[];
     position: Coordinate;
     initialPosition: Coordinate;
     turn: number;
