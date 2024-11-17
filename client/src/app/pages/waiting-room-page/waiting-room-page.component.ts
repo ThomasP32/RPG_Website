@@ -149,6 +149,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
                 this.gameService.setGame(data.game);
+                data.game.players.forEach((player) => {
+                    if (player.socketId === this.player.socketId) {
+                        this.playerService.setPlayer(player);
+                    }
+                });
                 this.gameInitialized = true;
                 this.navigateToGamePage();
             }),
