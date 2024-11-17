@@ -59,14 +59,32 @@
                 <p>Dé de défense = {{ player.specs.defenseBonus }}</p>
                 <p>Mouvements restants : {{ player.specs.movePoints }}</p>
                 <p>Actions restantes : {{ player.specs.actions }}</p>
-
             </div>
 
             <div class="inventory">
                 <h3>Inventaire</h3>
                 <div class="inventory-container">
-                    <div class="inventory-slot" *ngFor="let slot of [1, 2]">
+                    <div class="inventory-slot">
+                        @if(player.inventory[0]) {
+                        <img
+                            [src]="imageService.getItemImage(player.inventory[0].category)"
+                            [alt]="player.inventory[0].category"
+                            class="item-image"
+                        />
+                        } @else {
                         <div class="empty-slot">Vide</div>
+                        }
+                    </div>
+                    <div class="inventory-slot">
+                        @if(player.inventory[1]) {
+                        <img
+                            [src]="imageService.getItemImage(player.inventory[1].category)"
+                            [alt]="player.inventory[1].category"
+                            class="item-image"
+                        />
+                        } @else {
+                        <div class="empty-slot">Vide</div>
+                        }
                     </div>
                 </div>
             </div>
@@ -137,24 +155,21 @@
         <button class="modal-button" (click)="closeExitModal()">Non</button>
     </div>
 </div>
-} 
-@if(showKickedModal) {
+} @if(showKickedModal) {
 <div class="game-finished-modal">
     <div class="modal">
         <h2>Tous les joueurs ont abandonné.</h2>
         <p>La partie est finie, vous serez redirigé.</p>
     </div>
 </div>
-}
-@if(showEndGameModal) {
+} @if(showEndGameModal) {
 <div class="game-finished-modal">
     <div class="modal">
         <h2>Un joueur a gagné 3 combats.</h2>
         <p>La partie est finie, vous serez redirigé.</p>
     </div>
 </div>
-}
-@if(isCombatModalOpen){
+} @if(isCombatModalOpen){
 <div class="combat-modal">
     <div>
         <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
