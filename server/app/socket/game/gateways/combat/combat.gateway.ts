@@ -147,6 +147,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     }
                     if (game.currentTurn === attackingPlayer.turn) {
                         this.gameCountdownService.resumeCountdown(gameId);
+                        this.server.to(attackingPlayer.socketId).emit('resumeTurnAfterCombatWin');
                     } else {
                         this.gameCountdownService.emit('timeout', gameId);
                     }
