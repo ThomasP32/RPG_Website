@@ -215,7 +215,7 @@ export class GameManagerService {
     pickUpItem(pos: Coordinate, game: Game, player: Player): void {
         const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
         if (itemIndex !== -1) {
-            const item = game.items[itemIndex];
+            const item = game.items[itemIndex].category;
             player.inventory.push(item);
             game.items.splice(itemIndex, 1);
         }

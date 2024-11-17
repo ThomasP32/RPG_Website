@@ -130,7 +130,7 @@ describe('ToolbarComponent', () => {
         const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
         mapCounterServiceSpy.startingPointCounter = 2;
         component.startDrag(mockDragEvent, ItemCategory.StartingPoint);
-        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('draggingObject', 'startingPoint');
+        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('draggingObject', '"startingPoint"');
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
