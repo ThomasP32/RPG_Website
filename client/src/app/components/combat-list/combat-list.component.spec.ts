@@ -10,7 +10,14 @@ describe('CombatListComponent', () => {
     let socketServiceSpy: jasmine.SpyObj<SocketService>;
     let gameServiceSpy: jasmine.SpyObj<GameService>;
 
-    const mockPlayer: Player = { socketId: '1', name: 'Opponent1', avatar: 1, isActive: true, position: { x: 0, y: 0 }, specs: {} as Specs } as Player;
+    const mockPlayer: Player = {
+        socketId: '1',
+        name: 'Opponent1',
+        avatar: 1,
+        isActive: true,
+        position: { x: 0, y: 0 },
+        specs: {} as Specs,
+    } as Player;
     const mockGameId = 'game-123';
 
     beforeEach(async () => {
@@ -33,8 +40,25 @@ describe('CombatListComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('should reset combatAlreadyStarted to false when ngOnChanges is called', () => {
+        component.combatAlreadyStarted = true;
+        component.ngOnChanges();
+        expect(component.combatAlreadyStarted).toBeFalse();
+    });
+
     it('should send "startCombat" message with gameId and opponent when attack is called', () => {
         component.attack(mockPlayer);
         expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startCombat', { gameId: mockGameId, opponent: mockPlayer });
+    });
+
+    it('should set combatAlreadyStarted to true after attack is called', () => {
+        component.attack(mockPlayer);
+        expect(component.combatAlreadyStarted).toBeTrue();
+    });
+
+    it('should not send "startCombat" message if combatAlreadyStarted is true', () => {
+        component.combatAlreadyStarted = true;
+        component.attack(mockPlayer);
+        expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
     });
 });

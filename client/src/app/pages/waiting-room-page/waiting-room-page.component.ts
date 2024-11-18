@@ -11,8 +11,8 @@ import { GameService } from '@app/services/game/game.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, WaitingRoomParameters } from '@common/constants';
-import { Game, Player } from '@common/game';
-import { Map } from '@common/map.types';
+import { Game, GameCtf, Player } from '@common/game';
+import { Map, Mode } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 @Component({
@@ -64,7 +64,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     showProfileModal: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        const player = this.playerService.getPlayer();
+        const player = this.playerService.player;
         this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;
 
@@ -95,19 +95,12 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
-        const newGame: Game = {
-            ...map,
-            id: this.waitingRoomCode,
-            players: [this.player],
-            hostSocketId: '',
-            currentTurn: 0,
-            nDoorsManipulated: 0,
-            duration: 0,
-            nTurns: 0,
-            debug: false,
-            isLocked: false,
-            hasStarted: false,
-        };
+        let newGame: Game | GameCtf;
+        if (map.mode === Mode.Ctf) {
+            newGame = this.gameService.createNewCtfGame(map, this.waitingRoomCode);
+        } else {
+            newGame = this.gameService.createNewGame(map, this.waitingRoomCode);
+        }
         this.socketService.sendMessage('createGame', newGame);
     }
 
@@ -151,6 +144,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
                 this.gameService.setGame(data.game);
+                data.game.players.forEach((player) => {
+                    if (player.socketId === this.player.socketId) {
+                        this.playerService.setPlayer(player);
+                    }
+                });
                 this.gameInitialized = true;
                 this.navigateToGamePage();
             }),

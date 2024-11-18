@@ -9,7 +9,7 @@ describe('TileService', () => {
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
 
     beforeEach(() => {
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['updateCounters']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['updateCounters', 'releaseItem', 'useItem']);
         TestBed.configureTestingModule({
             providers: [TileService, { provide: MapCounterService, useValue: mapCounterServiceSpy }],
         });
@@ -51,7 +51,7 @@ describe('TileService', () => {
             ],
         ];
         service.placeTile(mockMap, 0, 0, TileCategory.Wall);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, 'add');
         expect(mockMap[0][0].tileType).toBe(TileCategory.Wall);
         expect(mockMap[0][0].item).toBeUndefined();
     });
@@ -90,7 +90,7 @@ describe('TileService', () => {
             ],
         ];
         service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(false, ItemCategory.Hat, 'add');
+        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledOnceWith(ItemCategory.Hat);
         expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
         expect(mockMap[0][0].item).toBeUndefined();
     });
@@ -201,11 +201,11 @@ describe('TileService', () => {
 
         service.setStartingPoint(mockMap, 0, 0);
         expect(mockMap[0][0].isStartingPoint).toBe(true);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'remove');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'remove');
 
         service.setStartingPoint(mockMap, 0, 0);
         expect(mockMap[0][0].isStartingPoint).toBe(false);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
     });
 
     it('should handle placing each tile type correctly', () => {
@@ -244,7 +244,7 @@ describe('TileService', () => {
         ];
 
         service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, ItemCategory.Flag, 'add');
+        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledWith(ItemCategory.Flag);
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
@@ -281,7 +281,7 @@ describe('TileService', () => {
         ];
 
         service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
         expect(mockMap[0][0].isStartingPoint).toBeFalse();
     });
 
@@ -317,7 +317,7 @@ describe('TileService', () => {
             ],
         ];
         service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, 'add');
         expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
         expect(mockMap[0][0].isStartingPoint).toBeFalse();
     });
@@ -337,6 +337,6 @@ describe('TileService', () => {
 
         service.removeStartingPoint(mockMap, 0, 0);
         expect(mockMap[0][0].isStartingPoint).toBe(false);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
     });
 });

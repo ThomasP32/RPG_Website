@@ -48,12 +48,12 @@ export class ImageService {
 
     getItemImage(item: ItemCategory): string {
         switch (item) {
-            case ItemCategory.Vest:
-                return './assets/items/vest.png';
+            case ItemCategory.Armor:
+                return './assets/items/armor.png';
             case ItemCategory.Mask:
                 return './assets/items/mask.png';
-            case ItemCategory.Jar:
-                return './assets/items/jar.png';
+            case ItemCategory.IceSkates:
+                return './assets/items/iceskates.png';
             case ItemCategory.Acidgun:
                 return './assets/items/acidgun.png';
             case ItemCategory.Key:
@@ -62,6 +62,8 @@ export class ImageService {
                 return './assets/items/hat.png';
             case ItemCategory.Random:
                 return './assets/items/randomchest.png';
+            case ItemCategory.Flag:
+                return './assets/items/flag.png';
             default:
                 return '';
         }
@@ -69,12 +71,12 @@ export class ImageService {
 
     getItemImageByString(item: string): string {
         switch (item) {
-            case 'vest':
-                return './assets/items/vest.png';
+            case 'armor':
+                return './assets/items/armor.png';
             case 'mask':
                 return './assets/items/mask.png';
-            case 'jar':
-                return './assets/items/jar.png';
+            case 'iceskates':
+                return './assets/items/iceskates.png';
             case 'acidgun':
                 return './assets/items/acidgun.png';
             case 'key':

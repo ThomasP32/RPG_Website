@@ -14,6 +14,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
+import { ImageService } from '@app/services/image/image.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
@@ -81,6 +82,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
         private combatService: CombatService,
+        protected imageService: ImageService,
     ) {
         this.router = router;
         this.socketService = socketService;
@@ -90,6 +92,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.countDownService = countDownService;
         this.gameService = gameService;
         this.combatService = combatService;
+        this.imageService = imageService;
     }
 
     ngOnInit() {
@@ -237,7 +240,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForDoorOpening() {
         this.gameTurnService.possibleDoors$.subscribe((doors) => {
-            if (this.gameTurnService.actionsDone.door) {
+            if (this.gameTurnService.doorAlreadyToggled) {
                 this.doorActionAvailable = false;
                 this.possibleDoors = [];
                 this.actionMessage = 'Actions possibles';
