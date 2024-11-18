@@ -64,22 +64,22 @@ export class MapService {
         this.generateMapSource.next();
     }
 
-    generateMapFromEdition(map: Cell[][]): void {
+    generateMapFromEdition(newMap: Cell[][]): void {
         this.map.doorTiles = [];
         this.map.tiles = [];
         this.map.items = [];
         this.map.startTiles = [];
 
-        for (let rowIndex = 0; rowIndex < map.length; rowIndex++) {
-            for (let colIndex = 0; colIndex < map[rowIndex].length; colIndex++) {
-                const cell = map[rowIndex][colIndex];
+        for (let rowIndex = 0; rowIndex < newMap.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < newMap[rowIndex].length; colIndex++) {
+                const cell = newMap[rowIndex][colIndex];
                 const coordinate = { x: rowIndex, y: colIndex };
 
                 if (cell && cell.tileType) {
                     if (cell.door?.isDoor) {
                         this.map.doorTiles.push({
                             coordinate,
-                            isOpened: cell.door.isOpen === true,
+                            isOpened: cell.door.isOpen,
                         });
                     } else if (['water', 'ice', 'wall'].includes(cell.tileType)) {
                         this.map.tiles.push({
@@ -88,7 +88,7 @@ export class MapService {
                         });
                     }
 
-                    if (cell.item && cell.item != undefined && cell.isStartingPoint) {
+                    if (cell.item) {
                         this.map.items.push({
                             coordinate,
                             category: cell.item as ItemCategory,
