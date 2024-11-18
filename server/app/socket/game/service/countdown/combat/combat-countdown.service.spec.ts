@@ -126,11 +126,11 @@ describe('CombatCountdownService', () => {
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
         intervalCallback();
-        expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
+        expect(service.emit).toHaveBeenCalledWith('timeout', 'test-id');
     });
 
     it('should start a new countdown with 3 seconds if evasions are not enabled', async () => {
-        service.initCountdown('test_id', 3);
+        service.initCountdown('test-id', 3);
         await service.startTurnCounter(mockGame, false);
 
         intervalCallback();
@@ -143,19 +143,19 @@ describe('CombatCountdownService', () => {
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
         intervalCallback();
-        expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
+        expect(service.emit).toHaveBeenCalledWith('timeout', 'test-id');
     });
 
     it('should reset the timer subscription when resetTimerSubscription is called', () => {
-        service.initCountdown('test_id', 10);
+        service.initCountdown('test-id', 10);
         service.startTurnCounter(mockGame, false);
 
-        service.resetTimerSubscription('test_id');
+        service.resetTimerSubscription('test-id');
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
 
     it('should reset the countdown to the original duration without emitting events', () => {
-        service.initCountdown('test_id', 5);
+        service.initCountdown('test-id', 5);
         service.startTurnCounter(mockGame, false);
 
         intervalCallback();
@@ -164,21 +164,21 @@ describe('CombatCountdownService', () => {
 
         mockServer.emit.mockClear();
 
-        service.resetCountdown('test_id');
+        service.resetCountdown('test-id');
 
-        const countdown = service['countdowns'].get('test_id');
+        const countdown = service['countdowns'].get('test-id');
         expect(countdown?.remaining).toBe(3);
         service.startTurnCounter(mockGame, true);
         expect(countdown?.remaining).toBe(5);
     });
 
     it('should delete the countdown and unsubscribe from the timer when deleteCountdown is called', () => {
-        service.initCountdown('test_id', 5);
+        service.initCountdown('test-id', 5);
         service.startTurnCounter(mockGame, true);
 
-        service.deleteCountdown('test_id');
+        service.deleteCountdown('test-id');
 
-        expect(service['countdowns'].has('test_id')).toBe(false);
+        expect(service['countdowns'].has('test-id')).toBe(false);
 
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });

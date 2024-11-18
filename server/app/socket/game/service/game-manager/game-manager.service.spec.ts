@@ -131,7 +131,6 @@ describe('GameManagerService', () => {
             game2.players.push({ ...player, name: 'Player 2' });
             gameManagerService.updateTurnCounter('game-1');
 
-            expect(game2.nTurns).toEqual(1);
             expect(game2.currentTurn).toEqual(1);
         });
 

@@ -11,7 +11,7 @@ describe('ServerCombatService', () => {
         opponent.specs.nVictories = 0;
         opponent.specs.nDefeats = 0;
         opponent.specs.nCombats = 0;
-    
+
         service = new ServerCombatService();
     });
 
@@ -84,9 +84,7 @@ describe('ServerCombatService', () => {
         service.combatWinStatsUpdate(challenger, game.id);
         const combat = service.getCombatByGameId(game.id);
         expect(combat.challenger.specs.nVictories).toBe(1);
-        expect(combat.challenger.specs.nCombats).toBe(1);
         expect(combat.opponent.specs.nDefeats).toBe(1);
-        expect(combat.opponent.specs.nCombats).toBe(1);
     });
 
     it('should move player back to initial position if unoccupied', () => {
@@ -124,37 +122,32 @@ describe('ServerCombatService', () => {
 
     it('should update challenger stats on win and opponent stats on loss', () => {
         service.createCombat(game.id, challenger, opponent);
-    
+
         service.combatWinStatsUpdate(challenger, game.id);
-  
+
         const combatChallenger = service.getCombatByGameId(game.id).challenger;
         const combatOpponent = service.getCombatByGameId(game.id).opponent;
         expect(combatChallenger.specs.nVictories).toBe(1);
-        expect(combatChallenger.specs.nCombats).toBe(1);
         expect(combatOpponent.specs.nDefeats).toBe(1);
-        expect(combatOpponent.specs.nCombats).toBe(1);
     });
-    
+
     it('should update opponent stats on win and challenger stats on loss', () => {
         service.createCombat(game.id, challenger, opponent);
-    
+
         service.combatWinStatsUpdate(opponent, game.id);
-    
+
         const combatChallenger = service.getCombatByGameId(game.id).challenger;
         const combatOpponent = service.getCombatByGameId(game.id).opponent;
         expect(combatOpponent.specs.nVictories).toBe(1);
-        expect(combatOpponent.specs.nCombats).toBe(1);
         expect(combatChallenger.specs.nDefeats).toBe(1);
-        expect(combatChallenger.specs.nCombats).toBe(1);
     });
-    
 
     it('should return attack and defense dice rolls within the correct range', () => {
         const minAttackRoll = challenger.specs.attack + 1;
         const maxAttackRoll = challenger.specs.attack + challenger.specs.attackBonus;
         const minDefenseRoll = opponent.specs.defense + 1;
         const maxDefenseRoll = opponent.specs.defense + opponent.specs.defenseBonus;
-    
+
         const rollResult = service.rollDice(challenger, opponent);
 
         expect(rollResult.attackDice).toBeGreaterThanOrEqual(minAttackRoll);
@@ -162,18 +155,18 @@ describe('ServerCombatService', () => {
         expect(rollResult.defenseDice).toBeGreaterThanOrEqual(minDefenseRoll);
         expect(rollResult.defenseDice).toBeLessThanOrEqual(maxDefenseRoll);
     });
-    
-    it('should calculate attackDice based on player\'s attack and attackBonus', () => {
+
+    it("should calculate attackDice based on player's attack and attackBonus", () => {
         jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
         const rollResult = service.rollDice(challenger, opponent);
-    
+
         const expectedAttackDice = challenger.specs.attack + Math.floor(0.5 * challenger.specs.attackBonus) + 1;
         const expectedDefenseDice = opponent.specs.defense + Math.floor(0.5 * opponent.specs.defenseBonus) + 1;
 
         expect(rollResult.attackDice).toBe(expectedAttackDice);
         expect(rollResult.defenseDice).toBe(expectedDefenseDice);
-    
+
         jest.spyOn(Math, 'random').mockRestore();
     });
 

@@ -101,7 +101,7 @@ describe('GameCountdownService', () => {
     });
 
     it('should start a new countdown with delay and emit startTurn at delay 0', async () => {
-        service.initCountdown('test_id', 5);
+        service.initCountdown(mockGame.id, 5);
         await service.startNewCountdown(mockGame);
 
         intervalCallback();
@@ -121,7 +121,7 @@ describe('GameCountdownService', () => {
     });
 
     it('should emit secondPassed events during countdown and emit timeout when reaching 0', async () => {
-        service.initCountdown('test_id', 3);
+        service.initCountdown(mockGame.id, 3);
         await service.startNewCountdown(mockGame);
 
         intervalCallback();
@@ -141,11 +141,11 @@ describe('GameCountdownService', () => {
         expect(mockServer.emit).toHaveBeenCalledWith('secondPassed', 1);
 
         intervalCallback();
-        expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
+        expect(service.emit).toHaveBeenCalledWith('timeout', mockGame.id);
     });
 
     it('should pause the countdown and emit pausedCountDown with remaining time', () => {
-        service.initCountdown('test_id', 10);
+        service.initCountdown(mockGame.id, 10);
         service.startNewCountdown(mockGame);
 
         intervalCallback();
@@ -153,13 +153,13 @@ describe('GameCountdownService', () => {
         intervalCallback();
         intervalCallback();
 
-        service.pauseCountdown('test_id');
-        const countdown = service['countdowns'].get('test_id');
+        service.pauseCountdown(mockGame.id);
+        const countdown = service['countdowns'].get(mockGame.id);
         expect(mockServer.emit).toHaveBeenCalledWith('pausedCountDown', countdown?.remaining);
     });
 
     it('should resume the countdown from the remaining time', () => {
-        service.initCountdown('test_id', 10);
+        service.initCountdown(mockGame.id, 10);
         service.startNewCountdown(mockGame);
 
         intervalCallback();
@@ -169,15 +169,15 @@ describe('GameCountdownService', () => {
 
         intervalCallback();
         intervalCallback();
-        service.pauseCountdown('test_id');
+        service.pauseCountdown(mockGame.id);
         mockServer.emit.mockClear();
-        service.resumeCountdown('test_id');
+        service.resumeCountdown(mockGame.id);
         intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('secondPassed', 8);
     });
 
     it('should reset the countdown to the original duration and emit restartedCountDown', () => {
-        service.initCountdown('test_id', 10);
+        service.initCountdown(mockGame.id, 10);
         service.startNewCountdown(mockGame);
 
         intervalCallback();
@@ -187,21 +187,21 @@ describe('GameCountdownService', () => {
 
         intervalCallback();
         intervalCallback();
-        service.resetCountdown('test_id');
+        service.resetCountdown(mockGame.id);
 
-        const countdown = service['countdowns'].get('test_id');
+        const countdown = service['countdowns'].get(mockGame.id);
         expect(countdown?.remaining).toBe(10);
     });
 
     it('should delete the countdown and unsubscribe from the timer when deleteCountdown is called', () => {
-        service.initCountdown('test_id', 5);
+        service.initCountdown(mockGame.id, 5);
         service.startNewCountdown(mockGame);
 
-        expect(service['countdowns'].has('test_id')).toBe(true);
+        expect(service['countdowns'].has(mockGame.id)).toBe(true);
 
-        service.deleteCountdown('test_id');
+        service.deleteCountdown(mockGame.id);
 
-        expect(service['countdowns'].has('test_id')).toBe(false);
+        expect(service['countdowns'].has(mockGame.id)).toBe(false);
 
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
