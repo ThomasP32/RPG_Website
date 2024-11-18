@@ -16,9 +16,7 @@ import { EndgamePageComponent } from './endgame-page.component';
     template: '<div>Mock Chatroom</div>',
     standalone: true,
 })
-class MockChatroomComponent {
-    ngOnInit() {}
-}
+class MockChatroomComponent {}
 
 const mockPlayer: Player = {
     socketId: 'player-socket-id',
