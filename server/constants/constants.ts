@@ -1,0 +1,1 @@
+export const N_WIN_VICTORIES = 3;

@@ -66,32 +66,12 @@
         font-family: 'Press Start 2P';
     }
     
-    .import-button {
-        margin-right: 10px;
-        position: relative;
-        align-items: center;
-        display: flex;
-        padding: 12px 20px;
-        height: 6vh;
-        background-color: #2c3e50;
-        border: 3px solid #202020;
-        color: white;
-        cursor: pointer;
-        font-size: 18px;
-        font-family: 'Press Start 2P';
-    }
-
-   
     
     .return-button:hover {
         background-color: #3b3f46;
     }
 
     .create-game-button:hover {
-        background-color: #3b3f46;
-    }
-
-    .import-button:hover {
         background-color: #3b3f46;
     }
 }
@@ -246,8 +226,7 @@
         gap: 15px;
 
         .edit-button,
-        .map-delete,
-        .export-button {
+        .map-delete {
             flex: 1;
             display: flex;
             align-items: center;
@@ -272,9 +251,6 @@
             background-color: #3b3f46;
         }
 
-        .export-button:hover {
-            background-color: #4d7e4b;
-        }
     }
 }
 
