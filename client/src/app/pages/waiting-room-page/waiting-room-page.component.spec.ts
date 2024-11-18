@@ -35,7 +35,7 @@ const mockPlayer: Player = {
         nLifeLost: 30,
         evasions: 0,
     },
-    inventory: [ItemCategory.Hat, ItemCategory.Key],
+    inventory: [ItemCategory.Armor, ItemCategory.Sword],
     position: { x: 1, y: 2 },
     turn: 1,
     visitedTiles: [],
@@ -284,13 +284,13 @@ describe('WaitingRoomPageComponent', () => {
 
     it('should handle playerJoined event correctly', () => {
         const mockPlayers = [
-            mockPlayer, 
+            mockPlayer,
             {
                 socketId: 'player2-socket-id',
                 name: 'Player2',
                 avatar: Avatar.Avatar2,
                 isActive: true,
-                specs: { ...mockPlayer.specs }, 
+                specs: { ...mockPlayer.specs },
                 inventory: [],
                 position: { x: 2, y: 3 },
                 turn: 2,
@@ -299,17 +299,15 @@ describe('WaitingRoomPageComponent', () => {
             },
         ];
 
-        component.isHost = true; 
-        component.maxPlayers = 2; 
+        component.isHost = true;
+        component.maxPlayers = 2;
 
         playerJoinedSubject.next(mockPlayers);
 
-
         fixture.detectChanges();
 
-        
-        expect(component.activePlayers).toEqual(mockPlayers); 
-        expect(component.numberOfPlayers).toEqual(mockPlayers.length); 
+        expect(component.activePlayers).toEqual(mockPlayers);
+        expect(component.numberOfPlayers).toEqual(mockPlayers.length);
     });
 
     afterEach(() => {

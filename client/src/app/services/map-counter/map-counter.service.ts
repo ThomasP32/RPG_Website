@@ -58,7 +58,6 @@ export class MapCounterService {
     }
 
     isItemUsed(item: ItemCategory): boolean {
-        console.log(!this.items.includes(item));
         return !this.items.includes(item);
     }
 
@@ -73,6 +72,9 @@ export class MapCounterService {
     releaseItem(item: ItemCategory) {
         if (item != ItemCategory.Flag) {
             this.itemsCounter += 1;
+            if (item === ItemCategory.Random) {
+                this.randomItemCounter += 1;
+            }
         }
         this.items.push(item);
     }

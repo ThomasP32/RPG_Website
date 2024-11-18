@@ -32,7 +32,7 @@ describe('ToolbarComponent', () => {
         ]);
         mapCounterServiceSpy.startingPointCounter$ = startingPointCounterSubject.asObservable();
 
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage', 'getItemImageByString']);
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['loadTileImage', 'getItemImage', 'getItemImageByString', 'getStartingPointImage']);
         activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['snapshot'], { snapshot: { params: {} } });
         mapServiceSpy.map = { mode: Mode.Classic } as any;
 
@@ -134,6 +134,29 @@ describe('ToolbarComponent', () => {
         expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
+    it('should start drag for random item with counter > 0', () => {
+        const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
+        mapCounterServiceSpy.randomItemCounter = 2;
+        component.startDrag(mockDragEvent, ItemCategory.Random);
+        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('draggingObject', '"randomitem"');
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
+    });
+
+    it('should not start drag for starting point with counter <= 0', () => {
+        const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
+        mapCounterServiceSpy.startingPointCounter = 0;
+        component.startDrag(mockDragEvent, ItemCategory.StartingPoint);
+        expect(mockDragEvent.dataTransfer?.setData).not.toHaveBeenCalled();
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
+    });
+
+    it('should start drag for non-starting point and non-random item', () => {
+        const mockDragEvent = { dataTransfer: { setData: jasmine.createSpy('setData') } } as any as DragEvent;
+        component.startDrag(mockDragEvent, ItemCategory.Flag);
+        expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith('draggingObject', '"flag"');
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
+    });
+
     it('should place starting point', () => {
         mapCounterServiceSpy.startingPointCounter = 2;
         component.placeStartingPoint();
@@ -144,7 +167,7 @@ describe('ToolbarComponent', () => {
         mapCounterServiceSpy.startingPointCounter = 0;
         component.selectItem('item1');
         expect(component.isStartingPointVisible).toBe(false);
-        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('empty');
+        expect(mapServiceSpy.updateSelectedTile).toHaveBeenCalledWith('');
     });
 
     it('should get tile image', () => {
@@ -155,6 +178,11 @@ describe('ToolbarComponent', () => {
     it('should get item image', () => {
         component.getItemImage('item1');
         expect(imageServiceSpy.getItemImageByString).toHaveBeenCalledWith('item1');
+    });
+
+    it('should get starting point image', () => {
+        component.getStartingPointImage();
+        expect(imageServiceSpy.getStartingPointImage).toHaveBeenCalled();
     });
 
     it('should update starting point counter on subscription', () => {
