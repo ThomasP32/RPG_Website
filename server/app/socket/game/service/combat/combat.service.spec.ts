@@ -1,8 +1,11 @@
 import { Bonus, Game, Player, Specs } from '@common/game';
+import { Mode } from '@common/map.types';
+import { GameCreationService } from '../game-creation/game-creation.service';
 import { ServerCombatService } from './combat.service';
 
 describe('ServerCombatService', () => {
     let service: ServerCombatService;
+    let gameCreationService: GameCreationService;
 
     beforeEach(() => {
         challenger.specs.nVictories = 0;
@@ -12,7 +15,14 @@ describe('ServerCombatService', () => {
         opponent.specs.nDefeats = 0;
         opponent.specs.nCombats = 0;
 
-        service = new ServerCombatService();
+        gameCreationService = {
+            getGameById: jest.fn().mockImplementation((gameId: string) => {
+                if (gameId === game.id) return game;
+                return undefined;
+            }),
+        } as unknown as GameCreationService;
+
+        service = new ServerCombatService(gameCreationService);
     });
 
     const challenger: Player = {
@@ -173,5 +183,35 @@ describe('ServerCombatService', () => {
     it('should return null and log message if combat does not exist for a given gameId', () => {
         const combat = service.getCombatByGameId('nonexistent-game-id');
         expect(combat).toBeUndefined();
+    });
+
+    it('should return true if player reaches the required victories in Classic mode', () => {
+        const mockGame = { id: 'game1', mode: Mode.Classic } as Game;
+        gameCreationService.getGameById = jest.fn().mockReturnValue(mockGame);
+        challenger.specs.nVictories = 3;
+
+        const result = service.checkForGameWinner(mockGame.id, challenger);
+
+        expect(result).toBe(true);
+    });
+
+    it('should return false if player does not reach the required victories in Classic mode', () => {
+        const mockGame = { id: 'game1', mode: Mode.Classic } as Game;
+        gameCreationService.getGameById = jest.fn().mockReturnValue(mockGame);
+        challenger.specs.nVictories = 2;
+
+        const result = service.checkForGameWinner(mockGame.id, challenger);
+
+        expect(result).toBe(false);
+    });
+
+    it('should return false if the game mode is not Classic', () => {
+        const mockGame = { id: 'game1', mode: Mode.Ctf } as Game;
+        gameCreationService.getGameById = jest.fn().mockReturnValue(mockGame);
+        challenger.specs.nVictories = 3;
+
+        const result = service.checkForGameWinner(mockGame.id, challenger);
+
+        expect(result).toBe(false);
     });
 });

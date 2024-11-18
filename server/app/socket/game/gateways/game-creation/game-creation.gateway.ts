@@ -18,7 +18,6 @@ export class GameGateway {
         client.join(newGame.id);
         newGame.hostSocketId = client.id;
         this.gameCreationService.addGame(newGame);
-
         this.server.to(newGame.id).emit('gameCreated', { game: newGame });
     }
 
