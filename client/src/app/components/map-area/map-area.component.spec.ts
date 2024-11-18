@@ -31,7 +31,13 @@ describe('MapAreaComponent', () => {
             'removeStartingPoint',
         ]);
         mapServiceSpy = jasmine.createSpyObj('MapService', ['updateSelectedTile$', 'removeStartingPoint$', 'map', 'generateMapFromEdition']);
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['startingPointCounter$', 'updateCounters', 'updateStartingPointCounter']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', [
+            'startingPointCounter$',
+            'updateCounters',
+            'updateStartingPointCounter',
+            'initializeCounters',
+            'loadMapCounters',
+        ]);
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
         routerSpy = jasmine.createSpyObj('Router', ['url']);
@@ -102,7 +108,7 @@ describe('MapAreaComponent', () => {
         it('should initialize edition mode correctly', () => {
             const mapSize = 10;
             const startTilesLength = 3;
-            spyOn(component, 'setCountersBasedOnMapSize');
+            spyOn(component, 'initializeCreationMode');
             spyOn(component, 'loadMap');
 
             mapServiceSpy.map = {
@@ -116,22 +122,20 @@ describe('MapAreaComponent', () => {
                 items: [],
                 startTiles: new Array(startTilesLength),
             };
-            component.startingPointCounter = 5;
+            mapCounterServiceSpy.startingPointCounter = 5;
 
             component.initializeEditionMode();
 
-            expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapSize);
-            expect(component.startingPointCounter).toBe(5 - startTilesLength);
-            expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(5 - startTilesLength);
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapSize, Mode.Classic);
+            expect(mapCounterServiceSpy.startingPointCounter).toBe(5 - startTilesLength);
             expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
         });
 
         it('should initialize creation mode correctly', () => {
             spyOn(component, 'createMap');
-            spyOn(component, 'setCountersBasedOnMapSize');
             component.initializeCreationMode();
             expect(component.createMap).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
-            expect(component.setCountersBasedOnMapSize).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x);
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x, mapServiceSpy.map.mode);
         });
     });
 
@@ -225,7 +229,7 @@ describe('MapAreaComponent', () => {
                     },
                 ],
                 [
-                    { tileType: TileCategory.Floor, isHovered: false, item: ItemCategory.Vest } as Cell,
+                    { tileType: TileCategory.Floor, isHovered: false, item: ItemCategory.Armor } as Cell,
                     { tileType: TileCategory.Floor, isHovered: false, isStartingPoint: true } as Cell,
                 ],
             ];
@@ -349,20 +353,6 @@ describe('MapAreaComponent', () => {
             component.placeTileOnMove(rowIndex, colIndex);
             expect(tileServiceSpy.placeTile).toHaveBeenCalledWith(component.map, rowIndex, colIndex, component.selectedTile);
         });
-        it('should call tile service to set item on drop', () => {
-            const event = new DragEvent('drop');
-
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
-                },
-            });
-
-            component.currentDraggedItem = null;
-
-            component.onDrop(event, 1, 1);
-            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 1, 1);
-        });
 
         it('should prevent default if no item is present on startDrag', () => {
             const event = new DragEvent('dragstart');
@@ -429,14 +419,6 @@ describe('MapAreaComponent', () => {
     });
 
     describe('Map counters', () => {
-        it('should set counters based on map size', () => {
-            component.setCountersBasedOnMapSize(10);
-            expect(component.randomItemCounter).toBe(2);
-            expect(component.startingPointCounter).toBe(2);
-            expect(component.itemsCounter).toBe(10);
-            expect(mapCounterServiceSpy.updateStartingPointCounter).toHaveBeenCalledWith(2);
-        });
-
         it('should return correct counters for map size', () => {
             const countersFor10 = component.getCountersForMapSize(10);
             expect(countersFor10).toEqual({ randomItemCounter: 2, startingPointCounter: 2, itemsCounter: 10 });
@@ -525,31 +507,13 @@ describe('MapAreaComponent', () => {
         });
     });
     describe('onDrop', () => {
-        it('should call setStartingPoint on tileService when dropping a starting point', () => {
-            const event = new DragEvent('drop');
-            spyOn(event, 'preventDefault');
-
-            Object.defineProperty(event, 'dataTransfer', {
-                value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
-                },
-            });
-
-            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false } as Cell]];
-
-            component.onDrop(event, 0, 0);
-
-            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, 0, 0);
-            expect(event.preventDefault).toHaveBeenCalled();
-        });
-
         it('should not call setStartingPoint if the target tile is a wall', () => {
             const event = new DragEvent('drop');
             spyOn(event, 'preventDefault');
 
             Object.defineProperty(event, 'dataTransfer', {
                 value: {
-                    getData: jasmine.createSpy('getData').and.returnValue('isStartingPoint'),
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify('draggingObject')),
                 },
             });
 

@@ -89,6 +89,12 @@ export class GameManagerService {
                     break;
                 }
 
+                if (this.itemOnTile(position, game)) {
+                    this.pickUpItem(position, game, player);
+                    finalPath.push(position);
+                    break;
+                }
+
                 finalPath.push(position);
             }
 
@@ -198,6 +204,24 @@ export class GameManagerService {
             }
         }
         return 1;
+    }
+
+    private itemOnTile(pos: Coordinate, game: Game): boolean {
+        for (const item of game.items) {
+            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pickUpItem(pos: Coordinate, game: Game, player: Player): void {
+        const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
+        if (itemIndex !== -1) {
+            const item = game.items[itemIndex].category;
+            player.inventory.push(item);
+            game.items.splice(itemIndex, 1);
+        }
     }
 
     onIceTile(player: Player, gameId: string): boolean {

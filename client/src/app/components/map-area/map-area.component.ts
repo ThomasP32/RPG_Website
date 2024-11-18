@@ -26,9 +26,6 @@ export class MapAreaComponent implements OnInit {
     isRightClickDown = false;
 
     defaultTile = TileCategory.Floor;
-    randomItemCounter: number;
-    startingPointCounter: number;
-    itemsCounter: number;
 
     constructor(
         private tileService: TileService,
@@ -53,7 +50,6 @@ export class MapAreaComponent implements OnInit {
     }
 
     initMap() {
-        this.mapCounterService.startingPointCounter$.subscribe((counter) => (this.startingPointCounter = counter));
         if (this.isCreationMode()) {
             this.initializeCreationMode();
         } else if (this.isEditionMode()) {
@@ -75,13 +71,12 @@ export class MapAreaComponent implements OnInit {
 
     initializeCreationMode() {
         this.createMap(this.mapService.map.mapSize.x);
-        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+        this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
     }
 
     initializeEditionMode() {
-        this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
-        this.startingPointCounter -= this.mapService.map.startTiles.length;
-        this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
+        this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
+        this.updateMapCounters();
         this.loadMap(this.mapService.map);
     }
 
@@ -102,6 +97,11 @@ export class MapAreaComponent implements OnInit {
             }
             this.map.push(row);
         }
+    }
+
+    updateMapCounters() {
+        this.mapCounterService.startingPointCounter -= this.mapService.map.startTiles.length;
+        this.mapCounterService.loadMapCounters(this.mapService.map.items);
     }
 
     selectTile(tile: string) {
@@ -158,7 +158,7 @@ export class MapAreaComponent implements OnInit {
         if (cell.isStartingPoint) {
             this.currentDraggedItem = { rowIndex, colIndex };
 
-            event.dataTransfer?.setData('isStartingPoint', 'true');
+            event.dataTransfer?.setData('draggingObject', JSON.stringify(ItemCategory.StartingPoint));
         } else {
             event.preventDefault();
         }
@@ -169,22 +169,30 @@ export class MapAreaComponent implements OnInit {
     }
 
     onDrop(event: DragEvent, rowIndex: number, colIndex: number) {
-        const isStartingPoint = event.dataTransfer?.getData('isStartingPoint');
-        if (isStartingPoint) {
-            const targetTile = this.map[rowIndex][colIndex];
-
-            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint) {
+        const targetTile = this.map[rowIndex][colIndex];
+        const data = event.dataTransfer?.getData('draggingObject');
+        if (data) {
+            const draggingObject: ItemCategory = JSON.parse(data) as ItemCategory;
+            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint || targetTile.door.isDoor) {
                 event.preventDefault();
                 return;
             }
             if (this.currentDraggedItem) {
                 this.tileService.moveItem(this.map, this.currentDraggedItem, { rowIndex, colIndex });
                 this.currentDraggedItem = null;
+            } else {
+                if (draggingObject) {
+                    if (draggingObject == ItemCategory.StartingPoint) {
+                        this.tileService.setStartingPoint(this.map, rowIndex, colIndex);
+                    } else {
+                        this.tileService.setItem(this.map, draggingObject, { rowIndex, colIndex });
+                    }
+                }
+
+                this.selectedTile = '';
+                event.preventDefault();
             }
-            this.tileService.setStartingPoint(this.map, rowIndex, colIndex);
         }
-        this.selectedTile = '';
-        event.preventDefault();
     }
 
     removeStartingPoint(isRemoving: boolean) {
@@ -200,11 +208,14 @@ export class MapAreaComponent implements OnInit {
                 for (let j = 0; j < this.map[i].length; j++) {
                     this.map[i][j].tileType = this.defaultTile;
                     this.map[i][j].item = undefined;
+                    this.map[i][j].isStartingPoint = false;
                 }
             }
-            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+            const mode = this.route.snapshot.params['mode'];
+            this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, mode);
         } else {
-            this.setCountersBasedOnMapSize(this.mapService.map.mapSize.x);
+            this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
+            this.updateMapCounters();
             this.loadMap(this.mapService.map);
         }
     }
@@ -223,14 +234,6 @@ export class MapAreaComponent implements OnInit {
 
     getStartingPointImage(): string {
         return this.imageService.getStartingPointImage();
-    }
-
-    setCountersBasedOnMapSize(mapSize: number) {
-        const counters = this.getCountersForMapSize(mapSize);
-        this.randomItemCounter = counters.randomItemCounter;
-        this.startingPointCounter = counters.startingPointCounter;
-        this.itemsCounter = counters.itemsCounter;
-        this.mapCounterService.updateStartingPointCounter(this.startingPointCounter);
     }
 
     getCountersForMapSize(mapSize: number) {
@@ -256,6 +259,7 @@ export class MapAreaComponent implements OnInit {
         });
 
         loadedmap.doorTiles.forEach((door) => {
+            this.map[door.coordinate.x][door.coordinate.y].tileType = TileCategory.Door;
             this.map[door.coordinate.x][door.coordinate.y].door.isDoor = true;
             this.map[door.coordinate.x][door.coordinate.y].door.isOpen = door.isOpened;
         });
