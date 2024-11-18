@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Game, Player, Specs } from '@common/game';
+import { Game, GameCtf, Player, Specs } from '@common/game';
+import { Map } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
 
@@ -107,4 +108,66 @@ describe('GameService', () => {
             expect(console.error).toHaveBeenCalledWith('Failed to load players or no players available');
         });
     });
+
+    describe('#createNewGame', () => {
+        it('should create a new game with the given map and gameId', () => {
+            const mockMap = {
+                mapSize: { x: 10, y: 10 },
+                tiles: [],
+                items: [],
+                startTiles: [],
+                doorTiles: [],
+            } as unknown as Map;
+    
+            const gameId = 'game-id-123';
+            const expectedGame: Game = {
+                ...mockMap,
+                id: gameId,
+                players: [mockPlayer],
+                hostSocketId: '',
+                currentTurn: 0,
+                nDoorsManipulated: 0,
+                duration: 0,
+                nTurns: 0,
+                debug: false,
+                isLocked: false,
+                hasStarted: false,
+            };
+    
+            const result = service.createNewGame(mockMap, gameId);
+            expect(result).toEqual(expectedGame);
+        });
+    });
+    
+    describe('#createNewCtfGame', () => {
+        it('should create a new CTF game with the given map and gameId', () => {
+            const mockMap = {
+                mapSize: { x: 10, y: 10 },
+                tiles: [],
+                items: [],
+                startTiles: [],
+                doorTiles: [],
+            } as unknown as Map;
+    
+            const gameId = 'ctf-game-id-123';
+            const expectedGame: GameCtf = {
+                ...mockMap,
+                id: gameId,
+                players: [mockPlayer],
+                hostSocketId: '',
+                currentTurn: 0,
+                nDoorsManipulated: 0,
+                duration: 0,
+                nTurns: 0,
+                debug: false,
+                isLocked: false,
+                hasStarted: false,
+                nPlayersCtf: 0,
+            };
+    
+            const result = service.createNewCtfGame(mockMap, gameId);
+            expect(result).toEqual(expectedGame);
+        });
+    });
+    
 });

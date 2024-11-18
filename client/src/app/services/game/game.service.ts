@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
+import { Map } from '@common/map.types';
 
 @Injectable({
     providedIn: 'root',
@@ -19,6 +20,39 @@ export class GameService {
 
     setGame(newGame: Game): void {
         this.game = newGame;
+    }
+
+    createNewCtfGame(map: Map, gameId: string): GameCtf {
+        return {
+            ...map,
+            id: gameId,
+            players: [this.playerService.player],
+            hostSocketId: '',
+            currentTurn: 0,
+            nDoorsManipulated: 0,
+            duration: 0,
+            nTurns: 0,
+            debug: false,
+            isLocked: false,
+            hasStarted: false,
+            nPlayersCtf: 0,
+        };
+    }
+
+    createNewGame(map: Map, gameId: string): Game {
+        return {
+            ...map,
+            id: gameId,
+            players: [this.playerService.player],
+            hostSocketId: '',
+            currentTurn: 0,
+            nDoorsManipulated: 0,
+            duration: 0,
+            nTurns: 0,
+            debug: false,
+            isLocked: false,
+            hasStarted: false,
+        };
     }
 
     listenToGameData(): void {

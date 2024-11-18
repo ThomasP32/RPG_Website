@@ -242,5 +242,19 @@ export class GameTurnService {
                 this.gameService.setGame(data.updatedGame);
             }),
         );
+        this.socketSubscription.add(
+            this.socketService.listen('resumeTurnAfterCombatWin').subscribe(() => {
+                this.clearMoves();
+                this.resumeTurn();
+            }),
+        );
+    }
+
+    listenForFlagDetentor(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Game>('flagPickedUp').subscribe((game) => {
+                this.gameService.setGame(game);
+            }),
+        );
     }
 }

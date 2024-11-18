@@ -1,7 +1,7 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
-import { Coordinate, TileCategory } from '@common/map.types';
+import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
@@ -235,6 +235,10 @@ export class GameManagerService {
         return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
 
+    hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
+        return !oldInventory.some((item) => item === ItemCategory.Flag) && newInventory.some((item) => item === ItemCategory.Flag);
+    }
+
     getAdjacentPlayers(player: Player, gameId: string): Player[] {
         const game = this.gameCreationService.getGameById(gameId);
         const adjacentPlayers: Player[] = [];
@@ -281,5 +285,14 @@ export class GameManagerService {
 
     isGameResumable(gameId: string): boolean {
         return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
+    }
+
+    checkForWinnerCtf(player: Player, gameId: string): boolean {
+        if (this.gameCreationService.getGameById(gameId).mode === Mode.Ctf) {
+            if (player.inventory.includes(ItemCategory.Flag)) {
+                return player.position.x === player.initialPosition.x && player.position.y === player.initialPosition.y;
+            }
+        }
+        return false;
     }
 }
