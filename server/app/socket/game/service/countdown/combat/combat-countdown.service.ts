@@ -1,4 +1,5 @@
 import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
+import { COUNTDOWN_COMBAT_DURATION, COUNTDOWN_NOEVASION_DURATION } from '@common/constants';
 import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
@@ -24,7 +25,7 @@ export class CombatCountdownService extends EventEmitter {
     }
 
     async startTurnCounter(game: Game, hasEvasions: boolean): Promise<void> {
-        const duration = hasEvasions ? 5 : 3;
+        const duration = hasEvasions ? COUNTDOWN_COMBAT_DURATION : COUNTDOWN_NOEVASION_DURATION;
         let countdown = this.countdowns.get(game.id);
 
         if (!countdown) {

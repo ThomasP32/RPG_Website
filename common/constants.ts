@@ -34,3 +34,15 @@ export const TIME_PULSE: number = 500;
 export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const HALF = 0.5;
+
+export const PERCENTAGE: number = 100;
+
+export const MINUTE: number = 60;
+
+export const MAX_CHAR: number = 2;
+
+export const COUNTDOWN_DURATION: number = 5;
+
+export const COUNTDOWN_NOEVASION_DURATION: number = 3;
+
+export const COUNTDOWN_COMBAT_DURATION: number = 5;
