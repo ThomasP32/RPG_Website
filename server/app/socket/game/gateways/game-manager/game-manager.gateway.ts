@@ -46,6 +46,7 @@ export class GameManagerGateway implements OnGatewayInit {
         }
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.filter((player) => player.socketId === client.id)[0];
+        const beforeMoveInventory = [...player.inventory];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
         if (this.gameManagerService.onIceTile(player, game.id)) {
             wasOnIceTile = true;
@@ -72,9 +73,21 @@ export class GameManagerGateway implements OnGatewayInit {
             }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
+            if (this.gameManagerService.checkForWinnerCtf(player, data.gameId)) {
+                this.server.to(data.gameId).emit('gameFinishedPlayerWon', { winner: player });
+                return;
+            }
         }
 
-        if (this.gameManagerService.hasFallen(moves, data.destination)) {
+        if (this.gameManagerService.hasPickedUpFlag(beforeMoveInventory, player.inventory)) {
+            this.server.to(data.gameId).emit('flagPickedUp', game);
+            this.server.to(client.id).emit('youFinishedMoving');
+            this.journalService.logMessage(
+                data.gameId,
+                `Le drapeau a été récupéré par ${player.name}.`,
+                game.players.map((player) => player.name),
+            );
+        } else if (this.gameManagerService.hasFallen(moves, data.destination)) {
             this.server.to(client.id).emit('youFell');
         } else {
             this.server.to(client.id).emit('youFinishedMoving');

@@ -42,7 +42,7 @@ describe('MapCounterService', () => {
     it('should load map counters correctly', () => {
         service.itemsCounter = 3;
         service.randomItemCounter = 0;
-        service.items = [ItemCategory.Hat, ItemCategory.Jar, ItemCategory.Key];
+        service.items = [ItemCategory.Hat, ItemCategory.IceSkates, ItemCategory.Key];
         const usedItems: Item[] = [
             { category: ItemCategory.Hat, coordinate: { x: 1, y: 3 } },
             { category: ItemCategory.Random, coordinate: { x: 3, y: 1 } },
@@ -58,7 +58,7 @@ describe('MapCounterService', () => {
         service.setAvailablesItems();
         expect(service.items).toEqual([
             ItemCategory.Hat,
-            ItemCategory.Jar,
+            ItemCategory.IceSkates,
             ItemCategory.Key,
             ItemCategory.Flask,
             ItemCategory.Vest,
@@ -67,13 +67,13 @@ describe('MapCounterService', () => {
     });
 
     it('should check if item is used correctly', () => {
-        service.items = [ItemCategory.Hat, ItemCategory.Jar];
+        service.items = [ItemCategory.Hat, ItemCategory.IceSkates];
         expect(service.isItemUsed(ItemCategory.Hat)).toBe(false);
         expect(service.isItemUsed(ItemCategory.Flask)).toBe(true);
     });
 
     it('should use item correctly', () => {
-        service.items = [ItemCategory.Hat, ItemCategory.Jar];
+        service.items = [ItemCategory.Hat, ItemCategory.IceSkates];
         service.itemsCounter = 2;
 
         service.useItem(ItemCategory.Hat);
@@ -83,7 +83,7 @@ describe('MapCounterService', () => {
     });
 
     it('should release item correctly', () => {
-        service.items = [ItemCategory.Jar];
+        service.items = [ItemCategory.IceSkates];
         service.itemsCounter = 1;
 
         service.releaseItem(ItemCategory.Hat);

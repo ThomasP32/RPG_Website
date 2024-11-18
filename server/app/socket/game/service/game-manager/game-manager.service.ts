@@ -1,7 +1,7 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
-import { Coordinate, TileCategory } from '@common/map.types';
+import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
@@ -82,6 +82,12 @@ export class GameManagerService {
 
             for (const position of shortestPath) {
                 if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
+                    finalPath.push(position);
+                    break;
+                }
+
+                if (this.itemOnTile(position, game)) {
+                    this.pickUpItem(position, game, player);
                     finalPath.push(position);
                     break;
                 }
@@ -197,6 +203,24 @@ export class GameManagerService {
         return 1;
     }
 
+    private itemOnTile(pos: Coordinate, game: Game): boolean {
+        for (const item of game.items) {
+            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pickUpItem(pos: Coordinate, game: Game, player: Player): void {
+        const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
+        if (itemIndex !== -1) {
+            const item = game.items[itemIndex].category;
+            player.inventory.push(item);
+            game.items.splice(itemIndex, 1);
+        }
+    }
+
     onIceTile(player: Player, gameId: string): boolean {
         return this.gameCreationService
             .getGameById(gameId)
@@ -207,6 +231,10 @@ export class GameManagerService {
 
     hasFallen(moves: Coordinate[], destination: Coordinate) {
         return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
+    }
+
+    hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
+        return !oldInventory.some((item) => item === ItemCategory.Flag) && newInventory.some((item) => item === ItemCategory.Flag);
     }
 
     getAdjacentPlayers(player: Player, gameId: string): Player[] {
@@ -255,5 +283,14 @@ export class GameManagerService {
 
     isGameResumable(gameId: string): boolean {
         return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
+    }
+
+    checkForWinnerCtf(player: Player, gameId: string): boolean {
+        if (this.gameCreationService.getGameById(gameId).mode === Mode.Ctf) {
+            if (player.inventory.includes(ItemCategory.Flag)) {
+                return player.position.x === player.initialPosition.x && player.position.y === player.initialPosition.y;
+            }
+        }
+        return false;
     }
 }
