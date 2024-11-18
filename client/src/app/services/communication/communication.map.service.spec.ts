@@ -14,7 +14,7 @@ const mockResponse: DetailedMap = {
     isVisible: true,
     mapSize: { x: 10, y: 10 },
     startTiles: [{ coordinate: { x: 1, y: 1 } }],
-    items: [{ coordinate: { x: 2, y: 2 }, category: ItemCategory.Hat }],
+    items: [{ coordinate: { x: 2, y: 2 }, category: ItemCategory.Armor }],
     doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
     tiles: [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Water }],
     lastModified: new Date(),

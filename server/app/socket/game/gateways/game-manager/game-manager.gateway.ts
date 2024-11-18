@@ -99,10 +99,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const doorTile = game.doorTiles.find((door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y);
-        if (!doorTile) {
-            console.error(`Door not found at coordinates (${data.door.coordinate.x}, ${data.door.coordinate.y}) in game ${data.gameId}`);
-            return;
-        }
+
         this.gameManagerService.updatePlayerActions(data.gameId, client.id);
         doorTile.isOpened = !doorTile.isOpened;
         this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
