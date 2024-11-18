@@ -1,5 +1,5 @@
 <div class="players-list">
-    @for (player of players ; track player) {
+    @for (player of players ; track player.socketId) {
     <div class="player" (mouseover)="hoveredPlayerId = player.socketId; checkHostPlayerId()" (mouseleave)="hoveredPlayerId = null">
         <div class="avatar-container">
             <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />

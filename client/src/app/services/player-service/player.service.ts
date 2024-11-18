@@ -47,10 +47,6 @@ export class PlayerService {
         this.player = player;
     }
 
-    getPlayer(): Player {
-        return this.player;
-    }
-
     setPlayer(player: Player): void {
         this.player = player;
     }
@@ -65,12 +61,12 @@ export class PlayerService {
 
     assignBonus(type: 'life' | 'speed'): void {
         if (type === 'life') {
-            this.player.specs.life += BONUS;
+            this.player.specs.life = DEFAULT_HP + BONUS;
             this.player.specs.speed = DEFAULT_SPEED;
         } else if (type === 'speed') {
-            this.player.specs.speed += BONUS;
+            this.player.specs.speed = DEFAULT_SPEED + BONUS;
             this.player.specs.life = DEFAULT_HP;
-        }
+        } 
     }
 
     assignDice(type: 'attack' | 'defense'): void {

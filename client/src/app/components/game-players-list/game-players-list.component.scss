@@ -61,12 +61,13 @@
 }
 
 .player.player-left {
-    color: #777; 
-    text-decoration: line-through; 
+    color: #777;
+    text-decoration: line-through;
     opacity: 0.6;
 }
 
-.host-icon {
+.host-icon,
+.flag-icon {
     font-size: 1em;
     color: gold;
     margin-left: 5px;

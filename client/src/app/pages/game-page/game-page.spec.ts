@@ -39,7 +39,7 @@ const mockPlayer: Player = {
         nLifeTaken: 0,
         nLifeLost: 0,
     },
-    inventory: [],
+    inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
     turn: 0,
     visitedTiles: [],
 };
@@ -262,8 +262,8 @@ describe('GamePageComponent', () => {
 
     it('should update active players when player leaves', fakeAsync(() => {
         const mockPlayers = [
-            { isActive: true, position: { x: 0, y: 1 } },
-            { isActive: false, position: { x: 1, y: 0 } },
+            { isActive: true, position: { x: 0, y: 1 }, inventory: [ItemCategory.Acidgun, ItemCategory.Hat] },
+            { isActive: false, position: { x: 1, y: 0 }, inventory: [ItemCategory.Acidgun, ItemCategory.Hat] },
         ] as unknown as Player;
         socketService.listen.and.returnValue(of(mockPlayers));
 
@@ -406,7 +406,7 @@ describe('GamePageComponent', () => {
 
         it('should set doorActionAvailable to true and update actionMessage to "Fermer la porte" if first door is opened', () => {
             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
-            gameTurnService.actionsDone.door = false;
+            gameTurnService.doorAlreadyToggled = false;
 
             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
 
@@ -417,7 +417,7 @@ describe('GamePageComponent', () => {
 
         it('should set doorActionAvailable to true and update actionMessage to "Ouvrir la porte" if first door is closed', () => {
             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
-            gameTurnService.actionsDone.door = false;
+            gameTurnService.doorAlreadyToggled = false;
 
             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
 
@@ -427,7 +427,7 @@ describe('GamePageComponent', () => {
         });
 
         it('should set doorActionAvailable to false and reset actionMessage if actionsDone.door is true', () => {
-            gameTurnService.actionsDone.door = true;
+            gameTurnService.doorAlreadyToggled = true;
 
             component.listenForDoorOpening();
 
@@ -441,7 +441,7 @@ describe('GamePageComponent', () => {
 
         it('should set doorActionAvailable to false and reset actionMessage if no doors are available', () => {
             const possibleDoors: DoorTile[] = [];
-            gameTurnService.actionsDone.door = false;
+            gameTurnService.doorAlreadyToggled = false;
 
             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
 
@@ -463,7 +463,6 @@ describe('GamePageComponent', () => {
         component.combatAvailable = true;
         component.possibleOpponents = [mockPlayer];
 
-        gameTurnService.actionsDone.combat = true;
         (gameTurnService.possibleOpponents$ as Subject<Player[]>).next([]);
 
         component.listenForPossibleOpponents();
