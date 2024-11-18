@@ -4,6 +4,7 @@ import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Mode } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
+import { N_WIN_VICTORIES } from '../../../../../constants/constants';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
@@ -55,11 +56,7 @@ export class ServerCombatService {
     updateTurn(gameId: string): void {
         const combat = this.getCombatByGameId(gameId);
         const currentTurnSocket = combat.currentTurnSocketId;
-        if (currentTurnSocket === combat.challenger.socketId) {
-            combat.currentTurnSocketId = combat.opponent.socketId;
-        } else {
-            combat.currentTurnSocketId = combat.challenger.socketId;
-        }
+        combat.currentTurnSocketId = currentTurnSocket === combat.challenger.socketId ? combat.opponent.socketId : combat.challenger.socketId;
     }
 
     rollDice(attackPlayer: Player, opponent: Player): { attackDice: number; defenseDice: number } {
@@ -142,9 +139,7 @@ export class ServerCombatService {
 
     checkForGameWinner(gameId: string, player: Player): boolean {
         if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
-            if (player.specs.nVictories >= 3) {
-                return true;
-            }
+            return player.specs.nVictories >= N_WIN_VICTORIES;
         }
         return false;
     }

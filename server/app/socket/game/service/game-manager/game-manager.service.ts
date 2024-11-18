@@ -234,8 +234,7 @@ export class GameManagerService {
     }
 
     hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
-        if (!oldInventory.some((item) => item === ItemCategory.Flag) && newInventory.some((item) => item === ItemCategory.Flag)) return true;
-        return false;
+        return !oldInventory.some((item) => item === ItemCategory.Flag) && newInventory.some((item) => item === ItemCategory.Flag);
     }
 
     getAdjacentPlayers(player: Player, gameId: string): Player[] {
