@@ -194,21 +194,9 @@ describe('GamePageComponent', () => {
         expect(component.playerPreview).toBe(characterService.getAvatarPreview(mockPlayer.avatar));
     });
 
-    it('should navigate to main menu on navigateToMain', () => {
-        component.navigateToMain();
-        expect(socketService.disconnect).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
     it('should navigate to end of game on navigateToEndOfGame', () => {
         component.navigateToEndOfGame();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
-    it('should unsubscribe from socketSubscription on destroy', () => {
-        spyOn(component.socketSubscription, 'unsubscribe');
-        component.ngOnDestroy();
-        expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should listen for possible opponents updates', () => {
@@ -318,7 +306,7 @@ describe('GamePageComponent', () => {
         component.endTurn();
         component.navigateToEndOfGame();
         expect(gameTurnService.endTurn).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should open the exit confirmation modal', () => {
