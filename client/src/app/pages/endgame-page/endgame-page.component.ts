@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CharacterService } from '@app/services/character/character.service';
@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './endgame-page.component.html',
     styleUrl: './endgame-page.component.scss',
 })
-export class EndgamePageComponent {
+export class EndgamePageComponent implements OnDestroy {
     socketSubscription: Subscription = new Subscription();
 
     constructor(
@@ -33,8 +33,6 @@ export class EndgamePageComponent {
         this.router = router;
         this.endgameService = endgameService;
     }
-
-    async ngOnInit() {}
 
     get player(): Player {
         return this.playerService.player;
