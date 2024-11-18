@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED } from '@common/constants';
+import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, HALF } from '@common/constants';
 import { Avatar, Bonus, BotName, Player, Specs } from '@common/game';
 
 @Component({
@@ -77,7 +77,7 @@ export class ProfileModalComponent {
     }
 
     assignRandomLifeOrSpeedBonus(): void {
-        const type: 'life' | 'speed' = Math.random() < 0.5 ? 'life' : 'speed';
+        const type: 'life' | 'speed' = Math.random() < HALF ? 'life' : 'speed';
         if (type === 'life') {
             this.virtualPlayer.specs.life += BONUS;
             this.virtualPlayer.specs.speed = DEFAULT_SPEED;
@@ -88,7 +88,7 @@ export class ProfileModalComponent {
     }
 
     assignRandomAttackOrDefenseBonus(): void {
-        const type: 'attack' | 'defense' = Math.random() < 0.5 ? 'attack' : 'defense';
+        const type: 'attack' | 'defense' = Math.random() < HALF ? 'attack' : 'defense';
         if (type === 'attack') {
             this.virtualPlayer.specs.attackBonus = Bonus.D6;
             this.virtualPlayer.specs.defenseBonus = Bonus.D4;
