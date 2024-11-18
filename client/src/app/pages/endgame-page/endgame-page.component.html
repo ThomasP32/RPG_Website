@@ -28,7 +28,7 @@
                     <td>{{ gamePlayer.specs.nLifeLost }}</td>
                     <td>{{ gamePlayer.specs.nLifeTaken }}</td>
                     <td>TODO</td>
-                    <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }} %</td>
+                    <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }}%</td>
                 </tr>
                 }
             </tbody>
@@ -41,7 +41,7 @@
         <h1>Statistiques globales de la partie</h1>
         <p>Durée de la partie : {{ endgameService.gameDurationInMinutes(game.duration) }}</p>
         <p>Tours de jeu : {{ game.nTurns }}</p>
-        <p>Pourcentage total de tuiles visitées : TODO</p>
+        <p>Pourcentage total de tuiles visitées : {{ endgameService.gameTilePercentage(game) }}%</p>
         <p>Pourcentage total des portes manipulées : TODO</p>
         <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
         <!-- @if (game.mode === Mode.Ctf) { -->
