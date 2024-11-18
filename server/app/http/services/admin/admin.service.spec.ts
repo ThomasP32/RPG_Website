@@ -135,7 +135,10 @@ describe('AdminServiceEndToEnd', () => {
             mode: Mode.Classic,
             mapSize: { x: 10, y: 10 },
             startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
-            items: [],
+            items: [
+                { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+                { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+            ],
             tiles: [],
             doorTiles: [],
         };
@@ -198,6 +201,20 @@ describe('AdminServiceEndToEnd', () => {
         );
     });
 
+    it('should throw error when not enough items', async () => {
+        await expect(service.addMap(getFakeInvalidMapDto7())).rejects.toThrow(
+            'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte',
+        );
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto7())).rejects.toThrow(
+            'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte',
+        );
+    });
+
+    it('should throw error when flag is not placed in ctf mode', async () => {
+        await expect(service.addMap(getFakeInvalidMapDto8())).rejects.toThrow('Le drapeau doit être placé pour un jeu en mode CTF.');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto8())).rejects.toThrow('Le drapeau doit être placé pour un jeu en mode CTF.');
+    });
+
     it('should throw exceptions when adding map with name that already exists', async () => {
         const mapDto: MapDto = {
             name: 'testMap',
@@ -219,10 +236,13 @@ describe('AdminServiceEndToEnd', () => {
         name: 'Bonjour',
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
@@ -234,10 +254,13 @@ describe('AdminServiceEndToEnd', () => {
         name: 'Hello',
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
@@ -250,10 +273,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
@@ -266,10 +292,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
@@ -287,10 +316,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 5, y: 1 }, category: TileCategory.Wall },
             { coordinate: { x: 3, y: 1 }, category: TileCategory.Wall },
@@ -307,10 +339,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 3, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 3, y: 0 }, category: TileCategory.Wall },
@@ -328,10 +363,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 10 }, category: TileCategory.Wall },
             { coordinate: { x: -1, y: 9 }, category: TileCategory.Wall },
@@ -344,10 +382,13 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+        ],
         tiles: [
             { coordinate: { x: 1, y: 0 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 1 }, category: TileCategory.Wall },
@@ -368,10 +409,14 @@ describe('AdminServiceEndToEnd', () => {
         name: getRandomString(),
         description: getRandomString(),
         imagePreview: getRandomString(),
-        mode: getRandomEnumValue(Mode),
+        mode: Mode.Ctf,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 8, y: 8 } }, { coordinate: { x: 9, y: 9 } }],
-        items: [{ coordinate: { x: 8, y: 7 }, category: getRandomEnumValue(ItemCategory) }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: getRandomEnumValue(ItemCategory) },
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.Flag },
+        ],
         tiles: [
             { coordinate: { x: 0, y: 0 }, category: TileCategory.Wall },
             { coordinate: { x: 0, y: 1 }, category: TileCategory.Wall },
@@ -429,6 +474,41 @@ describe('AdminServiceEndToEnd', () => {
             { coordinate: { x: 4, y: 9 }, category: TileCategory.Wall },
         ],
         doorTiles: [],
+    });
+
+    const getFakeInvalidMapDto7 = (): MapDto => ({
+        name: getRandomString(),
+        description: getRandomString(),
+        imagePreview: getRandomString(),
+        mode: Mode.Classic,
+        mapSize: { x: 10, y: 10 },
+        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+        ],
+        tiles: [
+            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
+            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
+    });
+
+    const getFakeInvalidMapDto8 = (): MapDto => ({
+        name: getRandomString(),
+        description: getRandomString(),
+        imagePreview: getRandomString(),
+        mode: Mode.Ctf,
+        mapSize: { x: 10, y: 10 },
+        startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
+        items: [
+            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Key },
+        ],
+        tiles: [
+            { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
+            { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [{ coordinate: { x: 1, y: 3 }, isOpened: true }],
     });
 
     const BASE_36 = 36;

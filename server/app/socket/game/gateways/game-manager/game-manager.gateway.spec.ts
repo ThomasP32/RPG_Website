@@ -3,7 +3,7 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -75,6 +75,27 @@ describe('GameManagerGateway', () => {
     });
 
     describe('getMove', () => {
+        it('should emit gameFinishedPlayerWon if checkForWinnerCtf returns true', async () => {
+            gameCreationService.doesGameExist.returns(true);
+
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: [] } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
+
+            const moves = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+            ];
+            gameManagerService.getMove.returns(moves);
+            gameManagerService.checkForWinnerCtf.returns(true);
+
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+
+            expect(gameManagerService.checkForWinnerCtf.calledWith(player, 'game-id')).toBeTruthy();
+            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+            expect(toRoomStub.calledWith('gameFinishedPlayerWon', { winner: player })).toBeTruthy();
+        });
+
         it('should emit gameNotFound if the game does not exist', async () => {
             gameCreationService.doesGameExist.returns(false);
 
@@ -84,10 +105,42 @@ describe('GameManagerGateway', () => {
             expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
         });
 
+        it('should emit flagPickedUp and youFinishedMoving when the player picks up the flag', async () => {
+            gameCreationService.doesGameExist.returns(true);
+        
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: ['key'] } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
+        
+            player.inventory.push(ItemCategory.Flag);
+        
+            gameManagerService.getMove.returns([
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ]);
+        
+            gameManagerService.hasPickedUpFlag.returns(true);
+        
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+        
+            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+            expect(toRoomStub.calledWith('flagPickedUp', game)).toBeTruthy();
+        
+            const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
+            expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
+        
+            expect(journalService.logMessage.calledWith(
+                'game-id',
+                `Le drapeau a été récupéré par ${player.name}.`,
+                [player.name]
+            )).toBeTruthy();
+        });
+        
+
         it('should emit positionToUpdate and youFell if the player falls', async () => {
             gameCreationService.doesGameExist.returns(true);
 
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
             const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
 
@@ -113,7 +166,7 @@ describe('GameManagerGateway', () => {
         it('should emit youFinishedMoving if the player reaches the destination', async () => {
             gameCreationService.doesGameExist.returns(true);
 
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
             const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
 
@@ -157,6 +210,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         specs: { speed: 3, movePoints: 3, attack: 5, defense: 5 },
                         isActive: true,
+                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                     },
                 ],
                 currentTurn: 0,
@@ -180,6 +234,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
+                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                     },
                 ],
                 currentTurn: 0,
@@ -206,6 +261,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
+                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                     },
                 ],
                 currentTurn: 0,
@@ -231,6 +287,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 0,
                 isActive: true,
+                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                 name: 'ActivePlayer',
                 specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
             } as Player;
@@ -239,6 +296,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'other-player-id',
                 turn: 1,
                 isActive: true,
+                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                 name: 'OtherPlayer',
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
@@ -271,6 +329,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'inactive-player-id',
                 turn: 0,
                 isActive: false,
+                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -278,6 +337,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 1,
                 isActive: true,
+                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -327,6 +387,7 @@ describe('GameManagerGateway', () => {
                 name: 'Player 1',
                 specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
                 position: { x: 0, y: 0 },
+                inventory: [],
             } as Player;
 
             game = {
@@ -341,7 +402,7 @@ describe('GameManagerGateway', () => {
         it('should return without emitting if moves length is 0', () => {
             gameCreationService.doesGameExist.returns(true);
 
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 } } as Player;
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
             const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
 
@@ -466,7 +527,15 @@ describe('GameManagerGateway', () => {
         it('should reset turn counter if the player is inactive', () => {
             const game = {
                 id: 'game-id',
-                players: [{ socketId: 'inactive-player', turn: 0, isActive: false, specs: { speed: 5 } as Specs }],
+                players: [
+                    {
+                        socketId: 'inactive-player',
+                        turn: 0,
+                        isActive: false,
+                        specs: { speed: 5 } as Specs,
+                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                    },
+                ],
                 currentTurn: 0,
             } as Game;
 
@@ -482,7 +551,15 @@ describe('GameManagerGateway', () => {
         it('should reset timer subscription with correct gameId', () => {
             const game = {
                 id: 'game-id',
-                players: [{ socketId: 'active-player', turn: 0, isActive: true, specs: { speed: 5 } as Specs }],
+                players: [
+                    {
+                        socketId: 'active-player',
+                        turn: 0,
+                        isActive: true,
+                        specs: { speed: 5 } as Specs,
+                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                    },
+                ],
                 currentTurn: 0,
             } as Game;
             gameCreationService.getGameById.returns(game);
