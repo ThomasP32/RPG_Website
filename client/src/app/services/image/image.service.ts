@@ -50,8 +50,8 @@ export class ImageService {
         switch (item) {
             case ItemCategory.Armor:
                 return './assets/items/armor.png';
-            case ItemCategory.Flask:
-                return './assets/items/flask.png';
+            case ItemCategory.Sword:
+                return './assets/items/sword.png';
             case ItemCategory.IceSkates:
                 return './assets/items/iceskates.png';
             case ItemCategory.GrapplingHook:
@@ -73,8 +73,8 @@ export class ImageService {
         switch (item) {
             case 'armor':
                 return './assets/items/armor.png';
-            case 'flask':
-                return './assets/items/flask.png';
+            case 'sword':
+                return './assets/items/sword.png';
             case 'grapplinghook':
                 return './assets/items/grapplinghook.png';
             case 'bomb':

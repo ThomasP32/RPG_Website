@@ -43,7 +43,7 @@ export class MapCounterService {
         this.items = this.items.filter((item) => !usedCategories.has(item));
 
         const randomItemCount = usedItems.filter((item) => item.category === ItemCategory.Random).length;
-        this.itemsCounter -= randomItemCount;
+        this.itemsCounter -= usedItems.length;
         this.randomItemCounter -= randomItemCount;
     }
     setAvailablesItems() {
@@ -51,9 +51,9 @@ export class MapCounterService {
             ItemCategory.Armor,
             ItemCategory.IceSkates,
             ItemCategory.GrapplingHook,
-            ItemCategory.Flask,
-            ItemCategory.TimeTwister,
             ItemCategory.Sword,
+            ItemCategory.TimeTwister,
+            ItemCategory.Bomb,
         ];
     }
 
