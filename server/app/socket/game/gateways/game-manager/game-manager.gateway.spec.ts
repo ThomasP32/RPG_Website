@@ -107,35 +107,30 @@ describe('GameManagerGateway', () => {
 
         it('should emit flagPickedUp and youFinishedMoving when the player picks up the flag', async () => {
             gameCreationService.doesGameExist.returns(true);
-        
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: ['key'] } as Player;
+
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: ['sword'] } as Player;
             const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
-        
+
             player.inventory.push(ItemCategory.Flag);
-        
+
             gameManagerService.getMove.returns([
                 { x: 1, y: 1 },
                 { x: 2, y: 2 },
             ]);
-        
+
             gameManagerService.hasPickedUpFlag.returns(true);
-        
+
             await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
-        
+
             const toRoomStub = serverStub.to('game-id').emit as SinonStub;
             expect(toRoomStub.calledWith('flagPickedUp', game)).toBeTruthy();
-        
+
             const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
             expect(toSocketStub.calledWith('youFinishedMoving')).toBeTruthy();
-        
-            expect(journalService.logMessage.calledWith(
-                'game-id',
-                `Le drapeau a été récupéré par ${player.name}.`,
-                [player.name]
-            )).toBeTruthy();
+
+            expect(journalService.logMessage.calledWith('game-id', `Le drapeau a été récupéré par ${player.name}.`, [player.name])).toBeTruthy();
         });
-        
 
         it('should emit positionToUpdate and youFell if the player falls', async () => {
             gameCreationService.doesGameExist.returns(true);
@@ -210,7 +205,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         specs: { speed: 3, movePoints: 3, attack: 5, defense: 5 },
                         isActive: true,
-                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -234,7 +229,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
-                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -261,7 +256,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
-                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -287,7 +282,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 0,
                 isActive: true,
-                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                 name: 'ActivePlayer',
                 specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
             } as Player;
@@ -296,7 +291,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'other-player-id',
                 turn: 1,
                 isActive: true,
-                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                 name: 'OtherPlayer',
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
@@ -329,7 +324,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'inactive-player-id',
                 turn: 0,
                 isActive: false,
-                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -337,7 +332,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 1,
                 isActive: true,
-                inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -533,7 +528,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         isActive: false,
                         specs: { speed: 5 } as Specs,
-                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -557,7 +552,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         isActive: true,
                         specs: { speed: 5 } as Specs,
-                        inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
+                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,

@@ -17,13 +17,14 @@ export enum Mode {
 }
 
 export enum ItemCategory {
-    Hat = 'hat',
-    IceSkates = 'iceskates',
-    Key = 'key',
-    Mask = 'mask',
-    Random = 'random',
     Armor = 'armor',
-    Acidgun = 'acidgun',
+    Sword = 'sword',
+    Flask = 'flask',
+    GrapplingHook = 'grapplinghook',
+    IceSkates = 'iceskates',
+    TimeTwister = 'timetwister',
+    Bomb = 'bomb',
+    Random = 'randomitem',
     Flag = 'flag',
     StartingPoint = 'startingPoint',
 }
