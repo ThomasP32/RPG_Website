@@ -61,7 +61,6 @@ export class ProfileModalComponent implements OnInit {
 
     setProfile(profile: string): void {
         this.selectedProfile = profile;
-        console.log('Selected profile:', profile);
     }
 
     assignRandomName(): void {
@@ -144,7 +143,5 @@ export class ProfileModalComponent implements OnInit {
         this.createVirtualPlayer();
         this.socketService.sendMessage('joinGame', { player: this.virtualPlayer, gameId: this.gameId });
         this.closeProfileModal();
-
-        console.log('Player created:', this.virtualPlayer, 'Game ID:', this.gameId);
     }
 }
