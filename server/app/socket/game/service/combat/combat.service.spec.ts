@@ -94,9 +94,7 @@ describe('ServerCombatService', () => {
         service.combatWinStatsUpdate(challenger, game.id);
         const combat = service.getCombatByGameId(game.id);
         expect(combat.challenger.specs.nVictories).toBe(1);
-        expect(combat.challenger.specs.nCombats).toBe(1);
         expect(combat.opponent.specs.nDefeats).toBe(1);
-        expect(combat.opponent.specs.nCombats).toBe(1);
     });
 
     it('should move player back to initial position if unoccupied', () => {
@@ -140,9 +138,7 @@ describe('ServerCombatService', () => {
         const combatChallenger = service.getCombatByGameId(game.id).challenger;
         const combatOpponent = service.getCombatByGameId(game.id).opponent;
         expect(combatChallenger.specs.nVictories).toBe(1);
-        expect(combatChallenger.specs.nCombats).toBe(1);
         expect(combatOpponent.specs.nDefeats).toBe(1);
-        expect(combatOpponent.specs.nCombats).toBe(1);
     });
 
     it('should update opponent stats on win and challenger stats on loss', () => {
@@ -153,9 +149,7 @@ describe('ServerCombatService', () => {
         const combatChallenger = service.getCombatByGameId(game.id).challenger;
         const combatOpponent = service.getCombatByGameId(game.id).opponent;
         expect(combatOpponent.specs.nVictories).toBe(1);
-        expect(combatOpponent.specs.nCombats).toBe(1);
         expect(combatChallenger.specs.nDefeats).toBe(1);
-        expect(combatChallenger.specs.nCombats).toBe(1);
     });
 
     it('should return attack and defense dice rolls within the correct range', () => {

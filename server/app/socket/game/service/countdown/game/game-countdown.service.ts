@@ -1,4 +1,5 @@
 import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
+import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
 import { Server } from 'socket.io';
@@ -24,29 +25,30 @@ export class GameCountdownService extends EventEmitter {
         }
     }
 
-    async startNewCountdown(id: string): Promise<void> {
-        const countdown = this.countdowns.get(id);
+    async startNewCountdown(game: Game): Promise<void> {
+        const countdown = this.countdowns.get(game.id);
         if (countdown) {
-            this.resetTimerSubscription(id);
+            this.resetTimerSubscription(game.id);
             countdown.remaining = countdown.duration;
 
             let delay = 3;
 
             countdown.timerSubscription = interval(1000).subscribe(() => {
                 if (delay >= 0) {
-                    this.server.to(id).emit('delay', delay);
+                    this.server.to(game.id).emit('delay', delay);
 
                     if (delay === 0) {
-                        this.server.to(id).emit('startTurn');
+                        this.server.to(game.id).emit('startTurn');
                     }
 
                     delay--;
                 } else {
                     if (countdown.remaining > 0) {
-                        this.server.to(id).emit('secondPassed', countdown.remaining);
+                        this.server.to(game.id).emit('secondPassed', countdown.remaining);
                         countdown.remaining--;
+                        game.duration++;
                     } else {
-                        this.emit('timeout', id);
+                        this.emit('timeout', game.id);
                     }
                 }
             });
