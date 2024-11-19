@@ -45,6 +45,7 @@ const mockPlayer: Player = {
     initialPosition: { x: 0, y: 0 },
     turn: 0,
     visitedTiles: [],
+    isVirtual: false,
 };
 
 const mockGame: Game = {

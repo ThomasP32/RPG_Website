@@ -33,6 +33,7 @@ describe('EndgameService', () => {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [{ x: 0, y: 0 }],
+        isVirtual: false,
     };
 
     const mockGame: Game = {
