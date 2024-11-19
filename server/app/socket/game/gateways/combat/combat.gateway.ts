@@ -122,6 +122,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
             if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
                 defendingPlayer.specs.life--;
+                defendingPlayer.specs.nLifeLost++;
+                attackingPlayer.specs.nLifeTaken++;
                 this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
                 this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
             } else {
@@ -179,12 +181,13 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     startCombatTurns(gameId: string): void {
         const combat = this.serverCombatService.getCombatByGameId(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         if (combat) {
             this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
             const currentPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const otherPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
             this.server.to(otherPlayer.socketId).emit('playerTurnCombat');
-            this.combatCountdownService.startTurnCounter(gameId, currentPlayer.specs.evasions === 0 ? false : true);
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
         }
     }
 

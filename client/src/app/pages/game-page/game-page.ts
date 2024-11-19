@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
@@ -37,7 +37,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class GamePageComponent implements OnInit {
     activeView: 'chat' | 'journal' = 'chat';
     activePlayers: Player[];
     opponent: Player;
@@ -162,7 +162,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     navigateToEndOfGame(): void {
-        this.navigateToMain();
+        this.router.navigate(['/end-game']);
     }
 
     confirmExit(): void {
@@ -316,14 +316,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {
-                    this.navigateToMain();
+                    this.navigateToEndOfGame();
                 }, TIME_LIMIT_DELAY);
             }),
         );
-    }
-
-    ngOnDestroy() {
-        this.socketSubscription.unsubscribe();
-        this.socketService.disconnect();
     }
 }

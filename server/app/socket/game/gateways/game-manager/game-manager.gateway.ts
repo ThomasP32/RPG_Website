@@ -163,6 +163,7 @@ export class GameManagerGateway implements OnGatewayInit {
             this.startTurn(gameId);
             return;
         }
+        game.nTurns++;
         this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         activePlayer.specs.actions = DEFAULT_ACTIONS;
@@ -174,6 +175,6 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                 }
             });
-        this.gameCountdownService.startNewCountdown(gameId);
+        this.gameCountdownService.startNewCountdown(game);
     }
 }

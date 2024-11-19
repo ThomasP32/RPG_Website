@@ -1,3 +1,5 @@
+import { Avatar, Bonus, Game, Player } from '@common/game';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { interval, Subscription } from 'rxjs';
 import { Server } from 'socket.io';
 import { CombatCountdownService } from './combat-countdown.service';
@@ -12,6 +14,64 @@ describe('CombatCountdownService', () => {
     let mockServer: jest.Mocked<Server>;
     let mockIntervalSubscription: jest.Mocked<Subscription>;
     let intervalCallback: () => void;
+
+    const mockPlayer: Player = {
+        socketId: 'test-socket',
+        name: 'Test Player',
+        avatar: Avatar.Avatar1,
+        isActive: true,
+        position: { x: 0, y: 0 },
+        initialPosition: { x: 0, y: 0 },
+        specs: {
+            evasions: 2,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            movePoints: 5,
+            actions: 2,
+            attackBonus: Bonus.D4,
+            defenseBonus: Bonus.D6,
+            nVictories: 0,
+            nDefeats: 0,
+            nCombats: 0,
+            nEvasions: 0,
+            nLifeTaken: 0,
+            nLifeLost: 0,
+        },
+        inventory: [],
+        turn: 0,
+        visitedTiles: [],
+    };
+
+    const mockGame: Game = {
+        id: 'test-id',
+        hostSocketId: 'test-socket',
+        hasStarted: true,
+        currentTurn: 0,
+        mapSize: { x: 10, y: 10 },
+        tiles: [
+            { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+            { coordinate: { x: 3, y: 3 }, category: TileCategory.Ice },
+            { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [
+            { coordinate: { x: 1, y: 2 }, isOpened: false },
+            { coordinate: { x: 2, y: 1 }, isOpened: true },
+        ],
+        startTiles: [{ coordinate: { x: 0, y: 0 } }],
+        items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+        players: [mockPlayer],
+        mode: Mode.Classic,
+        nTurns: 0,
+        debug: false,
+        nDoorsManipulated: 0,
+        duration: 0,
+        isLocked: true,
+        name: 'game',
+        description: 'game description',
+        imagePreview: 'image-preview',
+    };
 
     beforeEach(() => {
         service = new CombatCountdownService();
@@ -48,7 +108,7 @@ describe('CombatCountdownService', () => {
 
     it('should start a new countdown with 5 seconds if evasions are enabled', async () => {
         service.initCountdown('test_id', 5);
-        await service.startTurnCounter('test_id', true);
+        await service.startTurnCounter(mockGame, true);
 
         intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 5);
@@ -66,12 +126,12 @@ describe('CombatCountdownService', () => {
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
         intervalCallback();
-        expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
+        expect(service.emit).toHaveBeenCalledWith('timeout', 'test-id');
     });
 
     it('should start a new countdown with 3 seconds if evasions are not enabled', async () => {
-        service.initCountdown('test_id', 3);
-        await service.startTurnCounter('test_id', false);
+        service.initCountdown('test-id', 3);
+        await service.startTurnCounter(mockGame, false);
 
         intervalCallback();
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 3);
@@ -83,20 +143,20 @@ describe('CombatCountdownService', () => {
         expect(mockServer.emit).toHaveBeenCalledWith('combatSecondPassed', 1);
 
         intervalCallback();
-        expect(service.emit).toHaveBeenCalledWith('timeout', 'test_id');
+        expect(service.emit).toHaveBeenCalledWith('timeout', 'test-id');
     });
 
     it('should reset the timer subscription when resetTimerSubscription is called', () => {
-        service.initCountdown('test_id', 10);
-        service.startTurnCounter('test_id', false);
+        service.initCountdown('test-id', 10);
+        service.startTurnCounter(mockGame, false);
 
-        service.resetTimerSubscription('test_id');
+        service.resetTimerSubscription('test-id');
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
 
     it('should reset the countdown to the original duration without emitting events', () => {
-        service.initCountdown('test_id', 5);
-        service.startTurnCounter('test_id', false);
+        service.initCountdown('test-id', 5);
+        service.startTurnCounter(mockGame, false);
 
         intervalCallback();
         intervalCallback();
@@ -104,21 +164,21 @@ describe('CombatCountdownService', () => {
 
         mockServer.emit.mockClear();
 
-        service.resetCountdown('test_id');
+        service.resetCountdown('test-id');
 
-        const countdown = service['countdowns'].get('test_id');
+        const countdown = service['countdowns'].get('test-id');
         expect(countdown?.remaining).toBe(3);
-        service.startTurnCounter('test_id', true);
+        service.startTurnCounter(mockGame, true);
         expect(countdown?.remaining).toBe(5);
     });
 
     it('should delete the countdown and unsubscribe from the timer when deleteCountdown is called', () => {
-        service.initCountdown('test_id', 5);
-        service.startTurnCounter('test_id', true);
+        service.initCountdown('test-id', 5);
+        service.startTurnCounter(mockGame, true);
 
-        service.deleteCountdown('test_id');
+        service.deleteCountdown('test-id');
 
-        expect(service['countdowns'].has('test_id')).toBe(false);
+        expect(service['countdowns'].has('test-id')).toBe(false);
 
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
