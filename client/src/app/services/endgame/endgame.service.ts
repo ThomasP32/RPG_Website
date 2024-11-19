@@ -10,7 +10,7 @@ export class EndgameService {
     constructor() {}
 
     getPlayerTilePercentage(player: Player, game: Game): number {
-        return (player.visitedTiles.length / (game.mapSize.x * game.mapSize.y)) * PERCENTAGE;
+        return Math.floor((player.visitedTiles.length / (game.mapSize.x * game.mapSize.y)) * PERCENTAGE);
     }
 
     gameDurationInMinutes(duration: number): string {
@@ -30,6 +30,6 @@ export class EndgameService {
             });
         });
 
-        return (uniqueVisitedTiles.size / totalTiles) * 100;
+        return Math.floor((uniqueVisitedTiles.size / totalTiles) * PERCENTAGE);
     }
 }
