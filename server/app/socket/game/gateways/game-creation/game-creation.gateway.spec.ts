@@ -44,7 +44,9 @@ describe('GameGateway', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        isVirtual: false,
     };
+
     let gameRoom: Game = {
         hasStarted: false,
         id: 'room-1',
@@ -381,10 +383,12 @@ describe('GameGateway', () => {
                 expect(socket.emit.calledWith('gameNotFound', { reason: 'La partie a été fermée' })).toBeTruthy();
             });
         });
+
         describe('handleKickPlayer', () => {
             it('should emit playerKicked to the specified player', () => {
                 const playerId = 'player-1';
-                gateway.handleKickPlayer(socket, playerId);
+                const gameId = 'room-1';
+                gateway.handleKickPlayer(socket, { gameId, playerId });
                 expect(serverStub.to.calledWith(playerId)).toBeTruthy();
                 const emitStub = serverStub.to(playerId).emit as SinonStubbedInstance<Socket>['emit'];
                 expect(emitStub.calledWith('playerKicked')).toBeTruthy();
