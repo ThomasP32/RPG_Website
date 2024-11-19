@@ -62,6 +62,7 @@ export class GameManagerGateway implements OnGatewayInit {
             this.gameManagerService.updatePosition(data.gameId, client.id, [move]);
 
             const isOnIceTile = this.gameManagerService.onIceTile(player, game.id);
+            const onItem = this.gameManagerService.onItem(player, game.id);
             if (isOnIceTile && !wasOnIceTile) {
                 player.specs.attack -= 2;
                 player.specs.defense -= 2;
@@ -70,6 +71,12 @@ export class GameManagerGateway implements OnGatewayInit {
                 player.specs.attack += 2;
                 player.specs.defense += 2;
                 wasOnIceTile = false;
+            }
+            if (onItem) {
+                this.gameManagerService.pickUpItem(move, game.id, player);
+                if (player.inventory.length > 2) {
+                    this.server.to(client.id).emit('inventoryFull');
+                }
             }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));

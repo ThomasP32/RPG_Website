@@ -6,6 +6,7 @@ import { CombatListComponent } from '@app/components/combat-list/combat-list.com
 import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
+import { InventoryModalComponent } from '@app/components/inventory-modal/inventory-modal.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
 import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
@@ -33,6 +34,7 @@ import { Subscription } from 'rxjs';
         CombatListComponent,
         CombatModalComponent,
         JournalComponent,
+        InventoryModalComponent
     ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
@@ -62,6 +64,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     showEndGameModal = false;
     gameOverMessage = false;
     isCombatModalOpen = false;
+    isInventoryModalOpen = false;
 
     socketSubscription: Subscription = new Subscription();
 
@@ -119,6 +122,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForCountDown();
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
+            this.listenForInventoryFull();
 
             this.gameId = this.gameService.game.id;
             this.activePlayers = this.gameService.game.players;
@@ -254,6 +258,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.actionMessage = 'Actions possibles';
             }
         });
+    }
+
+    listenForInventoryFull() {
+        this.socketSubscription.add(
+            this.socketService.listen('inventoryFull').subscribe(() => {
+                this.isInventoryModalOpen = true;
+            }),
+        );
     }
 
     toggleDoor() {
