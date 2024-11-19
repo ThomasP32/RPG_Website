@@ -643,54 +643,70 @@ describe('CombatGateway', () => {
                 const mockGame = {
                     id: 'game-id',
                     hasStarted: true,
-                    currentTurn: mockCombat.opponent.turn, // Match winner's turn (1)
+                    currentTurn: mockCombat.opponent.turn,
                     players: [
-                        { socketId: mockCombat.challenger.socketId, turn: mockCombat.challenger.turn, name: mockCombat.challenger.name, specs: mockCombat.challenger.specs } as Player,
-                        { socketId: mockCombat.opponent.socketId, turn: mockCombat.opponent.turn, name: mockCombat.opponent.name, specs: mockCombat.opponent.specs } as Player,
+                        {
+                            socketId: mockCombat.challenger.socketId,
+                            turn: mockCombat.challenger.turn,
+                            name: mockCombat.challenger.name,
+                            specs: mockCombat.challenger.specs,
+                        } as Player,
+                        {
+                            socketId: mockCombat.opponent.socketId,
+                            turn: mockCombat.opponent.turn,
+                            name: mockCombat.opponent.name,
+                            specs: mockCombat.opponent.specs,
+                        } as Player,
                     ],
                 } as Game;
-            
-                mockCombat.challenger.specs.nVictories = 1; 
+
+                mockCombat.challenger.specs.nVictories = 1;
                 mockCombat.opponent.specs.nVictories = 1;
-            
+
                 gameCreationService.getGames.mockReturnValue([mockGame]);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
                 serverCombatService.getCombatByGameId.mockReturnValue(mockCombat);
-            
+
                 gateway.handleDisconnect(mockSocket);
-            
+
                 jest.runAllTimers();
-            
+
                 expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith(mockGame.id);
             });
 
             it('should emit "timeout" if there is no active combat and the disconnected player’s turn matches the current game turn', () => {
                 jest.useFakeTimers();
-            
+
                 const mockGame = {
                     id: 'game-id',
                     hasStarted: true,
-                    currentTurn: mockCombat.challenger.turn, 
+                    currentTurn: mockCombat.challenger.turn,
                     players: [
-                        { socketId: mockCombat.challenger.socketId, turn: mockCombat.challenger.turn, name: mockCombat.challenger.name, specs: mockCombat.challenger.specs } as Player,
-                        { socketId: mockCombat.opponent.socketId, turn: mockCombat.opponent.turn, name: mockCombat.opponent.name, specs: mockCombat.opponent.specs } as Player,
+                        {
+                            socketId: mockCombat.challenger.socketId,
+                            turn: mockCombat.challenger.turn,
+                            name: mockCombat.challenger.name,
+                            specs: mockCombat.challenger.specs,
+                        } as Player,
+                        {
+                            socketId: mockCombat.opponent.socketId,
+                            turn: mockCombat.opponent.turn,
+                            name: mockCombat.opponent.name,
+                            specs: mockCombat.opponent.specs,
+                        } as Player,
                     ],
                 } as Game;
-            
+
                 serverCombatService.getCombatByGameId.mockReturnValue(undefined);
-            
-               
+
                 gameCreationService.getGames.mockReturnValue([mockGame]);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
-            
+
                 gateway.handleDisconnect(mockSocket);
                 jest.runAllTimers();
-            
+
                 expect(gameCountdownService.emit).toHaveBeenCalledWith('timeout', mockGame.id);
-        
             });
-            
-            
         });
     });
 });
