@@ -1,1 +1,14 @@
-<p>inventory-modal works!</p>
+<div class="inventory-interface">
+    <h2>Votre inventaire est plein</h2>
+    <h3>Choisissez un item à jeter</h3>
+    <div class="inventory">
+        @for (item of player.inventory ; track item) {
+        <div class="inventory-container">
+            <button class="inventory-button" (click)="dropItem(item)">Jeter</button>
+            <div class="inventory-slot">
+                <img [src]="imageService.getItemImage(item)" [alt]="item" class="item-image" />
+            </div>
+        </div>
+        }
+    </div>
+</div>

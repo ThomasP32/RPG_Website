@@ -172,11 +172,10 @@
         <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
     </div>
 </div>
-}
-@if(isInventoryModalOpen) {
-    <div class="inventory-modal">
-        <div>
-            <app-inventory-modal [player]="player" > </app-inventory-modal>
-        </div>
+} @if(isInventoryModalOpen) {
+<div class="inventory-modal">
+    <div>
+        <app-inventory-modal [player]="player" [gameId]="game.id"> </app-inventory-modal>
     </div>
-    }
+</div>
+}

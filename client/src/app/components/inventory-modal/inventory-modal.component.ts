@@ -1,5 +1,8 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, Input } from '@angular/core';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { ImageService } from '@app/services/image/image.service';
+import { Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
 
 @Component({
     selector: 'app-inventory-modal',
@@ -8,18 +11,18 @@ import { Subscription } from 'rxjs';
     templateUrl: './inventory-modal.component.html',
     styleUrl: './inventory-modal.component.scss',
 })
-export class InventoryModalComponent implements OnInit, OnDestroy {
-    @Input() player: { name: string } = { name: '' };
+export class InventoryModalComponent {
+    @Input() player: Player;
     @Input() gameId: string;
-    messageSubscription: Subscription;
-
-    ngOnInit(): void {
-      
+    constructor(
+        protected imageService: ImageService,
+        private socketService: SocketService,
+    ) {
+        this.imageService = imageService;
+        this.socketService = socketService;
     }
 
-    ngOnDestroy(): void {
-        if (this.messageSubscription) {
-            this.messageSubscription.unsubscribe();
-        }
+    dropItem(item: ItemCategory) {
+        this.socketService.sendMessage('dropItem', { itemDropping: item, gameId: this.gameId });
     }
 }

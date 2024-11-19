@@ -3,7 +3,7 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { TIME_FOR_POSITION_UPDATE } from '@common/constants';
-import { Coordinate } from '@common/map.types';
+import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -128,6 +128,13 @@ export class GameManagerGateway implements OnGatewayInit {
         this.server.to(client.id).emit('yourDoors', adjacentDoors);
     }
 
+    @SubscribeMessage('dropItem')
+    dropItem(client: Socket, data: { itemDropping: ItemCategory; gameId: string }): void {
+        const game = this.gameCreationService.getGameById(data.gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        this.gameManagerService.dropItem(data.itemDropping, game.id, player);
+        this.server.to(client.id).emit('itemDropped');
+    }
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
         this.gameCountdownService.initCountdown(gameId, 30);

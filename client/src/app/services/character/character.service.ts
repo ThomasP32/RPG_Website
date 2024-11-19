@@ -6,9 +6,6 @@ import { Observable, of } from 'rxjs';
     providedIn: 'root',
 })
 export class CharacterService {
-    // il faut rajouter isAvailable pour eviter de rerender la page dans character-form (si on rerender on perd
-    // le socket et je sais pas pourquoi mais le socket se créé seulement à la page de départ on pourrait régler ca après mais
-    // ca me semble quand meme etre bien de l'avoir ici)
     private characters = [
         {
             id: Avatar.Avatar1,

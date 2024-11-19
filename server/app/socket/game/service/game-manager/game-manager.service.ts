@@ -86,7 +86,7 @@ export class GameManagerService {
                     break;
                 }
 
-                if (this.onItem(player, gameId)) {
+                if (this.onTileItem(position, game)) {
                     finalPath.push(position);
                     break;
                 }
@@ -192,6 +192,10 @@ export class GameManagerService {
         return true;
     }
 
+    private onTileItem(pos: Coordinate, game: Game): boolean {
+        return game.items.some((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
+    }
+
     private getTileWeight(pos: Coordinate, game: Game): number {
         for (const tile of game.tiles) {
             if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
@@ -209,6 +213,16 @@ export class GameManagerService {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
             game.items.splice(itemIndex, 1);
+        }
+    }
+    dropItem(itemDropping: ItemCategory, gameId: string, player: Player): void {
+        const coordinates = player.position;
+        const game = this.gameCreationService.getGameById(gameId);
+        const itemIndex = player.inventory.findIndex((item) => item === itemDropping);
+        if (itemIndex !== -1) {
+            const item = player.inventory[itemIndex];
+            game.items.push({ coordinate: coordinates, category: item });
+            player.inventory.splice(itemIndex, 1);
         }
     }
 
