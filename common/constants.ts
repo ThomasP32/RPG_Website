@@ -41,8 +41,6 @@ export const MINUTE: number = 60;
 
 export const MAX_CHAR: number = 2;
 
-export const COUNTDOWN_DURATION: number = 5;
-
 export const COUNTDOWN_NOEVASION_DURATION: number = 3;
 
 export const COUNTDOWN_COMBAT_DURATION: number = 5;
