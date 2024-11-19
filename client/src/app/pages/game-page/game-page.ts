@@ -34,7 +34,7 @@ import { Subscription } from 'rxjs';
         CombatListComponent,
         CombatModalComponent,
         JournalComponent,
-        InventoryModalComponent
+        InventoryModalComponent,
     ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
@@ -264,6 +264,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen('inventoryFull').subscribe(() => {
                 this.isInventoryModalOpen = true;
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen('itemDropped').subscribe(() => {
+                this.isInventoryModalOpen = false;
             }),
         );
     }
