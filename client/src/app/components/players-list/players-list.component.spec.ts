@@ -50,6 +50,7 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            isVirtual: false,
         },
         {
             socketId: 'player1Id',
@@ -78,6 +79,7 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            isVirtual: false,
         },
     ];
 
@@ -132,13 +134,26 @@ describe('PlayersListComponent', () => {
             component.checkHostPlayerId();
             expect(component.hostPlayerId).toBe('');
         });
+
+        it("should set hostPlayerId to the first player's socketId if it is empty", () => {
+            component.hostPlayerId = '';
+            component.hoveredPlayerId = 'hostId';
+            component.checkHostPlayerId();
+            expect(component.hostPlayerId).toBe('hostId');
+        });
     });
 
     describe('kickPlayer', () => {
-        it('should call sendMessage with the player ID to kick', () => {
+        it('should call sendMessage with the correct player ID and game ID', () => {
             const playerId = 'player1Id';
+            component.gameId = 'game123';
             component.kickPlayer(playerId);
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', playerId);
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', { playerId: playerId, gameId: 'game123' });
+        });
+
+        it('should not call sendMessage if playerId is empty', () => {
+            component.gameId = 'game123';
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
         });
     });
 });

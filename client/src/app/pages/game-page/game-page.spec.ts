@@ -42,6 +42,7 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Acidgun, ItemCategory.Hat],
     turn: 0,
     visitedTiles: [],
+    isVirtual: false,
 };
 
 const mockGame: Game = {

@@ -40,6 +40,7 @@ const mockPlayer: Player = {
     turn: 1,
     visitedTiles: [],
     initialPosition: { x: 0, y: 0 },
+    isVirtual: false,
 };
 
 describe('WaitingRoomPageComponent', () => {
@@ -250,6 +251,21 @@ describe('WaitingRoomPageComponent', () => {
         });
     });
 
+    it('should handle gameLockToggled event correctly and update isGameLocked', () => {
+        component.isGameLocked = false;
+        gameLockToggled$.next({ isLocked: true });
+
+        fixture.detectChanges();
+
+        expect(component.isGameLocked).toBeTrue();
+
+        gameLockToggled$.next({ isLocked: false });
+
+        fixture.detectChanges();
+
+        expect(component.isGameLocked).toBeFalse();
+    });
+
     it('should handle gameInitialized event correctly and update the game state', () => {
         const mockGame = {
             id: '1234',
@@ -282,34 +298,49 @@ describe('WaitingRoomPageComponent', () => {
         expect(component.navigateToGamePage).toHaveBeenCalled();
     });
 
+    it('should send initializeGame message when startGame is called', () => {
+        component.waitingRoomCode = '1234';
+        component.startGame();
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('initializeGame', '1234');
+    });
+
     it('should handle playerJoined event correctly', () => {
         const mockPlayers = [
-            mockPlayer, 
+            mockPlayer,
             {
                 socketId: 'player2-socket-id',
                 name: 'Player2',
                 avatar: Avatar.Avatar2,
                 isActive: true,
-                specs: { ...mockPlayer.specs }, 
+                specs: { ...mockPlayer.specs },
                 inventory: [],
                 position: { x: 2, y: 3 },
                 turn: 2,
                 visitedTiles: [],
                 initialPosition: { x: 1, y: 1 },
+                isVirtual: false,
             },
         ];
 
-        component.isHost = true; 
-        component.maxPlayers = 2; 
+        component.isHost = true;
+        component.maxPlayers = 2;
 
         playerJoinedSubject.next(mockPlayers);
 
-
         fixture.detectChanges();
 
-        
-        expect(component.activePlayers).toEqual(mockPlayers); 
-        expect(component.numberOfPlayers).toEqual(mockPlayers.length); 
+        expect(component.activePlayers).toEqual(mockPlayers);
+        expect(component.numberOfPlayers).toEqual(mockPlayers.length);
+    });
+
+    it('should set showProfileModal to true when openProfileModal is called', () => {
+        component.openProfileModal();
+        expect(component.showProfileModal).toBeTrue();
+    });
+
+    it('should set showProfileModal to false when closeProfileModal is called', () => {
+        component.closeProfileModal();
+        expect(component.showProfileModal).toBeFalse();
     });
 
     afterEach(() => {

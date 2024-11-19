@@ -53,6 +53,7 @@ describe('GameTurnService', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        isVirtual: false,
     };
 
     const mockGame: Game = {
