@@ -49,3 +49,16 @@ export const DEFAULT_ACTIONS = 1;
 export const BONUS = 2;
 
 export const TURN_DURATION = 30;
+
+export const PERCENTAGE: number = 100;
+
+export const MINUTE: number = 60;
+
+export const MAX_CHAR: number = 2;
+
+export const COUNTDOWN_DURATION: number = 5;
+
+export const COUNTDOWN_NOEVASION_DURATION: number = 3;
+
+export const COUNTDOWN_COMBAT_DURATION: number = 5;
+

@@ -643,7 +643,7 @@ describe('CombatGateway', () => {
                 const mockGame = {
                     id: 'game-id',
                     hasStarted: true,
-                    currentTurn: mockCombat.opponent.turn, // Match winner's turn (1)
+                    currentTurn: mockCombat.opponent.turn,
                     players: [
                         {
                             socketId: mockCombat.challenger.socketId,
