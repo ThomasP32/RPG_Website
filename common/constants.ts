@@ -1,5 +1,3 @@
-export const TURN_DURATION: number = 30;
-
 export enum MapSize {
     SMALL = 'SMALL',
     MEDIUM = 'MEDIUM',
@@ -49,3 +47,5 @@ export const DEFAULT_EVASIONS = 2;
 export const DEFAULT_ACTIONS = 1;
 
 export const BONUS = 2;
+
+export const TURN_DURATION = 30;

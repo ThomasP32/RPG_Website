@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, HALF } from '@common/constants';
@@ -11,7 +11,7 @@ import { Avatar, Bonus, BotName, Player, Specs } from '@common/game';
     templateUrl: './profile-modal.component.html',
     styleUrl: './profile-modal.component.scss',
 })
-export class ProfileModalComponent {
+export class ProfileModalComponent implements OnInit {
     @Input() activePlayers: Player[] = [];
     @Input() gameId: string | null = null;
     selectedProfile: string;
@@ -22,14 +22,7 @@ export class ProfileModalComponent {
         private waitingRoom: WaitingRoomPageComponent,
     ) {}
 
-    createVirtualSocketId(): void {
-        this.virtualPlayer.socketId = 'virtualPlayer' + Math.floor(Math.random() * 1000);
-    }
-
-    setProfile(profile: string): void {
-        this.selectedProfile = profile;
-        console.log('Selected profile:', profile);
-
+    ngOnInit(): void {
         const playerSpecs: Specs = {
             life: DEFAULT_HP,
             speed: DEFAULT_SPEED,
@@ -58,8 +51,18 @@ export class ProfileModalComponent {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            isVirtual: true,
         };
         this.virtualPlayer = virtualPlayer;
+    }
+
+    createVirtualSocketId(): void {
+        this.virtualPlayer.socketId = 'virtualPlayer' + Math.floor(Math.random() * 1000);
+    }
+
+    setProfile(profile: string): void {
+        this.selectedProfile = profile;
+        console.log('Selected profile:', profile);
     }
 
     assignRandomName(): void {
@@ -127,6 +130,7 @@ export class ProfileModalComponent {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            isVirtual: true,
         };
         this.virtualPlayer = virtualPlayer;
     }
