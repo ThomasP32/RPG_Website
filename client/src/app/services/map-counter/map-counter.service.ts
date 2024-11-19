@@ -43,15 +43,21 @@ export class MapCounterService {
         this.items = this.items.filter((item) => !usedCategories.has(item));
 
         const randomItemCount = usedItems.filter((item) => item.category === ItemCategory.Random).length;
-        this.itemsCounter -= randomItemCount;
+        this.itemsCounter -= usedItems.length;
         this.randomItemCounter -= randomItemCount;
     }
     setAvailablesItems() {
-        this.items = [ItemCategory.Hat, ItemCategory.IceSkates, ItemCategory.Key, ItemCategory.Mask, ItemCategory.Armor, ItemCategory.Acidgun];
+        this.items = [
+            ItemCategory.Armor,
+            ItemCategory.IceSkates,
+            ItemCategory.GrapplingHook,
+            ItemCategory.Sword,
+            ItemCategory.TimeTwister,
+            ItemCategory.Bomb,
+        ];
     }
 
     isItemUsed(item: ItemCategory): boolean {
-        console.log(!this.items.includes(item));
         return !this.items.includes(item);
     }
 
@@ -66,6 +72,9 @@ export class MapCounterService {
     releaseItem(item: ItemCategory) {
         if (item != ItemCategory.Flag) {
             this.itemsCounter += 1;
+            if (item === ItemCategory.Random) {
+                this.randomItemCounter += 1;
+            }
         }
         this.items.push(item);
     }

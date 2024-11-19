@@ -85,12 +85,12 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    item: ItemCategory.Armor,
                 },
             ],
         ];
         service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
-        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledOnceWith(ItemCategory.Hat);
+        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledOnceWith(ItemCategory.Armor);
         expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
         expect(mockMap[0][0].item).toBeUndefined();
     });
@@ -105,7 +105,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    item: ItemCategory.Armor,
                 },
             ],
             [
@@ -121,7 +121,7 @@ describe('TileService', () => {
         ];
         service.moveItem(mockMap, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 0 });
         expect(mockMap[0][0].item).toBeUndefined();
-        expect(mockMap[1][0].item).toBe(ItemCategory.Hat);
+        expect(mockMap[1][0].item).toBe(ItemCategory.Armor);
     });
 
     it('should set an item', () => {
@@ -134,7 +134,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    item: ItemCategory.Armor,
                 },
             ],
             [
