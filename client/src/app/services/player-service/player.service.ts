@@ -43,6 +43,7 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            isVirtual: false,
         };
         this.player = player;
     }
@@ -66,7 +67,7 @@ export class PlayerService {
         } else if (type === 'speed') {
             this.player.specs.speed = DEFAULT_SPEED + BONUS;
             this.player.specs.life = DEFAULT_HP;
-        } 
+        }
     }
 
     assignDice(type: 'attack' | 'defense'): void {
@@ -108,6 +109,7 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            isVirtual: false,
         };
         this.player = player;
     }
