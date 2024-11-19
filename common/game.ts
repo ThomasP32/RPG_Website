@@ -1,4 +1,4 @@
-import { Coordinate, ItemCategory, Map } from '@common/map.types';
+import { Coordinate, ItemCategory, Map } from './map.types';
 
 export enum Avatar {
     Avatar1 = 1,

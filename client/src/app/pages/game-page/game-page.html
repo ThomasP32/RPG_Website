@@ -173,3 +173,10 @@
     </div>
 </div>
 }
+@if(isInventoryModalOpen) {
+    <div class="inventory-modal">
+        <div>
+            <app-inventory-modal [player]="player" > </app-inventory-modal>
+        </div>
+    </div>
+    }

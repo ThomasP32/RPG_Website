@@ -86,8 +86,7 @@ export class GameManagerService {
                     break;
                 }
 
-                if (this.itemOnTile(position, game)) {
-                    this.pickUpItem(position, game, player);
+                if (this.onItem(player, gameId)) {
                     finalPath.push(position);
                     break;
                 }
@@ -203,16 +202,8 @@ export class GameManagerService {
         return 1;
     }
 
-    private itemOnTile(pos: Coordinate, game: Game): boolean {
-        for (const item of game.items) {
-            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pickUpItem(pos: Coordinate, game: Game, player: Player): void {
+    pickUpItem(pos: Coordinate, gameId: string, player: Player): void {
+        const game = this.gameCreationService.getGameById(gameId);
         const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
         if (itemIndex !== -1) {
             const item = game.items[itemIndex].category;
@@ -227,6 +218,12 @@ export class GameManagerService {
             .tiles.some(
                 (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
             );
+    }
+
+    onItem(player: Player, gameId: string): boolean {
+        return this.gameCreationService
+            .getGameById(gameId)
+            .items.some((item) => item.coordinate.x === player.position.x && item.coordinate.y === player.position.y);
     }
 
     hasFallen(moves: Coordinate[], destination: Coordinate) {
