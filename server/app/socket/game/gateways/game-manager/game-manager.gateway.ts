@@ -94,8 +94,9 @@ export class GameManagerGateway implements OnGatewayInit {
                 `Le drapeau a été récupéré par ${player.name}.`,
                 game.players.map((player) => player.name),
             );
-        } else if (this.gameManagerService.hasFallen(moves, data.destination)) {
+        } else if (this.gameManagerService.hasFallen) {
             this.server.to(client.id).emit('youFell');
+            this.gameManagerService.hasFallen = false;
         } else {
             this.server.to(client.id).emit('youFinishedMoving');
         }
@@ -132,8 +133,9 @@ export class GameManagerGateway implements OnGatewayInit {
     dropItem(client: Socket, data: { itemDropping: ItemCategory; gameId: string }): void {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
-        this.gameManagerService.dropItem(data.itemDropping, game.id, player);
-        this.server.to(client.id).emit('itemDropped');
+        const coordinates = player.position;
+        this.gameManagerService.dropItem(data.itemDropping, game.id, client.id, coordinates);
+        this.server.to(client.id).emit('itemDropped', { game: game, player: player });
     }
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
@@ -183,6 +185,11 @@ export class GameManagerGateway implements OnGatewayInit {
             .forEach((player) => {
                 if (player.socketId !== activePlayer.socketId) {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
+                    if (player.inventory.length > 2) {
+                        const coordinates = player.position;
+                        this.gameManagerService.dropItem(player.inventory[2], game.id, player.socketId, coordinates);
+                        this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
+                    }
                 }
             });
         this.gameCountdownService.startNewCountdown(gameId);

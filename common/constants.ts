@@ -1,3 +1,5 @@
+import { ItemCategory } from './map.types';
+
 export const TURN_DURATION: number = 30;
 export enum MapSize {
     SMALL = 'SMALL',
@@ -34,3 +36,12 @@ export const TIME_PULSE: number = 500;
 export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const HALF = 0.5;
+
+export const ALL_ITEMS: ItemCategory[] = [
+    ItemCategory.Armor,
+    ItemCategory.Bomb,
+    ItemCategory.Sword,
+    ItemCategory.IceSkates,
+    ItemCategory.GrapplingHook,
+    ItemCategory.TimeTwister,
+];

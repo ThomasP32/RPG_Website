@@ -267,8 +267,13 @@ export class GamePageComponent implements OnInit, OnDestroy {
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen('itemDropped').subscribe(() => {
+            this.socketService.listen<{ game: Game; player: Player }>('itemDropped').subscribe((data) => {
                 this.isInventoryModalOpen = false;
+                if (data.player && data.player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
+                    this.gameTurnService.resumeTurn();
+                }
+                this.gameService.setGame(data.game);
             }),
         );
     }
