@@ -98,9 +98,11 @@ describe('GamePageComponent', () => {
         const possibleDoorsSubject = new Subject<DoorTile[]>();
         const playerWonSubject = new Subject<boolean>();
 
-        const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
+        const gameSpy = jasmine.createSpyObj('GameService', ['setGame'], {
+            game: mockGame,
+        });
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
@@ -148,9 +150,6 @@ describe('GamePageComponent', () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(GamePageComponent);
-        component = fixture.componentInstance;
-
         router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
         gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
@@ -158,13 +157,6 @@ describe('GamePageComponent', () => {
         socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
-
-        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
-            return socketId === 'virtualPlayer45';
-        });
-
-        gameSpy.game = mockGame;
-        playerSpy.player = mockPlayer;
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
@@ -176,6 +168,9 @@ describe('GamePageComponent', () => {
                     return of();
             }
         });
+
+        fixture = TestBed.createComponent(GamePageComponent);
+        component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
@@ -479,15 +474,5 @@ describe('GamePageComponent', () => {
         component.toggleDoor();
 
         expect(gameTurnService.toggleDoor).not.toHaveBeenCalled();
-    });
-
-    it('should return true if socketId contains "virtualPlayer"', () => {
-        const socketId = 'virtualPlayer45';
-        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
-    });
-
-    it('should return false if socketId does not contain "virtualPlayer"', () => {
-        const socketId = 'player123';
-        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

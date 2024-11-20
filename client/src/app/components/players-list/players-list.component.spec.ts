@@ -96,9 +96,6 @@ describe('PlayersListComponent', () => {
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService);
 
-        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
-            return socketId === 'virtuaPlayer123';
-        });
 
         component.players = mockPlayers;
         component.isHost = true;
@@ -158,5 +155,15 @@ describe('PlayersListComponent', () => {
             component.gameId = 'game123';
             expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
         });
+    });
+
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

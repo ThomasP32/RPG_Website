@@ -252,8 +252,4 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     closeProfileModal(): void {
         this.showProfileModal = false;
     }
-
-    isVirtualPlayerSocketId(socketId: string): boolean {
-        return socketId.includes('virtualPlayer');
-    }
 }

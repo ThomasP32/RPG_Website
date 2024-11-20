@@ -15,9 +15,6 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     @Input() players: Player[];
     @Input() hostSocketId: string;
     @Input() currentPlayerTurn: string;
-    /* Raison: la variable est utilisée dans le fichier HTML donc elle est nécessaire mais elle n'est pas utilisée dans ce fichier ci */
-    /* eslint-disable-next-line no-unused-vars */
-    @Input() isVirtualPlayerSocketId: (socketId: string) => boolean;
     hoveredPlayerId: string | null = null;
 
     constructor(private characterService: CharacterService) {
@@ -25,6 +22,11 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.sortPlayersByTurn();
+        this.initializePlayerSpecs();
+    }
+
+    ngOnChanges(): void {
         this.sortPlayersByTurn();
         this.initializePlayerSpecs();
     }
@@ -58,8 +60,7 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
         }));
     }
 
-    ngOnChanges(): void {
-        this.sortPlayersByTurn();
-        this.initializePlayerSpecs();
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return !!socketId && socketId.includes('virtualPlayer');
     }
 }
