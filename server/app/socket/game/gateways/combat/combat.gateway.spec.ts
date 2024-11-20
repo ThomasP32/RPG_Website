@@ -103,6 +103,7 @@ describe('CombatGateway', () => {
                         updatePlayersInGame: jest.fn(),
                         updateTurn: jest.fn(),
                         deleteCombat: jest.fn(),
+                        checkForGameWinner: jest.fn(),
                     },
                 },
                 {
@@ -195,7 +196,7 @@ describe('CombatGateway', () => {
             serverCombatService.isAttackSuccess.mockReturnValue(true);
 
             gateway.attackOnTimeOut('game-id');
-
+            serverCombatService.checkForGameWinner.mockReturnValue(true);
             jest.runAllTimers();
 
             expect(mockServer.to).toHaveBeenCalledWith(mockGame.id);
@@ -284,6 +285,7 @@ describe('CombatGateway', () => {
             mockCombat.opponent.specs.nVictories = 3;
             mockCombat.currentTurnSocketId = mockCombat.opponent.socketId;
             serverCombatService.isAttackSuccess.mockReturnValue(true);
+            serverCombatService.checkForGameWinner.mockReturnValue(true);
 
             gateway.attackOnTimeOut('game-id');
 
@@ -547,23 +549,6 @@ describe('CombatGateway', () => {
             });
         });
 
-        describe('checkForWinner', () => {
-            // it('should emit gameFinishedPlayerWon if player reaches required victories', () => {
-            //     const player = { ...mockCombat.challenger, specs: { ...mockCombat.challenger.specs, nVictories: 3 } };
-            //     const result = gateway.checkForGameWinner('game-id', player);
-
-            //     expect(mockServer.to).toHaveBeenCalledWith('game-id');
-            //     expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameFinishedPlayerWon', { winner: player });
-            //     expect(result).toBe(true);
-            // });
-
-            it('should return false if player has not reached the required victories', () => {
-                const player = { ...mockCombat.challenger, specs: { ...mockCombat.challenger.specs, nVictories: 2 } };
-                const result = gateway.checkForGameWinner('game-id', player);
-
-                expect(result).toBe(false);
-            });
-        });
         describe('handleDisconnect', () => {
             it('should emit "gameClosed" if the disconnected player is the host and game has not started', () => {
                 const mockGame = { id: 'game-id', hasStarted: false, players: [mockCombat.challenger] } as Game;
@@ -616,7 +601,7 @@ describe('CombatGateway', () => {
 
                 gameCreationService.getGames.mockReturnValue([mockGame]);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
-                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(true);
+                serverCombatService.checkForGameWinner.mockReturnValue(true);
 
                 gateway.handleDisconnect(mockSocket);
 
@@ -627,7 +612,7 @@ describe('CombatGateway', () => {
             it('should do nothing if no conditions are met', () => {
                 const mockGame = { id: 'game-id', hasStarted: true, players: [mockCombat.challenger] } as Game;
                 gameCreationService.getGames.mockReturnValue([mockGame]);
-                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(false);
+                serverCombatService.checkForGameWinner.mockReturnValue(false);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
 
                 gateway.handleDisconnect(mockSocket);
