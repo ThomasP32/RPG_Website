@@ -72,7 +72,7 @@ describe('GameCreationService', () => {
             startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
             items: [
                 { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+                { coordinate: { x: 10, y: 10 }, category: ItemCategory.GrapplingHook },
             ],
             doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
             tiles: [

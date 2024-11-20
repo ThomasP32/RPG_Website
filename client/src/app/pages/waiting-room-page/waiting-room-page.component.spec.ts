@@ -35,7 +35,7 @@ const mockPlayer: Player = {
         nLifeLost: 30,
         evasions: 0,
     },
-    inventory: [ItemCategory.Hat, ItemCategory.Key],
+    inventory: [ItemCategory.Armor, ItemCategory.Sword],
     position: { x: 1, y: 2 },
     turn: 1,
     visitedTiles: [],
