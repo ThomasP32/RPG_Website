@@ -1,6 +1,5 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
-import { Mode } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
