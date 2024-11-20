@@ -143,7 +143,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 this.combatCountdownService.deleteCountdown(gameId);
                 setTimeout(() => {
                     this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
-                    if (this.checkForGameWinner(game.id, attackingPlayer)) {
+                    if (this.serverCombatService.checkForGameWinner(game.id, attackingPlayer)) {
                         this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: attackingPlayer });
                         return;
                     }
@@ -163,15 +163,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         }
     }
 
-    checkForGameWinner(gameId: string, player: Player): boolean {
-        if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
-            if (player.specs.nVictories >= 3) {
-                this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
-                return true;
-            }
-        }
-        return false;
-    }
 
     prepareNextTurn(gameId: string) {
         this.serverCombatService.updateTurn(gameId);
@@ -224,7 +215,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatCountdownService.deleteCountdown(updatedGame.id);
                         setTimeout(() => {
                             this.server.to(updatedGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
-                            if (this.checkForGameWinner(updatedGame.id, winner)) {
+                            if (this.serverCombatService.checkForGameWinner(updatedGame.id, winner)) {
                                 this.server.to(updatedGame.id).emit('gameFinishedPlayerWon', { winner: winner });
                                 return;
                             }
