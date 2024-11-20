@@ -18,9 +18,7 @@ export class PlayersListComponent implements OnInit {
     @Input() isGameLocked: boolean;
     @Input() gameId: string;
     @Input() openProfileModal: () => void;
-    /* Raison: la variable est utilisée dans le fichier HTML donc elle est nécessaire mais elle n'est pas utilisée dans ce fichier ci */
-    /* eslint-disable-next-line no-unused-vars */
-    @Input() isVirtualPlayerSocketId: (socketId: string) => boolean;
+
     hostPlayerId: string = '';
     hoveredPlayerId: string | null = null;
 
@@ -51,5 +49,9 @@ export class PlayersListComponent implements OnInit {
 
     kickPlayer(playerId: string): void {
         this.socketService.sendMessage('kickPlayer', { playerId: playerId, gameId: this.gameId });
+    }
+
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return !!socketId && socketId.includes('virtualPlayer');
     }
 }

@@ -160,10 +160,6 @@ describe('WaitingRoomPageComponent', () => {
         fixture = TestBed.createComponent(WaitingRoomPageComponent);
         component = fixture.componentInstance;
 
-        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
-            return socketId === 'virtualPlayer123';
-        });
-
         fixture.detectChanges();
     });
 
@@ -355,15 +351,5 @@ describe('WaitingRoomPageComponent', () => {
             component.socketSubscription.unsubscribe();
         }
         (SocketServiceSpy.listen as jasmine.Spy).calls.reset();
-    });
-
-    it('should return true if socketId contains "virtualPlayer"', () => {
-        const socketId = 'virtualPlayer123';
-        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
-    });
-
-    it('should return false if socketId does not contain "virtualPlayer"', () => {
-        const socketId = 'player123';
-        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });
