@@ -109,7 +109,7 @@ export class ToolbarComponent implements OnInit {
     }
 
     selectItem(item: string) {
-        this.selectedTile = 'empty';
+        this.selectedTile = '';
         this.mapService.updateSelectedTile(this.selectedTile);
 
         if (this.mapCounterService.startingPointCounter === 0) {

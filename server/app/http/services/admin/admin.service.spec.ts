@@ -137,7 +137,7 @@ describe('AdminServiceEndToEnd', () => {
             startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
             items: [
                 { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-                { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+                { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
             ],
             tiles: [],
             doorTiles: [],
@@ -212,7 +212,9 @@ describe('AdminServiceEndToEnd', () => {
 
     it('should throw error when flag is not placed in ctf mode', async () => {
         await expect(service.addMap(getFakeInvalidMapDto8())).rejects.toThrow('Le drapeau doit être placé pour un jeu en mode CTF.');
-        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto8())).rejects.toThrow('Le drapeau doit être placé pour un jeu en mode CTF.');
+        await expect(service.modifyMap(new Types.ObjectId().toString(), getFakeInvalidMapDto8())).rejects.toThrow(
+            'Le drapeau doit être placé pour un jeu en mode CTF.',
+        );
     });
 
     it('should throw exceptions when adding map with name that already exists', async () => {
@@ -241,7 +243,7 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
             { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
@@ -259,7 +261,7 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
             { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Acidgun },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
@@ -483,9 +485,7 @@ describe('AdminServiceEndToEnd', () => {
         mode: Mode.Classic,
         mapSize: { x: 10, y: 10 },
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
-        items: [
-            { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-        ],
+        items: [{ coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates }],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
             { coordinate: { x: 1, y: 4 }, category: TileCategory.Wall },
@@ -502,7 +502,7 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 0, y: 0 } }],
         items: [
             { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Key },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.Sword },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },

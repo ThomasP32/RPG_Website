@@ -50,18 +50,18 @@ export class ImageService {
         switch (item) {
             case ItemCategory.Armor:
                 return './assets/items/armor.png';
-            case ItemCategory.Mask:
-                return './assets/items/mask.png';
+            case ItemCategory.Sword:
+                return './assets/items/sword.png';
             case ItemCategory.IceSkates:
                 return './assets/items/iceskates.png';
-            case ItemCategory.Acidgun:
-                return './assets/items/acidgun.png';
-            case ItemCategory.Key:
-                return './assets/items/keysilver.png';
-            case ItemCategory.Hat:
-                return './assets/items/hat.png';
+            case ItemCategory.GrapplingHook:
+                return './assets/items/grapplinghook.png';
+            case ItemCategory.TimeTwister:
+                return './assets/items/timetwister.png';
+            case ItemCategory.Bomb:
+                return './assets/items/bomb.png';
             case ItemCategory.Random:
-                return './assets/items/randomchest.png';
+                return './assets/items/randomitem.png';
             case ItemCategory.Flag:
                 return './assets/items/flag.png';
             default:
@@ -73,18 +73,18 @@ export class ImageService {
         switch (item) {
             case 'armor':
                 return './assets/items/armor.png';
-            case 'mask':
-                return './assets/items/mask.png';
+            case 'sword':
+                return './assets/items/sword.png';
+            case 'grapplinghook':
+                return './assets/items/grapplinghook.png';
+            case 'bomb':
+                return './assets/items/bomb.png';
+            case 'timetwister':
+                return './assets/items/timetwister.png';
             case 'iceskates':
                 return './assets/items/iceskates.png';
-            case 'acidgun':
-                return './assets/items/acidgun.png';
-            case 'key':
-                return './assets/items/keysilver.png';
-            case 'hat':
-                return './assets/items/hat.png';
             case 'random':
-                return './assets/items/randomchest.png';
+                return './assets/items/randomitem.png';
             default:
                 return '';
         }
