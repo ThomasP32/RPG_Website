@@ -8,6 +8,7 @@ import { GameCreationService } from '../game-creation/game-creation.service';
 @Injectable()
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    hasFallen: boolean = false;
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -81,17 +82,14 @@ export class GameManagerService {
             const finalPath: Coordinate[] = [];
 
             for (const position of shortestPath) {
-                if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
-                    finalPath.push(position);
-                    break;
-                }
-
                 if (this.onTileItem(position, game)) {
                     finalPath.push(position);
-                    break;
+                } else if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
+                    this.hasFallen = true;
+                    finalPath.push(position);
+                } else {
+                    finalPath.push(position);
                 }
-
-                finalPath.push(position);
             }
 
             return finalPath;
@@ -206,6 +204,26 @@ export class GameManagerService {
         return 1;
     }
 
+    dropInventory(gameId: string, playerSocket: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === playerSocket);
+        player.inventory.forEach((item) => {
+            const coordinates = this.getAdjacentFreeTiles(player.position, game);
+            this.dropItem(item, gameId, playerSocket, coordinates);
+        });
+    }
+
+    private getAdjacentFreeTiles(pos: Coordinate, game: Game): Coordinate {
+        const neighbors: Coordinate[] = [];
+        DIRECTIONS.forEach((dir) => {
+            const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
+            if (!this.isOutOfMap(neighbor, game.mapSize) && this.isReachableTile(neighbor, game)) {
+                neighbors.push(neighbor);
+            }
+        });
+        return neighbors[0];
+    }
+
     pickUpItem(pos: Coordinate, gameId: string, player: Player): void {
         const game = this.gameCreationService.getGameById(gameId);
         const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
@@ -215,9 +233,9 @@ export class GameManagerService {
             game.items.splice(itemIndex, 1);
         }
     }
-    dropItem(itemDropping: ItemCategory, gameId: string, player: Player): void {
-        const coordinates = player.position;
+    dropItem(itemDropping: ItemCategory, gameId: string, playerSocket: string, coordinates: Coordinate): void {
         const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === playerSocket);
         const itemIndex = player.inventory.findIndex((item) => item === itemDropping);
         if (itemIndex !== -1) {
             const item = player.inventory[itemIndex];
@@ -238,10 +256,6 @@ export class GameManagerService {
         return this.gameCreationService
             .getGameById(gameId)
             .items.some((item) => item.coordinate.x === player.position.x && item.coordinate.y === player.position.y);
-    }
-
-    hasFallen(moves: Coordinate[], destination: Coordinate) {
-        return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
 
     hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {

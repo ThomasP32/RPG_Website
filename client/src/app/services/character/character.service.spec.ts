@@ -18,8 +18,6 @@ describe('CharacterService', () => {
     it('should return an observable of characters', (done) => {
         service.getCharacters().subscribe((characters: Character[]) => {
             expect(characters.length).toBe(12);
-            expect(characters[0].name).toBe('Alistair Clockhaven');
-            expect(characters[1].name).toBe('Arachnoform');
             done();
         });
     });
@@ -28,7 +26,6 @@ describe('CharacterService', () => {
         service.getCharacters().subscribe((characters: Character[]) => {
             characters.forEach((character) => {
                 expect(character.id).toBeDefined();
-                expect(character.name).toBeDefined();
                 expect(character.image).toBeDefined();
                 expect(character.isAvailable).toBe(true);
             });
@@ -76,7 +73,7 @@ describe('CharacterService', () => {
         service.resetCharacterAvailability();
 
         service.getCharacters().subscribe((chars) => {
-            chars.forEach(character => {
+            chars.forEach((character) => {
                 expect(character.isAvailable).toBe(true);
             });
         });

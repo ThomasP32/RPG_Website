@@ -1,6 +1,6 @@
-import { MapConfig, MapSize } from '@common/constants';
+import { ALL_ITEMS, MapConfig, MapSize } from '@common/constants';
 import { Game, Player } from '@common/game';
-import { TileCategory } from '@common/map.types';
+import { ItemCategory, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
@@ -64,6 +64,26 @@ export class GameCreationService {
         }
 
         this.gameRooms[gameId].players.push(player);
+        return game;
+    }
+
+    addRandomItemsToGame(gameId: string): Game {
+        const game = this.getGameById(gameId);
+
+        const currentItems = game.items;
+        const availableItems = ALL_ITEMS.filter((item) => !currentItems.some((currentItem) => currentItem.category === item));
+
+        game.items = currentItems.map((currentItem) => {
+            if (currentItem.category === ItemCategory.Random) {
+                const randomIndex = Math.floor(Math.random() * availableItems.length);
+                const newItem = availableItems.splice(randomIndex, 1)[0];
+                return {
+                    coordinate: currentItem.coordinate,
+                    category: newItem,
+                };
+            }
+            return currentItem;
+        });
         return game;
     }
 
