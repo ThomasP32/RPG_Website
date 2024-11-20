@@ -57,7 +57,6 @@ describe('GameCreationService', () => {
             inventory: [],
             visitedTiles: [],
             turn: 0,
-            isVirtual: false,
         };
 
         gameRoom = {

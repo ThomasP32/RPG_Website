@@ -50,7 +50,6 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
-            isVirtual: false,
         },
         {
             socketId: 'player1Id',
@@ -79,7 +78,6 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
-            isVirtual: false,
         },
     ];
 

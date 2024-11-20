@@ -42,7 +42,6 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.TimeTwister, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
-    isVirtual: false,
 };
 
 const mockGame: Game = {

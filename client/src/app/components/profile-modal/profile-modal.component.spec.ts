@@ -29,7 +29,6 @@ describe('ProfileModalComponent', () => {
     it('should initialize virtual player on init', () => {
         component.ngOnInit();
         expect(component.virtualPlayer).toBeDefined();
-        expect(component.virtualPlayer.isVirtual).toBeTrue();
     });
 
     it('should create a virtual socket ID', () => {
@@ -56,7 +55,6 @@ describe('ProfileModalComponent', () => {
                 initialPosition: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             },
         ];
         component.assignRandomName();
@@ -77,7 +75,6 @@ describe('ProfileModalComponent', () => {
                 initialPosition: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             },
         ];
         component.assignRandomAvatar();
@@ -116,7 +113,6 @@ describe('ProfileModalComponent', () => {
     it('should create a virtual player', () => {
         component.createVirtualPlayer();
         expect(component.virtualPlayer).toBeDefined();
-        expect(component.virtualPlayer.isVirtual).toBeTrue();
     });
 
     it('should call all necessary methods and send message on submit', () => {

@@ -50,7 +50,6 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
-            isVirtual: true,
         };
         this.virtualPlayer = virtualPlayer;
     }
@@ -128,7 +127,6 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
-            isVirtual: true,
         };
         this.virtualPlayer = virtualPlayer;
     }

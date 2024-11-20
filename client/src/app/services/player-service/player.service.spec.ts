@@ -111,7 +111,6 @@ describe('PlayerService', () => {
                 turn: 0,
                 visitedTiles: [],
                 initialPosition: { x: 0, y: 0 },
-                isVirtual: false,
             };
             service.setPlayer(mockPlayer);
             expect(service.player).toEqual(mockPlayer);

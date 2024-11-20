@@ -36,7 +36,6 @@ export class CombatService {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [],
-        isVirtual: false,
     };
 
     socketSubscription: Subscription = new Subscription();
