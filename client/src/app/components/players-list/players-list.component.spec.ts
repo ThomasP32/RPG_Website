@@ -95,6 +95,11 @@ describe('PlayersListComponent', () => {
         fixture = TestBed.createComponent(PlayersListComponent);
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService);
+
+        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
+            return socketId === 'virtuaPlayer123';
+        });
+
         component.players = mockPlayers;
         component.isHost = true;
         fixture.detectChanges();

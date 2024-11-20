@@ -159,6 +159,10 @@ describe('GamePageComponent', () => {
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
 
+        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
+            return socketId === 'virtualPlayer45';
+        });
+
         gameSpy.game = mockGame;
         playerSpy.player = mockPlayer;
 
@@ -475,5 +479,15 @@ describe('GamePageComponent', () => {
         component.toggleDoor();
 
         expect(gameTurnService.toggleDoor).not.toHaveBeenCalled();
+    });
+
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer45';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

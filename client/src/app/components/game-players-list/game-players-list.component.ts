@@ -15,6 +15,9 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     @Input() players: Player[];
     @Input() hostSocketId: string;
     @Input() currentPlayerTurn: string;
+    /* Raison: la variable est utilisée dans le fichier HTML donc elle est nécessaire mais elle n'est pas utilisée dans ce fichier ci */
+    /* eslint-disable-next-line no-unused-vars */
+    @Input() isVirtualPlayerSocketId: (socketId: string) => boolean;
     hoveredPlayerId: string | null = null;
 
     constructor(private characterService: CharacterService) {

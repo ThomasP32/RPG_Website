@@ -321,4 +321,8 @@ export class GamePageComponent implements OnInit {
             }),
         );
     }
+
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return socketId.includes('virtualPlayer');
+    }
 }

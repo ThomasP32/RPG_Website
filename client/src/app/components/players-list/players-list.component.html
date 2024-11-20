@@ -5,7 +5,7 @@
             <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />
         </div>
         <span class="player-name">{{ player.name }}</span>
-        @if (player.socketId === virtualPlayerSocketId) {
+        @if (isVirtualPlayerSocketId(player.socketId)) {
         <span class="virtual-player-icon">🤖</span>
         } @if(isHost && player.socketId !== hostPlayerId && hoveredPlayerId === player.socketId){
         <button (click)="kickPlayer(player.socketId)" class="kick-button">exclure</button>
