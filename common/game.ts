@@ -62,7 +62,6 @@ export interface Player {
     initialPosition: Coordinate;
     turn: number;
     visitedTiles: Coordinate[];
-    isVirtual: boolean;
 }
 
 export interface Game extends Map {

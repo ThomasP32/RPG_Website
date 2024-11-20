@@ -52,7 +52,6 @@ describe('CombatGateway', () => {
             initialPosition: undefined,
             turn: 0,
             visitedTiles: [],
-            isVirtual: false,
         },
         opponent: {
             socketId: 'opponent-id',
@@ -81,7 +80,6 @@ describe('CombatGateway', () => {
             initialPosition: undefined,
             turn: 1,
             visitedTiles: [],
-            isVirtual: false,
         },
         challengerLife: 5,
         opponentLife: 5,

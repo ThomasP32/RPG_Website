@@ -40,7 +40,6 @@ const mockPlayer: Player = {
     turn: 1,
     visitedTiles: [],
     initialPosition: { x: 0, y: 0 },
-    isVirtual: false,
 };
 
 describe('WaitingRoomPageComponent', () => {
@@ -318,7 +317,6 @@ describe('WaitingRoomPageComponent', () => {
                 turn: 2,
                 visitedTiles: [],
                 initialPosition: { x: 1, y: 1 },
-                isVirtual: false,
             },
         ];
 

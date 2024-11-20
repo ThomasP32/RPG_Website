@@ -44,7 +44,6 @@ describe('GameGateway', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
-        isVirtual: false,
     };
 
     let gameRoom: Game = {
@@ -415,6 +414,35 @@ describe('GameGateway', () => {
                 expect(serverStub.to.calledWith(gameId)).toBeFalsy();
                 const emitStub = serverStub.to(gameId).emit as SinonStubbedInstance<Socket>['emit'];
                 expect(emitStub.calledWith('playerLeft', { player: player })).toBeFalsy();
+            });
+        });
+        describe('handleKickPlayer', () => {
+            it('should remove virtual player from the game and emit playerLeft', () => {
+                const gameId = 'room-1';
+                const playerId = 'virtualPlayer-1000';
+
+                gameCreationService.getGameById.returns(gameRoom);
+                gameCreationService.isMaxPlayersReached.returns(false);
+
+                gateway.handleKickPlayer(socket, { gameId, playerId });
+
+                expect(gameCreationService.getGameById.calledWith(gameId)).toBeTruthy();
+                expect(gameRoom.players.length).toBe(1);
+                expect(gameRoom.isLocked).toBe(false);
+                expect(serverStub.to.calledWith(gameId)).toBeTruthy();
+                const emitStub = serverStub.to(gameId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerLeft', gameRoom.players)).toBeTruthy();
+            });
+
+            it('should emit playerKicked to the specified player', () => {
+                const gameId = 'room-1';
+                const playerId = 'player-1';
+
+                gateway.handleKickPlayer(socket, { gameId, playerId });
+
+                expect(serverStub.to.calledWith(playerId)).toBeTruthy();
+                const emitStub = serverStub.to(playerId).emit as SinonStubbedInstance<Socket>['emit'];
+                expect(emitStub.calledWith('playerKicked')).toBeTruthy();
             });
         });
     });

@@ -37,7 +37,6 @@ describe('CombatService', () => {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [],
-        isVirtual: false,
     };
 
     const mockOpponent: Player = {

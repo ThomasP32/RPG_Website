@@ -17,7 +17,7 @@
                 <span class="host-icon">👑</span>
                 } @if (isPlayerFlagDetentor(player)) {
                 <span class="flag-icon">🚩</span>
-                } @if (player.isVirtual) {
+                } @if (player.socketId === virtualPlayerSocketId) {
                 <span class="virtual-player-icon">🤖</span>
                 }
             </span>

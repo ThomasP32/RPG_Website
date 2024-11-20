@@ -43,7 +43,6 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
-            isVirtual: false,
         };
         this.player = player;
     }
@@ -109,7 +108,6 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
-            isVirtual: false,
         };
         this.player = player;
     }

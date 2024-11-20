@@ -25,7 +25,6 @@ describe('GameService', () => {
         turn: 0,
         visitedTiles: [],
         initialPosition: { x: 0, y: 0 },
-        isVirtual: false,
     };
 
     const mockGame: Game = {

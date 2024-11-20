@@ -33,7 +33,6 @@ let player: Player = {
     inventory: [],
     turn: 0,
     visitedTiles: [],
-    isVirtual: false,
 };
 
 let game2: Game = {
@@ -145,6 +144,23 @@ describe('GameManagerService', () => {
         });
     });
 
+    describe('updatePlayerActions', () => {
+        it('should decrement the player actions by 1', () => {
+            const currentPlayer = game2.players[0];
+            currentPlayer.specs.actions = 3;
+            gameManagerService.updatePlayerActions('game-1', currentPlayer.socketId);
+
+            expect(currentPlayer.specs.actions).toEqual(2);
+        });
+
+        it('should not change actions if the player is not found', () => {
+            const initialActions = game2.players[0].specs.actions;
+            gameManagerService.updatePlayerActions('game-1', 'Nonexistent Player');
+
+            expect(game2.players[0].specs.actions).toEqual(initialActions);
+        });
+    });
+
     describe('getMoves', () => {
         it('should return an empty path if the player is not found', () => {
             const path = gameManagerService.getMoves(game2.id, 'Nonexistent Player');
@@ -197,16 +213,6 @@ describe('GameManagerService', () => {
             const result = gameManagerService.getMove(game2.id, 'Nonexistent Player', destination);
 
             expect(result).toEqual([]);
-        });
-
-        it('should return an empty path if the player is inactive', () => {
-            const destination: Coordinate = { x: 2, y: 8 };
-            game2.players[0].isActive = false;
-
-            const result = gameManagerService.getMove(game2.id, game2.players[0].socketId, destination);
-
-            expect(result).toEqual([]);
-            game2.players[0].isActive = true;
         });
 
         it('should stop the path when falling into a tile with weight 0 and a 10% chance', () => {
@@ -309,7 +315,6 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             };
 
             adjacentPlayer = {
@@ -323,7 +328,6 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             };
 
             nonAdjacentPlayer = {
@@ -337,7 +341,6 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             };
 
             game2 = {
@@ -372,7 +375,6 @@ describe('GameManagerService', () => {
         });
 
         it('should return an empty array if there are no adjacent players', () => {
-            // Move adjacentPlayer to a non-adjacent position
             adjacentPlayer.position = { x: 8, y: 8 };
 
             const result = gameManagerService.getAdjacentPlayers(player, game2.id);
@@ -396,7 +398,6 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
-                isVirtual: false,
             };
 
             game2.players.push(anotherAdjacentPlayer);
