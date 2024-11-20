@@ -23,6 +23,10 @@ describe('GamePlayersListComponent', () => {
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
 
+        component.isVirtualPlayerSocketId = jasmine.createSpy('isVirtualPlayerSocketId').and.callFake((socketId: string) => {
+            return socketId === 'virtualSocketId';
+        });
+
         component.players = [
             {
                 turn: 2,
