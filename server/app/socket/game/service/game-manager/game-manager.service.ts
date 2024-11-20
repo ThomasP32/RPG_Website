@@ -13,14 +13,17 @@ export class GameManagerService {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === playerSocket);
         if (player) {
-            path.forEach((position) => {
-                player.specs.movePoints -= this.getTileWeight(position, game);
-                if (!player.visitedTiles.some((tile) => tile.x === position.x && tile.y === position.y)) {
-                    player.visitedTiles.push(position);
-                }
-            });
-            player.position = path[path.length - 1];
+            this.updatePlayerPosition(player, path, game);
         }
+    }
+    updatePlayerPosition(player: Player, path: Coordinate[], game: Game): void {
+        path.forEach((position) => {
+            player.specs.movePoints -= this.getTileWeight(position, game);
+            if (!player.visitedTiles.some((tile) => tile.x === position.x && tile.y === position.y)) {
+                player.visitedTiles.push(position);
+            }
+        });
+        player.position = path[path.length - 1];
     }
 
     updateTurnCounter(gameId: string): void {
