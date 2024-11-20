@@ -56,7 +56,6 @@ export class TileService {
     moveItem(map: any[][], from: { rowIndex: number; colIndex: number }, to: { rowIndex: number; colIndex: number }) {
         map[to.rowIndex][to.colIndex].item = map[from.rowIndex][from.colIndex].item;
         map[from.rowIndex][from.colIndex].item = undefined;
-        this.setStartingPoint(map, from.rowIndex, from.colIndex);
     }
     setItem(map: any[][], item: ItemCategory, to: { rowIndex: number; colIndex: number }) {
         map[to.rowIndex][to.colIndex].item = item;
