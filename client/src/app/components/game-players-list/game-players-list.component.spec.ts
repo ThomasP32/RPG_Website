@@ -72,4 +72,14 @@ describe('GamePlayersListComponent', () => {
         component.ngOnChanges();
         expect(spySortPlayers).toHaveBeenCalled();
     });
+
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
+    });
 });

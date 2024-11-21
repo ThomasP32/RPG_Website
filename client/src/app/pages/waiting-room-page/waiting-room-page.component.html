@@ -46,7 +46,14 @@
                 </div>
             </div>
             <div class="players-list">
-                <app-players-list [players]="activePlayers" [isHost]="isHost"></app-players-list>
+                <app-players-list
+                    [players]="activePlayers"
+                    [isHost]="isHost"
+                    [isGameMaxed]="isGameMaxed()"
+                    [isGameLocked]="isGameLocked"
+                    [openProfileModal]="openProfileModal.bind(this)"
+                    [gameId]="waitingRoomCode"
+                ></app-players-list>
             </div>
             @if(!isStartable){
             <div class="player-waiting">
@@ -83,6 +90,16 @@
             <div class="modal">
                 <h2>{{ dialogBoxMessage }}</h2>
                 <p>Vous serez redirigé vers le menu principal.</p>
+            </div>
+        </div>
+        } @if (showProfileModal) {
+        <div class="profile-modal">
+            <div class="modal">
+                <app-profile-modal
+                    [gameId]="waitingRoomCode"
+                    [activePlayers]="activePlayers"
+                    [closeProfileModal]="closeProfileModal.bind(this)"
+                ></app-profile-modal>
             </div>
         </div>
         }

@@ -104,4 +104,15 @@ describe('GameChoicePageComponent', () => {
         tick(3000);
         expect(router.navigate).toHaveBeenCalledWith(['/']);
     }));
+
+    it('should return player count message for given map size', () => {
+        const mapSize = 4;
+        const playerCountMessage = '4 players';
+        spyOn(component['mapConversionService'], 'getPlayerCountMessage').and.returnValue(playerCountMessage);
+
+        const result = component.getMapPlayers(mapSize);
+
+        expect(result).toBe(playerCountMessage);
+        expect(component['mapConversionService'].getPlayerCountMessage).toHaveBeenCalledWith(mapSize);
+    });
 });

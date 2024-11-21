@@ -118,7 +118,7 @@ describe('GameService', () => {
                 startTiles: [],
                 doorTiles: [],
             } as unknown as Map;
-    
+
             const gameId = 'game-id-123';
             const expectedGame: Game = {
                 ...mockMap,
@@ -133,12 +133,12 @@ describe('GameService', () => {
                 isLocked: false,
                 hasStarted: false,
             };
-    
+
             const result = service.createNewGame(mockMap, gameId);
             expect(result).toEqual(expectedGame);
         });
     });
-    
+
     describe('#createNewCtfGame', () => {
         it('should create a new CTF game with the given map and gameId', () => {
             const mockMap = {
@@ -148,7 +148,7 @@ describe('GameService', () => {
                 startTiles: [],
                 doorTiles: [],
             } as unknown as Map;
-    
+
             const gameId = 'ctf-game-id-123';
             const expectedGame: GameCtf = {
                 ...mockMap,
@@ -164,10 +164,9 @@ describe('GameService', () => {
                 hasStarted: false,
                 nPlayersCtf: 0,
             };
-    
+
             const result = service.createNewCtfGame(mockMap, gameId);
             expect(result).toEqual(expectedGame);
         });
     });
-    
 });

@@ -63,7 +63,7 @@ const mockGame: Game = {
         { coordinate: { x: 2, y: 1 }, isOpened: true },
     ],
     startTiles: [{ coordinate: { x: 0, y: 0 } }],
-    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
     players: [mockPlayer],
     mode: Mode.Classic,
     nTurns: 0,
