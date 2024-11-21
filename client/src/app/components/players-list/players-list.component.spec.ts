@@ -95,6 +95,8 @@ describe('PlayersListComponent', () => {
         fixture = TestBed.createComponent(PlayersListComponent);
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService);
+
+
         component.players = mockPlayers;
         component.isHost = true;
         fixture.detectChanges();
@@ -132,13 +134,36 @@ describe('PlayersListComponent', () => {
             component.checkHostPlayerId();
             expect(component.hostPlayerId).toBe('');
         });
+
+        it("should set hostPlayerId to the first player's socketId if it is empty", () => {
+            component.hostPlayerId = '';
+            component.hoveredPlayerId = 'hostId';
+            component.checkHostPlayerId();
+            expect(component.hostPlayerId).toBe('hostId');
+        });
     });
 
     describe('kickPlayer', () => {
-        it('should call sendMessage with the player ID to kick', () => {
+        it('should call sendMessage with the correct player ID and game ID', () => {
             const playerId = 'player1Id';
+            component.gameId = 'game123';
             component.kickPlayer(playerId);
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', playerId);
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', { playerId: playerId, gameId: 'game123' });
         });
+
+        it('should not call sendMessage if playerId is empty', () => {
+            component.gameId = 'game123';
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

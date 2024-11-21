@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { ProfileModalComponent } from '@app/components/profile-modal/profile-modal.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
@@ -17,7 +18,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent, ProfileModalComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -60,6 +61,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     dialogBoxMessage: string;
     numberOfPlayers: number;
     maxPlayers: number;
+    showProfileModal: boolean = false;
 
     async ngOnInit(): Promise<void> {
         const player = this.playerService.player;
@@ -221,6 +223,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     toggleHover(state: boolean): void {
         this.hover = state;
     }
+
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
         this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
@@ -240,5 +243,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
             state: { player: this.player, gameId: this.waitingRoomCode },
         });
+    }
+
+    openProfileModal(): void {
+        this.showProfileModal = true;
+    }
+
+    closeProfileModal(): void {
+        this.showProfileModal = false;
     }
 }
