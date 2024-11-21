@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@app/interfaces/moves';
+import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';

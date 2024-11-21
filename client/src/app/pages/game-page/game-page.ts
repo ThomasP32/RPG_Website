@@ -7,7 +7,7 @@ import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
-import { MovesMap } from '@app/interfaces/moves';
+import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
