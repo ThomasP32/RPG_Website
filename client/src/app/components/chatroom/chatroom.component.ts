@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
     styleUrl: './chatroom.component.scss',
 })
 export class ChatroomComponent implements OnInit, OnDestroy {
-    @Input() player: { name: string } = { name: '' };
+    @Input() playerName: string = '';
     @Input() gameId: string;
     messageText: string = '';
     messages: Message[] = [];
@@ -35,9 +35,8 @@ export class ChatroomComponent implements OnInit, OnDestroy {
         const currentUrl = this.router.url;
         this.isWaitingRoom = currentUrl.includes('/waiting-room');
         this.isGamePage = currentUrl.includes('/game-page');
-        this.socketService.sendMessage('joinRoom', this.gameId);
-
         this.messageSubscription = this.socketService.listen<Message[]>('previousMessages').subscribe((messages: Message[]) => {
+            console.log(messages);
             this.messages = messages;
             this.scrollToBottom();
         });
@@ -51,7 +50,7 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     sendMessage(): void {
         if (this.messageText.trim().length > 0 && this.messageText.trim().length <= 200) {
             const message: Message = {
-                author: this.player.name,
+                author: this.playerName,
                 text: this.messageText,
                 timestamp: new Date(),
                 gameId: this.gameId,

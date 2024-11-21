@@ -48,13 +48,6 @@ export class CombatCountdownService extends EventEmitter {
         });
     }
 
-    resetCountdown(id: string): void {
-        const countdown = this.countdowns.get(id);
-        if (countdown) {
-            countdown.remaining = countdown.duration;
-            this.resetTimerSubscription(id);
-        }
-    }
 
     resetTimerSubscription(id: string): void {
         const countdown = this.countdowns.get(id);
