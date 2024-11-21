@@ -20,7 +20,9 @@ export class CreateMapModalComponent {
     isHovered = false;
     selectedMode: string;
 
-    constructor(private router: Router) {}
+    constructor(private router: Router) {
+        this.router = router;
+    }
 
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         switch (size) {
