@@ -99,7 +99,7 @@ export class ServerCombatService {
         }
     }
 
-    findClosestAvailablePosition(initialPosition: { x: number; y: number }, game: Game): Coordinate {
+    findClosestAvailablePosition(initialPosition: Coordinate, game: Game): Coordinate {
         for (let distance = 1; distance <= game.mapSize.x; distance++) {
             for (const direction of DIRECTIONS) {
                 const newPosition = {

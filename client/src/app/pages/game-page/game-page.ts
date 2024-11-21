@@ -7,7 +7,7 @@ import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
-import { MovesMap } from '@common/directions';
+import { GamePageActiveView } from '@common/game-page';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -17,6 +17,7 @@ import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
+import { MovesMap } from '@common/directions';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
@@ -38,7 +39,8 @@ import { Subscription } from 'rxjs';
     styleUrl: './game-page.scss',
 })
 export class GamePageComponent implements OnInit {
-    activeView: 'chat' | 'journal' = 'chat';
+    GamePageActiveView = GamePageActiveView;
+    activeView: GamePageActiveView = GamePageActiveView.Chat;
     activePlayers: Player[];
     opponent: Player;
     possibleOpponents: Player[];
@@ -127,10 +129,12 @@ export class GamePageComponent implements OnInit {
             if (this.playerService.player.socketId === this.game.hostSocketId) {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
+
+            this.socketService.sendMessage('joinChatRoom', this.gameId);
         }
     }
 
-    toggleView(view: 'chat' | 'journal'): void {
+    toggleView(view: GamePageActiveView): void {
         this.activeView = view;
     }
 
