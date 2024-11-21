@@ -3,25 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ModesComponent } from '@app/components/modes/modes.component';
-/* eslint-disable no-unused-vars */
-const SMALL_MAP_SIZE = 10;
-const MEDIUM_MAP_SIZE = 15;
-const LARGE_MAP_SIZE = 20;
-const SMALL_MAP_ITEMS = 2;
-const MEDIUM_MAP_ITEMS = 4;
-const LARGE_MAP_ITEMS = 6;
-
-export enum MapSize {
-    Small = SMALL_MAP_SIZE,
-    Medium = MEDIUM_MAP_SIZE,
-    Large = LARGE_MAP_SIZE,
-}
-
-export enum NbItems {
-    Small = SMALL_MAP_ITEMS,
-    Medium = MEDIUM_MAP_ITEMS,
-    Large = LARGE_MAP_ITEMS,
-}
+import { MapConfig, MapSize } from '@common/constants';
 
 @Component({
     selector: 'app-map-choices-component',
@@ -32,8 +14,7 @@ export enum NbItems {
 })
 export class CreateMapModalComponent {
     size: 'small' | 'medium' | 'large';
-    mapSize: MapSize;
-    mapSizeType: typeof MapSize = MapSize;
+    mapSize: number;
     mapName: string;
     nbItems: number;
     isHovered = false;
@@ -44,16 +25,16 @@ export class CreateMapModalComponent {
     sizeConversion(size: 'small' | 'medium' | 'large'): void {
         switch (size) {
             case 'small':
-                this.mapSize = MapSize.Small;
-                this.nbItems = NbItems.Small;
+                this.mapSize = MapConfig[MapSize.SMALL].size;
+                this.nbItems = MapConfig[MapSize.SMALL].nbItems;
                 break;
             case 'medium':
-                this.mapSize = MapSize.Medium;
-                this.nbItems = NbItems.Medium;
+                this.mapSize = MapConfig[MapSize.MEDIUM].size;
+                this.nbItems = MapConfig[MapSize.MEDIUM].nbItems;
                 break;
             case 'large':
-                this.mapSize = MapSize.Large;
-                this.nbItems = NbItems.Large;
+                this.mapSize = MapConfig[MapSize.LARGE].size;
+                this.nbItems = MapConfig[MapSize.LARGE].nbItems;
                 break;
             default:
                 throw new Error(`Invalid size value: ${size}`);
