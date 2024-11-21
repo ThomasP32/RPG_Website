@@ -42,69 +42,69 @@
         @if(isTilesVisible) {
         <div class="item-section">
             <div class="item-grid">
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Vest) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Armor) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('vest')"
-                        alt="Vest"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Vest)"
-                        (dragstart)="startDrag($event, ItemCategory.Vest)"
+                        [src]="getItemImage('armor')"
+                        alt="Armor"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Armor) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Armor)"
                     />
                     <span class="description" draggable="false">Un gilet de protection qui augmente la défense contre les attaques.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Mask) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Sword) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('mask')"
-                        alt="Mask"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Mask)"
-                        (dragstart)="startDrag($event, ItemCategory.Mask)"
+                        [src]="getItemImage('sword')"
+                        alt="Sword"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Sword) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Sword)"
                     />
                     <span class="description" draggable="false"
                         >Un masque mystérieux qui confère à son porteur une résistance accrue aux dangers environnementaux.</span
                     >
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Jar) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.IceSkates) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('jar')"
-                        alt="Jar"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Jar)"
-                        (dragstart)="startDrag($event, ItemCategory.Jar)"
+                        [src]="getItemImage('iceskates')"
+                        alt="IceSkates"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.IceSkates) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.IceSkates)"
                     />
                     <span class="description" draggable="false">Un pot mystique capable de contenir et de libérer des substances puissantes.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Acidgun) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.GrapplingHook) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('acidgun')"
-                        alt="Acid gun"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Acidgun) || mapCounterService.itemsCounter === 0"
-                        (dragstart)="startDrag($event, ItemCategory.Acidgun)"
+                        [src]="getItemImage('grapplinghook')"
+                        alt="GrapplingHook"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.GrapplingHook) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.GrapplingHook)"
                     />
                     <span class="description" draggable="false"
                         >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span
                     >
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Key) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.TimeTwister) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('key')"
-                        alt="Key"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Key) || mapCounterService.itemsCounter === 0"
-                        (dragstart)="startDrag($event, ItemCategory.Key)"
+                        [src]="getItemImage('timetwister')"
+                        alt="TimeTwister"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.TimeTwister) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.TimeTwister)"
                     />
                     <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Hat) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Bomb) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('hat')"
-                        alt="Hat"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Hat)"
-                        (dragstart)="startDrag($event, ItemCategory.Hat)"
+                        [src]="getItemImage('bomb')"
+                        alt="Bomb"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Bomb) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Bomb)"
                     />
                     <span class="description" draggable="false">Un chapeau élégant qui offre de légers bonus à l'agilité et au charme.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.randomItemCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.randomItemCounter === 0 || mapCounterService.itemsCounter === 0">
                     <img
                         [src]="getItemImage('random')"
-                        alt="Random item"
-                        [draggable]="mapCounterService.randomItemCounter > 0"
+                        alt="RandomItem"
+                        [draggable]="mapCounterService.randomItemCounter > 0 && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Random)"
                     />
                     <span class="description">Une boîte mystère contenant un objet aléatoire. Ouvrez-la pour découvrir une surprise !</span>

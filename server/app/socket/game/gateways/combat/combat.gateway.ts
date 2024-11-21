@@ -1,5 +1,6 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
+import { Mode } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -121,6 +122,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
             if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
                 defendingPlayer.specs.life--;
+                defendingPlayer.specs.nLifeLost++;
+                attackingPlayer.specs.nLifeTaken++;
                 this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
                 this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
             } else {
@@ -141,10 +144,12 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 setTimeout(() => {
                     this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
                     if (this.checkForGameWinner(game.id, attackingPlayer)) {
+                        this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: attackingPlayer });
                         return;
                     }
                     if (game.currentTurn === attackingPlayer.turn) {
                         this.gameCountdownService.resumeCountdown(gameId);
+                        this.server.to(attackingPlayer.socketId).emit('resumeTurnAfterCombatWin');
                     } else {
                         this.gameCountdownService.emit('timeout', gameId);
                     }
@@ -159,9 +164,11 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     checkForGameWinner(gameId: string, player: Player): boolean {
-        if (player.specs.nVictories >= 3) {
-            this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
-            return true;
+        if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
+            if (player.specs.nVictories >= 3) {
+                this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
+                return true;
+            }
         }
         return false;
     }
@@ -174,12 +181,13 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     startCombatTurns(gameId: string): void {
         const combat = this.serverCombatService.getCombatByGameId(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
         if (combat) {
             this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
             const currentPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const otherPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
             this.server.to(otherPlayer.socketId).emit('playerTurnCombat');
-            this.combatCountdownService.startTurnCounter(gameId, currentPlayer.specs.evasions === 0 ? false : true);
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
         }
     }
 
@@ -217,6 +225,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         setTimeout(() => {
                             this.server.to(updatedGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
                             if (this.checkForGameWinner(updatedGame.id, winner)) {
+                                this.server.to(updatedGame.id).emit('gameFinishedPlayerWon', { winner: winner });
                                 return;
                             }
                             if (updatedGame.currentTurn === winner.turn) {

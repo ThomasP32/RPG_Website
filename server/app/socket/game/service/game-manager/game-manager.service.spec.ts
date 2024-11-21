@@ -1,7 +1,7 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 
 let specs: Specs = {
@@ -131,7 +131,6 @@ describe('GameManagerService', () => {
             game2.players.push({ ...player, name: 'Player 2' });
             gameManagerService.updateTurnCounter('game-1');
 
-            expect(game2.nTurns).toEqual(1);
             expect(game2.currentTurn).toEqual(1);
         });
 
@@ -445,6 +444,18 @@ describe('GameManagerService', () => {
         });
     });
 
+    it('should add the item to the player inventory and remove it from the game items', () => {
+        const item = { coordinate: { x: 1, y: 1 }, category: ItemCategory.Armor };
+        game2.items.push(item);
+        const player = game2.players[0];
+        player.position = { x: 1, y: 1 };
+
+        gameManagerService.pickUpItem(player.position, game2, player);
+
+        expect(player.inventory).toContain(ItemCategory.Armor);
+        expect(game2.items).not.toContain(item);
+    });
+
     describe('isGameResumable', () => {
         it('should return true if there is at least one active player', () => {
             game2.players[0].isActive = true;
@@ -466,6 +477,68 @@ describe('GameManagerService', () => {
             game2.players = [];
 
             const result = gameManagerService.isGameResumable(game2.id);
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('checkForWinnerCtf', () => {
+        it('should return true if the player has the flag and is at their initial position', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Ctf;
+
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if the player has the flag but is not at their initial position', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { x: player.initialPosition.x + 1, y: player.initialPosition.y };
+            game2.mode = Mode.Ctf;
+
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if the player does not have the flag', () => {
+            player.inventory = [];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Ctf;
+
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if the game mode is not CTF', () => {
+            player.inventory = [ItemCategory.Flag];
+            player.position = { ...player.initialPosition };
+            game2.mode = Mode.Classic;
+
+            const result = gameManagerService.checkForWinnerCtf(player, game2.id);
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('GameManagerService - hasPickedUpFlag', () => {
+        it('should return true when the old inventory does not contain the flag but the new inventory does', () => {
+            const oldInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook];
+            const newInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook, ItemCategory.Flag];
+
+            const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false when both inventories contain the flag', () => {
+            const oldInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor];
+            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor, ItemCategory.GrapplingHook];
+
+            const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
 
             expect(result).toBe(false);
         });

@@ -42,53 +42,53 @@ describe('MapCounterService', () => {
     it('should load map counters correctly', () => {
         service.itemsCounter = 3;
         service.randomItemCounter = 0;
-        service.items = [ItemCategory.Hat, ItemCategory.Jar, ItemCategory.Key];
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates, ItemCategory.Sword];
         const usedItems: Item[] = [
-            { category: ItemCategory.Hat, coordinate: { x: 1, y: 3 } },
+            { category: ItemCategory.Armor, coordinate: { x: 1, y: 3 } },
             { category: ItemCategory.Random, coordinate: { x: 3, y: 1 } },
         ];
 
         service.loadMapCounters(usedItems);
 
-        expect(service.items).not.toContain(ItemCategory.Hat);
-        expect(service.itemsCounter).toBe(2);
+        expect(service.items).not.toContain(ItemCategory.Armor);
+        expect(service.itemsCounter).toBe(1);
     });
 
     it('should set available items correctly', () => {
         service.setAvailablesItems();
         expect(service.items).toEqual([
-            ItemCategory.Hat,
-            ItemCategory.Jar,
-            ItemCategory.Key,
-            ItemCategory.Mask,
-            ItemCategory.Vest,
-            ItemCategory.Acidgun,
+            ItemCategory.Armor,
+            ItemCategory.IceSkates,
+            ItemCategory.GrapplingHook,
+            ItemCategory.Sword,
+            ItemCategory.TimeTwister,
+            ItemCategory.Bomb,
         ]);
     });
 
     it('should check if item is used correctly', () => {
-        service.items = [ItemCategory.Hat, ItemCategory.Jar];
-        expect(service.isItemUsed(ItemCategory.Hat)).toBe(false);
-        expect(service.isItemUsed(ItemCategory.Mask)).toBe(true);
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates];
+        expect(service.isItemUsed(ItemCategory.Armor)).toBe(false);
+        expect(service.isItemUsed(ItemCategory.Flask)).toBe(true);
     });
 
     it('should use item correctly', () => {
-        service.items = [ItemCategory.Hat, ItemCategory.Jar];
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates];
         service.itemsCounter = 2;
 
-        service.useItem(ItemCategory.Hat);
+        service.useItem(ItemCategory.Armor);
 
-        expect(service.items).not.toContain(ItemCategory.Hat);
+        expect(service.items).not.toContain(ItemCategory.Armor);
         expect(service.itemsCounter).toBe(1);
     });
 
     it('should release item correctly', () => {
-        service.items = [ItemCategory.Jar];
+        service.items = [ItemCategory.IceSkates];
         service.itemsCounter = 1;
 
-        service.releaseItem(ItemCategory.Hat);
+        service.releaseItem(ItemCategory.Armor);
 
-        expect(service.items).toContain(ItemCategory.Hat);
+        expect(service.items).toContain(ItemCategory.Armor);
         expect(service.itemsCounter).toBe(2);
     });
 });

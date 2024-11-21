@@ -1,0 +1,54 @@
+<div class="endgame-container">
+    <div class="stats-container">
+        <p>Fin de partie</p>
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Nom</th>
+                    <th>Combats</th>
+                    <th>Évasions</th>
+                    <th>Victoires</th>
+                    <th>Défaites</th>
+                    <th>Vie perdue</th>
+                    <th>Vie infligée</th>
+                    <th>Objets ramassés</th>
+                    <th>Tuiles visitées</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (gamePlayer of players; track gamePlayer) {
+                <tr>
+                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" /></td>
+                    <td>{{ gamePlayer.name }}</td>
+                    <td>{{ gamePlayer.specs.nCombats }}</td>
+                    <td>{{ gamePlayer.specs.nEvasions }}</td>
+                    <td>{{ gamePlayer.specs.nVictories }}</td>
+                    <td>{{ gamePlayer.specs.nDefeats }}</td>
+                    <td>{{ gamePlayer.specs.nLifeLost }}</td>
+                    <td>{{ gamePlayer.specs.nLifeTaken }}</td>
+                    <td>TODO</td>
+                    <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }}%</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="chatroom-container">
+        <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
+    </div>
+    <div class="global-stats-container">
+        <h1>Statistiques globales de la partie</h1>
+        <p>Durée de la partie : {{ endgameService.gameDurationInMinutes(game.duration) }}</p>
+        <p>Tours de jeu : {{ game.nTurns }}</p>
+        <p>Pourcentage total de tuiles visitées : {{ endgameService.gameTilePercentage(game) }}%</p>
+        <p>Pourcentage total des portes manipulées : TODO</p>
+        <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
+        <!-- @if (game.mode === Mode.Ctf) { -->
+        <!-- <p>Nombre de joueurs différents ayant détenu le drapeau : {{game.}}</p> -->
+        <!-- } -->
+    </div>
+    <div class="exit-button-container">
+        <button (click)="navigateToMain()">Menu principal</button>
+    </div>
+</div>

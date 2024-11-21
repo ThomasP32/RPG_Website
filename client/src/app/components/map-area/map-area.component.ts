@@ -154,13 +154,20 @@ export class MapAreaComponent implements OnInit {
 
     startDrag(event: DragEvent, rowIndex: number, colIndex: number) {
         const cell = this.map[rowIndex][colIndex];
+        if (this.selectedTile != '') {
+            event.preventDefault();
+            return;
+        }
 
         if (cell.isStartingPoint) {
             this.currentDraggedItem = { rowIndex, colIndex };
 
             event.dataTransfer?.setData('draggingObject', JSON.stringify(ItemCategory.StartingPoint));
+        } else if (cell.item) {
+            this.currentDraggedItem = { rowIndex, colIndex };
+            event.dataTransfer?.setData('draggingObject', JSON.stringify(cell.item));
         } else {
-            event.preventDefault();
+            event.preventDefault;
         }
     }
 
@@ -193,7 +200,6 @@ export class MapAreaComponent implements OnInit {
                 event.preventDefault();
             }
         }
-        console.log(this.mapCounterService.itemsCounter);
     }
 
     removeStartingPoint(isRemoving: boolean) {

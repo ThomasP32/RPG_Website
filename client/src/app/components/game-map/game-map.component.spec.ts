@@ -39,7 +39,7 @@ describe('GameMapComponent', () => {
                 { coordinate: { x: 2, y: 1 }, isOpened: true },
             ],
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
-            items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+            items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
             players: [{ position: { x: 2, y: 2 }, avatar: Avatar.Avatar1 } as Player],
         } as Game;
 
@@ -88,12 +88,14 @@ describe('GameMapComponent', () => {
 
         it('should set movePreview when hovering over a valid move tile', () => {
             const position: Coordinate = { x: 1, y: 1 };
-            const path = [{ x: 1, y: 1 }, { x: 1, y: 2 }];
-            component.moves.set('1,1', { path, weight: 1 }); 
+            const path = [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+            ];
+            component.moves.set('1,1', { path, weight: 1 });
             component.onTileHover(position);
             expect(component.movePreview).toEqual(path);
         });
-    
     });
 
     describe('#onRightClickTile', () => {
@@ -150,7 +152,6 @@ describe('GameMapComponent', () => {
         });
     });
 
-
     describe('#isPreview', () => {
         it('should return true if the tile is in move preview', () => {
             component.movePreview = [{ x: 1, y: 1 }];
@@ -175,8 +176,8 @@ describe('GameMapComponent', () => {
     describe('#getItemImage', () => {
         it('should get item image from image service', () => {
             imageServiceSpy.getItemImage.and.returnValue('item-image');
-            const image = component.getItemImage(ItemCategory.Hat);
-            expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith(ItemCategory.Hat);
+            const image = component.getItemImage(ItemCategory.Armor);
+            expect(imageServiceSpy.getItemImage).toHaveBeenCalledWith(ItemCategory.Armor);
             expect(image).toBe('item-image');
         });
     });

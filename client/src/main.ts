@@ -6,6 +6,7 @@ import { Routes, provideRouter, withHashLocation } from '@angular/router';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
+import { EndgamePageComponent } from '@app/pages/endgame-page/endgame-page.component';
 import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice-page.component';
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page';
@@ -27,6 +28,7 @@ const routes: Routes = [
     { path: ':gameId/choose-character', component: CharacterFormPageComponent },
     { path: 'create-game/:mapName/create-character', component: CharacterFormPageComponent },
     { path: ':mapName/waiting-room/host', component: WaitingRoomPageComponent },
+    { path: 'end-game', component: EndgamePageComponent },
     { path: 'join-game/:gameId/create-character', component: CharacterFormPageComponent },
     { path: ':gameId/waiting-room/player', component: WaitingRoomPageComponent },
     { path: 'join-game/:gameId/waiting-room', component: WaitingRoomPageComponent },
