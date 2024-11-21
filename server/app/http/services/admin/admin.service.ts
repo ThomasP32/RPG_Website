@@ -1,7 +1,7 @@
 import { CoordinateDto, StartTileDto } from '@app/http/model/dto/map/coordinate.dto';
 import { DoorTileDto } from '@app/http/model/dto/map/door.dto';
 import { MapDto } from '@app/http/model/dto/map/map.dto';
-import { TileDto } from '@app/http/model/dto/map/tiles.dto';
+import { ItemDto, TileDto } from '@app/http/model/dto/map/tiles.dto';
 import { MapDocument } from '@app/http/model/schemas/map/map.schema';
 import { HALF, MapConfig, MapSize } from '@common/constants';
 import { DIRECTIONS } from '@common/directions';
