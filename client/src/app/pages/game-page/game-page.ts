@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
@@ -14,6 +14,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
+import { ImageService } from '@app/services/image/image.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { Game, Player, Specs } from '@common/game';
@@ -36,7 +37,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class GamePageComponent implements OnInit {
     activeView: 'chat' | 'journal' = 'chat';
     activePlayers: Player[];
     opponent: Player;
@@ -81,6 +82,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private gameTurnService: GameTurnService,
         private countDownService: CountdownService,
         private combatService: CombatService,
+        protected imageService: ImageService,
     ) {
         this.router = router;
         this.socketService = socketService;
@@ -90,6 +92,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.countDownService = countDownService;
         this.gameService = gameService;
         this.combatService = combatService;
+        this.imageService = imageService;
     }
 
     ngOnInit() {
@@ -159,7 +162,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     navigateToEndOfGame(): void {
-        this.navigateToMain();
+        this.router.navigate(['/end-game']);
     }
 
     confirmExit(): void {
@@ -313,14 +316,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {
-                    this.navigateToMain();
+                    this.navigateToEndOfGame();
                 }, TIME_LIMIT_DELAY);
             }),
         );
-    }
-
-    ngOnDestroy() {
-        this.socketSubscription.unsubscribe();
-        this.socketService.disconnect();
     }
 }

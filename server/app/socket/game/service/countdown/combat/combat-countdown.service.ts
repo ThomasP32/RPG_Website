@@ -1,4 +1,6 @@
 import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
+import { COUNTDOWN_COMBAT_DURATION, COUNTDOWN_NOEVASION_DURATION } from '@common/constants';
+import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
 import { Server } from 'socket.io';
@@ -22,25 +24,26 @@ export class CombatCountdownService extends EventEmitter {
         }
     }
 
-    async startTurnCounter(id: string, hasEvasions: boolean): Promise<void> {
-        const duration = hasEvasions ? 5 : 3;
-        let countdown = this.countdowns.get(id);
+    async startTurnCounter(game: Game, hasEvasions: boolean): Promise<void> {
+        const duration = hasEvasions ? COUNTDOWN_COMBAT_DURATION : COUNTDOWN_NOEVASION_DURATION;
+        let countdown = this.countdowns.get(game.id);
 
         if (!countdown) {
-            this.initCountdown(id, duration);
-            countdown = this.countdowns.get(id)!;
+            this.initCountdown(game.id, duration);
+            countdown = this.countdowns.get(game.id)!;
         } else {
             countdown.duration = duration;
             countdown.remaining = duration;
         }
-        this.resetTimerSubscription(id);
+        this.resetTimerSubscription(game.id);
 
         countdown.timerSubscription = interval(1000).subscribe(() => {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
-                this.emit('timeout', id);
+                this.emit('timeout', game.id);
             } else {
-                this.server.to(id).emit('combatSecondPassed', value);
+                game.duration++;
+                this.server.to(game.id).emit('combatSecondPassed', value);
             }
         });
     }

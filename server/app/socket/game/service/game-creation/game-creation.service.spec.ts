@@ -63,7 +63,7 @@ describe('GameCreationService', () => {
             startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
             items: [
                 { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                { coordinate: { x: 10, y: 10 }, category: ItemCategory.Acidgun },
+                { coordinate: { x: 10, y: 10 }, category: ItemCategory.GrapplingHook },
             ],
             doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
             tiles: [
@@ -377,24 +377,21 @@ describe('GameCreationService', () => {
             expect(result).toBe(false);
         });
     });
-    
+
     it('should decrease attack and defense if starting point is on an Ice tile', () => {
-        gameRoom.players = [
-            { ...player, name: 'Player 1', specs: { ...player.specs } },
-        ];
+        gameRoom.players = [{ ...player, name: 'Player 1', specs: { ...player.specs } }];
         gameRoom.startTiles = [{ coordinate: { x: 1, y: 1 } }];
         gameRoom.tiles = [
-            { coordinate: { x: 1, y: 1 }, category: TileCategory.Ice }, 
+            { coordinate: { x: 1, y: 1 }, category: TileCategory.Ice },
             { coordinate: { x: 2, y: 2 }, category: TileCategory.Wall },
         ];
-        
+
         service.addGame(gameRoom);
 
         service.setStartingPoints(gameRoom.id);
- 
+
         const updatedPlayer = service.getGameById(gameRoom.id).players[0];
         expect(updatedPlayer.specs.attack).toBe(player.specs.attack - 2);
         expect(updatedPlayer.specs.defense).toBe(player.specs.defense - 2);
     });
-    
 });

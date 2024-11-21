@@ -2,11 +2,18 @@ import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat } from '@common/combat';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
+import { Mode } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
+import { N_WIN_VICTORIES } from '../../../../../constants/constants';
+import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class ServerCombatService {
     private combatRooms: Record<string, Combat> = {};
+
+    constructor(private gameCreationService: GameCreationService) {
+        this.gameCreationService = gameCreationService;
+    }
 
     createCombat(gameId: string, challenger: Player, opponent: Player): Combat {
         let currentTurnSocketId: string = challenger.socketId;
@@ -49,11 +56,7 @@ export class ServerCombatService {
     updateTurn(gameId: string): void {
         const combat = this.getCombatByGameId(gameId);
         const currentTurnSocket = combat.currentTurnSocketId;
-        if (currentTurnSocket === combat.challenger.socketId) {
-            combat.currentTurnSocketId = combat.opponent.socketId;
-        } else {
-            combat.currentTurnSocketId = combat.challenger.socketId;
-        }
+        combat.currentTurnSocketId = currentTurnSocket === combat.challenger.socketId ? combat.opponent.socketId : combat.challenger.socketId;
     }
 
     rollDice(attackPlayer: Player, opponent: Player): { attackDice: number; defenseDice: number } {
@@ -71,14 +74,10 @@ export class ServerCombatService {
     combatWinStatsUpdate(winner: Player, gameId: string) {
         if (winner.socketId === this.combatRooms[gameId].challenger.socketId) {
             this.combatRooms[gameId].challenger.specs.nVictories++;
-            this.combatRooms[gameId].challenger.specs.nCombats++;
             this.combatRooms[gameId].opponent.specs.nDefeats++;
-            this.combatRooms[gameId].opponent.specs.nCombats++;
         } else {
             this.combatRooms[gameId].opponent.specs.nVictories++;
-            this.combatRooms[gameId].opponent.specs.nCombats++;
             this.combatRooms[gameId].challenger.specs.nDefeats++;
-            this.combatRooms[gameId].challenger.specs.nCombats++;
         }
     }
 
@@ -132,5 +131,12 @@ export class ServerCombatService {
                 game.players[index] = combat.opponent;
             }
         });
+    }
+
+    checkForGameWinner(gameId: string, player: Player): boolean {
+        if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
+            return player.specs.nVictories >= N_WIN_VICTORIES;
+        }
+        return false;
     }
 }

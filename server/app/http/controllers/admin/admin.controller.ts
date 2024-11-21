@@ -119,18 +119,4 @@ export class AdminController {
             });
         }
     }
-
-    @Post('import')
-    async importMap(@Body() mapDto: any, @Res() response: Response) {
-        try {
-            const savedMap = await this.adminService.addMap(mapDto);
-            response.status(HttpStatus.CREATED).json(savedMap);
-        } catch (error) {
-            if (error.message.includes('existe déjà')) {
-                response.status(HttpStatus.CONFLICT).json({ message: error.message });
-            } else {
-                response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Erreur lors de l’importation de la carte.' });
-            }
-        }
-    }
 }

@@ -5,7 +5,7 @@ import { TileDto } from '@app/http/model/dto/map/tiles.dto';
 import { MapDocument } from '@app/http/model/schemas/map/map.schema';
 import { HALF, MapConfig, MapSize } from '@common/constants';
 import { DIRECTIONS } from '@common/directions';
-import { Coordinate, DetailedMap, Map, TileCategory } from '@common/map.types';
+import { Coordinate, DetailedMap, ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -42,6 +42,12 @@ export class AdminService {
             throw new ForbiddenException(
                 'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
             );
+        } else if (!this.areItemsPlaced(mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException(
+                'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte',
+            );
+        } else if (!this.isFlagPlaced(mapDto.items, mapDto.mode)) {
+            throw new ForbiddenException('Le drapeau doit être placé pour un jeu en mode CTF.');
         }
     }
 
@@ -116,6 +122,12 @@ export class AdminService {
             throw new ForbiddenException(
                 'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
             );
+        } else if (!this.areItemsPlaced(mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException(
+                'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
+            );
+        } else if (!this.isFlagPlaced(mapDto.items, mapDto.mode)) {
+            throw new ForbiddenException('Le drapeau doit être placé pour un jeu en mode CTF.');
         }
     }
 
@@ -249,5 +261,24 @@ export class AdminService {
             return true;
         }
         return false;
+    }
+
+    private areItemsPlaced(items: ItemDto[], mapSize: CoordinateDto): boolean {
+        if (mapSize.x === MapConfig[MapSize.SMALL].size && items.length >= MapConfig[MapSize.SMALL].nbItems) {
+            return true;
+        } else if (mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length >= MapConfig[MapSize.MEDIUM].nbItems) {
+            return true;
+        } else if (mapSize.x === MapConfig[MapSize.LARGE].size && items.length >= MapConfig[MapSize.LARGE].nbItems) {
+            return true;
+        }
+        return false;
+    }
+
+    private isFlagPlaced(items: ItemDto[], mode: Mode): boolean {
+        if (mode === Mode.Ctf) {
+            return items.some((item) => item.category === ItemCategory.Flag);
+        } else {
+            return true;
+        }
     }
 }

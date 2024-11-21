@@ -39,7 +39,7 @@ const mockPlayer: Player = {
         nLifeTaken: 0,
         nLifeLost: 0,
     },
-    inventory: [],
+    inventory: [ItemCategory.TimeTwister, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
 };
@@ -60,7 +60,7 @@ const mockGame: Game = {
         { coordinate: { x: 2, y: 1 }, isOpened: true },
     ],
     startTiles: [{ coordinate: { x: 0, y: 0 } }],
-    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
     players: [mockPlayer],
     mode: Mode.Classic,
     nTurns: 0,
@@ -194,21 +194,9 @@ describe('GamePageComponent', () => {
         expect(component.playerPreview).toBe(characterService.getAvatarPreview(mockPlayer.avatar));
     });
 
-    it('should navigate to main menu on navigateToMain', () => {
-        component.navigateToMain();
-        expect(socketService.disconnect).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
     it('should navigate to end of game on navigateToEndOfGame', () => {
         component.navigateToEndOfGame();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
-    it('should unsubscribe from socketSubscription on destroy', () => {
-        spyOn(component.socketSubscription, 'unsubscribe');
-        component.ngOnDestroy();
-        expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should listen for possible opponents updates', () => {
@@ -262,8 +250,8 @@ describe('GamePageComponent', () => {
 
     it('should update active players when player leaves', fakeAsync(() => {
         const mockPlayers = [
-            { isActive: true, position: { x: 0, y: 1 } },
-            { isActive: false, position: { x: 1, y: 0 } },
+            { isActive: true, position: { x: 0, y: 1 }, inventory: [ItemCategory.TimeTwister, ItemCategory.Armor] },
+            { isActive: false, position: { x: 1, y: 0 }, inventory: [ItemCategory.TimeTwister, ItemCategory.Armor] },
         ] as unknown as Player;
         socketService.listen.and.returnValue(of(mockPlayers));
 
@@ -318,7 +306,7 @@ describe('GamePageComponent', () => {
         component.endTurn();
         component.navigateToEndOfGame();
         expect(gameTurnService.endTurn).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should open the exit confirmation modal', () => {
