@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MovesMap } from '@app/interfaces/moves';
+import { MovesMap } from '@common/directions';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';

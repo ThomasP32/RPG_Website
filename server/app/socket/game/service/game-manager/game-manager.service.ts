@@ -1,5 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { DIRECTIONS } from '@common/directions';
+import { DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -101,13 +101,11 @@ export class GameManagerService {
         }
     }
 
-    runDijkstra(start: Coordinate, game: Game, playerPoints: number): Map<string, { path: Coordinate[]; weight: number }> {
+    runDijkstra(start: Coordinate, game: Game, playerPoints: number): MovesMap {
         const shortestPaths = new Map<string, { path: Coordinate[]; weight: number }>();
         const visited = new Set<string>();
         const startKey = this.coordinateToKey(start);
-
         shortestPaths.set(startKey, { path: [start], weight: 0 });
-
         let toVisit = [{ point: start, weight: 0 }];
 
         while (toVisit.length > 0) {
@@ -115,45 +113,30 @@ export class GameManagerService {
             const { point: currentPoint, weight: currentWeight } = toVisit.shift();
             const currentKey = this.coordinateToKey(currentPoint);
 
-            if (visited.has(currentKey)) {
-                continue;
-            }
-
+            if (visited.has(currentKey)) continue;
             visited.add(currentKey);
-
-            if (currentWeight > playerPoints) {
-                continue;
-            }
+            if (currentWeight > playerPoints) continue;
 
             const neighbors = this.getNeighbors(currentPoint, game);
-
             for (const neighbor of neighbors) {
                 const neighborKey = this.coordinateToKey(neighbor);
-
-                if (visited.has(neighborKey)) {
-                    continue;
-                }
-
+                if (visited.has(neighborKey)) continue;
                 const neighborWeight = currentWeight + this.getTileWeight(neighbor, game);
 
                 if (neighborWeight <= playerPoints) {
-                    if (!shortestPaths.has(neighborKey)) {
-                        shortestPaths.set(neighborKey, {
-                            path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
-                            weight: neighborWeight,
-                        });
-                    } else if (neighborWeight < shortestPaths.get(neighborKey).weight) {
-                        shortestPaths.set(neighborKey, {
-                            path: [...shortestPaths.get(currentKey).path, neighbor],
-                            weight: neighborWeight,
-                        });
-                    }
-
+                    shortestPaths.set(
+                        neighborKey,
+                        !shortestPaths.has(neighborKey) || neighborWeight < shortestPaths.get(neighborKey).weight
+                            ? {
+                                  path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
+                                  weight: neighborWeight,
+                              }
+                            : shortestPaths.get(neighborKey),
+                    );
                     toVisit.push({ point: neighbor, weight: neighborWeight });
                 }
             }
         }
-
         return shortestPaths;
     }
 

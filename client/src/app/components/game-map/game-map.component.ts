@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { MovesMap } from '@app/interfaces/moves';
+import {MovesMap} from '@common/directions';
 import { ImageService } from '@app/services/image/image.service';
 import { Avatar, Game } from '@common/game';
 import { Cell } from '@common/map-cell';
