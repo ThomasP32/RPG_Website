@@ -162,16 +162,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         }
     }
 
-    // checkForGameWinner(gameId: string, player: Player): boolean {
-    //     if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
-    //         if (player.specs.nVictories >= 3) {
-    //             this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
-
     prepareNextTurn(gameId: string) {
         this.serverCombatService.updateTurn(gameId);
         this.combatCountdownService.resetTimerSubscription(gameId);

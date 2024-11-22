@@ -26,6 +26,11 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
         this.initializePlayerSpecs();
     }
 
+    ngOnChanges(): void {
+        this.sortPlayersByTurn();
+        this.initializePlayerSpecs();
+    }
+
     getAvatarPreview(avatar: Avatar): string {
         return this.characterService.getAvatarPreview(avatar);
     }
@@ -55,8 +60,7 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
         }));
     }
 
-    ngOnChanges(): void {
-        this.sortPlayersByTurn();
-        this.initializePlayerSpecs();
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return !!socketId && socketId.includes('virtualPlayer');
     }
 }

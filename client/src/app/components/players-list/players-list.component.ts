@@ -3,6 +3,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Avatar, Player } from '@common/game';
+
 @Component({
     selector: 'app-players-list',
     standalone: true,
@@ -13,6 +14,11 @@ import { Avatar, Player } from '@common/game';
 export class PlayersListComponent implements OnInit {
     @Input() players: Player[];
     @Input() isHost: boolean;
+    @Input() isGameMaxed: boolean;
+    @Input() isGameLocked: boolean;
+    @Input() gameId: string;
+    @Input() openProfileModal: () => void;
+
     hostPlayerId: string = '';
     hoveredPlayerId: string | null = null;
 
@@ -42,6 +48,10 @@ export class PlayersListComponent implements OnInit {
     }
 
     kickPlayer(playerId: string): void {
-        this.socketService.sendMessage('kickPlayer', playerId);
+        this.socketService.sendMessage('kickPlayer', { playerId: playerId, gameId: this.gameId });
+    }
+
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return !!socketId && socketId.includes('virtualPlayer');
     }
 }

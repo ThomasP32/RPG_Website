@@ -15,6 +15,19 @@ export enum Avatar {
     Avatar12 = 12,
 }
 
+export enum BotName {
+    Bot1 = 'AlphaBot',
+    Bot2 = 'RoboWarrior',
+    Bot3 = 'CyberHawk',
+    Bot4 = 'SteelFist',
+    Bot5 = 'MechaMage',
+    Bot6 = 'IronClad',
+    Bot7 = 'TechNinja',
+    Bot8 = 'ShadowBot',
+    Bot9 = 'RoboKnight',
+    Bot10 = 'CyberAssassin',
+}
+
 export enum Bonus {
     D4 = 4,
     D6 = 6,
