@@ -14,9 +14,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CombatGateway } from './socket/game/gateways/combat/combat.gateway';
 import { GameManagerGateway } from './socket/game/gateways/game-manager/game-manager.gateway';
 import { ServerCombatService } from './socket/game/service/combat/combat.service';
+import { CombatCountdownService } from './socket/game/service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from './socket/game/service/countdown/game/game-countdown.service';
 import { GameManagerService } from './socket/game/service/game-manager/game-manager.service';
-import { CombatCountdownService } from './socket/game/service/countdown/combat/combat-countdown.service';
+import { VirtualGameManagerService } from './socket/game/service/virtual-game-manager/virtual-game-manager.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -47,7 +48,8 @@ import { CombatCountdownService } from './socket/game/service/countdown/combat/c
         GameManagerService,
         JournalService,
         GameCountdownService,
-        CombatCountdownService
+        CombatCountdownService,
+        VirtualGameManagerService,
     ],
 })
 export class AppModule {}

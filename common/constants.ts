@@ -4,6 +4,11 @@ export enum MapSize {
     LARGE = 'LARGE',
 }
 
+export enum ProfileType {
+    AGGRESSIVE = 'aggressive',
+    DEFENSIVE = 'defensive',
+}
+
 export const MapConfig = {
     [MapSize.SMALL]: { size: 10, minPlayers: 2, maxPlayers: 2, nbItems: 2 },
     [MapSize.MEDIUM]: { size: 15, minPlayers: 2, maxPlayers: 4, nbItems: 4 },
@@ -61,4 +66,3 @@ export const COUNTDOWN_DURATION: number = 5;
 export const COUNTDOWN_NOEVASION_DURATION: number = 3;
 
 export const COUNTDOWN_COMBAT_DURATION: number = 5;
-
