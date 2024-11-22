@@ -1,6 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, HALF } from '@common/constants';
+import {
+    BONUS,
+    DEFAULT_ACTIONS,
+    DEFAULT_ATTACK,
+    DEFAULT_DEFENSE,
+    DEFAULT_EVASIONS,
+    DEFAULT_HP,
+    DEFAULT_SPEED,
+    HALF,
+    ProfileType,
+} from '@common/constants';
 import { Avatar, Bonus, BotName, Player, Specs } from '@common/game';
 
 @Component({
@@ -14,7 +24,7 @@ export class ProfileModalComponent implements OnInit {
     @Input() activePlayers: Player[] = [];
     @Input() gameId: string | null = null;
     @Input() closeProfileModal: () => void;
-    selectedProfile: string;
+    selectedProfile: ProfileType;
     virtualPlayer: Player;
 
     constructor(private socketService: SocketService) {
@@ -59,7 +69,7 @@ export class ProfileModalComponent implements OnInit {
     }
 
     setProfile(profile: string): void {
-        this.selectedProfile = profile;
+        this.selectedProfile = profile as ProfileType;
     }
 
     assignRandomName(): void {

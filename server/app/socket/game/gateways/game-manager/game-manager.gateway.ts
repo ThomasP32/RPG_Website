@@ -1,13 +1,14 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
+import { GameCountdownService } from '@app/socket/game/service/countdown/game/game-countdown.service';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { VirtualGameManagerService } from '@app/socket/game/service/virtual-game-manager/virtual-game-manager.service';
 import { BONUS, DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameManagerGateway implements OnGatewayInit {
@@ -18,12 +19,14 @@ export class GameManagerGateway implements OnGatewayInit {
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
     @Inject(GameCountdownService) private gameCountdownService: GameCountdownService;
     @Inject(JournalService) private journalService: JournalService;
+    @Inject(VirtualGameManagerService) private virtualGameManagerService: VirtualGameManagerService;
 
     afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
         this.gameCountdownService.on('timeout', (gameId: string) => {
             this.prepareNextTurn(gameId);
         });
+        this.virtualGameManagerService.setServer(this.server);
         this.journalService.initializeServer(server);
     }
 
@@ -164,7 +167,16 @@ export class GameManagerGateway implements OnGatewayInit {
         this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         activePlayer.specs.actions = DEFAULT_ACTIONS;
-        this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+
+        if (activePlayer.socketId.includes('virtual')) {
+            console.log('Virtual player turn : ', activePlayer.name);
+            this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
+            // delai entre 4 et 8 secondes
+            // peut pas etre fait avant le timer
+        } else {
+            this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+        }
+
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)
             .forEach((player) => {
