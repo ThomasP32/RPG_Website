@@ -48,6 +48,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const game = this.gameCreationService.getGameById(data.gameId);
+
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const beforeMoveInventory = [...player.inventory];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
@@ -156,6 +157,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
+        console.log('Active player:', activePlayer);
         const involvedPlayers = game.players.map((player) => player.name);
 
         if (!activePlayer || !activePlayer.isActive) {
@@ -168,11 +170,15 @@ export class GameManagerGateway implements OnGatewayInit {
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         activePlayer.specs.actions = DEFAULT_ACTIONS;
 
-        if (activePlayer.socketId.includes('virtual')) {
-            console.log('Virtual player turn : ', activePlayer.name);
-            this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
-            // delai entre 4 et 8 secondes
-            // peut pas etre fait avant le timer
+        this.gameCountdownService.startNewCountdown(game);
+
+        if (activePlayer.socketId.includes('virtualPlayer')) {
+            const delay = Math.floor(Math.random() * 6000) + 5000;
+            setTimeout(() => {
+                this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
+                this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
+                this.prepareNextTurn(game.id);
+            }, delay);
         } else {
             this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
         }
@@ -184,6 +190,5 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                 }
             });
-        this.gameCountdownService.startNewCountdown(game);
     }
 }

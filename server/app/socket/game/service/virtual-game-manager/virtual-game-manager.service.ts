@@ -25,10 +25,13 @@ export class VirtualGameManagerService extends EventEmitter {
 
     executeVirtualPlayerBehavior(player: Player, game: Game): void {
         if (this.selectedProfile === ProfileType.AGGRESSIVE) {
+            console.log('SelectedProfile:', this.selectedProfile);
             this.executeAggressiveBehavior(player, game);
         } else if (this.selectedProfile === ProfileType.DEFENSIVE) {
+            console.log('SelectedProfile:', this.selectedProfile);
             this.executeDefensiveBehavior(player, game);
         } else {
+            console.log('inside the else');
             this.updateVirtualPlayerPosition(player, game.id);
         }
         this.server.to(game.id).emit('moveVirtualPlayer', game);
@@ -39,16 +42,10 @@ export class VirtualGameManagerService extends EventEmitter {
         const possibleMoves = this.gameManagerService.getMoves(game.id, player.socketId);
 
         let newPos: Coordinate;
-        let validMove = false;
 
-        while (!validMove) {
-            const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-            newPos = randomMove[1].path[0];
+        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        newPos = randomMove[1].path[randomMove[1].path.length - 1];
 
-            if (this.gameManagerService.isReachableTile(newPos, game)) {
-                validMove = true;
-            }
-        }
         return [currentPos, newPos];
     }
 
@@ -62,7 +59,7 @@ export class VirtualGameManagerService extends EventEmitter {
 
     executeAggressiveBehavior(activePlayer: Player, game: Game): void {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
-        const area = possibleMoves.map(([_, moveData]) => moveData.path).flat();
+        const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
         const visiblePlayers = this.getPlayersInArea(area, game.players);
         const visibleItems = this.getItemsInArea(area, game);
@@ -73,6 +70,8 @@ export class VirtualGameManagerService extends EventEmitter {
             const targetPlayer = visiblePlayers[randomIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
             this.gameManagerService.updatePlayerPosition(activePlayer, adjacentTiles, game);
+            // commencer un combat
+            // ne s'évade jamais => juste attaque
         } else if (sword) {
             this.gameManagerService.updatePlayerPosition(activePlayer, [sword.coordinate], game);
             this.gameManagerService.pickUpItem(sword.coordinate, game, activePlayer);
@@ -83,7 +82,7 @@ export class VirtualGameManagerService extends EventEmitter {
 
     executeDefensiveBehavior(activePlayer: Player, game: Game): void {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
-        const area = possibleMoves.map(([_, moveData]) => moveData.path).flat();
+        const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
         const visiblePlayers = this.getPlayersInArea(area, game.players);
         const visibleItems = this.getItemsInArea(area, game);
@@ -119,5 +118,14 @@ export class VirtualGameManagerService extends EventEmitter {
             { x: position.x, y: position.y + 1 },
             { x: position.x, y: position.y - 1 },
         ];
+    }
+
+    getAdjacentTilesToPossibleMoves(possibleMoves: [string, { path: Coordinate[]; weight: number }][]): Coordinate[] {
+        const allAdjacentTiles: Coordinate[] = [];
+        for (const possibleMove of possibleMoves) {
+            const adjacentTiles = this.getAdjacentTiles(possibleMove[1].path[0]);
+            allAdjacentTiles.push(...adjacentTiles);
+        }
+        return allAdjacentTiles;
     }
 }

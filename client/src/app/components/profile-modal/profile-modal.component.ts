@@ -128,7 +128,7 @@ export class ProfileModalComponent implements OnInit {
         };
         const virtualPlayer: Player = {
             name: this.virtualPlayer.name,
-            socketId: this.virtualPlayer.socketId || '',
+            socketId: this.virtualPlayer.socketId,
             isActive: true,
             avatar: this.virtualPlayer.avatar,
             specs: playerSpecs,

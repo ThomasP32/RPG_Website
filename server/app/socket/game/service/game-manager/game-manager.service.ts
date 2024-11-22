@@ -16,6 +16,7 @@ export class GameManagerService {
             this.updatePlayerPosition(player, path, game);
         }
     }
+
     updatePlayerPosition(player: Player, path: Coordinate[], game: Game): void {
         path.forEach((position) => {
             player.specs.movePoints -= this.getTileWeight(position, game);
