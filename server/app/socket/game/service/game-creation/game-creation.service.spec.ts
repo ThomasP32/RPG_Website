@@ -44,6 +44,7 @@ describe('GameCreationService', () => {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
 
         player = {
@@ -81,7 +82,7 @@ describe('GameCreationService', () => {
             hostSocketId: 'host-id',
             players: [],
             currentTurn: 0,
-            nDoorsManipulated: 0,
+            nDoorsManipulated: [],
 
             duration: 0,
             nTurns: 0,

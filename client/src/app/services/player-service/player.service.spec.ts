@@ -105,12 +105,13 @@ describe('PlayerService', () => {
                     nEvasions: 0,
                     nLifeTaken: 0,
                     nLifeLost: 0,
+                    nItemsUsed: 0,
                 },
                 inventory: [],
                 position: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
-                initialPosition: {x: 0, y: 0},
+                initialPosition: { x: 0, y: 0 },
             };
             service.setPlayer(mockPlayer);
             expect(service.player).toEqual(mockPlayer);

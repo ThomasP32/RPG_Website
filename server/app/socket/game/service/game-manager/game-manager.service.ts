@@ -90,6 +90,7 @@ export class GameManagerService {
 
                 if (this.itemOnTile(position, game)) {
                     this.pickUpItem(position, game, player);
+                    player.specs.nItemsUsed++;
                     finalPath.push(position);
                     break;
                 }
@@ -219,6 +220,9 @@ export class GameManagerService {
         if (itemIndex !== -1) {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
+            if (item === ItemCategory.Flag) {
+                //TODO: ADD ++ PLAYER on flag pickupp game.
+            }
             game.items.splice(itemIndex, 1);
         }
     }

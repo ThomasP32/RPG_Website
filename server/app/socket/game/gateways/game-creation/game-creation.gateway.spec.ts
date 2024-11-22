@@ -32,6 +32,7 @@ describe('GameGateway', () => {
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
+        nItemsUsed: 0,
     };
     let player: Player = {
         socketId: 'player-1',
@@ -66,7 +67,7 @@ describe('GameGateway', () => {
         hostSocketId: 'host-id',
         players: [player],
         currentTurn: 0,
-        nDoorsManipulated: 0,
+        nDoorsManipulated: [],
         duration: 0,
         nTurns: 0,
         debug: false,

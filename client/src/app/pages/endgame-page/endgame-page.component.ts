@@ -8,6 +8,7 @@ import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Avatar, Game, Player } from '@common/game';
 import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'app-endgame-page',
     standalone: true,
@@ -17,6 +18,8 @@ import { Subscription } from 'rxjs';
 })
 export class EndgamePageComponent implements OnDestroy {
     socketSubscription: Subscription = new Subscription();
+
+    isSortingAsc = true;
 
     constructor(
         private socketService: SocketService,

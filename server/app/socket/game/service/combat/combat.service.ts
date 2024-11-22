@@ -4,7 +4,6 @@ import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Mode } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
-import { N_WIN_VICTORIES } from '../../../../../constants/constants';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
@@ -135,7 +134,8 @@ export class ServerCombatService {
 
     checkForGameWinner(gameId: string, player: Player): boolean {
         if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
-            return player.specs.nVictories >= N_WIN_VICTORIES;
+            // return player.specs.nVictories >= N_WIN_VICTORIES; TODO
+            return player.specs.nVictories >= 1;
         }
         return false;
     }

@@ -1,5 +1,6 @@
 import { Combat } from '@common/combat';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { Mode } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 import { ServerCombatService } from '../../service/combat/combat.service';
@@ -9,7 +10,6 @@ import { GameCreationService } from '../../service/game-creation/game-creation.s
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 import { CombatGateway } from './combat.gateway';
-import { Mode } from '@common/map.types';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -46,6 +46,7 @@ describe('CombatGateway', () => {
                 nEvasions: 0,
                 nLifeTaken: 0,
                 nLifeLost: 0,
+                nItemsUsed: 0,
             },
             inventory: [],
             position: undefined,
@@ -74,6 +75,7 @@ describe('CombatGateway', () => {
                 nEvasions: 0,
                 nLifeTaken: 0,
                 nLifeLost: 0,
+                nItemsUsed: 0,
             },
             inventory: [],
             position: undefined,
@@ -191,19 +193,19 @@ describe('CombatGateway', () => {
             const mockGame = { id: 'game-id', currentTurn: mockCombat.challenger.turn, mode: Mode.Classic } as Game;
             gameCreationService.getGameById.mockReturnValue(mockGame);
             mockCombat.opponent.specs.life = 1;
-            mockCombat.challenger.specs.nVictories = 3; 
-            serverCombatService.isAttackSuccess.mockReturnValue(true); 
-        
+            mockCombat.challenger.specs.nVictories = 3;
+            serverCombatService.isAttackSuccess.mockReturnValue(true);
+
             gateway.attackOnTimeOut('game-id');
-        
-            jest.runAllTimers(); 
-        
+
+            jest.runAllTimers();
+
             expect(mockServer.to).toHaveBeenCalledWith(mockGame.id);
             expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameFinishedPlayerWon', {
                 winner: mockCombat.challenger,
             });
         });
-        
+
         it('should emit dice roll results and attack success', () => {
             gateway.attackOnTimeOut('game-id');
 
@@ -281,14 +283,14 @@ describe('CombatGateway', () => {
             const mockGame = { id: 'game-id', currentTurn: mockCombat.challenger.turn, mode: Mode.Classic } as Game;
             gameCreationService.getGameById.mockReturnValue(mockGame);
             mockCombat.challenger.specs.life = 1;
-            mockCombat.opponent.specs.nVictories = 3; 
+            mockCombat.opponent.specs.nVictories = 3;
             mockCombat.currentTurnSocketId = mockCombat.opponent.socketId;
-            serverCombatService.isAttackSuccess.mockReturnValue(true); 
-        
+            serverCombatService.isAttackSuccess.mockReturnValue(true);
+
             gateway.attackOnTimeOut('game-id');
-        
-            jest.runAllTimers(); 
-        
+
+            jest.runAllTimers();
+
             expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameFinishedPlayerWon', {
                 winner: mockCombat.opponent,
             });
@@ -425,9 +427,9 @@ describe('CombatGateway', () => {
 
             it('should set the challenger as the current player and opponent as the other player', () => {
                 mockCombat.currentTurnSocketId = mockCombat.challenger.socketId;
-            
+
                 gateway.startCombatTurns(mockCombat.id);
-            
+
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
                 expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
                 expect(mockServer.to(mockCombat.opponent.socketId).emit).toHaveBeenCalledWith('playerTurnCombat');
@@ -435,16 +437,14 @@ describe('CombatGateway', () => {
 
             it('should set the opponent as the current player and challenger as the other player', () => {
                 mockCombat.currentTurnSocketId = mockCombat.opponent.socketId;
-            
+
                 gateway.startCombatTurns(mockCombat.id);
-            
+
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
                 expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
                 expect(mockServer.to(mockCombat.challenger.socketId).emit).toHaveBeenCalledWith('playerTurnCombat');
                 mockCombat.currentTurnSocketId = mockCombat.challenger.socketId;
             });
-            
-            
         });
 
         describe('cleanupCombatRoom', () => {
@@ -618,7 +618,6 @@ describe('CombatGateway', () => {
 
                 gameCreationService.getGames.mockReturnValue([mockGame]);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
-                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(true);
 
                 gateway.handleDisconnect(mockSocket);
 
@@ -629,7 +628,6 @@ describe('CombatGateway', () => {
             it('should do nothing if no conditions are met', () => {
                 const mockGame = { id: 'game-id', hasStarted: true, players: [mockCombat.challenger] } as Game;
                 gameCreationService.getGames.mockReturnValue([mockGame]);
-                jest.spyOn(gateway, 'checkForGameWinner').mockReturnValue(false);
                 gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
 
                 gateway.handleDisconnect(mockSocket);
