@@ -7,7 +7,6 @@ import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
-import { GamePageActiveView } from '@common/game-page';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -19,6 +18,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { Game, Player, Specs } from '@common/game';
+import { GamePageActiveView } from '@common/game-page';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 

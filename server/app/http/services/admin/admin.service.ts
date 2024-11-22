@@ -63,10 +63,10 @@ export class AdminService {
     async deleteMap(mapId: string): Promise<void> {
         try {
             const objectId = new Types.ObjectId(mapId);
-            const res = await this.mapModel.deleteOne({
+            const response = await this.mapModel.deleteOne({
                 _id: objectId,
             });
-            if (res.deletedCount === 0) {
+            if (response.deletedCount === 0) {
                 throw new NotFoundException("Le jeu n'a pas été trouvé");
             }
         } catch (err) {
@@ -253,25 +253,17 @@ export class AdminService {
     }
 
     private areStartTilePlaced(startTiles: StartTileDto[], mapSize: CoordinateDto): boolean {
-        if (mapSize.x === MapConfig[MapSize.SMALL].size && startTiles.length === MapConfig[MapSize.SMALL].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.MEDIUM].size && startTiles.length === MapConfig[MapSize.MEDIUM].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.LARGE].size && startTiles.length === MapConfig[MapSize.LARGE].nbItems) {
-            return true;
-        }
-        return false;
+        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && startTiles.length === MapConfig[MapSize.SMALL].nbItems;
+        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && startTiles.length === MapConfig[MapSize.MEDIUM].nbItems;
+        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && startTiles.length === MapConfig[MapSize.LARGE].nbItems;
+        return isSmallMapTilesPlaced || isMediumMapTilesPlaced || isLargeMapTilesPlaced;
     }
 
     private areItemsPlaced(items: ItemDto[], mapSize: CoordinateDto): boolean {
-        if (mapSize.x === MapConfig[MapSize.SMALL].size && items.length >= MapConfig[MapSize.SMALL].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length >= MapConfig[MapSize.MEDIUM].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.LARGE].size && items.length >= MapConfig[MapSize.LARGE].nbItems) {
-            return true;
-        }
-        return false;
+        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && items.length === MapConfig[MapSize.SMALL].nbItems;
+        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length === MapConfig[MapSize.MEDIUM].nbItems;
+        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && items.length === MapConfig[MapSize.LARGE].nbItems;
+        return isSmallMapTilesPlaced || isMediumMapTilesPlaced || isLargeMapTilesPlaced;
     }
 
     private isFlagPlaced(items: ItemDto[], mode: Mode): boolean {

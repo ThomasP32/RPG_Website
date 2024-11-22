@@ -1,5 +1,5 @@
 import { MapConfig, MapSize } from '@common/constants';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
 import { TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
@@ -62,7 +62,7 @@ export class GameCreationService {
         if (matchingPlayers.length > 0) {
             player.name = `${baseName}-${maxSuffix + 1}`;
         }
-
+    
         this.gameRooms[gameId].players.push(player);
         return game;
     }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, GameCtf, Player } from '@common/game';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 
 @Injectable({
     providedIn: 'root',
@@ -36,6 +36,7 @@ export class GameService {
             isLocked: false,
             hasStarted: false,
             nPlayersCtf: 0,
+            mode: Mode.Ctf,
         };
     }
 
