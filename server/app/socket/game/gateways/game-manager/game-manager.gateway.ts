@@ -102,6 +102,7 @@ export class GameManagerGateway implements OnGatewayInit {
 
         this.gameManagerService.updatePlayerActions(data.gameId, client.id);
         doorTile.isOpened = !doorTile.isOpened;
+        game.nDoorsManipulated.push(doorTile.coordinate);
         this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
     }
 

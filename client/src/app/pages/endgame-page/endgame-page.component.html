@@ -1,23 +1,47 @@
 <div class="endgame-container">
     <div class="stats-container">
-        <p>Fin de partie</p>
-        <table>
+        <h1>Fin de partie</h1>
+        <table id="stats-table">
             <thead>
                 <tr>
                     <th></th>
                     <th>Nom</th>
-                    <th>Combats</th>
-                    <th>Évasions</th>
-                    <th>Victoires</th>
-                    <th>Défaites</th>
-                    <th>Vie perdue</th>
-                    <th>Vie infligée</th>
-                    <th>Objets ramassés</th>
-                    <th>Tuiles visitées</th>
+                    <th>
+                        <p>Combats</p>
+                        <p (click)="endgameService.sortTable(2)">X</p>
+                    </th>
+                    <th>
+                        <p>Évasions</p>
+                        <p (click)="endgameService.sortTable(3)">X</p>
+                    </th>
+                    <th>
+                        <p>Victoires</p>
+                        <p (click)="endgameService.sortTable(4)">X</p>
+                    </th>
+                    <th>
+                        <p>Défaites</p>
+                        <p (click)="endgameService.sortTable(5)">X</p>
+                    </th>
+                    <th>
+                        <p>Vie perdue</p>
+                        <p (click)="endgameService.sortTable(6)">X</p>
+                    </th>
+                    <th>
+                        <p>Vie infligée</p>
+                        <p (click)="endgameService.sortTable(7)">X</p>
+                    </th>
+                    <th>
+                        <p>Objets ramassés</p>
+                        <p (click)="endgameService.sortTable(8)">X</p>
+                    </th>
+                    <th>
+                        <p>Tuiles visitées</p>
+                        <p (click)="endgameService.sortTable(9)">X</p>
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                @for (gamePlayer of players; track gamePlayer) {
+                @for (gamePlayer of players; track gamePlayer.socketId) {
                 <tr>
                     <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" /></td>
                     <td>{{ gamePlayer.name }}</td>
@@ -27,7 +51,7 @@
                     <td>{{ gamePlayer.specs.nDefeats }}</td>
                     <td>{{ gamePlayer.specs.nLifeLost }}</td>
                     <td>{{ gamePlayer.specs.nLifeTaken }}</td>
-                    <td>TODO</td>
+                    <td>{{ gamePlayer.specs.nItemsUsed }}</td>
                     <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }}%</td>
                 </tr>
                 }
@@ -42,8 +66,7 @@
         <p>Durée de la partie : {{ endgameService.gameDurationInMinutes(game.duration) }}</p>
         <p>Tours de jeu : {{ game.nTurns }}</p>
         <p>Pourcentage total de tuiles visitées : {{ endgameService.gameTilePercentage(game) }}%</p>
-        <p>Pourcentage total des portes manipulées : TODO</p>
-        <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
+        <p>Pourcentage total des portes manipulées : {{ endgameService.gameDoorPercentage(game) }}%</p>
         <!-- @if (game.mode === Mode.Ctf) { -->
         <!-- <p>Nombre de joueurs différents ayant détenu le drapeau : {{game.}}</p> -->
         <!-- } -->

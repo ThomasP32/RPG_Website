@@ -36,6 +36,7 @@ export interface Specs {
     nEvasions: number;
     nLifeTaken: number;
     nLifeLost: number;
+    nItemsUsed: number;
 }
 
 export interface Player {
@@ -56,7 +57,7 @@ export interface Game extends Map {
     hostSocketId: string;
     players: Player[];
     currentTurn: number;
-    nDoorsManipulated: number;
+    nDoorsManipulated: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;

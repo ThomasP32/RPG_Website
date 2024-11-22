@@ -22,12 +22,13 @@
     min-height: 400px;
 }
 
-.stats-container p {
+.title-endgame {
     font-size: 21px;
     margin-bottom: 15px;
     font-weight: bold;
     color: #c0c0c0;
 }
+
 .global-stats-container {
     grid-area: global-stats;
     background-color: #2a3038;
@@ -36,7 +37,7 @@
     max-height: 200px;
 }
 
-.global-stats-container h1 {
+h1 {
     font-size: 21px;
     margin-bottom: 15px;
     color: #c0c0c0;
