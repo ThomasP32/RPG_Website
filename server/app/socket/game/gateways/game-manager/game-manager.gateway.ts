@@ -2,7 +2,7 @@ import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { TIME_FOR_POSITION_UPDATE } from '@common/constants';
+import { BONUS, DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -63,12 +63,12 @@ export class GameManagerGateway implements OnGatewayInit {
 
             const isOnIceTile = this.gameManagerService.onIceTile(player, game.id);
             if (isOnIceTile && !wasOnIceTile) {
-                player.specs.attack -= 2;
-                player.specs.defense -= 2;
+                player.specs.attack -= BONUS;
+                player.specs.defense -= BONUS;
                 wasOnIceTile = true;
             } else if (!isOnIceTile && wasOnIceTile) {
-                player.specs.attack += 2;
-                player.specs.defense += 2;
+                player.specs.attack += BONUS;
+                player.specs.defense += BONUS;
                 wasOnIceTile = false;
             }
             this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
@@ -124,7 +124,7 @@ export class GameManagerGateway implements OnGatewayInit {
 
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
-        this.gameCountdownService.initCountdown(gameId, 30);
+        this.gameCountdownService.initCountdown(gameId, TURN_DURATION);
         this.startTurn(gameId);
     }
 
@@ -164,7 +164,7 @@ export class GameManagerGateway implements OnGatewayInit {
         game.nTurns++;
         this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
-        activePlayer.specs.actions = 1;
+        activePlayer.specs.actions = DEFAULT_ACTIONS;
         this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)

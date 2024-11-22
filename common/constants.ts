@@ -1,4 +1,3 @@
-export const TURN_DURATION: number = 30;
 export enum MapSize {
     SMALL = 'SMALL',
     MEDIUM = 'MEDIUM',
@@ -35,6 +34,22 @@ export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const HALF = 0.5;
 
+export const DEFAULT_HP = 4;
+
+export const DEFAULT_SPEED = 4;
+
+export const DEFAULT_ATTACK = 4;
+
+export const DEFAULT_DEFENSE = 4;
+
+export const DEFAULT_EVASIONS = 2;
+
+export const DEFAULT_ACTIONS = 1;
+
+export const BONUS = 2;
+
+export const TURN_DURATION = 30;
+
 export const PERCENTAGE: number = 100;
 
 export const MINUTE: number = 60;
@@ -44,3 +59,4 @@ export const MAX_CHAR: number = 2;
 export const COUNTDOWN_NOEVASION_DURATION: number = 3;
 
 export const COUNTDOWN_COMBAT_DURATION: number = 5;
+

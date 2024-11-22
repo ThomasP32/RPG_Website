@@ -99,9 +99,11 @@ describe('GamePageComponent', () => {
         const possibleDoorsSubject = new Subject<DoorTile[]>();
         const playerWonSubject = new Subject<boolean>();
 
-        const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
+        const gameSpy = jasmine.createSpyObj('GameService', ['setGame'], {
+            game: mockGame,
+        });
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
@@ -149,9 +151,6 @@ describe('GamePageComponent', () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(GamePageComponent);
-        component = fixture.componentInstance;
-
         router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
         gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
@@ -159,9 +158,6 @@ describe('GamePageComponent', () => {
         socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
-
-        gameSpy.game = mockGame;
-        playerSpy.player = mockPlayer;
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
@@ -173,6 +169,9 @@ describe('GamePageComponent', () => {
                     return of();
             }
         });
+
+        fixture = TestBed.createComponent(GamePageComponent);
+        component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
