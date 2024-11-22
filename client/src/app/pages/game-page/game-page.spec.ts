@@ -14,7 +14,7 @@ import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
-import { GamePageActiveView } from '@app/interfaces/game-page';
+import { GamePageActiveView } from '@common/game-page';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
