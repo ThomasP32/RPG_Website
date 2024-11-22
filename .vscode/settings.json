@@ -7,4 +7,9 @@
     },
     "html.format.indentInnerHtml": true,
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+    "eslint.workingDirectories": ["./client", "./server", "./common"],
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/out": true
+    }
 }
