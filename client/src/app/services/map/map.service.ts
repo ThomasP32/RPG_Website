@@ -27,8 +27,8 @@ export class MapService {
     removeStartingPoint$ = this.removeStartingPointSource.asObservable();
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private router: Router,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly router: Router,
     ) {
         this.communicationMapService = communicationMapService;
         this.router = router;
@@ -36,6 +36,7 @@ export class MapService {
 
     async getMap(id: string): Promise<void> {
         try {
+            
             // eslint-disable-next-line no-unused-vars
             const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(
                 this.communicationMapService.basicGet<DetailedMap>(`admin/${id}`),
