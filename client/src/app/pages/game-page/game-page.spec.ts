@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@app/interfaces/moves';
+import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
@@ -14,6 +14,7 @@ import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
+import { GamePageActiveView } from '@common/game-page';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -98,9 +99,11 @@ describe('GamePageComponent', () => {
         const possibleDoorsSubject = new Subject<DoorTile[]>();
         const playerWonSubject = new Subject<boolean>();
 
-        const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
+        const gameSpy = jasmine.createSpyObj('GameService', ['setGame'], {
+            game: mockGame,
+        });
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
@@ -148,9 +151,6 @@ describe('GamePageComponent', () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(GamePageComponent);
-        component = fixture.componentInstance;
-
         router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
         gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
@@ -158,9 +158,6 @@ describe('GamePageComponent', () => {
         socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
-
-        gameSpy.game = mockGame;
-        playerSpy.player = mockPlayer;
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
@@ -172,6 +169,9 @@ describe('GamePageComponent', () => {
                     return of();
             }
         });
+
+        fixture = TestBed.createComponent(GamePageComponent);
+        component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
@@ -179,13 +179,13 @@ describe('GamePageComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should toggle view to journal', () => {
-        component.toggleView('journal');
-        expect(component.activeView).toBe('journal');
+        component.toggleView(GamePageActiveView.Journal);
+        expect(component.activeView).toBe(GamePageActiveView.Journal);
     });
 
     it('should toggle view to chat', () => {
-        component.toggleView('chat');
-        expect(component.activeView).toBe('chat');
+        component.toggleView(GamePageActiveView.Chat);
+        expect(component.activeView).toBe(GamePageActiveView.Chat);
     });
 
     it('should initialize player preview on init', () => {
@@ -194,21 +194,9 @@ describe('GamePageComponent', () => {
         expect(component.playerPreview).toBe(characterService.getAvatarPreview(mockPlayer.avatar));
     });
 
-    it('should navigate to main menu on navigateToMain', () => {
-        component.navigateToMain();
-        expect(socketService.disconnect).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
     it('should navigate to end of game on navigateToEndOfGame', () => {
         component.navigateToEndOfGame();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
-    it('should unsubscribe from socketSubscription on destroy', () => {
-        spyOn(component.socketSubscription, 'unsubscribe');
-        component.ngOnDestroy();
-        expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should listen for possible opponents updates', () => {
@@ -318,7 +306,7 @@ describe('GamePageComponent', () => {
         component.endTurn();
         component.navigateToEndOfGame();
         expect(gameTurnService.endTurn).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
     it('should open the exit confirmation modal', () => {

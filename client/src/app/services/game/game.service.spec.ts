@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, GameCtf, Player, Specs } from '@common/game';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
 
@@ -118,7 +118,7 @@ describe('GameService', () => {
                 startTiles: [],
                 doorTiles: [],
             } as unknown as Map;
-    
+
             const gameId = 'game-id-123';
             const expectedGame: Game = {
                 ...mockMap,
@@ -133,12 +133,12 @@ describe('GameService', () => {
                 isLocked: false,
                 hasStarted: false,
             };
-    
+
             const result = service.createNewGame(mockMap, gameId);
             expect(result).toEqual(expectedGame);
         });
     });
-    
+
     describe('#createNewCtfGame', () => {
         it('should create a new CTF game with the given map and gameId', () => {
             const mockMap = {
@@ -148,7 +148,7 @@ describe('GameService', () => {
                 startTiles: [],
                 doorTiles: [],
             } as unknown as Map;
-    
+
             const gameId = 'ctf-game-id-123';
             const expectedGame: GameCtf = {
                 ...mockMap,
@@ -163,11 +163,11 @@ describe('GameService', () => {
                 isLocked: false,
                 hasStarted: false,
                 nPlayersCtf: 0,
+                mode: Mode.Ctf,
             };
-    
+
             const result = service.createNewCtfGame(mockMap, gameId);
             expect(result).toEqual(expectedGame);
         });
     });
-    
 });

@@ -121,17 +121,17 @@
         }
         <div class="toggle-container">
             <div class="toggle">
-                <button [class.active]="activeView === 'chat'" (click)="toggleView('chat')">Clavardage</button>
-                <button [class.active]="activeView === 'journal'" (click)="toggleView('journal')">Journal</button>
+                <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
+                <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
             </div>
         </div>
 
         <div class="chat-and-journal-container">
-            <div class="game-page-chat" [class.hidden]="activeView !== 'chat'">
-                <app-chatroom [player]="player" [gameId]="game.id"></app-chatroom>
+            <div class="game-page-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
+                <app-chatroom [playerName]="player.name" [gameId]="game.id"></app-chatroom>
             </div>
 
-            <div class="journal" [class.hidden]="activeView !== 'journal'">
+            <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
                 <app-journal [player]="player"></app-journal>
             </div>
         </div>

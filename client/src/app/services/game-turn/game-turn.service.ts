@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { MovesMap } from '@app/interfaces/moves';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY } from '@common/constants';
+import { MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, DoorTile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -226,6 +226,10 @@ export class GameTurnService {
             this.socketService.listen<{ updatedGame: Game; evadingPlayer: Player }>('combatFinishedByEvasion').subscribe((data) => {
                 if (data.evadingPlayer.socketId === this.player.socketId) {
                     this.playerService.player = data.evadingPlayer;
+                    if (data.updatedGame.currentTurn === this.playerService.player.turn) {
+                        this.clearMoves();
+                        this.resumeTurn();
+                    }
                 } else {
                     this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
                 }

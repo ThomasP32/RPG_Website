@@ -1,5 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { DIRECTIONS } from '@common/directions';
+import { DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -8,22 +8,27 @@ import { GameCreationService } from '../game-creation/game-creation.service';
 @Injectable()
 export class GameManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    hasFallen: boolean = false;
+    public hasFallen: boolean = false;
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === playerSocket);
         if (player) {
-            path.forEach((position) => {
-                player.specs.movePoints -= this.getTileWeight(position, game);
-            });
-            player.position = path[path.length - 1];
+            this.updatePlayerPosition(player, path, game);
         }
+    }
+    updatePlayerPosition(player: Player, path: Coordinate[], game: Game): void {
+        path.forEach((position) => {
+            player.specs.movePoints -= this.getTileWeight(position, game);
+            if (!player.visitedTiles.some((tile) => tile.x === position.x && tile.y === position.y)) {
+                player.visitedTiles.push(position);
+            }
+        });
+        player.position = path[path.length - 1];
     }
 
     updateTurnCounter(gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
-        game.nTurns++;
         game.currentTurn++;
         if (game.currentTurn >= game.players.length) {
             game.currentTurn = 0;
@@ -99,60 +104,57 @@ export class GameManagerService {
         }
     }
 
-    runDijkstra(start: Coordinate, game: Game, playerPoints: number): Map<string, { path: Coordinate[]; weight: number }> {
-        const shortestPaths = new Map<string, { path: Coordinate[]; weight: number }>();
-        const visited = new Set<string>();
-        const startKey = this.coordinateToKey(start);
-
-        shortestPaths.set(startKey, { path: [start], weight: 0 });
-
-        let toVisit = [{ point: start, weight: 0 }];
+    runDijkstra(start: Coordinate, game: Game, playerPoints: number): MovesMap {
+        const { shortestPaths, visited, toVisit } = this.initializeDijkstra(start);
 
         while (toVisit.length > 0) {
             toVisit.sort((a, b) => a.weight - b.weight);
             const { point: currentPoint, weight: currentWeight } = toVisit.shift();
             const currentKey = this.coordinateToKey(currentPoint);
 
-            if (visited.has(currentKey)) {
-                continue;
-            }
+            if (visited.has(currentKey)) continue;
 
             visited.add(currentKey);
 
-            if (currentWeight > playerPoints) {
-                continue;
-            }
+            if (currentWeight > playerPoints) continue;
 
             const neighbors = this.getNeighbors(currentPoint, game);
 
             for (const neighbor of neighbors) {
                 const neighborKey = this.coordinateToKey(neighbor);
 
-                if (visited.has(neighborKey)) {
-                    continue;
-                }
+                if (visited.has(neighborKey)) continue;
 
                 const neighborWeight = currentWeight + this.getTileWeight(neighbor, game);
 
                 if (neighborWeight <= playerPoints) {
-                    if (!shortestPaths.has(neighborKey)) {
-                        shortestPaths.set(neighborKey, {
-                            path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
-                            weight: neighborWeight,
-                        });
-                    } else if (neighborWeight < shortestPaths.get(neighborKey).weight) {
-                        shortestPaths.set(neighborKey, {
-                            path: [...shortestPaths.get(currentKey).path, neighbor],
-                            weight: neighborWeight,
-                        });
-                    }
-
+                    shortestPaths.set(
+                        neighborKey,
+                        !shortestPaths.has(neighborKey) || neighborWeight < shortestPaths.get(neighborKey).weight
+                            ? {
+                                  path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
+                                  weight: neighborWeight,
+                              }
+                            : shortestPaths.get(neighborKey),
+                    );
                     toVisit.push({ point: neighbor, weight: neighborWeight });
                 }
             }
         }
-
         return shortestPaths;
+    }
+
+    private initializeDijkstra(start: Coordinate): {
+        shortestPaths: Map<string, { path: Coordinate[]; weight: number }>;
+        visited: Set<string>;
+        toVisit: { point: Coordinate; weight: number }[];
+    } {
+        const shortestPaths = new Map<string, { path: Coordinate[]; weight: number }>();
+        const visited = new Set<string>();
+        const startKey = this.coordinateToKey(start);
+        shortestPaths.set(startKey, { path: [start], weight: 0 });
+        const toVisit = [{ point: start, weight: 0 }];
+        return { shortestPaths, visited, toVisit };
     }
 
     coordinateToKey(coord: Coordinate): string {
