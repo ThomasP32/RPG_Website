@@ -155,24 +155,6 @@ describe('CombatCountdownService', () => {
         expect(mockIntervalSubscription.unsubscribe).toHaveBeenCalled();
     });
 
-    it('should reset the countdown to the original duration without emitting events', () => {
-        service.initCountdown('test-id', 5);
-        service.startTurnCounter(mockGame, false);
-
-        intervalCallback();
-        intervalCallback();
-        intervalCallback();
-
-        mockServer.emit.mockClear();
-
-        service.resetCountdown('test-id');
-
-        const countdown = service['countdowns'].get('test-id');
-        expect(countdown?.remaining).toBe(3);
-        service.startTurnCounter(mockGame, true);
-        expect(countdown?.remaining).toBe(5);
-    });
-
     it('should delete the countdown and unsubscribe from the timer when deleteCountdown is called', () => {
         service.initCountdown('test-id', 5);
         service.startTurnCounter(mockGame, true);

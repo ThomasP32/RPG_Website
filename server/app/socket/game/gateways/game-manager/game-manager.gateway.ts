@@ -2,7 +2,8 @@ import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { BONUS, DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
+import { Game, Player } from '@common/game';
+import { DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
 import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -14,10 +15,10 @@ export class GameManagerGateway implements OnGatewayInit {
     @WebSocketServer()
     server: Server;
 
-    @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    @Inject(GameManagerService) private gameManagerService: GameManagerService;
-    @Inject(GameCountdownService) private gameCountdownService: GameCountdownService;
-    @Inject(JournalService) private journalService: JournalService;
+    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
+    @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
+    @Inject(JournalService) private readonly journalService: JournalService;
 
     afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
@@ -48,49 +49,26 @@ export class GameManagerGateway implements OnGatewayInit {
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const beforeMoveInventory = [...player.inventory];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
-        if (this.gameManagerService.onIceTile(player, game.id)) {
-            wasOnIceTile = true;
-        }
-
-        if (moves.length === 0) {
-            return;
-        }
+        if (this.gameManagerService.onIceTile(player, game.id)) wasOnIceTile = true;
+        if (moves.length === 0) return;
 
         moves.shift();
+        const gameFinished = await this.movePlayer(moves, game, wasOnIceTile, player);
 
-        for (const move of moves) {
-            this.gameManagerService.updatePosition(data.gameId, client.id, [move]);
-
-            const isOnIceTile = this.gameManagerService.onIceTile(player, game.id);
-            if (isOnIceTile && !wasOnIceTile) {
-                player.specs.attack -= BONUS;
-                player.specs.defense -= BONUS;
-                wasOnIceTile = true;
-            } else if (!isOnIceTile && wasOnIceTile) {
-                player.specs.attack += BONUS;
-                player.specs.defense += BONUS;
-                wasOnIceTile = false;
+        if (!gameFinished) {
+            if (this.gameManagerService.hasPickedUpFlag(beforeMoveInventory, player.inventory)) {
+                this.server.to(data.gameId).emit('flagPickedUp', game);
+                this.server.to(client.id).emit('youFinishedMoving');
+                this.journalService.logMessage(
+                    data.gameId,
+                    `Le drapeau a été récupéré par ${player.name}.`,
+                    game.players.map((player) => player.name),
+                );
+            } else if (this.gameManagerService.hasFallen(moves, data.destination)) {
+                this.server.to(client.id).emit('youFell');
+            } else {
+                this.server.to(client.id).emit('youFinishedMoving');
             }
-            this.server.to(data.gameId).emit('positionToUpdate', { game: game, player: player });
-            await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
-            if (this.gameManagerService.checkForWinnerCtf(player, data.gameId)) {
-                this.server.to(data.gameId).emit('gameFinishedPlayerWon', { winner: player });
-                return;
-            }
-        }
-
-        if (this.gameManagerService.hasPickedUpFlag(beforeMoveInventory, player.inventory)) {
-            this.server.to(data.gameId).emit('flagPickedUp', game);
-            this.server.to(client.id).emit('youFinishedMoving');
-            this.journalService.logMessage(
-                data.gameId,
-                `Le drapeau a été récupéré par ${player.name}.`,
-                game.players.map((player) => player.name),
-            );
-        } else if (this.gameManagerService.hasFallen(moves, data.destination)) {
-            this.server.to(client.id).emit('youFell');
-        } else {
-            this.server.to(client.id).emit('youFinishedMoving');
         }
     }
 
@@ -174,5 +152,33 @@ export class GameManagerGateway implements OnGatewayInit {
                 }
             });
         this.gameCountdownService.startNewCountdown(game);
+    }
+
+    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
+        const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
+        if (isOnIceTile && !wasOnIceTile) {
+            player.specs.attack -= 2;
+            player.specs.defense -= 2;
+            wasOnIceTile = true;
+        } else if (!isOnIceTile && wasOnIceTile) {
+            player.specs.attack += 2;
+            player.specs.defense += 2;
+            wasOnIceTile = false;
+        }
+        return wasOnIceTile;
+    }
+
+    async movePlayer(moves: Coordinate[], game: Game, wasOnIceTile: boolean, player: Player): Promise<boolean> {
+        for (const move of moves) {
+            this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
+            wasOnIceTile = this.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
+            this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
+            await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
+            if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
+                this.server.to(game.id).emit('gameFinishedPlayerWon', { winner: player });
+                return true;
+            }
+        }
+        return false;
     }
 }
