@@ -1,10 +1,10 @@
 import { Bonus, Game, Player, Specs } from '@common/game';
 import { Mode } from '@common/map.types';
 import { GameCreationService } from '../game-creation/game-creation.service';
-import { ServerCombatService } from './combat.service';
+import { CombatService } from './combat.service';
 
 describe('ServerCombatService', () => {
-    let service: ServerCombatService;
+    let service: CombatService;
     let gameCreationService: GameCreationService;
 
     beforeEach(() => {
@@ -22,7 +22,7 @@ describe('ServerCombatService', () => {
             }),
         } as unknown as GameCreationService;
 
-        service = new ServerCombatService(gameCreationService);
+        service = new CombatService(gameCreationService);
     });
 
     const challenger: Player = {

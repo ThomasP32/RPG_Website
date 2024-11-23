@@ -1,10 +1,9 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
-import { Mode } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ServerCombatService } from '../../service/combat/combat.service';
+import { CombatService } from '../../service/combat/combat.service';
 import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
@@ -21,17 +20,18 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @Inject(JournalService) private journalService: JournalService;
 
     constructor(
-        private serverCombatService: ServerCombatService,
+        private combatService: CombatService,
         private gameCountdownService: GameCountdownService,
         private combatCountdownService: CombatCountdownService,
     ) {
-        this.serverCombatService = serverCombatService;
+        this.combatService = combatService;
         this.combatCountdownService = combatCountdownService;
         this.gameCountdownService = gameCountdownService;
     }
 
     afterInit() {
         this.combatCountdownService.setServer(this.server);
+        this.combatService.setServer(this.server);
         this.combatCountdownService.on('timeout', (gameId: string) => {
             this.attackOnTimeOut(gameId);
         });
@@ -42,7 +42,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
-            const combat = this.serverCombatService.createCombat(data.gameId, player, data.opponent);
+            const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
             await client.join(combat.id);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
@@ -72,7 +72,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     @SubscribeMessage('startEvasion')
     async startEvasion(client: Socket, gameId: string): Promise<void> {
-        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        const combat = this.combatService.getCombatByGameId(gameId);
         if (combat) {
             if (client.id === combat.currentTurnSocketId) {
                 const evadingPlayer: Player = combat.challenger.socketId === client.id ? combat.challenger : combat.opponent;
@@ -84,7 +84,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 const evasionSuccess = Math.random() < 0.4;
                 if (evasionSuccess) {
                     const game = this.gameCreationService.getGameById(gameId);
-                    this.serverCombatService.updatePlayersInGame(game);
+                    this.combatService.updatePlayersInGame(game);
                     this.server.to(combat.id).emit('evasionSuccess', evadingPlayer);
                     this.journalService.logMessage(gameId, `Fin de combat. ${evadingPlayer.name} s'est évadé.`, [evadingPlayer.name]);
                     this.combatCountdownService.deleteCountdown(gameId);
@@ -92,7 +92,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.server.to(gameId).emit('combatFinishedByEvasion', { updatedGame: game, evadingPlayer: evadingPlayer });
                         this.gameCountdownService.resumeCountdown(gameId);
                         this.cleanupCombatRoom(combat.id);
-                        this.serverCombatService.deleteCombat(gameId);
+                        this.combatService.deleteCombat(gameId);
                     }, TIME_LIMIT_DELAY);
                 } else {
                     this.server.to(combat.id).emit('evasionFailed', evadingPlayer);
@@ -104,12 +104,12 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     attackOnTimeOut(gameId: string) {
-        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        const combat = this.combatService.getCombatByGameId(gameId);
         if (combat) {
             const attackingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const defendingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
 
-            const rollResult = this.serverCombatService.rollDice(attackingPlayer, defendingPlayer);
+            const rollResult = this.combatService.rollDice(attackingPlayer, defendingPlayer);
             this.server.to(combat.id).emit('diceRolled', {
                 attackDice: rollResult.attackDice,
                 defenseDice: rollResult.defenseDice,
@@ -120,11 +120,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 [attackingPlayer.name, defendingPlayer.name],
             );
 
-            if (this.serverCombatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
-                defendingPlayer.specs.life--;
-                defendingPlayer.specs.nLifeLost++;
-                attackingPlayer.specs.nLifeTaken++;
-                this.server.to(combat.id).emit('attackSuccess', defendingPlayer);
+            if (this.combatService.isAttackSuccess(attackingPlayer, defendingPlayer, rollResult)) {
+                this.combatService.handleAttackSuccess(attackingPlayer, defendingPlayer, combat.id);
                 this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${defendingPlayer.name}.`, [defendingPlayer.name]);
             } else {
                 this.server.to(combat.id).emit('attackFailure', defendingPlayer);
@@ -132,30 +129,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             }
 
             if (defendingPlayer.specs.life === 0) {
-                const game = this.gameCreationService.getGameById(gameId);
-                this.serverCombatService.combatWinStatsUpdate(attackingPlayer, gameId);
-                this.serverCombatService.sendBackToInitPos(defendingPlayer, game);
-                this.serverCombatService.updatePlayersInGame(game);
-
-                this.server.to(combat.id).emit('combatFinishedNormally', attackingPlayer);
-
-                this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
-                this.combatCountdownService.deleteCountdown(gameId);
-                setTimeout(() => {
-                    this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
-                    if (this.checkForGameWinner(game.id, attackingPlayer)) {
-                        this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: attackingPlayer });
-                        return;
-                    }
-                    if (game.currentTurn === attackingPlayer.turn) {
-                        this.gameCountdownService.resumeCountdown(gameId);
-                        this.server.to(attackingPlayer.socketId).emit('resumeTurnAfterCombatWin');
-                    } else {
-                        this.gameCountdownService.emit('timeout', gameId);
-                    }
-                    this.serverCombatService.deleteCombat(game.id);
-                    this.cleanupCombatRoom(combat.id);
-                }, TIME_LIMIT_DELAY);
+                this.handleCombatLost(defendingPlayer, attackingPlayer, gameId, combat.id);
             } else {
                 this.combatCountdownService.resetTimerSubscription(gameId);
                 this.prepareNextTurn(gameId);
@@ -163,24 +137,41 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         }
     }
 
-    checkForGameWinner(gameId: string, player: Player): boolean {
-        if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
-            if (player.specs.nVictories >= 3) {
-                this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: player });
-                return true;
+    handleCombatLost(defendingPlayer: Player, attackingPlayer: Player, gameId: string, combatId: string) {
+        const game = this.gameCreationService.getGameById(gameId);
+        this.combatService.combatWinStatsUpdate(attackingPlayer, gameId);
+        this.combatService.sendBackToInitPos(defendingPlayer, game);
+        this.combatService.updatePlayersInGame(game);
+
+        this.server.to(combatId).emit('combatFinishedNormally', attackingPlayer);
+
+        this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
+        this.combatCountdownService.deleteCountdown(gameId);
+        setTimeout(() => {
+            this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
+            if (this.combatService.checkForGameWinner(game.id, attackingPlayer)) {
+                this.server.to(gameId).emit('gameFinishedPlayerWon', { winner: attackingPlayer });
+                return;
             }
-        }
-        return false;
+            if (game.currentTurn === attackingPlayer.turn) {
+                this.gameCountdownService.resumeCountdown(gameId);
+                this.server.to(attackingPlayer.socketId).emit('resumeTurnAfterCombatWin');
+            } else {
+                this.gameCountdownService.emit('timeout', gameId);
+            }
+            this.combatService.deleteCombat(game.id);
+            this.cleanupCombatRoom(combatId);
+        }, TIME_LIMIT_DELAY);
     }
 
     prepareNextTurn(gameId: string) {
-        this.serverCombatService.updateTurn(gameId);
+        this.combatService.updateTurn(gameId);
         this.combatCountdownService.resetTimerSubscription(gameId);
         this.startCombatTurns(gameId);
     }
 
     startCombatTurns(gameId: string): void {
-        const combat = this.serverCombatService.getCombatByGameId(gameId);
+        const combat = this.combatService.getCombatByGameId(gameId);
         const game = this.gameCreationService.getGameById(gameId);
         if (combat) {
             this.server.to(combat.currentTurnSocketId).emit('yourTurnCombat');
@@ -214,17 +205,17 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 this.server.to(updatedGame.id).emit('playerLeft', updatedGame.players);
                 if (updatedGame.hasStarted) {
                     this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
-                    const combat = this.serverCombatService.getCombatByGameId(updatedGame.id);
+                    const combat = this.combatService.getCombatByGameId(updatedGame.id);
                     if (combat) {
                         (client.id === combat.challenger.socketId ? combat.challenger : combat.opponent).isActive = false;
                         const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
-                        this.serverCombatService.combatWinStatsUpdate(winner, updatedGame.id);
-                        this.serverCombatService.updatePlayersInGame(updatedGame);
+                        this.combatService.combatWinStatsUpdate(winner, updatedGame.id);
+                        this.combatService.updatePlayersInGame(updatedGame);
                         this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
                         this.combatCountdownService.deleteCountdown(updatedGame.id);
                         setTimeout(() => {
                             this.server.to(updatedGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
-                            if (this.checkForGameWinner(updatedGame.id, winner)) {
+                            if (this.combatService.checkForGameWinner(updatedGame.id, winner)) {
                                 this.server.to(updatedGame.id).emit('gameFinishedPlayerWon', { winner: winner });
                                 return;
                             }

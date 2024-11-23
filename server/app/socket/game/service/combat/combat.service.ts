@@ -4,15 +4,21 @@ import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Mode } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
+import { Server } from 'socket.io';
 import { N_WIN_VICTORIES } from '../../../../../constants/constants';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
-export class ServerCombatService {
+export class CombatService {
     private combatRooms: Record<string, Combat> = {};
+    server: Server;
 
     constructor(private gameCreationService: GameCreationService) {
         this.gameCreationService = gameCreationService;
+    }
+
+    setServer(server: Server) {
+        this.server = server;
     }
 
     createCombat(gameId: string, challenger: Player, opponent: Player): Combat {
@@ -51,6 +57,13 @@ export class ServerCombatService {
         const attackTotal = attackPlayer.specs.attack + rollResult.attackDice;
         const defendTotal = opponent.specs.defense + rollResult.defenseDice;
         return attackTotal - defendTotal > 0;
+    }
+
+    handleAttackSuccess(attackingPlayer: Player, defendingPlayer: Player, combatId: string) {
+        defendingPlayer.specs.life--;
+        defendingPlayer.specs.nLifeLost++;
+        attackingPlayer.specs.nLifeTaken++;
+        this.server.to(combatId).emit('attackSuccess', defendingPlayer);
     }
 
     updateTurn(gameId: string): void {
