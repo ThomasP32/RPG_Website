@@ -35,6 +35,9 @@ describe('SocketService', () => {
         const event = 'testEvent';
         const mockData = { message: 'Hello' };
 
+        /* The data parameter is included to match the expected callback signature of 
+        (data: any) => void for compatibility with the real socket.on method.
+        It is not used because the test relies on predefined mockData to ensure controlled behavior.*/
         /* eslint-disable no-unused-vars */
         mockSocket.on.and.callFake((eventName: string, callback: (data: any) => void) => {
             if (eventName === event) {

@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@app/interfaces/moves';
+import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
@@ -14,6 +14,7 @@ import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
+import { GamePageActiveView } from '@common/game-page';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -179,13 +180,13 @@ describe('GamePageComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should toggle view to journal', () => {
-        component.toggleView('journal');
-        expect(component.activeView).toBe('journal');
+        component.toggleView(GamePageActiveView.Journal);
+        expect(component.activeView).toBe(GamePageActiveView.Journal);
     });
 
     it('should toggle view to chat', () => {
-        component.toggleView('chat');
-        expect(component.activeView).toBe('chat');
+        component.toggleView(GamePageActiveView.Chat);
+        expect(component.activeView).toBe(GamePageActiveView.Chat);
     });
 
     it('should initialize player preview on init', () => {

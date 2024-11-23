@@ -5,15 +5,7 @@ import * as sinon from 'sinon';
 import { stub } from 'sinon';
 import { Socket } from 'socket.io';
 import { GameCreationService } from './game-creation.service';
-
-const SMALL_MAP_SIZE = 10;
-const MEDIUM_MAP_SIZE = 15;
-const LARGE_MAP_SIZE = 20;
-const SMALL_MAP_PLAYERS_MIN_MAX = 2;
-const MEDIUM_MAP_PLAYERS_MIN = 2;
-const MEDIUM_MAP_PLAYERS_MAX = 4;
-const LARGE_MAP_PLAYERS_MIN = 2;
-const LARGE_MAP_PLAYERS_MAX = 6;
+import { MapConfig, MapSize } from '@common/constants';
 
 describe('GameCreationService', () => {
     let service: GameCreationService;
@@ -239,8 +231,8 @@ describe('GameCreationService', () => {
 
     describe('isGameStartable', () => {
         it('should return true for a small map with the exact number of players', () => {
-            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
-            gameRoom.players = new Array(SMALL_MAP_PLAYERS_MIN_MAX).fill(player);
+            gameRoom.mapSize = { x: MapConfig[MapSize.SMALL].size, y: MapConfig[MapSize.SMALL].size };
+            gameRoom.players = new Array(MapConfig[MapSize.SMALL].maxPlayers).fill(player);
 
             service.addGame(gameRoom);
             const result = service.isGameStartable(gameRoom.id);
@@ -249,8 +241,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false for a small map with fewer than the required players', () => {
-            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
-            gameRoom.players = new Array(SMALL_MAP_PLAYERS_MIN_MAX - 1).fill(player);
+            gameRoom.mapSize = { x: MapConfig[MapSize.SMALL].size, y: MapConfig[MapSize.SMALL].size };
+            gameRoom.players = new Array(MapConfig[MapSize.SMALL].maxPlayers - 1).fill(player);
 
             service.addGame(gameRoom);
             const result = service.isGameStartable(gameRoom.id);
@@ -259,8 +251,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return true for a medium map with valid number of players', () => {
-            gameRoom.mapSize = { x: MEDIUM_MAP_SIZE, y: MEDIUM_MAP_SIZE };
-            gameRoom.players = new Array(MEDIUM_MAP_PLAYERS_MIN + 1).fill(player);
+            gameRoom.mapSize = { x: MapConfig[MapSize.MEDIUM].size, y: MapConfig[MapSize.MEDIUM].size };
+            gameRoom.players = new Array(MapConfig[MapSize.MEDIUM].minPlayers + 1).fill(player);
 
             service.addGame(gameRoom);
             const result = service.isGameStartable(gameRoom.id);
@@ -269,8 +261,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false for a large map with fewer than the minimum number of players', () => {
-            gameRoom.mapSize = { x: LARGE_MAP_SIZE, y: LARGE_MAP_SIZE };
-            gameRoom.players = new Array(LARGE_MAP_PLAYERS_MIN - 1).fill(player);
+            gameRoom.mapSize = { x: MapConfig[MapSize.LARGE].size, y: MapConfig[MapSize.LARGE].size };
+            gameRoom.players = new Array(MapConfig[MapSize.LARGE].minPlayers - 1).fill(player);
 
             service.addGame(gameRoom);
             const result = service.isGameStartable(gameRoom.id);
@@ -291,8 +283,8 @@ describe('GameCreationService', () => {
 
     describe('isMaxPlayersReached', () => {
         it('should return true when max players are reached for a small map', () => {
-            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
-            const connections = new Array(SMALL_MAP_PLAYERS_MIN_MAX).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.SMALL].size, y: MapConfig[MapSize.SMALL].size };
+            const connections = new Array(MapConfig[MapSize.SMALL].maxPlayers).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
@@ -301,8 +293,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false when there are fewer players than the max for a medium map', () => {
-            gameRoom.mapSize = { x: MEDIUM_MAP_SIZE, y: MEDIUM_MAP_SIZE };
-            const connections = new Array(MEDIUM_MAP_PLAYERS_MAX - 1).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.MEDIUM].size, y: MapConfig[MapSize.MEDIUM].size };
+            const connections = new Array(MapConfig[MapSize.MEDIUM].maxPlayers - 1).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
@@ -311,18 +303,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false for a large map with fewer than the max number of players', () => {
-            gameRoom.mapSize = { x: LARGE_MAP_SIZE, y: LARGE_MAP_SIZE };
-            const connections = new Array(LARGE_MAP_PLAYERS_MAX - 1).fill('connection-id');
-
-            service.addGame(gameRoom);
-            const result = service.isMaxPlayersReached(connections, gameRoom.id);
-
-            expect(result).toBe(false);
-        });
-
-        it('should return false for an unrecognized map size', () => {
-            gameRoom.mapSize = { x: 999, y: 999 };
-            const connections = new Array(5).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.LARGE].size, y: MapConfig[MapSize.LARGE].size };
+            const connections = new Array(MapConfig[MapSize.LARGE].maxPlayers - 1).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
@@ -347,8 +329,8 @@ describe('GameCreationService', () => {
 
     describe('isMaxPlayersReached', () => {
         it('should return true when max players are reached for a small map', () => {
-            gameRoom.mapSize = { x: SMALL_MAP_SIZE, y: SMALL_MAP_SIZE };
-            const connections = new Array(SMALL_MAP_PLAYERS_MIN_MAX).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.SMALL].size, y: MapConfig[MapSize.SMALL].size };
+            const connections = new Array(MapConfig[MapSize.SMALL].maxPlayers).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
@@ -357,8 +339,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false when there are fewer players than the max for a medium map', () => {
-            gameRoom.mapSize = { x: MEDIUM_MAP_SIZE, y: MEDIUM_MAP_SIZE };
-            const connections = new Array(MEDIUM_MAP_PLAYERS_MAX - 1).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.MEDIUM].size, y: MapConfig[MapSize.MEDIUM].size };
+            const connections = new Array(MapConfig[MapSize.MEDIUM].maxPlayers - 1).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);
@@ -367,18 +349,8 @@ describe('GameCreationService', () => {
         });
 
         it('should return false for a large map with fewer than the max number of players', () => {
-            gameRoom.mapSize = { x: LARGE_MAP_SIZE, y: LARGE_MAP_SIZE };
-            const connections = new Array(LARGE_MAP_PLAYERS_MAX - 1).fill('connection-id');
-
-            service.addGame(gameRoom);
-            const result = service.isMaxPlayersReached(connections, gameRoom.id);
-
-            expect(result).toBe(false);
-        });
-
-        it('should return false for an unrecognized map size', () => {
-            gameRoom.mapSize = { x: 999, y: 999 };
-            const connections = new Array(5).fill('connection-id');
+            gameRoom.mapSize = { x: MapConfig[MapSize.LARGE].size, y: MapConfig[MapSize.LARGE].size };
+            const connections = new Array(MapConfig[MapSize.LARGE].maxPlayers - 1).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);

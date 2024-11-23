@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Game, GameCtf, Player, Specs } from '@common/game';
-import { Map } from '@common/map.types';
+import { Map, Mode } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
 
@@ -163,6 +163,7 @@ describe('GameService', () => {
                 isLocked: false,
                 hasStarted: false,
                 nPlayersCtf: 0,
+                mode: Mode.Ctf,
             };
 
             const result = service.createNewCtfGame(mockMap, gameId);

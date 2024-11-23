@@ -1,4 +1,4 @@
-import { Coordinate, ItemCategory, Map } from '@common/map.types';
+import { Coordinate, ItemCategory, Map, Mode } from '@common/map.types';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -65,7 +65,7 @@ export interface Player {
     visitedTiles: Coordinate[];
 }
 
-export interface Game extends Map {
+export interface GameClassic extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
@@ -78,6 +78,9 @@ export interface Game extends Map {
     hasStarted: boolean;
 }
 
-export interface GameCtf extends Game {
+export interface GameCtf extends GameClassic {
+    mode: Mode.Ctf;
     nPlayersCtf: number;
 }
+
+export type Game = GameClassic | GameCtf

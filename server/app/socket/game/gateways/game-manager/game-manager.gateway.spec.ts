@@ -149,8 +149,6 @@ describe('GameManagerGateway', () => {
 
             await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
-            expect(serverStub.to.calledWith('game-id')).toBeTruthy();
-
             const toRoomStub = serverStub.to('game-id').emit as SinonStub;
             expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 

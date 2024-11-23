@@ -3,7 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { JoinGameModalComponent } from '@app/components/join-game-modal/join-game-modal.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { JournalComponent } from '../../components/journal/journal.component';
-/* eslint-disable no-unused-vars */
 @Component({
     selector: 'app-main-page',
     standalone: true,
@@ -20,7 +19,10 @@ export class HomePageComponent implements OnInit {
     constructor(
         private router: Router,
         public socketService: SocketService,
-    ) {}
+    ) {
+        this.router = router;
+        this.socketService = socketService;
+    }
     ngOnInit(): void {
         this.connect();
     }

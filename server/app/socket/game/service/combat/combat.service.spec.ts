@@ -1,10 +1,11 @@
 import { Bonus, Game, Player, Specs } from '@common/game';
 import { Mode } from '@common/map.types';
+import { Server } from 'socket.io';
 import { GameCreationService } from '../game-creation/game-creation.service';
-import { ServerCombatService } from './combat.service';
+import { CombatService } from './combat.service';
 
 describe('ServerCombatService', () => {
-    let service: ServerCombatService;
+    let service: CombatService;
     let gameCreationService: GameCreationService;
 
     beforeEach(() => {
@@ -22,7 +23,7 @@ describe('ServerCombatService', () => {
             }),
         } as unknown as GameCreationService;
 
-        service = new ServerCombatService(gameCreationService);
+        service = new CombatService(gameCreationService);
     });
 
     const challenger: Player = {
@@ -214,4 +215,92 @@ describe('ServerCombatService', () => {
 
         expect(result).toBe(false);
     });
+
+    describe('handleAttackSuccess', () => {
+        const combatId = 'combat-id';
+        const attackingPlayer: Player = {
+            socketId: 'attacker-id',
+            specs: {
+                life: 3,
+                speed: 5,
+                attack: 4,
+                defense: 3,
+                attackBonus: Bonus.D6,
+                defenseBonus: Bonus.D4,
+                evasions: 1,
+                nLifeLost: 0,
+                nLifeTaken: 0,
+                nVictories: 0,
+                nDefeats: 0,
+                nCombats: 0,
+            } as Specs,
+            position: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
+        } as Player;
+
+        const defendingPlayer: Player = {
+            socketId: 'defender-id',
+            specs: {
+                life: 3,
+                speed: 4,
+                attack: 3,
+                defense: 2,
+                attackBonus: Bonus.D4,
+                defenseBonus: Bonus.D6,
+                evasions: 2,
+                nLifeLost: 0,
+                nLifeTaken: 0,
+                nVictories: 0,
+                nDefeats: 0,
+                nCombats: 0,
+            } as Specs,
+            position: { x: 1, y: 1 },
+            initialPosition: { x: 1, y: 1 },
+        } as Player;
+
+        let mockServer: jest.Mocked<Server>;
+
+        beforeEach(() => {
+            mockServer = {
+                to: jest.fn().mockReturnThis(),
+                emit: jest.fn(),
+            } as unknown as jest.Mocked<Server>;
+
+            service.server = mockServer;
+        });
+
+        it('should decrement the defending player’s life', () => {
+            service.handleAttackSuccess(attackingPlayer, defendingPlayer, combatId);
+
+            expect(defendingPlayer.specs.life).toBe(2);
+            expect(defendingPlayer.specs.nLifeLost).toBe(1);
+            expect(attackingPlayer.specs.nLifeTaken).toBe(1);
+        });
+    });
+    describe('setServer', () => {
+        let mockServer: jest.Mocked<Server>;
+    
+        beforeEach(() => {
+            mockServer = {
+                to: jest.fn().mockReturnThis(),
+                emit: jest.fn(),
+            } as unknown as jest.Mocked<Server>;
+        });
+    
+        it('should set the server instance', () => {
+            service.setServer(mockServer);
+    
+            expect(service.server).toBe(mockServer);
+        });
+    
+        it('should allow the server to emit events after being set', () => {
+            service.setServer(mockServer);
+    
+            service.server.to('combat-room').emit('testEvent', { key: 'value' });
+    
+            expect(mockServer.to).toHaveBeenCalledWith('combat-room');
+            expect(mockServer.to('combat-room').emit).toHaveBeenCalledWith('testEvent', { key: 'value' });
+        });
+    });
+    
 });
