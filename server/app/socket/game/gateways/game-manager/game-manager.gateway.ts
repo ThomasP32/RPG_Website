@@ -63,11 +63,12 @@ export class GameManagerGateway implements OnGatewayInit {
 
             const isOnIceTile = this.gameManagerService.onIceTile(player, game.id);
             const onItem = this.gameManagerService.onItem(player, game.id);
-            if (isOnIceTile && !wasOnIceTile) {
+            const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+            if (isOnIceTile && !wasOnIceTile && !hasSkates) {
                 player.specs.attack -= 2;
                 player.specs.defense -= 2;
                 wasOnIceTile = true;
-            } else if (!isOnIceTile && wasOnIceTile) {
+            } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
                 player.specs.attack += 2;
                 player.specs.defense += 2;
                 wasOnIceTile = false;

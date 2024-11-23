@@ -30,7 +30,6 @@ export class GameGateway {
                 return;
             }
             game = this.gameCreationService.addPlayerToGame(data.player, data.gameId);
-            game = this.gameCreationService.addRandomItemsToGame(data.gameId);
             if (this.gameCreationService.isMaxPlayersReached(game.players, data.gameId)) {
                 this.gameCreationService.lockGame(data.gameId);
             }
