@@ -9,7 +9,7 @@ import { EventEmitter } from 'stream';
 @Injectable()
 export class CombatCountdownService extends EventEmitter {
     private server: Server;
-    private countdowns: Map<string, Countdown> = new Map();
+    private readonly countdowns: Map<string, Countdown> = new Map();
 
     setServer(server: Server) {
         this.server = server;
@@ -48,13 +48,6 @@ export class CombatCountdownService extends EventEmitter {
         });
     }
 
-    resetCountdown(id: string): void {
-        const countdown = this.countdowns.get(id);
-        if (countdown) {
-            countdown.remaining = countdown.duration;
-            this.resetTimerSubscription(id);
-        }
-    }
 
     resetTimerSubscription(id: string): void {
         const countdown = this.countdowns.get(id);
