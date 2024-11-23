@@ -1,4 +1,4 @@
-import { CommonModule, NgFor } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-chatroom',
     standalone: true,
-    imports: [FormsModule, NgFor, CommonModule],
+    imports: [FormsModule, CommonModule],
     templateUrl: './chatroom.component.html',
     styleUrl: './chatroom.component.scss',
 })
@@ -24,8 +24,8 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     isGamePage: boolean;
 
     constructor(
-        public socketService: SocketService,
-        private router: Router,
+        public readonly socketService: SocketService,
+        private readonly router: Router,
     ) {
         this.socketService = socketService;
         this.router = router;

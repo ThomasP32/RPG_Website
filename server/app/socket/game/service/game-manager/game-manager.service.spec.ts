@@ -543,4 +543,32 @@ describe('GameManagerService', () => {
             expect(result).toBe(false);
         });
     });
+
+    describe('updatePlayerActions', () => {
+        it('should decrement player actions if the player exists', () => {
+            const playerSocketId = 'player-1';
+            const initialActions = game2.players[0].specs.actions;
+    
+            gameManagerService.updatePlayerActions('game-1', playerSocketId);
+    
+            expect(game2.players[0].specs.actions).toBe(initialActions - 1);
+        });
+    
+        it('should not throw an error if the player does not exist', () => {
+            const nonExistentSocketId = 'nonexistent-socket-id';
+            expect(() => {
+                gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
+            }).not.toThrow();
+        });
+    
+        it('should not decrement actions if the player does not exist', () => {
+            const nonExistentSocketId = 'nonexistent-socket-id';
+            const initialActions = game2.players[0].specs.actions;
+    
+            gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
+    
+            expect(game2.players[0].specs.actions).toBe(initialActions);
+        });
+    });
+    
 });

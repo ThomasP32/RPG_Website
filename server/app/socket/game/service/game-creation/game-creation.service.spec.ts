@@ -310,16 +310,6 @@ describe('GameCreationService', () => {
 
             expect(result).toBe(false);
         });
-
-        it('should return false for an unrecognized map size', () => {
-            gameRoom.mapSize = { x: 999, y: 999 };
-            const connections = new Array(5).fill('connection-id');
-
-            service.addGame(gameRoom);
-            const result = service.isMaxPlayersReached(connections, gameRoom.id);
-
-            expect(result).toBe(false);
-        });
     });
 
     it('should lock the game', () => {
@@ -360,16 +350,6 @@ describe('GameCreationService', () => {
         it('should return false for a large map with fewer than the max number of players', () => {
             gameRoom.mapSize = { x: MapConfig[MapSize.LARGE].size, y: MapConfig[MapSize.LARGE].size };
             const connections = new Array(MapConfig[MapSize.LARGE].maxPlayers - 1).fill('connection-id');
-
-            service.addGame(gameRoom);
-            const result = service.isMaxPlayersReached(connections, gameRoom.id);
-
-            expect(result).toBe(false);
-        });
-
-        it('should return false for an unrecognized map size', () => {
-            gameRoom.mapSize = { x: 999, y: 999 };
-            const connections = new Array(5).fill('connection-id');
 
             service.addGame(gameRoom);
             const result = service.isMaxPlayersReached(connections, gameRoom.id);

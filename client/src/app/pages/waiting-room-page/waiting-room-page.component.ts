@@ -26,13 +26,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     constructor(
         private communicationMapService: CommunicationMapService,
-        private gameService: GameService,
-        private characterService: CharacterService,
-        private playerService: PlayerService,
-        private socketService: SocketService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private mapConversionService: MapConversionService,
+        private readonly gameService: GameService,
+        private readonly characterService: CharacterService,
+        private readonly playerService: PlayerService,
+        private readonly socketService: SocketService,
+        private readonly route: ActivatedRoute,
+        private readonly router: Router,
+        private readonly mapConversionService: MapConversionService,
     ) {
         this.communicationMapService = communicationMapService;
         this.gameService = gameService;

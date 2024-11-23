@@ -25,7 +25,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     tooltipX: number = 0;
     tooltipY: number = 0;
 
-    constructor(private imageService: ImageService) {
+    constructor(private readonly imageService: ImageService) {
         this.imageService = imageService;
     }
 

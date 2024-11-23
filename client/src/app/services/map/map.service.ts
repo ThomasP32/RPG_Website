@@ -27,8 +27,8 @@ export class MapService {
     removeStartingPoint$ = this.removeStartingPointSource.asObservable();
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private router: Router,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly router: Router,
     ) {
         this.communicationMapService = communicationMapService;
         this.router = router;

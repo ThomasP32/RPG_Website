@@ -7,7 +7,7 @@ import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class GameManagerService {
-    @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);

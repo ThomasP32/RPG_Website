@@ -11,8 +11,8 @@ export class GameService {
     game: Game;
 
     constructor(
-        private socketService: SocketService,
-        private playerService: PlayerService,
+        private readonly socketService: SocketService,
+        private readonly playerService: PlayerService,
     ) {
         this.socketService = socketService;
         this.playerService = playerService;

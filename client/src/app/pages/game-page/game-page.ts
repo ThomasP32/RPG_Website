@@ -76,15 +76,15 @@ export class GamePageComponent implements OnInit {
     gameMapComponent: GameMapComponent;
 
     constructor(
-        private router: Router,
-        private socketService: SocketService,
-        private characterService: CharacterService,
-        private playerService: PlayerService,
-        private gameService: GameService,
-        private gameTurnService: GameTurnService,
-        private countDownService: CountdownService,
-        private combatService: CombatService,
-        protected imageService: ImageService,
+        private readonly router: Router,
+        private readonly socketService: SocketService,
+        private readonly characterService: CharacterService,
+        private readonly playerService: PlayerService,
+        private readonly gameService: GameService,
+        private readonly gameTurnService: GameTurnService,
+        private readonly countDownService: CountdownService,
+        private readonly combatService: CombatService,
+        protected readonly imageService: ImageService,
     ) {
         this.router = router;
         this.socketService = socketService;
