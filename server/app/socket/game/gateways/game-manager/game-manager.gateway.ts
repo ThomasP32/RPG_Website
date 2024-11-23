@@ -51,9 +51,6 @@ export class GameManagerGateway implements OnGatewayInit {
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
         if (this.gameManagerService.onIceTile(player, game.id)) wasOnIceTile = true;
         if (moves.length === 0) return;
-
-        moves.shift();
-        console.log(moves);
         const gameFinished = await this.movePlayer(moves, game, wasOnIceTile, player);
 
         if (!gameFinished) {
@@ -187,7 +184,6 @@ export class GameManagerGateway implements OnGatewayInit {
         for (const move of moves) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
             const onItem = this.gameManagerService.onItem(player, game.id);
-            console.log(player.inventory);
             if (onItem) {
                 this.gameManagerService.pickUpItem(move, game.id, player);
                 if (player.inventory.length > 2) {
