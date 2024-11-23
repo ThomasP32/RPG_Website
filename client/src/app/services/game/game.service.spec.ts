@@ -162,7 +162,7 @@ describe('GameService', () => {
                 debug: false,
                 isLocked: false,
                 hasStarted: false,
-                nPlayersCtf: 0,
+                nPlayersCtf: [],
                 mode: Mode.Ctf,
             };
 

@@ -80,7 +80,7 @@ export interface GameClassic extends Map {
 
 export interface GameCtf extends GameClassic {
     mode: Mode.Ctf;
-    nPlayersCtf: number;
+    nPlayersCtf: Player[];
 }
 
-export type Game = GameClassic | GameCtf
+export type Game = GameClassic | GameCtf;

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MAX_CHAR, MINUTE, PERCENTAGE } from '@common/constants';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
 import { Coordinate } from '@common/map.types';
 
 interface HTMLTableRowElement extends HTMLElement {
@@ -50,6 +50,14 @@ export class EndgameService {
             return 0;
         }
         return Math.floor((openedDoors / totalDoors) * PERCENTAGE);
+    }
+
+    getFlagPickupPlayers(game: GameCtf): number {
+        const uniquePlayers = new Set<string>();
+        game.nPlayersCtf.forEach((player: Player) => {
+            uniquePlayers.add(player.socketId);
+        });
+        return uniquePlayers.size;
     }
 
     sortTable(n: number): void {
