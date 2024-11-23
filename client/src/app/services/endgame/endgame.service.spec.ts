@@ -57,7 +57,7 @@ describe('EndgameService', () => {
         mode: Mode.Classic,
         nTurns: 0,
         debug: false,
-        nDoorsManipulated: [],
+        nDoorsManipulated: [{ x: 1, y: 2 }],
         duration: 0,
         isLocked: true,
         name: 'game',
@@ -108,6 +108,63 @@ describe('EndgameService', () => {
         it('should calculate percentage of unique tiles visited by all players', () => {
             const percentage = service.gameTilePercentage(mockGame);
             expect(percentage).toBe(1);
+        });
+    });
+
+    describe('gameDoorPercentage', () => {
+        it('should calculate percentage of doors opened', () => {
+            const percentage = service.gameDoorPercentage(mockGame);
+            expect(percentage).toBe(50);
+        });
+    });
+
+    describe('sortTable', () => {
+        it('should not sort table if no table', () => {
+            service.sortTable(0);
+            expect(service.isSortingAsc).toBe(false);
+        });
+        it('should sort table by column', () => {
+            const table = document.createElement('table');
+            table.id = 'stats-table';
+            const row = table.insertRow();
+            row.insertCell(0).innerHTML = '1';
+            row.insertCell(1).innerHTML = '2';
+            row.insertCell(2).innerHTML = '3';
+            document.body.appendChild(table);
+            service.sortTable(1);
+            expect(service.isSortingAsc).toBe(false);
+            expect(table.rows[0].cells[0].innerHTML).toBe('1');
+            document.body.removeChild(table);
+        });
+        describe('sortTable', () => {
+            it('should sort table by column in ascending order', () => {
+                const table = document.createElement('table');
+                table.id = 'stats-table';
+                const rows = [
+                    ['A', '10'],
+                    ['C', '5'],
+                    ['B', '15'],
+                ];
+
+                rows.forEach((row) => {
+                    const tr = document.createElement('tr');
+                    row.forEach((cellText) => {
+                        const td = document.createElement('td');
+                        td.textContent = cellText;
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                });
+                document.body.appendChild(table);
+
+                service.sortTable(1);
+
+                const sortedRows = table.rows;
+                expect(sortedRows[1].cells[1].textContent).toBe('5');
+                expect(sortedRows[2].cells[1].textContent).toBe('15');
+
+                document.body.removeChild(table);
+            });
         });
     });
 });

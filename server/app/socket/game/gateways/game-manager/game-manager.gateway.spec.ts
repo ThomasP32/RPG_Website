@@ -596,6 +596,7 @@ describe('GameManagerGateway', () => {
             gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
 
             expect(doorTile.isOpened).toBe(true);
+            expect(game.nDoorsManipulated).toContainEqual(doorTile.coordinate);
 
             expect(serverStub.to.calledWith(gameId)).toBeTruthy();
             const toRoomStub = serverStub.to(gameId).emit as SinonStub;

@@ -11,7 +11,7 @@ interface HTMLTableRowElement extends HTMLElement {
     providedIn: 'root',
 })
 export class EndgameService {
-    isSortingAsc: Boolean = true;
+    isSortingAsc: boolean = true;
 
     constructor() {}
 
@@ -46,11 +46,13 @@ export class EndgameService {
             uniqueOpenedDoors.add(`${door.x},${door.y}`);
         });
         const openedDoors = uniqueOpenedDoors.size;
+        if (totalDoors === 0) {
+            return 0;
+        }
         return Math.floor((openedDoors / totalDoors) * PERCENTAGE);
     }
 
     sortTable(n: number): void {
-        console.log('Sorting table by column', n);
         this.isSortingAsc = !this.isSortingAsc;
         let table: HTMLTableElement | null = document.getElementById('stats-table') as HTMLTableElement;
         if (!table) {
@@ -58,53 +60,46 @@ export class EndgameService {
             return;
         }
 
-        let switching: boolean = true;
-        let shouldSwitch: boolean = false;
-        let switchCount: number = 0;
         let rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
-        let x: HTMLTableCellElement;
-        let y: HTMLTableCellElement;
-        let i: number;
+        let switching: boolean = true;
+        let switchCount: number = 0;
 
         while (switching) {
             switching = false;
-
-            for (i = 1; i < rows.length - 1; i++) {
-                shouldSwitch = false;
-
-                x = rows[i].getElementsByTagName('td')[n] as HTMLTableCellElement;
-                y = rows[i + 1].getElementsByTagName('td')[n] as HTMLTableCellElement;
-
-                if (!x || !y) {
-                    console.error(`Invalid cell at row ${i}`);
-                    continue;
-                }
-
-                if (this.isSortingAsc) {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-
-            if (shouldSwitch) {
-                const parent = rows[i].parentNode;
-                if (parent) {
-                    parent.insertBefore(rows[i + 1], rows[i]);
+            for (let i = 1; i < rows.length - 1; i++) {
+                if (this.shouldSwitch(rows, i, n)) {
+                    this.switchRows(rows, i);
                     switching = true;
                     switchCount++;
-                }
-            } else {
-                if (switchCount === 0 && this.isSortingAsc) {
-                    switching = true;
+                    break;
                 }
             }
+            if (switchCount === 0 && this.isSortingAsc) {
+                switching = true;
+            }
+        }
+    }
+
+    private shouldSwitch(rows: HTMLCollectionOf<HTMLTableRowElement>, i: number, n: number): boolean {
+        let x = rows[i].getElementsByTagName('td')[n];
+        let y = rows[i + 1].getElementsByTagName('td')[n];
+
+        if (!x || !y) {
+            console.error(`Invalid cell at row ${i}`);
+            return false;
+        }
+
+        if (this.isSortingAsc) {
+            return x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase();
+        } else {
+            return x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase();
+        }
+    }
+
+    private switchRows(rows: HTMLCollectionOf<HTMLTableRowElement>, i: number): void {
+        const parent = rows[i].parentNode;
+        if (parent) {
+            parent.insertBefore(rows[i + 1], rows[i]);
         }
     }
 }

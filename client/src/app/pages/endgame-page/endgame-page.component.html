@@ -43,7 +43,7 @@
             <tbody>
                 @for (gamePlayer of players; track gamePlayer.socketId) {
                 <tr>
-                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" /></td>
+                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" alt="avatar" /></td>
                     <td>{{ gamePlayer.name }}</td>
                     <td>{{ gamePlayer.specs.nCombats }}</td>
                     <td>{{ gamePlayer.specs.nEvasions }}</td>

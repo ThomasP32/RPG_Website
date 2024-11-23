@@ -38,6 +38,7 @@ export class ProfileModalComponent implements OnInit {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const virtualPlayer: Player = {
             name: '',
@@ -115,6 +116,7 @@ export class ProfileModalComponent implements OnInit {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const virtualPlayer: Player = {
             name: this.virtualPlayer.name,
