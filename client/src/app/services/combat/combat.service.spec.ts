@@ -1,9 +1,9 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { Subject, take } from 'rxjs';
-import { CombatService } from './combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { Player } from '@common/game';
+import { Subject, take } from 'rxjs';
+import { CombatService } from './combat.service';
 
 describe('CombatService', () => {
     let service: CombatService;
@@ -73,10 +73,10 @@ describe('CombatService', () => {
 
             combatStartedSubject.next({ challenger: mockPlayer, opponent: mockOpponent });
 
-            service.opponent$.pipe(take(1)).subscribe(opponent => {
+            service.opponent$.pipe(take(1)).subscribe((opponent) => {
                 expect(opponent).toEqual(mockOpponent);
             });
-            service.isCombatModalOpen$.pipe(take(1)).subscribe(isOpen => {
+            service.isCombatModalOpen$.pipe(take(1)).subscribe((isOpen) => {
                 expect(isOpen).toBeTrue();
             });
         });
@@ -89,10 +89,10 @@ describe('CombatService', () => {
 
             combatStartedSubject.next({ challenger: mockOpponent, opponent: mockPlayer });
 
-            service.opponent$.pipe(take(1)).subscribe(opponent => {
+            service.opponent$.pipe(take(1)).subscribe((opponent) => {
                 expect(opponent).toEqual(mockOpponent);
             });
-            service.isCombatModalOpen$.pipe(take(1)).subscribe(isOpen => {
+            service.isCombatModalOpen$.pipe(take(1)).subscribe((isOpen) => {
                 expect(isOpen).toBeTrue();
             });
         });
@@ -108,7 +108,7 @@ describe('CombatService', () => {
             combatFinishedSubject.next(mockPlayer);
             tick(3000); // Simulate 3 seconds delay
 
-            service.isCombatModalOpen$.pipe(take(1)).subscribe(isOpen => {
+            service.isCombatModalOpen$.pipe(take(1)).subscribe((isOpen) => {
                 expect(isOpen).toBeFalse();
             });
         }));
@@ -124,7 +124,7 @@ describe('CombatService', () => {
             evasionSuccessSubject.next(mockPlayer);
             tick(3000); // Simulate 3 seconds delay
 
-            service.isCombatModalOpen$.pipe(take(1)).subscribe(isOpen => {
+            service.isCombatModalOpen$.pipe(take(1)).subscribe((isOpen) => {
                 expect(isOpen).toBeFalse();
             });
         }));
@@ -138,7 +138,7 @@ describe('CombatService', () => {
             evasionFailedSubject.next(mockPlayer);
 
             expect(playerServiceSpy.setPlayer).toHaveBeenCalledWith(mockPlayer);
-            service.opponent$.pipe(take(1)).subscribe(opponent => {
+            service.opponent$.pipe(take(1)).subscribe((opponent) => {
                 expect(opponent).toEqual(service.defaultPlayer);
             });
         });
@@ -151,7 +151,7 @@ describe('CombatService', () => {
 
             evasionFailedSubject.next(mockOpponent);
 
-            service.opponent$.pipe(take(1)).subscribe(opponent => {
+            service.opponent$.pipe(take(1)).subscribe((opponent) => {
                 expect(opponent).toEqual(mockOpponent);
             });
             expect(playerServiceSpy.setPlayer).not.toHaveBeenCalled();

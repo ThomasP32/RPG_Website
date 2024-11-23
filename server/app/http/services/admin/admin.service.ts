@@ -260,9 +260,9 @@ export class AdminService {
     }
 
     private areItemsPlaced(items: ItemDto[], mapSize: CoordinateDto): boolean {
-        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && items.length === MapConfig[MapSize.SMALL].nbItems;
-        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length === MapConfig[MapSize.MEDIUM].nbItems;
-        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && items.length === MapConfig[MapSize.LARGE].nbItems;
+        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && items.length >= MapConfig[MapSize.SMALL].nbItems;
+        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length >= MapConfig[MapSize.MEDIUM].nbItems;
+        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && items.length >= MapConfig[MapSize.LARGE].nbItems;
         return isSmallMapTilesPlaced || isMediumMapTilesPlaced || isLargeMapTilesPlaced;
     }
 

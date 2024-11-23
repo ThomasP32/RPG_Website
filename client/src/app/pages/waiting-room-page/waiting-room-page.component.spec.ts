@@ -159,6 +159,7 @@ describe('WaitingRoomPageComponent', () => {
 
         fixture = TestBed.createComponent(WaitingRoomPageComponent);
         component = fixture.componentInstance;
+
         fixture.detectChanges();
     });
 
@@ -250,6 +251,21 @@ describe('WaitingRoomPageComponent', () => {
         });
     });
 
+    it('should handle gameLockToggled event correctly and update isGameLocked', () => {
+        component.isGameLocked = false;
+        gameLockToggled$.next({ isLocked: true });
+
+        fixture.detectChanges();
+
+        expect(component.isGameLocked).toBeTrue();
+
+        gameLockToggled$.next({ isLocked: false });
+
+        fixture.detectChanges();
+
+        expect(component.isGameLocked).toBeFalse();
+    });
+
     it('should handle gameInitialized event correctly and update the game state', () => {
         const mockGame = {
             id: '1234',
@@ -282,6 +298,12 @@ describe('WaitingRoomPageComponent', () => {
         expect(component.navigateToGamePage).toHaveBeenCalled();
     });
 
+    it('should send initializeGame message when startGame is called', () => {
+        component.waitingRoomCode = '1234';
+        component.startGame();
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('initializeGame', '1234');
+    });
+
     it('should handle playerJoined event correctly', () => {
         const mockPlayers = [
             mockPlayer,
@@ -308,6 +330,16 @@ describe('WaitingRoomPageComponent', () => {
 
         expect(component.activePlayers).toEqual(mockPlayers);
         expect(component.numberOfPlayers).toEqual(mockPlayers.length);
+    });
+
+    it('should set showProfileModal to true when openProfileModal is called', () => {
+        component.openProfileModal();
+        expect(component.showProfileModal).toBeTrue();
+    });
+
+    it('should set showProfileModal to false when closeProfileModal is called', () => {
+        component.closeProfileModal();
+        expect(component.showProfileModal).toBeFalse();
     });
 
     afterEach(() => {
