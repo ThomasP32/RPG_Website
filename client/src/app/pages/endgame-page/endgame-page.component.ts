@@ -19,14 +19,12 @@ import { Subscription } from 'rxjs';
 export class EndgamePageComponent implements OnDestroy {
     socketSubscription: Subscription = new Subscription();
 
-    isSortingAsc = true;
-
     constructor(
-        private socketService: SocketService,
-        private gameService: GameService,
-        private playerService: PlayerService,
-        private characterService: CharacterService,
-        private router: Router,
+        private readonly socketService: SocketService,
+        private readonly gameService: GameService,
+        private readonly playerService: PlayerService,
+        private readonly characterService: CharacterService,
+        private readonly router: Router,
         protected endgameService: EndgameService,
     ) {
         this.socketService = socketService;
