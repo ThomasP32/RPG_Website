@@ -587,6 +587,7 @@ describe('GameManagerGateway', () => {
                 id: gameId,
                 players: [{ socketId: 'client-id', position: { x: 2, y: 2 } }],
                 doorTiles: [doorTile],
+                nDoorsManipulated: [],
             } as Game;
 
             gameCreationService.getGameById.returns(game);
@@ -608,6 +609,7 @@ describe('GameManagerGateway', () => {
                 id: gameId,
                 players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
                 doorTiles: [doorTile],
+                nDoorsManipulated: [],
             } as Game;
 
             gameCreationService.getGameById.returns(game);

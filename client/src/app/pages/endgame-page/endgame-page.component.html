@@ -67,9 +67,9 @@
         <p>Tours de jeu : {{ game.nTurns }}</p>
         <p>Pourcentage total de tuiles visitées : {{ endgameService.gameTilePercentage(game) }}%</p>
         <p>Pourcentage total des portes manipulées : {{ endgameService.gameDoorPercentage(game) }}%</p>
-        <!-- @if (game.mode === Mode.Ctf) { -->
-        <!-- <p>Nombre de joueurs différents ayant détenu le drapeau : {{game.}}</p> -->
-        <!-- } -->
+        @if (isGameCtf(game)) {
+        <p>Nombre de joueurs différents ayant détenu le drapeau : {{ endgameService.getFlagPickupPlayers(game) }}</p>
+        }
     </div>
     <div class="exit-button-container">
         <button (click)="navigateToMain()">Menu principal</button>

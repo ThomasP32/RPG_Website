@@ -6,7 +6,8 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { EndgameService } from '@app/services/endgame/endgame.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Avatar, Game, Player } from '@common/game';
+import { Avatar, Game, GameCtf, Player } from '@common/game';
+import { Mode } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -45,6 +46,10 @@ export class EndgamePageComponent implements OnDestroy {
 
     get players(): Player[] {
         return this.gameService.game.players;
+    }
+
+    isGameCtf(game: Game): game is GameCtf {
+        return game.mode === Mode.Ctf;
     }
 
     getAvatarPreview(avatar: Avatar): string {

@@ -1,6 +1,6 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS, MovesMap } from '@common/directions';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
@@ -157,7 +157,6 @@ export class GameManagerService {
         const toVisit = [{ point: start, weight: 0 }];
         return { shortestPaths, visited, toVisit };
     }
-    
 
     coordinateToKey(coord: Coordinate): string {
         return `${coord.x},${coord.y}`;
@@ -222,7 +221,9 @@ export class GameManagerService {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
             if (item === ItemCategory.Flag) {
-                //TODO: ADD ++ PLAYER on flag pickupp game.
+                if (game.mode === Mode.Ctf) {
+                    (game as GameCtf).nPlayersCtf.push(player);
+                }
             }
             game.items.splice(itemIndex, 1);
         }

@@ -133,7 +133,7 @@ describe('WaitingRoomPageComponent', () => {
             debug: false,
             isLocked: false,
             hasStarted: false,
-            nPlayersCtf: 0,
+            nPlayersCtf: [],
             name: '',
             description: '',
             imagePreview: '',
