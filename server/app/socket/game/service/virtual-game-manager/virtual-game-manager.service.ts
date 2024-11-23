@@ -1,3 +1,4 @@
+import { Combat } from '@common/combat';
 import { ProfileType } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item } from '@common/map.types';
@@ -6,15 +7,22 @@ import { Inject } from '@nestjs/common/decorators/core/inject.decorator';
 import { Server } from 'socket.io';
 import { EventEmitter } from 'stream';
 import { CombatGateway } from '../../gateways/combat/combat.gateway';
+import { CombatService } from '../combat/combat.service';
+import { CombatCountdownService } from '../countdown/combat/combat-countdown.service';
+import { GameCountdownService } from '../countdown/game/game-countdown.service';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { GameManagerService } from '../game-manager/game-manager.service';
+import { JournalService } from '../journal/journal.service';
 
 @Injectable()
 export class VirtualGameManagerService extends EventEmitter {
-    @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    @Inject(GameManagerService) private gameManagerService: GameManagerService;
-    @Inject(CombatGateway) private combatGateway: CombatGateway;
-
+    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
+    @Inject(CombatService) private readonly combatService: CombatService;
+    @Inject(CombatGateway) private readonly combatGateway: CombatGateway;
+    @Inject(JournalService) private readonly journalService: JournalService;
+    @Inject(CombatCountdownService) private readonly combatCountdownService: CombatCountdownService;
+    @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
     server: Server;
 
     setServer(server: Server): void {
@@ -55,7 +63,7 @@ export class VirtualGameManagerService extends EventEmitter {
         }
     }
 
-    executeAggressiveBehavior(activePlayer: Player, game: Game): void {
+    async executeAggressiveBehavior(activePlayer: Player, game: Game): Promise<void> {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
@@ -68,8 +76,13 @@ export class VirtualGameManagerService extends EventEmitter {
             const targetPlayer = visiblePlayers[randomIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
             this.gameManagerService.updatePlayerPosition(activePlayer, adjacentTiles, game);
-            // commencer un combat automatiquement contre le joueur voisin
-            // ne s'évade jamais => juste faire attaquer automatiquement jusqu'à fin de combat
+            const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
+            if (possibleOpponents.length > 0) {
+                const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
+                const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
+                const combatStarted = await this.startCombat(combat, game);
+                if (combatStarted) return;
+            }
         } else if (sword) {
             this.gameManagerService.updatePlayerPosition(activePlayer, [sword.coordinate], game);
             this.gameManagerService.pickUpItem(sword.coordinate, game, activePlayer);
@@ -128,5 +141,31 @@ export class VirtualGameManagerService extends EventEmitter {
             allAdjacentTiles.push(...adjacentTiles);
         }
         return allAdjacentTiles;
+    }
+
+    async startCombat(combat: Combat, game: Game): Promise<boolean> {
+        const sockets = await this.server.in(game.id).fetchSockets();
+        const opponentSocket = sockets.find((socket) => socket.id === combat.opponent.socketId);
+        if (opponentSocket) {
+            await opponentSocket.join(combat.id);
+            this.server.to(combat.id).emit('combatStarted', {
+                challenger: combat.challenger,
+                opponent: combat.opponent,
+            });
+            this.gameManagerService.updatePlayerActions(game.id, combat.challenger.socketId);
+            const involvedPlayers = [combat.challenger.name];
+            this.journalService.logMessage(
+                game.id,
+                `${combat.challenger.name} a commencé un combat contre ${combat.opponent.name}.`,
+                involvedPlayers,
+            );
+            this.server.to(game.id).emit('combatStartedSignal');
+
+            this.combatCountdownService.initCountdown(game.id, 5);
+            this.gameCountdownService.pauseCountdown(game.id);
+            this.combatGateway.startCombatTurns(game.id);
+            return true;
+        }
+        return false;
     }
 }
