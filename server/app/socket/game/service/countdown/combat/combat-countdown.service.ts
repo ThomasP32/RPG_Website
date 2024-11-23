@@ -9,7 +9,7 @@ import { EventEmitter } from 'stream';
 @Injectable()
 export class CombatCountdownService extends EventEmitter {
     private server: Server;
-    private countdowns: Map<string, Countdown> = new Map();
+    private readonly countdowns: Map<string, Countdown> = new Map();
 
     setServer(server: Server) {
         this.server = server;

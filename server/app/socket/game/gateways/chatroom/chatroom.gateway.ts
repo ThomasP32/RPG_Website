@@ -8,7 +8,7 @@ import { Server, Socket } from 'socket.io';
 export class ChatRoomGateway {
     @WebSocketServer() server: Server;
 
-    @Inject(ChatroomService) private chatroomService: ChatroomService;
+    @Inject(ChatroomService) private readonly chatroomService: ChatroomService;
 
     @SubscribeMessage('joinChatRoom')
     handleJoinRoom(client: Socket, roomId: string) {
