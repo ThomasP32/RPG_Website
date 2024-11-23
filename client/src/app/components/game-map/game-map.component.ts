@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { MovesMap } from '@app/interfaces/moves';
 import { ImageService } from '@app/services/image/image.service';
+import { MovesMap } from '@common/directions';
 import { Avatar, Game } from '@common/game';
 import { Cell } from '@common/map-cell';
 import { Coordinate, ItemCategory, TileCategory } from '@common/map.types';
@@ -25,7 +25,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     tooltipX: number = 0;
     tooltipY: number = 0;
 
-    constructor(private imageService: ImageService) {
+    constructor(private readonly imageService: ImageService) {
         this.imageService = imageService;
     }
 

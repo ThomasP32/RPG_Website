@@ -75,10 +75,7 @@ export class GameCreationService {
         const game = this.getGameById(gameId);
         if (game.hasStarted) {
             game.players = game.players.map((player) => {
-                if (player.socketId === client.id) {
-                    return { ...player, isActive: false };
-                }
-                return player;
+                return player.socketId === client.id ? { ...player, isActive: false } : player;
             });
         } else {
             game.players = game.players.filter((player) => player.socketId !== client.id);
@@ -100,10 +97,7 @@ export class GameCreationService {
         const game = this.getGameById(gameId);
         const updatedPlayers = game.players.sort((player1, player2) => {
             const speedDifference = player2.specs.speed - player1.specs.speed;
-            if (speedDifference === 0) {
-                return Math.random() - 0.5;
-            }
-            return speedDifference;
+            return speedDifference === 0 ? Math.random() - 0.5 : speedDifference;
         });
         updatedPlayers.forEach((player, index) => {
             player.turn = index;
@@ -154,11 +148,7 @@ export class GameCreationService {
     isMaxPlayersReached(players: Player[], gameId: string): boolean {
         const game = this.getGameById(gameId);
         const mapSize = Object.values(MapSize).find((size) => MapConfig[size].size === game.mapSize.x);
-
-        if (mapSize) {
-            return players.length === MapConfig[mapSize].maxPlayers;
-        }
-        return false;
+        return mapSize && players.length === MapConfig[mapSize].maxPlayers;
     }
 
     lockGame(gameId: string): void {

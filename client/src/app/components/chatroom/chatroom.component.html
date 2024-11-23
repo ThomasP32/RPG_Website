@@ -9,7 +9,7 @@
         }
     @if (!isChatRetracted) {
     <section>
-        <strong>{{ player.name }}</strong>
+        <strong>{{ playerName }}</strong>
         <div id="messageArea" class="message-area">
             <ul id="messageList">
                 @for (message of messages; track message) {
