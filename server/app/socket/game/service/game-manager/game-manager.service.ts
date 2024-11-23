@@ -157,7 +157,6 @@ export class GameManagerService {
         const toVisit = [{ point: start, weight: 0 }];
         return { shortestPaths, visited, toVisit };
     }
-    
 
     coordinateToKey(coord: Coordinate): string {
         return `${coord.x},${coord.y}`;

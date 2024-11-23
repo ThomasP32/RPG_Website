@@ -36,7 +36,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
         this.isWaitingRoom = currentUrl.includes('/waiting-room');
         this.isGamePage = currentUrl.includes('/game-page');
         this.messageSubscription = this.socketService.listen<Message[]>('previousMessages').subscribe((messages: Message[]) => {
-            console.log(messages);
             this.messages = messages;
             this.scrollToBottom();
         });

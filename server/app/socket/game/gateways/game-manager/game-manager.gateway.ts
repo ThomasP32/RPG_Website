@@ -135,7 +135,6 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
-        console.log('Active player:', activePlayer);
         const involvedPlayers = game.players.map((player) => player.name);
 
         if (!activePlayer || !activePlayer.isActive) {

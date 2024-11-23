@@ -38,9 +38,9 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('startCombat')
-    async startCombat(client: Socket, data: { gameId: string; opponent: Player }): Promise<void> {
+    async startCombat(client: Socket, data: { gameId: string; opponent: Player; player: Player }): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
-        const player = this.gameCreationService.getPlayer(data.gameId, client.id);
+        const player = game.players.find((player) => player.turn === game.currentTurn);
         if (game) {
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
             await client.join(combat.id);
