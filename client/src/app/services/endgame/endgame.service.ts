@@ -3,15 +3,12 @@ import { MAX_CHAR, MINUTE, PERCENTAGE } from '@common/constants';
 import { Game, GameCtf, Player } from '@common/game';
 import { Coordinate } from '@common/map.types';
 
-interface HTMLTableRowElement extends HTMLElement {
-    cells: HTMLCollectionOf<HTMLTableCellElement>;
-}
-
 @Injectable({
     providedIn: 'root',
 })
 export class EndgameService {
     isSortingAsc: boolean = true;
+    sortColumn: number = -1;
 
     constructor() {}
 
@@ -60,54 +57,45 @@ export class EndgameService {
         return uniquePlayers.size;
     }
 
-    sortTable(n: number): void {
-        this.isSortingAsc = !this.isSortingAsc;
-        let table: HTMLTableElement | null = document.getElementById('stats-table') as HTMLTableElement;
+    sortTable(columnIndex: number): void {
+        this.isSortingAsc = this.sortColumn === columnIndex ? !this.isSortingAsc : true;
+        this.sortColumn = columnIndex;
+
+        const table = document.getElementById('stats-table');
         if (!table) {
             console.error('Table not found');
             return;
         }
 
-        let rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
-        let switching: boolean = true;
-        let switchCount: number = 0;
-
-        while (switching) {
-            switching = false;
-            for (let i = 1; i < rows.length - 1; i++) {
-                if (this.shouldSwitch(rows, i, n)) {
-                    this.switchRows(rows, i);
-                    switching = true;
-                    switchCount++;
-                    break;
-                }
-            }
-            if (switchCount === 0 && this.isSortingAsc) {
-                switching = true;
-            }
-        }
-    }
-
-    private shouldSwitch(rows: HTMLCollectionOf<HTMLTableRowElement>, i: number, n: number): boolean {
-        let x = rows[i].getElementsByTagName('td')[n];
-        let y = rows[i + 1].getElementsByTagName('td')[n];
-
-        if (!x || !y) {
-            console.error(`Invalid cell at row ${i}`);
-            return false;
+        const tbody = table.getElementsByTagName('tbody')[0];
+        if (!tbody) {
+            console.error('Table body not found');
+            return;
         }
 
-        if (this.isSortingAsc) {
-            return x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase();
-        } else {
-            return x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase();
-        }
-    }
+        const rows = Array.from(tbody.rows);
 
-    private switchRows(rows: HTMLCollectionOf<HTMLTableRowElement>, i: number): void {
-        const parent = rows[i].parentNode;
-        if (parent) {
-            parent.insertBefore(rows[i + 1], rows[i]);
+        rows.sort((rowA, rowB) => {
+            const cellA = rowA.cells[columnIndex];
+            const cellB = rowB.cells[columnIndex];
+
+            if (!cellA || !cellB) return 0;
+
+            const valueA = Number(cellA.textContent?.replace('%', '') ?? 0);
+            const valueB = Number(cellB.textContent?.replace('%', '') ?? 0);
+
+            const comparison = valueA - valueB;
+            return this.isSortingAsc ? comparison : -comparison;
+        });
+
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
         }
+        rows.forEach((row) => tbody.appendChild(row));
+
+        // const fragment = document.createDocumentFragment();
+        // rows.forEach((row) => fragment.appendChild(row));
+        // tbody.innerHTML = '';
+        // tbody.appendChild(fragment);
     }
 }

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Game, Player } from '@common/game';
+import { Game, GameCtf, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { EndgameService } from './endgame.service';
 
@@ -36,7 +36,37 @@ describe('EndgameService', () => {
         visitedTiles: [{ x: 0, y: 0 }],
     };
 
-    const mockGame: Game = {
+    const mockGameCtf: GameCtf = {
+        id: 'test-game-id',
+        hostSocketId: 'test-socket',
+        hasStarted: true,
+        currentTurn: 0,
+        mapSize: { x: 10, y: 10 },
+        tiles: [
+            { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+            { coordinate: { x: 3, y: 3 }, category: TileCategory.Ice },
+            { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [
+            { coordinate: { x: 1, y: 2 }, isOpened: false },
+            { coordinate: { x: 2, y: 1 }, isOpened: true },
+        ],
+        startTiles: [{ coordinate: { x: 0, y: 0 } }],
+        items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
+        players: [mockPlayer],
+        mode: Mode.Ctf,
+        nPlayersCtf: [mockPlayer],
+        nTurns: 0,
+        debug: false,
+        nDoorsManipulated: [{ x: 1, y: 2 }],
+        duration: 0,
+        isLocked: true,
+        name: 'game',
+        description: 'game description',
+        imagePreview: 'image-preview',
+    };
+
+    const mockGameDoor: Game = {
         id: 'test-game-id',
         hostSocketId: 'test-socket',
         hasStarted: true,
@@ -64,6 +94,31 @@ describe('EndgameService', () => {
         description: 'game description',
         imagePreview: 'image-preview',
     };
+    const mockGameNoDoor: Game = {
+        id: 'test-game-id-no-door',
+        hostSocketId: 'test-socket',
+        hasStarted: true,
+        currentTurn: 0,
+        mapSize: { x: 10, y: 10 },
+        tiles: [
+            { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+            { coordinate: { x: 3, y: 3 }, category: TileCategory.Ice },
+            { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [],
+        startTiles: [{ coordinate: { x: 0, y: 0 } }],
+        items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
+        players: [mockPlayer],
+        mode: Mode.Classic,
+        nTurns: 0,
+        debug: false,
+        nDoorsManipulated: [],
+        duration: 0,
+        isLocked: true,
+        name: 'game',
+        description: 'game description',
+        imagePreview: 'image-preview',
+    };
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [EndgameService],
@@ -77,7 +132,7 @@ describe('EndgameService', () => {
 
     describe('getPlayerTilePercentage', () => {
         it('should calculate correct percentage for player visited tiles', () => {
-            const percentage = service.getPlayerTilePercentage(mockPlayer, mockGame);
+            const percentage = service.getPlayerTilePercentage(mockPlayer, mockGameDoor);
             expect(percentage).toBe(1);
         });
     });
@@ -106,15 +161,26 @@ describe('EndgameService', () => {
 
     describe('gameTilePercentage', () => {
         it('should calculate percentage of unique tiles visited by all players', () => {
-            const percentage = service.gameTilePercentage(mockGame);
+            const percentage = service.gameTilePercentage(mockGameDoor);
             expect(percentage).toBe(1);
         });
     });
 
     describe('gameDoorPercentage', () => {
         it('should calculate percentage of doors opened', () => {
-            const percentage = service.gameDoorPercentage(mockGame);
+            const percentage = service.gameDoorPercentage(mockGameDoor);
             expect(percentage).toBe(50);
+        });
+        it('should return 0 if no doors', () => {
+            const percentage = service.gameDoorPercentage(mockGameNoDoor);
+            expect(percentage).toBe(0);
+        });
+    });
+
+    describe('getFlagPickupPlayers', () => {
+        it('should return number of unique players who picked up flag', () => {
+            const players = service.getFlagPickupPlayers(mockGameCtf);
+            expect(players).toBe(1);
         });
     });
 
