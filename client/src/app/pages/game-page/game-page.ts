@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
@@ -8,7 +8,6 @@ import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { InventoryModalComponent } from '@app/components/inventory-modal/inventory-modal.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
-import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -18,7 +17,9 @@ import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
+import { MovesMap } from '@common/directions';
 import { Game, Player, Specs } from '@common/game';
+import { GamePageActiveView } from '@common/game-page';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
@@ -39,8 +40,9 @@ import { Subscription } from 'rxjs';
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
-export class GamePageComponent implements OnInit, OnDestroy {
-    activeView: 'chat' | 'journal' = 'chat';
+export class GamePageComponent implements OnInit {
+    GamePageActiveView = GamePageActiveView;
+    activeView: GamePageActiveView = GamePageActiveView.Chat;
     activePlayers: Player[];
     opponent: Player;
     possibleOpponents: Player[];
@@ -77,15 +79,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
     gameMapComponent: GameMapComponent;
 
     constructor(
-        private router: Router,
-        private socketService: SocketService,
-        private characterService: CharacterService,
-        private playerService: PlayerService,
-        private gameService: GameService,
-        private gameTurnService: GameTurnService,
-        private countDownService: CountdownService,
-        private combatService: CombatService,
-        protected imageService: ImageService,
+        private readonly router: Router,
+        private readonly socketService: SocketService,
+        private readonly characterService: CharacterService,
+        private readonly playerService: PlayerService,
+        private readonly gameService: GameService,
+        private readonly gameTurnService: GameTurnService,
+        private readonly countDownService: CountdownService,
+        private readonly combatService: CombatService,
+        protected readonly imageService: ImageService,
     ) {
         this.router = router;
         this.socketService = socketService;
@@ -131,10 +133,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
             if (this.playerService.player.socketId === this.game.hostSocketId) {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
+
+            this.socketService.sendMessage('joinChatRoom', this.gameId);
         }
     }
 
-    toggleView(view: 'chat' | 'journal'): void {
+    toggleView(view: GamePageActiveView): void {
         this.activeView = view;
     }
 
@@ -166,7 +170,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     navigateToEndOfGame(): void {
-        this.navigateToMain();
+        this.router.navigate(['/end-game']);
     }
 
     confirmExit(): void {
@@ -269,11 +273,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.socketSubscription.add(
             this.socketService.listen<{ game: Game; player: Player }>('itemDropped').subscribe((data) => {
                 this.isInventoryModalOpen = false;
-                if (data.player && data.player.socketId === this.player.socketId) {
-                    this.playerService.setPlayer(data.player);
-                    this.gameTurnService.resumeTurn();
-                }
-                this.gameService.setGame(data.game);
+                // if (data.player && data.player.socketId === this.player.socketId) {
+                //     this.playerService.setPlayer(data.player);
+                //     this.gameTurnService.resumeTurn();
+                //     console.log('Item dropped');
+                // }
+                // this.gameService.setGame(data.game);
             }),
         );
     }
@@ -338,14 +343,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.showExitModal = false;
                 this.showEndGameModal = true;
                 setTimeout(() => {
-                    this.navigateToMain();
+                    this.navigateToEndOfGame();
                 }, TIME_LIMIT_DELAY);
             }),
         );
-    }
-
-    ngOnDestroy() {
-        this.socketSubscription.unsubscribe();
-        this.socketService.disconnect();
     }
 }

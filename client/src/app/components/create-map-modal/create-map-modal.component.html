@@ -3,13 +3,9 @@
         <h2>Choisissez un mode de jeu</h2>
         <app-modes-choice (modeSelected)="onModeSelected($event)"></app-modes-choice>
         <h2>Choisissez une taille</h2>
-        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Small }" (click)="sizeConversion('small')">Petit: 2 joueurs</button>
-        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Medium }" (click)="sizeConversion('medium')">
-            Moyen: 2 à 4 joueurs
-        </button>
-        <button class="map-button" [ngClass]="{ selected: mapSize === mapSizeType.Large }" (click)="sizeConversion('large')">
-            Grand: 2 à 6 joueurs
-        </button>
+        <button class="map-button" [ngClass]="{ selected: mapSize === 10 }" (click)="sizeConversion('small')">Petit: 2 joueurs</button>
+        <button class="map-button" [ngClass]="{ selected: mapSize === 15 }" (click)="sizeConversion('medium')">Moyen: 2 à 4 joueurs</button>
+        <button class="map-button" [ngClass]="{ selected: mapSize === 20 }" (click)="sizeConversion('large')">Grand: 2 à 6 joueurs</button>
     </div>
     <div class="confirm-edit">
         <button class="to-edit-button" (click)="redirectToEditView()" [ngClass]="{ 'hidden-button': !canCreateGame() }">Créer le jeu</button>

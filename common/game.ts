@@ -1,4 +1,4 @@
-import { Coordinate, ItemCategory, Map } from './map.types';
+import { Coordinate, ItemCategory, Map, Mode } from '@common/map.types';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -13,6 +13,19 @@ export enum Avatar {
     Avatar10 = 10,
     Avatar11 = 11,
     Avatar12 = 12,
+}
+
+export enum BotName {
+    Bot1 = 'AlphaBot',
+    Bot2 = 'RoboWarrior',
+    Bot3 = 'CyberHawk',
+    Bot4 = 'SteelFist',
+    Bot5 = 'MechaMage',
+    Bot6 = 'IronClad',
+    Bot7 = 'TechNinja',
+    Bot8 = 'ShadowBot',
+    Bot9 = 'RoboKnight',
+    Bot10 = 'CyberAssassin',
 }
 
 export enum Bonus {
@@ -51,7 +64,7 @@ export interface Player {
     visitedTiles: Coordinate[];
 }
 
-export interface Game extends Map {
+export interface GameClassic extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
@@ -64,6 +77,9 @@ export interface Game extends Map {
     hasStarted: boolean;
 }
 
-export interface GameCtf extends Game {
+export interface GameCtf extends GameClassic {
+    mode: Mode.Ctf;
     nPlayersCtf: number;
 }
+
+export type Game = GameClassic | GameCtf;
