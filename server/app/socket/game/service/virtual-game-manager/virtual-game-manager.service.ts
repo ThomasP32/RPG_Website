@@ -17,18 +17,16 @@ export class VirtualGameManagerService extends EventEmitter {
 
     server: Server;
 
-    selectedProfile: ProfileType;
-
     setServer(server: Server): void {
         this.server = server;
     }
 
     executeVirtualPlayerBehavior(player: Player, game: Game): void {
-        if (this.selectedProfile === ProfileType.AGGRESSIVE) {
-            console.log('SelectedProfile:', this.selectedProfile);
+        if (player.profile === ProfileType.AGGRESSIVE) {
+            console.log('SelectedProfile:', player.profile);
             this.executeAggressiveBehavior(player, game);
-        } else if (this.selectedProfile === ProfileType.DEFENSIVE) {
-            console.log('SelectedProfile:', this.selectedProfile);
+        } else if (player.profile === ProfileType.DEFENSIVE) {
+            console.log('SelectedProfile:', player.profile);
             this.executeDefensiveBehavior(player, game);
         } else {
             console.log('inside the else');
@@ -61,7 +59,7 @@ export class VirtualGameManagerService extends EventEmitter {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
-        const visiblePlayers = this.getPlayersInArea(area, game.players);
+        const visiblePlayers = this.getPlayersInArea(area, game.players, activePlayer);
         const visibleItems = this.getItemsInArea(area, game);
         const sword = visibleItems.filter((item) => item.category === 'sword')[0];
 
@@ -70,8 +68,8 @@ export class VirtualGameManagerService extends EventEmitter {
             const targetPlayer = visiblePlayers[randomIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
             this.gameManagerService.updatePlayerPosition(activePlayer, adjacentTiles, game);
-            // commencer un combat
-            // ne s'évade jamais => juste attaque
+            // commencer un combat automatiquement contre le joueur voisin
+            // ne s'évade jamais => juste faire attaquer automatiquement jusqu'à fin de combat
         } else if (sword) {
             this.gameManagerService.updatePlayerPosition(activePlayer, [sword.coordinate], game);
             this.gameManagerService.pickUpItem(sword.coordinate, game, activePlayer);
@@ -84,7 +82,7 @@ export class VirtualGameManagerService extends EventEmitter {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
-        const visiblePlayers = this.getPlayersInArea(area, game.players);
+        const visiblePlayers = this.getPlayersInArea(area, game.players, activePlayer);
         const visibleItems = this.getItemsInArea(area, game);
         const armor = visibleItems.filter((item) => item.category === 'armor')[0];
 
@@ -103,8 +101,11 @@ export class VirtualGameManagerService extends EventEmitter {
         }
     }
 
-    getPlayersInArea(area: Coordinate[], players: Player[]): Player[] {
-        return players.filter((player) => area.some((coordinate) => coordinate.x === player.position.x && coordinate.y === player.position.y));
+    getPlayersInArea(area: Coordinate[], players: Player[], activePlayer: Player): Player[] {
+        const filteredPlayers = players.filter((player) => player !== activePlayer);
+        return filteredPlayers.filter((player) =>
+            area.some((coordinate) => coordinate.x === player.position.x && coordinate.y === player.position.y),
+        );
     }
 
     getItemsInArea(area: Coordinate[], game: Game): Item[] {
@@ -123,7 +124,7 @@ export class VirtualGameManagerService extends EventEmitter {
     getAdjacentTilesToPossibleMoves(possibleMoves: [string, { path: Coordinate[]; weight: number }][]): Coordinate[] {
         const allAdjacentTiles: Coordinate[] = [];
         for (const possibleMove of possibleMoves) {
-            const adjacentTiles = this.getAdjacentTiles(possibleMove[1].path[0]);
+            const adjacentTiles = this.getAdjacentTiles(possibleMove[1].path[possibleMove[1].path.length - 1]);
             allAdjacentTiles.push(...adjacentTiles);
         }
         return allAdjacentTiles;

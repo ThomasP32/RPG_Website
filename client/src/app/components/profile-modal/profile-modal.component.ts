@@ -24,6 +24,7 @@ export class ProfileModalComponent implements OnInit {
     @Input() activePlayers: Player[] = [];
     @Input() gameId: string | null = null;
     @Input() closeProfileModal: () => void;
+    profile: 'aggressive' | 'defensive';
     selectedProfile: ProfileType;
     virtualPlayer: Player;
 
@@ -60,6 +61,7 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: null,
         };
         this.virtualPlayer = virtualPlayer;
     }
@@ -68,8 +70,17 @@ export class ProfileModalComponent implements OnInit {
         this.virtualPlayer.socketId = 'virtualPlayer' + Math.floor(Math.random() * 1000);
     }
 
-    setProfile(profile: string): void {
-        this.selectedProfile = profile as ProfileType;
+    setProfile(profile: 'aggressive' | 'defensive'): void {
+        switch (profile) {
+            case 'aggressive':
+                this.selectedProfile = ProfileType.AGGRESSIVE;
+                console.log('SelectedProfile:', this.selectedProfile);
+                break;
+            case 'defensive':
+                this.selectedProfile = ProfileType.DEFENSIVE;
+                console.log('SelectedProfile:', this.selectedProfile);
+                break;
+        }
     }
 
     assignRandomName(): void {
@@ -137,6 +148,7 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: this.selectedProfile,
         };
         this.virtualPlayer = virtualPlayer;
     }
