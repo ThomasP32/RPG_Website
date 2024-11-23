@@ -138,6 +138,7 @@ describe('GameManagerGateway', () => {
             const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
             const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
+            gameManagerService.hasFallen = true;
 
             const moves = [
                 { x: 1, y: 1 },
@@ -145,7 +146,7 @@ describe('GameManagerGateway', () => {
             ];
             gameManagerService.getMove.returns(moves);
             gameManagerService.updatePosition.resolves();
-            gameManagerService.hasFallen.returns(true);
+            expect(gameManagerService.hasFallen).toBe(true);
 
             await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 

@@ -16,7 +16,7 @@ export class InventoryModalComponent {
     @Input() gameId: string;
     constructor(
         protected imageService: ImageService,
-        private socketService: SocketService,
+        protected socketService: SocketService,
     ) {
         this.imageService = imageService;
         this.socketService = socketService;

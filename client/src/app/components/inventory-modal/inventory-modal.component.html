@@ -1,6 +1,7 @@
 <div class="inventory-interface">
     <h2>Votre inventaire est plein</h2>
     <h3>Choisissez un item à jeter</h3>
+    @if(player){
     <div class="inventory">
         @for (item of player.inventory ; track item) {
         <div class="inventory-container">
@@ -11,4 +12,5 @@
         </div>
         }
     </div>
+    }
 </div>

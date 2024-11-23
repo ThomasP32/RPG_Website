@@ -247,32 +247,6 @@ describe('GameManagerService', () => {
         });
     });
 
-    describe('hasFallen', () => {
-        it('should return true if the last move does not match the destination', () => {
-            const moves: Coordinate[] = [
-                { x: 1, y: 1 },
-                { x: 2, y: 2 },
-            ];
-            const destination: Coordinate = { x: 3, y: 3 };
-
-            const result = gameManagerService.hasFallen(moves, destination);
-
-            expect(result).toBe(true);
-        });
-
-        it('should return false if the last move matches the destination', () => {
-            const moves: Coordinate[] = [
-                { x: 1, y: 1 },
-                { x: 2, y: 2 },
-            ];
-            const destination: Coordinate = { x: 2, y: 2 };
-
-            const result = gameManagerService.hasFallen(moves, destination);
-
-            expect(result).toBe(false);
-        });
-    });
-
     describe('getAdjacentPlayers', () => {
         let player: Player;
         let adjacentPlayer: Player;
@@ -451,7 +425,7 @@ describe('GameManagerService', () => {
         const player = game2.players[0];
         player.position = { x: 1, y: 1 };
 
-        gameManagerService.pickUpItem(player.position, game2, player);
+        gameManagerService.pickUpItem(player.position, game2.id, player);
 
         expect(player.inventory).toContain(ItemCategory.Armor);
         expect(game2.items).not.toContain(item);

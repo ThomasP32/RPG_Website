@@ -67,7 +67,7 @@ export class GameCreationService {
         return game;
     }
 
-    addRandomItemsToGame(gameId: string): Game {
+    addRandomItemsToGame(gameId: string): void {
         const game = this.getGameById(gameId);
 
         const currentItems = game.items;
@@ -84,7 +84,7 @@ export class GameCreationService {
             }
             return currentItem;
         });
-        return game;
+        return;
     }
 
     isPlayerHost(socketId: string, gameId: string): boolean {
@@ -112,6 +112,7 @@ export class GameCreationService {
     initializeGame(gameId: string): void {
         this.setOrder(gameId);
         this.setStartingPoints(gameId);
+        this.addRandomItemsToGame(gameId);
         this.getGameById(gameId).hasStarted = true;
         this.getGameById(gameId).isLocked = true;
     }
