@@ -8,6 +8,7 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { GameManagerGateway } from './game-manager.gateway';
 
 describe('GameManagerGateway', () => {
@@ -17,6 +18,7 @@ describe('GameManagerGateway', () => {
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
     let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
+    let itemsManagerService: SinonStubbedInstance<ItemsManagerService>;
     let journalService: SinonStubbedInstance<JournalService>;
     let serverStub: SinonStubbedInstance<Server>;
 
@@ -25,6 +27,7 @@ describe('GameManagerGateway', () => {
         socket = createStubInstance<Socket>(Socket);
         gameCreationService = createStubInstance<GameCreationService>(GameCreationService);
         gameManagerService = createStubInstance<GameManagerService>(GameManagerService);
+        itemsManagerService = createStubInstance<ItemsManagerService>(ItemsManagerService);
         gameCountdownService = createStubInstance<GameCountdownService>(GameCountdownService);
         gameCountdownService.startNewCountdown.callsFake(() => {
             return Promise.resolve();
@@ -40,6 +43,7 @@ describe('GameManagerGateway', () => {
                 { provide: GameManagerService, useValue: gameManagerService },
                 { provide: GameCountdownService, useValue: gameCountdownService },
                 { provide: JournalService, useValue: journalService },
+                { provide: ItemsManagerService, useValue: itemsManagerService },
             ],
         }).compile();
 
@@ -406,53 +410,73 @@ describe('GameManagerGateway', () => {
 
             expect(gameManagerService.updatePosition.notCalled).toBeTruthy();
         });
-        it('should apply -2 penalty to attack and defense when moving to an ice tile', async () => {
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([
-                { x: 0, y: 1 },
-                { x: 0, y: 1 },
-            ]);
-            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(false);
-            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(true);
+    });
 
-            const destination: Coordinate = { x: 0, y: 1 };
+    describe('adaptSpecsForIceTileMove', () => {
+        let player: Player;
+        let gameId: string;
 
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+                inventory: [],
+            } as Player;
+            gameId = 'game-1';
+        });
+
+        it('should decrease attack and defense by 2 when moving onto an ice tile without skates', () => {
+            gameManagerService.onIceTile.returns(true);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
 
             expect(player.specs.attack).toBe(8);
             expect(player.specs.defense).toBe(8);
+            expect(wasOnIceTile).toBe(true);
         });
 
-        it('should remove -2 penalty from attack and defense when moving off an ice tile', async () => {
-            player.specs.attack = 8;
-            player.specs.defense = 8;
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([
-                { x: 0, y: 2 },
-                { x: 0, y: 2 },
-            ]);
-            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
-            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
-
-            const destination: Coordinate = { x: 0, y: 2 };
-
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
-
-            expect(player.specs.attack).toBe(10);
-            expect(player.specs.defense).toBe(10);
-        });
-
-        it('should not change attack and defense if remaining on the same type of tile', async () => {
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([{ x: 1, y: 1 }]);
+        it('should increase attack and defense by 2 when moving off an ice tile without skates', () => {
             gameManagerService.onIceTile.returns(false);
 
-            const destination: Coordinate = { x: 1, y: 1 };
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, true);
 
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+            expect(player.specs.attack).toBe(12);
+            expect(player.specs.defense).toBe(12);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when moving onto an ice tile with skates', () => {
+            player.inventory.push(ItemCategory.IceSkates);
+            gameManagerService.onIceTile.returns(true);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
 
             expect(player.specs.attack).toBe(10);
             expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when moving off an ice tile with skates', () => {
+            player.inventory.push(ItemCategory.IceSkates);
+            gameManagerService.onIceTile.returns(false);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when staying on the same type of tile', () => {
+            gameManagerService.onIceTile.returns(false);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
         });
     });
 
