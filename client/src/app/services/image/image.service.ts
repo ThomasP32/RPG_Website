@@ -58,8 +58,8 @@ export class ImageService {
                 return './assets/items/grapplinghook.png';
             case ItemCategory.TimeTwister:
                 return './assets/items/timetwister.png';
-            case ItemCategory.Bomb:
-                return './assets/items/bomb.png';
+            case ItemCategory.Flask:
+                return './assets/items/flask.png';
             case ItemCategory.Random:
                 return './assets/items/randomitem.png';
             case ItemCategory.Flag:
@@ -77,8 +77,8 @@ export class ImageService {
                 return './assets/items/sword.png';
             case 'grapplinghook':
                 return './assets/items/grapplinghook.png';
-            case 'bomb':
-                return './assets/items/bomb.png';
+            case 'flask':
+                return './assets/items/flask.png';
             case 'timetwister':
                 return './assets/items/timetwister.png';
             case 'iceskates':

@@ -105,7 +105,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const coordinates = player.position;
-        this.itemsManagerService.dropItem(data.itemDropping, game.id, client.id, coordinates);
+        this.itemsManagerService.dropItem(data.itemDropping, game.id, player, coordinates);
         this.server.to(client.id).emit('itemDropped', { game: game, player: player });
     }
     @SubscribeMessage('startGame')
@@ -159,7 +159,7 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                     if (player.inventory.length > 2) {
                         const coordinates = player.position;
-                        this.itemsManagerService.dropItem(player.inventory[2], game.id, player.socketId, coordinates);
+                        this.itemsManagerService.dropItem(player.inventory[2], game.id, player, coordinates);
                         this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
                     }
                 }

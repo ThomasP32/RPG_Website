@@ -53,7 +53,7 @@ export class MapCounterService {
             ItemCategory.GrapplingHook,
             ItemCategory.Sword,
             ItemCategory.TimeTwister,
-            ItemCategory.Bomb,
+            ItemCategory.Flask,
         ];
     }
 
