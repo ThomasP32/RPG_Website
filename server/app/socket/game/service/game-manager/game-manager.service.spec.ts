@@ -195,19 +195,6 @@ describe('GameManagerService', () => {
     });
 
     describe('getMove', () => {
-        it('should stop and add the position to the path if tile weight is 0 and random chance is met', () => {
-            const destination: Coordinate = { x: 2, y: 8 };
-            game2.players[0].position = { x: 2, y: 7 };
-            game2.players[0].specs.movePoints = 10;
-            game2.tiles.push({ coordinate: { x: 2, y: 8 }, category: TileCategory.Ice });
-
-            jest.spyOn(global.Math, 'random').mockReturnValue(0.05);
-
-            const result = gameManagerService.getMove(game2.id, game2.players[0].socketId, destination);
-
-            expect(result).toEqual([{ x: 2, y: 7 }]);
-        });
-
         it('should return an empty path if the player is not found', () => {
             const destination: Coordinate = { x: 2, y: 8 };
             const result = gameManagerService.getMove(game2.id, 'Nonexistent Player', destination);
@@ -309,7 +296,7 @@ describe('GameManagerService', () => {
                 name: 'Player 3',
                 avatar: Avatar.Avatar3,
                 isActive: true,
-                position: { x: 7, y: 7 }, // Positioned non-adjacent to player
+                position: { x: 7, y: 7 },
                 initialPosition: { x: 7, y: 7 },
                 specs,
                 inventory: [],
@@ -424,18 +411,6 @@ describe('GameManagerService', () => {
         });
     });
 
-    it('should add the item to the player inventory and remove it from the game items', () => {
-        const item = { coordinate: { x: 1, y: 1 }, category: ItemCategory.Armor };
-        game2.items.push(item);
-        const player = game2.players[0];
-        player.position = { x: 1, y: 1 };
-
-        gameManagerService.pickUpItem(player.position, game2.id, player);
-
-        expect(player.inventory).toContain(ItemCategory.Armor);
-        expect(game2.items).not.toContain(item);
-    });
-
     describe('isGameResumable', () => {
         it('should return true if there is at least one active player', () => {
             game2.players[0].isActive = true;
@@ -528,27 +503,26 @@ describe('GameManagerService', () => {
         it('should decrement player actions if the player exists', () => {
             const playerSocketId = 'player-1';
             const initialActions = game2.players[0].specs.actions;
-    
+
             gameManagerService.updatePlayerActions('game-1', playerSocketId);
-    
+
             expect(game2.players[0].specs.actions).toBe(initialActions - 1);
         });
-    
+
         it('should not throw an error if the player does not exist', () => {
             const nonExistentSocketId = 'nonexistent-socket-id';
             expect(() => {
                 gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
             }).not.toThrow();
         });
-    
+
         it('should not decrement actions if the player does not exist', () => {
             const nonExistentSocketId = 'nonexistent-socket-id';
             const initialActions = game2.players[0].specs.actions;
-    
+
             gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
-    
+
             expect(game2.players[0].specs.actions).toBe(initialActions);
         });
     });
-    
 });

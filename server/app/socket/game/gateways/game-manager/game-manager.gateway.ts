@@ -9,6 +9,7 @@ import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameManagerGateway implements OnGatewayInit {
@@ -19,6 +20,7 @@ export class GameManagerGateway implements OnGatewayInit {
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
     @Inject(JournalService) private readonly journalService: JournalService;
+    @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
 
     afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
@@ -103,7 +105,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const coordinates = player.position;
-        this.gameManagerService.dropItem(data.itemDropping, game.id, client.id, coordinates);
+        this.itemsManagerService.dropItem(data.itemDropping, game.id, client.id, coordinates);
         this.server.to(client.id).emit('itemDropped', { game: game, player: player });
     }
     @SubscribeMessage('startGame')
@@ -157,7 +159,7 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                     if (player.inventory.length > 2) {
                         const coordinates = player.position;
-                        this.gameManagerService.dropItem(player.inventory[2], game.id, player.socketId, coordinates);
+                        this.itemsManagerService.dropItem(player.inventory[2], game.id, player.socketId, coordinates);
                         this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
                     }
                 }
@@ -183,9 +185,9 @@ export class GameManagerGateway implements OnGatewayInit {
     async movePlayer(moves: Coordinate[], game: Game, wasOnIceTile: boolean, player: Player): Promise<boolean> {
         for (const move of moves) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
-            const onItem = this.gameManagerService.onItem(player, game.id);
+            const onItem = this.itemsManagerService.onItem(player, game.id);
             if (onItem) {
-                this.gameManagerService.pickUpItem(move, game.id, player);
+                this.itemsManagerService.pickUpItem(move, game.id, player);
                 if (player.inventory.length > 2) {
                     this.server.to(player.socketId).emit('inventoryFull');
                 }

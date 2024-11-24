@@ -172,7 +172,7 @@ export class GameManagerService {
         return neighbors;
     }
 
-    private isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
+    public isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
         return pos.x < 0 || pos.y < 0 || pos.x >= mapSize.x || pos.y >= mapSize.y;
     }
 
@@ -209,58 +209,12 @@ export class GameManagerService {
         return 1;
     }
 
-    dropInventory(gameId: string, playerSocket: string): void {
-        const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((player) => player.socketId === playerSocket);
-        player.inventory.forEach((item) => {
-            const coordinates = this.getAdjacentFreeTiles(player.position, game);
-            this.dropItem(item, gameId, playerSocket, coordinates);
-        });
-    }
-
-    private getAdjacentFreeTiles(pos: Coordinate, game: Game): Coordinate {
-        const neighbors: Coordinate[] = [];
-        DIRECTIONS.forEach((dir) => {
-            const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
-            if (!this.isOutOfMap(neighbor, game.mapSize) && this.isReachableTile(neighbor, game)) {
-                neighbors.push(neighbor);
-            }
-        });
-        return neighbors[0];
-    }
-
-    pickUpItem(pos: Coordinate, gameId: string, player: Player): void {
-        const game = this.gameCreationService.getGameById(gameId);
-        const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
-        if (itemIndex !== -1) {
-            const item = game.items[itemIndex].category;
-            player.inventory.push(item);
-            game.items.splice(itemIndex, 1);
-        }
-    }
-    dropItem(itemDropping: ItemCategory, gameId: string, playerSocket: string, coordinates: Coordinate): void {
-        const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((player) => player.socketId === playerSocket);
-        const itemIndex = player.inventory.findIndex((item) => item === itemDropping);
-        if (itemIndex !== -1) {
-            const item = player.inventory[itemIndex];
-            game.items.push({ coordinate: coordinates, category: item });
-            player.inventory.splice(itemIndex, 1);
-        }
-    }
-
     onIceTile(player: Player, gameId: string): boolean {
         return this.gameCreationService
             .getGameById(gameId)
             .tiles.some(
                 (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
             );
-    }
-
-    onItem(player: Player, gameId: string): boolean {
-        return this.gameCreationService
-            .getGameById(gameId)
-            .items.some((item) => item.coordinate.x === player.position.x && item.coordinate.y === player.position.y);
     }
 
     hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
