@@ -33,6 +33,8 @@ export class CombatService {
             currentTurnSocketId: currentTurnSocketId,
             challengerLife: challenger.specs.life,
             opponentLife: opponent.specs.life,
+            challengerAttack: challenger.specs.attack,
+            opponentAttack: opponent.specs.attack,
             id: combatRoomId,
         };
         this.combatRooms[gameId] = combat;
@@ -134,11 +136,13 @@ export class CombatService {
         game.players.forEach((player, index) => {
             if (player.socketId === combat.challenger.socketId) {
                 combat.challenger.specs.life = combat.challengerLife;
+                combat.challenger.specs.attack = combat.challengerAttack;
                 combat.challenger.specs.evasions = 2;
                 combat.challenger.specs.nCombats++;
                 game.players[index] = combat.challenger;
             } else if (player.socketId === combat.opponent.socketId) {
                 combat.opponent.specs.life = combat.opponentLife;
+                combat.opponent.specs.attack = combat.opponentAttack;
                 combat.opponent.specs.evasions = 2;
                 combat.opponent.specs.nCombats++;
                 game.players[index] = combat.opponent;

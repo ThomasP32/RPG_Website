@@ -1,5 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { DIRECTIONS, MovesMap } from '@common/directions';
+import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -263,6 +263,30 @@ export class GameManagerService {
         });
 
         return adjacentDoors;
+    }
+
+    getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
+        const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
+
+        for (const direction of allDirections) {
+            const newPosition: Coordinate = {
+                x: start.x + direction.x,
+                y: start.y + direction.y,
+            };
+
+            const isStartTile = game.startTiles.some((tile) => tile.coordinate.x === newPosition.x && tile.coordinate.y === newPosition.y);
+
+            if (
+                !this.isOutOfMap(newPosition, game.mapSize) &&
+                this.isReachableTile(newPosition, game) &&
+                !this.onTileItem(newPosition, game) &&
+                !game.players.some((player) => player.position.x === newPosition.x && player.position.y === newPosition.y) &&
+                !isStartTile
+            ) {
+                return newPosition;
+            }
+        }
+        return null;
     }
 
     isGameResumable(gameId: string): boolean {

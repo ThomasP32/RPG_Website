@@ -2,10 +2,23 @@ import { Player } from '@common/game';
 import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { GameManagerService } from '../game-manager/game-manager.service';
 
 @Injectable()
 export class ItemsManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private gameManagerService: GameManagerService;
+
+    dropInventory(playerSocket: string, gameId: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        if (!game) return;
+        const player = game.players.find((player) => player.socketId === playerSocket);
+        const availableTile = this.gameManagerService.getFirstFreePosition(player.position, game);
+        this.dropItem(player.inventory[0], gameId, player, player.position);
+        if (availableTile) {
+            this.dropItem(player.inventory[1], gameId, player, availableTile);
+        }
+    }
 
     pickUpItem(pos: Coordinate, gameId: string, player: Player): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -14,18 +27,17 @@ export class ItemsManagerService {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
             game.items.splice(itemIndex, 1);
-            this.activateItem(item, player);
+            if (item === ItemCategory.Sword || item === ItemCategory.Armor) this.activateItem(item, player);
         }
     }
 
-    dropItem(itemDropping: ItemCategory, gameId: string, playerSocket: string, coordinates: Coordinate): void {
+    dropItem(itemDropping: ItemCategory, gameId: string, player: Player, coordinates: Coordinate): void {
         const game = this.gameCreationService.getGameById(gameId);
-        const player = game.players.find((player) => player.socketId === playerSocket);
         const itemIndex = player.inventory.findIndex((item) => item === itemDropping);
         if (itemIndex !== -1) {
             const item = player.inventory[itemIndex];
-            game.items.push({ coordinate: coordinates, category: item });
             player.inventory.splice(itemIndex, 1);
+            game.items.push({ coordinate: coordinates, category: item });
             this.desactivateItem(item, player);
         }
     }
@@ -40,6 +52,9 @@ export class ItemsManagerService {
                 player.specs.defense += 5;
                 player.specs.speed -= 1;
                 break;
+            case ItemCategory.Flask:
+                player.specs.attack += 4;
+                break;
         }
     }
 
@@ -52,6 +67,9 @@ export class ItemsManagerService {
             case ItemCategory.Armor:
                 player.specs.defense -= 5;
                 player.specs.speed += 1;
+                break;
+            case ItemCategory.Flask:
+                player.specs.attack -= 4;
                 break;
         }
     }

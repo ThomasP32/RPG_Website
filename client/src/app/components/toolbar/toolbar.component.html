@@ -91,12 +91,12 @@
                     />
                     <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Bomb) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Flask) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('bomb')"
-                        alt="Bomb"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Bomb) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.Bomb)"
+                        [src]="getItemImage('flask')"
+                        alt="Flask"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Flask) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Flask)"
                     />
                     <span class="description" draggable="false">Un chapeau élégant qui offre de légers bonus à l'agilité et au charme.</span>
                 </div>

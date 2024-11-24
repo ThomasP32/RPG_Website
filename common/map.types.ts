@@ -23,7 +23,6 @@ export enum ItemCategory {
     GrapplingHook = 'grapplinghook',
     IceSkates = 'iceskates',
     TimeTwister = 'timetwister',
-    Bomb = 'bomb',
     Random = 'randomitem',
     Flag = 'flag',
     StartingPoint = 'startingPoint',

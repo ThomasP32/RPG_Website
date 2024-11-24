@@ -105,7 +105,7 @@ describe('ItemsManagerService', () => {
             player.inventory.push(ItemCategory.Sword);
             jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game2);
 
-            service.dropItem(ItemCategory.Sword, game2.id, player.socketId, coordinates);
+            service.dropItem(ItemCategory.Sword, game2.id, player, coordinates);
 
             expect(game2.items).toContainEqual({ coordinate: coordinates, category: ItemCategory.Sword });
             expect(player.inventory).not.toContain(ItemCategory.Sword);

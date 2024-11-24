@@ -1,5 +1,6 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -8,6 +9,7 @@ import { CombatCountdownService } from '../../service/countdown/combat/combat-co
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
@@ -18,6 +20,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
     @Inject(JournalService) private journalService: JournalService;
+    @Inject(ItemsManagerService) private itemManagerService: ItemsManagerService;
 
     constructor(
         private combatService: CombatService,
@@ -108,7 +111,9 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         if (combat) {
             const attackingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const defendingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
-
+            if (attackingPlayer.inventory.includes(ItemCategory.Flask) && attackingPlayer.specs.life === 1) {
+                this.itemManagerService.activateItem(ItemCategory.Flask, attackingPlayer);
+            }
             const rollResult = this.combatService.rollDice(attackingPlayer, defendingPlayer);
             this.server.to(combat.id).emit('diceRolled', {
                 attackDice: rollResult.attackDice,
@@ -140,6 +145,9 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     handleCombatLost(defendingPlayer: Player, attackingPlayer: Player, gameId: string, combatId: string) {
         const game = this.gameCreationService.getGameById(gameId);
         this.combatService.combatWinStatsUpdate(attackingPlayer, gameId);
+        this.itemManagerService.dropInventory(defendingPlayer.socketId, gameId);
+        this.server.to(defendingPlayer.socketId).emit('itemDropped', { game: game, player: defendingPlayer });
+        console.log(`${defendingPlayer.name} has lost the combat and his inventory has been dropped.` + defendingPlayer.inventory);
         this.combatService.sendBackToInitPos(defendingPlayer, game);
         this.combatService.updatePlayersInGame(game);
 
@@ -205,6 +213,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 this.server.to(updatedGame.id).emit('playerLeft', updatedGame.players);
                 if (updatedGame.hasStarted) {
                     this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
+
                     const combat = this.combatService.getCombatByGameId(updatedGame.id);
                     if (combat) {
                         (client.id === combat.challenger.socketId ? combat.challenger : combat.opponent).isActive = false;
@@ -229,6 +238,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     } else if (game.currentTurn === player.turn) {
                         this.gameCountdownService.emit('timeout', game.id);
                     }
+                    this.itemManagerService.dropInventory(player.socketId, game.id);
+                    this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
                 }
                 return;
             }

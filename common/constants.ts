@@ -38,7 +38,7 @@ export const HALF = 0.5;
 
 export const ALL_ITEMS: ItemCategory[] = [
     ItemCategory.Armor,
-    ItemCategory.Bomb,
+    ItemCategory.Flask,
     ItemCategory.Sword,
     ItemCategory.IceSkates,
     ItemCategory.GrapplingHook,
