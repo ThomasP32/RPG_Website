@@ -17,7 +17,7 @@ export class ProfileModalComponent implements OnInit {
     selectedProfile: string;
     virtualPlayer: Player;
 
-    constructor(private socketService: SocketService) {
+    constructor(private readonly socketService: SocketService) {
         this.socketService = socketService;
     }
 

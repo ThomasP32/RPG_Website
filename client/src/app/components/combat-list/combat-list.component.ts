@@ -15,8 +15,8 @@ export class CombatListComponent implements OnChanges {
     combatAlreadyStarted = false;
 
     constructor(
-        private socketService: SocketService,
-        private gameService: GameService,
+        private readonly socketService: SocketService,
+        private readonly gameService: GameService,
     ) {
         this.socketService = socketService;
         this.gameService = gameService;

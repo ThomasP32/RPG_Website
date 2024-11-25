@@ -3,9 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapService } from '@app/services/map/map.service';
+import { TIME_LIMIT_DELAY } from '@common/constants';
 
-/* eslint-disable no-unused-vars */
-const timeLimit = 2000;
 @Component({
     selector: 'app-map-control-bar',
     standalone: true,
@@ -18,9 +17,9 @@ export class MapControlBarComponent implements OnInit {
     message: string;
 
     constructor(
-        private route: ActivatedRoute,
+        private readonly route: ActivatedRoute,
         public mapService: MapService,
-        private router: Router,
+        private readonly router: Router,
     ) {
         this.route = route;
         this.mapService = mapService;
@@ -78,7 +77,7 @@ export class MapControlBarComponent implements OnInit {
         if (this.message === 'Votre jeu a été sauvegardé avec succès!') {
             setTimeout(() => {
                 this.router.navigate(['/admin-page']);
-            }, timeLimit);
+            }, TIME_LIMIT_DELAY);
         }
     }
 }

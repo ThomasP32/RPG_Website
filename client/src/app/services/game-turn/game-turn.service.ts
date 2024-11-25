@@ -261,4 +261,12 @@ export class GameTurnService {
             }),
         );
     }
+
+    listenForEndOfGame() {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe(() => {
+                this.playerWon.next(true);
+            }),
+        );
+    }
 }

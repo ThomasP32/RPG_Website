@@ -29,7 +29,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     lifeOrSpeedBonus: 'life' | 'speed';
     attackOrDefenseBonus: 'attack' | 'defense';
 
-    characters: Character[] = [];
     selectedCharacter: Character;
     currentIndex: number;
 
@@ -55,12 +54,12 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     showGameStartedModal: boolean = false;
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private socketService: SocketService,
-        private playerService: PlayerService,
-        private characterService: CharacterService,
-        private router: Router,
-        private route: ActivatedRoute,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly socketService: SocketService,
+        private readonly playerService: PlayerService,
+        private readonly characterService: CharacterService,
+        private readonly router: Router,
+        private readonly route: ActivatedRoute,
     ) {
         this.communicationMapService = communicationMapService;
         this.socketService = socketService;
@@ -74,14 +73,12 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.playerService.resetPlayer();
         this.name = this.playerService.player.name || 'Choisis ton nom';
 
-        this.characterService.getCharacters().subscribe((characters) => {
-            this.characters = characters;
-            this.selectedCharacter = this.characters[0];
-            this.currentIndex = 0;
-        });
+        this.selectedCharacter = this.characters[0];
+        this.currentIndex = 0;
 
         if (!this.router.url.includes('create-game')) {
-            this.listenToSocketMessages();
+            this.listenToGameStatus();
+            this.listenToPlayerJoin();
             this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
             this.socketService.sendMessage('getPlayers', this.gameId);
@@ -114,7 +111,41 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         return this.playerService.player.specs.defenseBonus;
     }
 
-    listenToSocketMessages(): void {
+    get characters(): Character[] {
+        return this.characterService.characters;
+    }
+
+    listenToGameStatus(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
+                this.gameLockedModal = true;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
+                this.gameId = data.gameId;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
+                this.showGameStartedModal = true;
+                setTimeout(() => {
+                    this.characterService.resetCharacterAvailability();
+                    this.router.navigate(['/main-menu']);
+                }, TIME_REDIRECTION);
+            }),
+        );
+    }
+
+    listenToPlayerJoin(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
+                this.playerService.setPlayer(updatedPlayer);
+                this.router.navigate([`${this.gameId}/waiting-room/player`]);
+            }),
+        );
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
@@ -133,35 +164,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
-                this.gameLockedModal = true;
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
-                this.playerService.setPlayer(updatedPlayer);
-                this.router.navigate([`${this.gameId}/waiting-room/player`]);
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
-                this.gameId = data.gameId;
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
-                this.showGameStartedModal = true;
-                setTimeout(() => {
-                    this.characterService.resetCharacterAvailability();
-                    this.router.navigate(['/main-menu']);
-                }, TIME_REDIRECTION);
             }),
         );
     }
@@ -297,9 +299,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }
-    ngOnDestroy(): void {
-        this.socketSubscription.unsubscribe();
-    }
 
     @HostListener('window:keydown', ['$event'])
     handleKeyDown(event: KeyboardEvent): void {
@@ -308,5 +307,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         } else if (event.key === 'ArrowRight') {
             this.nextCharacter();
         }
+    }
+
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
@@ -38,7 +38,9 @@ import { Subscription } from 'rxjs';
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
 })
-export class GamePageComponent implements OnInit {
+export class GamePageComponent implements OnInit, OnDestroy {
+    private readonly socketSubscription: Subscription = new Subscription();
+    
     GamePageActiveView = GamePageActiveView;
     activeView: GamePageActiveView = GamePageActiveView.Chat;
     activePlayers: Player[];
@@ -56,16 +58,12 @@ export class GamePageComponent implements OnInit {
     countdown: number | string = TURN_DURATION;
     startTurnCountdown: number = 3;
 
-    gameId: string;
-
     showExitModal = false;
     showActionModal = false;
     showKickedModal = false;
     showEndGameModal = false;
     gameOverMessage = false;
     isCombatModalOpen = false;
-
-    socketSubscription: Subscription = new Subscription();
 
     youFell: boolean = false;
     map: Map;
@@ -122,7 +120,6 @@ export class GamePageComponent implements OnInit {
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
 
-            this.gameId = this.gameService.game.id;
             this.activePlayers = this.gameService.game.players;
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
 
@@ -130,12 +127,8 @@ export class GamePageComponent implements OnInit {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
 
-            this.socketService.sendMessage('joinChatRoom', this.gameId);
+            this.socketService.sendMessage('joinChatRoom', this.game.id);
         }
-    }
-
-    toggleView(view: GamePageActiveView): void {
-        this.activeView = view;
     }
 
     get player(): Player {
@@ -148,6 +141,10 @@ export class GamePageComponent implements OnInit {
 
     get moves(): MovesMap {
         return this.gameTurnService.moves;
+    }
+
+    toggleView(view: GamePageActiveView): void {
+        this.activeView = view;
     }
 
     endTurn() {
@@ -193,7 +190,19 @@ export class GamePageComponent implements OnInit {
         this.gameTurnService.movePlayer(position);
     }
 
-    listenForCurrentPlayerUpdates() {
+    toggleDoor() {
+        if (this.doorActionAvailable) {
+            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+        }
+    }
+
+    triggerPulse(): void {
+        this.isPulsing = true;
+        setTimeout(() => (this.isPulsing = false), TIME_PULSE);
+    }
+
+
+    protected listenForCurrentPlayerUpdates() {
         this.gameTurnService.playerTurn$.subscribe((playerName) => {
             this.currentPlayerTurn = playerName;
             this.countdown = TURN_DURATION;
@@ -205,23 +214,24 @@ export class GamePageComponent implements OnInit {
         });
     }
 
-    listenForFalling() {
+    private listenForFalling() {
         this.gameTurnService.youFell$.subscribe((youFell) => {
             this.possibleOpponents = [];
             this.youFell = youFell;
         });
     }
 
-    listenForCountDown() {
+    private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
             this.countdown = time;
             this.triggerPulse();
         });
     }
 
-    listenForGameOver() {
+    private listenForEndOfGame() {
         this.gameTurnService.playerWon$.subscribe((isGameOver) => {
-            this.gameOverMessage = isGameOver;
+            this.showExitModal = !isGameOver;
+            this.showEndGameModal = isGameOver;
             if (isGameOver) {
                 setTimeout(() => {
                     this.navigateToEndOfGame();
@@ -230,7 +240,7 @@ export class GamePageComponent implements OnInit {
         });
     }
 
-    listenForPossibleOpponents() {
+    private listenForPossibleOpponents() {
         this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
             if (this.player.specs.actions > 0 && possibleOpponents.length > 0) {
                 this.combatAvailable = true;
@@ -242,7 +252,7 @@ export class GamePageComponent implements OnInit {
         });
     }
 
-    listenForDoorOpening() {
+    private listenForDoorOpening() {
         this.gameTurnService.possibleDoors$.subscribe((doors) => {
             if (this.gameTurnService.doorAlreadyToggled) {
                 this.doorActionAvailable = false;
@@ -260,27 +270,17 @@ export class GamePageComponent implements OnInit {
         });
     }
 
-    toggleDoor() {
-        if (this.doorActionAvailable) {
-            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
-        }
-    }
-
-    triggerPulse(): void {
-        this.isPulsing = true;
-        setTimeout(() => (this.isPulsing = false), TIME_PULSE);
-    }
-
-    listenForIsCombatModalOpen() {
+    private listenForIsCombatModalOpen() {
         this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
             this.isCombatModalOpen = isCombatModalOpen;
             if (isCombatModalOpen) {
+                this.gameTurnService.clearMoves();
                 this.combatAvailable = false;
             }
         });
     }
 
-    listenForOpponent() {
+    private listenForOpponent() {
         this.combatService.opponent$.subscribe((opponent) => {
             this.opponent = opponent;
         });
@@ -314,15 +314,7 @@ export class GamePageComponent implements OnInit {
         );
     }
 
-    listenForEndOfGame() {
-        this.socketSubscription.add(
-            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe(() => {
-                this.showExitModal = false;
-                this.showEndGameModal = true;
-                setTimeout(() => {
-                    this.navigateToEndOfGame();
-                }, TIME_LIMIT_DELAY);
-            }),
-        );
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }
