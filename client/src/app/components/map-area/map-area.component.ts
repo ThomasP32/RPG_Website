@@ -29,7 +29,7 @@ export class MapAreaComponent implements OnInit {
 
     constructor(
         private readonly tileService: TileService,
-        public route: ActivatedRoute,
+        private readonly route: ActivatedRoute,
         private readonly mapService: MapService,
         private readonly mapCounterService: MapCounterService,
         private readonly imageService: ImageService,

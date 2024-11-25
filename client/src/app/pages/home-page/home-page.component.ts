@@ -18,17 +18,13 @@ export class HomePageComponent implements OnInit {
 
     constructor(
         private readonly router: Router,
-        public readonly socketService: SocketService,
+        private readonly socketService: SocketService,
     ) {
         this.router = router;
         this.socketService = socketService;
     }
     ngOnInit(): void {
         this.connect();
-    }
-
-    get socketId() {
-        return this.socketService.socket && this.socketService.socket.id ? this.socketService.socket.id : '';
     }
 
     async connect() {
