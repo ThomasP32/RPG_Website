@@ -245,7 +245,7 @@ describe('CharacterFormPageComponent', () => {
             playerServiceSpy.player = { name: '', avatar: Avatar.Avatar1 } as Player;
             component.onSubmit();
             await fixture.whenStable();
-            expect(component.showErrorMessage.characterNameError).toBeTrue();
+            expect(component.showCharacterNameError).toBeTrue();
             expect(routerSpy.navigate).not.toHaveBeenCalled();
         });
 
@@ -254,7 +254,7 @@ describe('CharacterFormPageComponent', () => {
             component.attackOrDefenseBonus = 'attack';
             component.onSubmit();
             await fixture.whenStable();
-            expect(component.showErrorMessage.bonusError).toBeTrue();
+            expect(component.showBonusError).toBeTrue();
             expect(routerSpy.navigate).not.toHaveBeenCalled();
         });
 
@@ -263,7 +263,7 @@ describe('CharacterFormPageComponent', () => {
             component.lifeOrSpeedBonus = 'life';
             component.onSubmit();
             await fixture.whenStable();
-            expect(component.showErrorMessage.diceError).toBeTrue();
+            expect(component.showDiceError).toBeTrue();
             expect(routerSpy.navigate).not.toHaveBeenCalled();
         });
     });
@@ -393,7 +393,7 @@ describe('CharacterFormPageComponent', () => {
                 communicationMapServiceSpy.basicGet.and.returnValue(of(undefined));
                 component.onSubmit();
                 tick(5000);
-                expect(component.showErrorMessage.selectionError).toBeTrue();
+                expect(component.showSelectionError).toBeTrue();
                 expect(routerSpy.navigate).toHaveBeenCalledWith(['/create-game']);
             }));
         });

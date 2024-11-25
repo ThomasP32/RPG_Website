@@ -39,17 +39,10 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     gameLockedModal: boolean = false;
     isJoiningGame: boolean = false;
 
-    showErrorMessage: {
-        selectionError: boolean;
-        characterNameError: boolean;
-        bonusError: boolean;
-        diceError: boolean;
-    } = {
-        selectionError: false,
-        characterNameError: false,
-        bonusError: false,
-        diceError: false,
-    };
+    showSelectionError: boolean = false;
+    showCharacterNameError: boolean = false;
+    showBonusError: boolean = false;
+    showDiceError: boolean = false;
 
     showGameStartedModal: boolean = false;
 
@@ -242,7 +235,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                 try {
                     const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
                     if (!chosenMap) {
-                        this.showErrorMessage.selectionError = true;
+                        this.showSelectionError = true;
                         setTimeout(() => {
                             this.router.navigate(['/create-game']);
                         }, TIME_REDIRECTION);
@@ -250,7 +243,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                         this.router.navigate([`${this.mapName}/waiting-room/host`]);
                     }
                 } catch (error) {
-                    this.showErrorMessage.selectionError = true;
+                    this.showSelectionError = true;
                     setTimeout(() => {
                         this.router.navigate(['/create-game']);
                     }, TIME_REDIRECTION);
@@ -270,25 +263,23 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     verifyErrors(): boolean {
-        this.showErrorMessage = {
-            selectionError: false,
-            characterNameError: false,
-            bonusError: false,
-            diceError: false,
-        };
+        this.showSelectionError = false;
+        this.showCharacterNameError = false;
+        this.showBonusError = false;
+        this.showDiceError = false;
 
         if (this.name === 'Choisis un nom' || this.playerService.player.name === '') {
-            this.showErrorMessage.characterNameError = true;
+            this.showCharacterNameError = true;
             return false;
         }
 
         if (!this.lifeOrSpeedBonus) {
-            this.showErrorMessage.bonusError = true;
+            this.showBonusError = true;
             return false;
         }
 
         if (!this.attackOrDefenseBonus) {
-            this.showErrorMessage.diceError = true;
+            this.showDiceError = true;
             return false;
         }
         return true;
