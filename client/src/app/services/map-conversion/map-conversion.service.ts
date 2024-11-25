@@ -47,9 +47,6 @@ export class MapConversionService {
     getPlayerCountMessage(mapSize: number): string {
         const size = this.convertToMapSize(mapSize);
         const { minPlayers, maxPlayers } = MapConfig[size];
-        if (minPlayers === maxPlayers) {
-            return `${minPlayers} joueurs`;
-        }
-        return `${minPlayers} à ${maxPlayers} joueurs`;
+        return minPlayers === maxPlayers ? `${minPlayers} joueurs` : `${minPlayers} à ${maxPlayers} joueurs`;
     }
 }
