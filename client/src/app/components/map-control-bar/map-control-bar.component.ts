@@ -18,7 +18,7 @@ export class MapControlBarComponent implements OnInit {
 
     constructor(
         private readonly route: ActivatedRoute,
-        public mapService: MapService,
+        private readonly mapService: MapService,
         private readonly router: Router,
     ) {
         this.route = route;
