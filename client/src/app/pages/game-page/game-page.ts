@@ -104,6 +104,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForDoors();
             this.gameTurnService.listenForDoorUpdates();
             this.gameTurnService.listenForCombatConclusion();
+            this.gameTurnService.listenForEndOfGame();
 
             this.combatService.listenCombatStart();
             this.combatService.listenForCombatFinish();
