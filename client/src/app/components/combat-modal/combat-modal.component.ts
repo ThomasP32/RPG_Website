@@ -27,9 +27,9 @@ export class CombatModalComponent implements OnInit, OnDestroy {
     socketSubscription: Subscription = new Subscription();
 
     constructor(
-        private socketService: SocketService,
-        private combatCountDownService: CombatCountdownService,
-        private gameService: GameService,
+        private readonly socketService: SocketService,
+        private readonly combatCountDownService: CombatCountdownService,
+        private readonly gameService: GameService,
     ) {
         this.socketService = socketService;
         this.combatCountDownService = combatCountDownService;

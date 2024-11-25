@@ -26,7 +26,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
 
     constructor(
-        private communicationMapService: CommunicationMapService,
+        private readonly communicationMapService: CommunicationMapService,
         private readonly gameService: GameService,
         private readonly characterService: CharacterService,
         private readonly playerService: PlayerService,
@@ -65,7 +65,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         const player = this.playerService.player;
-        this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
+        this.playerPreview = this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;
 
         this.listenToSocketMessages();
@@ -233,12 +233,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         return this.numberOfPlayers === this.maxPlayers;
     }
 
-    ngOnDestroy(): void {
-        if (this.socketSubscription) {
-            this.socketSubscription.unsubscribe();
-        }
-    }
-
     navigateToGamePage() {
         this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
             state: { player: this.player, gameId: this.waitingRoomCode },
@@ -251,5 +245,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     closeProfileModal(): void {
         this.showProfileModal = false;
+    }
+
+    ngOnDestroy(): void {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
     }
 }

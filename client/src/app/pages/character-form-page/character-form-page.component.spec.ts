@@ -151,7 +151,7 @@ describe('CharacterFormPageComponent', () => {
 
     beforeEach(async () => {
         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
-        characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
+        characterServiceSpy.characters = mockCharacters;
 
         playerServiceSpy = jasmine.createSpyObj('PlayerService', [
             'setPlayer',
@@ -205,7 +205,7 @@ describe('CharacterFormPageComponent', () => {
 
     describe('Character Selection', () => {
         beforeEach(() => {
-            component.characters = [
+            characterServiceSpy.characters = [
                 { id: Avatar.Avatar1, name: 'Alistair Clockhaven', image: '', preview: '', isAvailable: true },
                 { id: Avatar.Avatar2, name: 'Arachnoform', image: '', preview: '', isAvailable: false },
                 { id: Avatar.Avatar3, name: 'Archibald Light', image: '', preview: '', isAvailable: true },
@@ -365,7 +365,7 @@ describe('CharacterFormPageComponent', () => {
 
     describe('CharacterFormPageComponent additional tests', () => {
         beforeEach(() => {
-            component.characters = [...mockCharacters];
+            characterServiceSpy.characters = [...mockCharacters];
             component.selectedCharacter = component.characters[0];
             component.currentIndex = 0;
             component.name = 'Valid Name';
@@ -426,7 +426,7 @@ describe('CharacterFormPage when joining game', () => {
 
     beforeEach(async () => {
         characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getCharacters', 'resetCharacterAvailability']);
-        characterServiceSpy.getCharacters.and.returnValue(of(mockCharacters));
+        characterServiceSpy.characters = mockCharacters;
 
         communicationMapServiceSpy = jasmine.createSpyObj('CommunicationMapService', ['basicGet']);
         routerSpy = jasmine.createSpyObj('Router', ['navigate', 'includes'], { url: 'join-game' });
@@ -484,7 +484,8 @@ describe('CharacterFormPage when joining game', () => {
     });
 
     it('should show an error and navigate to main menu if game has already started', fakeAsync(() => {
-        component.listenToSocketMessages();
+        component.listenToGameStatus();
+        component.listenToPlayerJoin();
 
         socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
 
@@ -511,7 +512,7 @@ describe('CharacterFormPage when joining game', () => {
 
     describe('CharacterFormPageComponent HostListener keydown', () => {
         it('should navigate to the previous character when ArrowLeft is pressed', () => {
-            component.characters = [...mockCharacters];
+            characterServiceSpy.characters = [...mockCharacters];
             component.selectedCharacter = mockCharacters[2];
             component.currentIndex = 2;
 
@@ -523,7 +524,7 @@ describe('CharacterFormPage when joining game', () => {
         });
 
         it('should navigate to the next character when ArrowRight is pressed', () => {
-            component.characters = [...mockCharacters];
+            characterServiceSpy.characters = [...mockCharacters];
             component.selectedCharacter = mockCharacters[0];
             component.currentIndex = 0;
 

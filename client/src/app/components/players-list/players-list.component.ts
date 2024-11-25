@@ -23,8 +23,8 @@ export class PlayersListComponent implements OnInit {
     hoveredPlayerId: string | null = null;
 
     constructor(
-        private characterService: CharacterService,
-        private socketService: SocketService,
+        private readonly characterService: CharacterService,
+        private readonly socketService: SocketService,
     ) {
         this.characterService = characterService;
         this.socketService = socketService;

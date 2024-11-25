@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './join-game-modal.component.html',
     styleUrl: './join-game-modal.component.scss',
 })
-export class JoinGameModalComponent implements OnInit, AfterViewInit {
+export class JoinGameModalComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
 
     code: string[] = ['', '', '', ''];
@@ -20,8 +20,8 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
     socketSubscription: Subscription = new Subscription();
 
     constructor(
-        private socketService: SocketService,
-        private router: Router,
+        private readonly socketService: SocketService,
+        private readonly router: Router,
     ) {
         this.socketService = socketService;
         this.router = router;
@@ -99,5 +99,9 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
                 }
             }),
         );
+    }
+
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }
