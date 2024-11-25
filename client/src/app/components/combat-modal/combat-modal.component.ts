@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
 import { GameService } from '@app/services/game/game.service';
+import { RollResult } from '@common/combat';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
 
@@ -117,14 +118,14 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForDiceRoll(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ attackDice: number; defenseDice: number }>('diceRolled').subscribe((data) => {
-                this.defenseTotal = data.defenseDice;
-                this.attackTotal = data.attackDice;
+            this.socketService.listen<RollResult>('diceRolled').subscribe((rollResult) => {
+                this.defenseTotal = rollResult.defenseDice;
+                this.attackTotal = rollResult.attackDice;
                 if (this.isYourTurn) {
                     this.attacking = true;
                 } else {
-                    this.attackTotal = data.defenseDice;
-                    this.defenseTotal = data.attackDice;
+                    this.attackTotal = rollResult.defenseDice;
+                    this.defenseTotal = rollResult.attackDice;
                     this.attacking = false;
                 }
             }),
