@@ -40,7 +40,7 @@ import { Subscription } from 'rxjs';
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     private readonly socketSubscription: Subscription = new Subscription();
-    
+
     GamePageActiveView = GamePageActiveView;
     activeView: GamePageActiveView = GamePageActiveView.Chat;
     activePlayers: Player[];
@@ -201,7 +201,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         setTimeout(() => (this.isPulsing = false), TIME_PULSE);
     }
 
-
     protected listenForCurrentPlayerUpdates() {
         this.gameTurnService.playerTurn$.subscribe((playerName) => {
             this.currentPlayerTurn = playerName;
@@ -230,7 +229,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     private listenForEndOfGame() {
         this.gameTurnService.playerWon$.subscribe((isGameOver) => {
-            this.showExitModal = !isGameOver;
+            this.showExitModal = false;
             this.showEndGameModal = isGameOver;
             if (isGameOver) {
                 setTimeout(() => {

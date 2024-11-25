@@ -1,5 +1,5 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
-import { Player } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -9,20 +9,21 @@ import { GameCountdownService } from '../../service/countdown/game/game-countdow
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
+import { Combat } from '@common/combat';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
-    @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    @Inject(GameManagerService) private gameManagerService: GameManagerService;
-    @Inject(JournalService) private journalService: JournalService;
+    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
+    @Inject(JournalService) private readonly journalService: JournalService;
 
     constructor(
-        private combatService: CombatService,
-        private gameCountdownService: GameCountdownService,
-        private combatCountdownService: CombatCountdownService,
+        private readonly combatService: CombatService,
+        private readonly gameCountdownService: GameCountdownService,
+        private readonly combatCountdownService: CombatCountdownService,
     ) {
         this.combatService = combatService;
         this.combatCountdownService = combatCountdownService;
@@ -110,10 +111,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             const defendingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
 
             const rollResult = this.combatService.rollDice(attackingPlayer, defendingPlayer);
-            this.server.to(combat.id).emit('diceRolled', {
-                attackDice: rollResult.attackDice,
-                defenseDice: rollResult.defenseDice,
-            });
+            this.server.to(combat.id).emit('diceRolled', rollResult);
             this.journalService.logMessage(
                 combat.id,
                 `Dés roulés. Dé d'attaque: ${rollResult.attackDice}. Dé de défense: ${rollResult.defenseDice}. Résultat = ${rollResult.attackDice} - ${rollResult.defenseDice}.`,
@@ -191,47 +189,72 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     handleDisconnect(client: Socket): void {
         const games = this.gameCreationService.getGames();
+    
         games.forEach((game) => {
             if (!game.hasStarted) {
-                if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
-                    this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
-                    this.gameCreationService.deleteRoom(game.id);
+                if (this.handleHostDisconnection(client, game)) {
                     return;
                 }
             }
+    
             const player = game.players.find((player) => player.socketId === client.id);
             if (player) {
-                const updatedGame = this.gameCreationService.handlePlayerLeaving(client, game.id);
-                this.server.to(updatedGame.id).emit('playerLeft', updatedGame.players);
-                if (updatedGame.hasStarted) {
-                    this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
-                    const combat = this.combatService.getCombatByGameId(updatedGame.id);
-                    if (combat) {
-                        (client.id === combat.challenger.socketId ? combat.challenger : combat.opponent).isActive = false;
-                        const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
-                        this.combatService.combatWinStatsUpdate(winner, updatedGame.id);
-                        this.combatService.updatePlayersInGame(updatedGame);
-                        this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
-                        this.combatCountdownService.deleteCountdown(updatedGame.id);
-                        setTimeout(() => {
-                            this.server.to(updatedGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
-                            if (this.combatService.checkForGameWinner(updatedGame.id, winner)) {
-                                this.server.to(updatedGame.id).emit('gameFinishedPlayerWon', { winner: winner });
-                                return;
-                            }
-                            if (updatedGame.currentTurn === winner.turn) {
-                                this.gameCountdownService.resumeCountdown(updatedGame.id);
-                            } else {
-                                this.gameCountdownService.emit('timeout', updatedGame.id);
-                            }
-                            this.cleanupCombatRoom(combat.id);
-                        }, TIME_LIMIT_DELAY);
-                    } else if (game.currentTurn === player.turn) {
-                        this.gameCountdownService.emit('timeout', game.id);
-                    }
-                }
-                return;
+                this.handlePlayerDisconnection(client, game, player);
             }
         });
     }
+    
+    private handleHostDisconnection(client: Socket, game: Game): boolean {
+        if (this.gameCreationService.isPlayerHost(client.id, game.id)) {
+            this.server.to(game.id).emit('gameClosed', { reason: "L'organisateur a quitté la partie" });
+            this.gameCreationService.deleteRoom(game.id);
+            return true;
+        }
+        return false;
+    }
+    
+    private handlePlayerDisconnection(client: Socket, game: Game, player: Player): void {
+        const updatedGame = this.gameCreationService.handlePlayerLeaving(client, game.id);
+        this.server.to(updatedGame.id).emit('playerLeft', updatedGame.players);
+    
+        if (updatedGame.hasStarted) {
+            this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
+    
+            const combat = this.combatService.getCombatByGameId(updatedGame.id);
+            if (combat) {
+                this.handleCombatDisconnection(client, updatedGame, combat);
+            } else if (game.currentTurn === player.turn) {
+                this.gameCountdownService.emit('timeout', game.id);
+            }
+        }
+    }
+    
+    private handleCombatDisconnection(client: Socket, updatedGame: Game, combat: Combat): void {
+        const disconnectedPlayer = client.id === combat.challenger.socketId ? combat.challenger : combat.opponent;
+        const winner = client.id === combat.challenger.socketId ? combat.opponent : combat.challenger;
+        disconnectedPlayer.isActive = false;
+    
+        this.combatService.combatWinStatsUpdate(winner, updatedGame.id);
+        this.combatService.updatePlayersInGame(updatedGame);
+        this.server.to(combat.id).emit('combatFinishedByDisconnection', winner);
+        this.combatCountdownService.deleteCountdown(updatedGame.id);
+    
+        setTimeout(() => {
+            this.server.to(updatedGame.id).emit('combatFinished', { updatedGame: updatedGame, winner: winner });
+    
+            if (this.combatService.checkForGameWinner(updatedGame.id, winner)) {
+                this.server.to(updatedGame.id).emit('gameFinishedPlayerWon', { winner: winner });
+                return;
+            }
+    
+            if (updatedGame.currentTurn === winner.turn) {
+                this.gameCountdownService.resumeCountdown(updatedGame.id);
+            } else {
+                this.gameCountdownService.emit('timeout', updatedGame.id);
+            }
+    
+            this.cleanupCombatRoom(combat.id);
+        }, TIME_LIMIT_DELAY);
+    }
+    
 }
