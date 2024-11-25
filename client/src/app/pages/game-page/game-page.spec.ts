@@ -1,6 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
@@ -9,12 +8,13 @@ import { GameService } from '@app/services/game/game.service';
 import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
+import { MovesMap } from '@common/directions';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
-import { GamePageActiveView } from '@common/game-page';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -125,6 +125,7 @@ describe('GamePageComponent', () => {
                 'listenForDoorUpdates',
                 'listenForCombatConclusion',
                 'toggleDoor',
+                'listenForEndOfGame',
             ],
             {
                 playerTurn$: playerTurnSubject,
