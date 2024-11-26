@@ -7,6 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Player } from '@common/game';
 import { DetailedMap, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
@@ -177,7 +178,7 @@ describe('CharacterFormPageComponent', () => {
 
         availableAvatarsSubject = new Subject<any>();
         socketServiceSpy.listen.and.callFake((eventName: string) => {
-            if (eventName === 'currentPlayers') {
+            if (eventName === GameCreationEvents.CurrentPlayers) {
                 return availableAvatarsSubject.asObservable();
             }
             return of({});
@@ -448,15 +449,15 @@ describe('CharacterFormPage when joining game', () => {
         });
 
         socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-            if (eventName === 'currentPlayers') {
+            if (eventName === GameCreationEvents.CurrentPlayers) {
                 return availableAvatarsSubject.asObservable() as Observable<T>;
-            } else if (eventName === 'playerJoined') {
+            } else if (eventName === GameCreationEvents.PlayerJoined) {
                 return of({
                     name: 'nouveau user',
                     socketId: 'mock-socket-id',
                     isActive: true,
                 } as T);
-            } else if (eventName === 'gameAlreadyStarted') {
+            } else if (eventName === GameCreationEvents.GameAlreadyStarted) {
                 return of({} as T);
             } else {
                 return of({} as T);
@@ -487,7 +488,7 @@ describe('CharacterFormPage when joining game', () => {
         component.listenToGameStatus();
         component.listenToPlayerJoin();
 
-        socketServiceSpy.listen.withArgs('gameAlreadyStarted').and.returnValue(of({ reason: 'Game has already started' }));
+        socketServiceSpy.listen.withArgs(GameCreationEvents.GameAlreadyStarted).and.returnValue(of('Game has already started'));
 
         tick(5000);
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
@@ -544,6 +545,6 @@ describe('CharacterFormPage when joining game', () => {
         component.gameId = '5678';
         await component.onSubmit();
 
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: playerServiceSpy.player, gameId: '5678' });
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.JoinGame, { player: playerServiceSpy.player, gameId: '5678' });
     });
 });
