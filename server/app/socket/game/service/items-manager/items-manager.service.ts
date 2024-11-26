@@ -9,14 +9,13 @@ export class ItemsManagerService {
     @Inject(GameCreationService) private gameCreationService: GameCreationService;
     @Inject(GameManagerService) private gameManagerService: GameManagerService;
 
-    dropInventory(playerSocket: string, gameId: string): void {
+    dropInventory(player: Player, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
         if (!game) return;
-        const player = game.players.find((player) => player.socketId === playerSocket);
         const availableTile = this.gameManagerService.getFirstFreePosition(player.position, game);
         this.dropItem(player.inventory[0], gameId, player, player.position);
-        if (availableTile) {
-            this.dropItem(player.inventory[1], gameId, player, availableTile);
+        for (let item of player.inventory) {
+            this.dropItem(item, gameId, player, availableTile);
         }
     }
 

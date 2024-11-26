@@ -20,7 +20,7 @@ export enum ItemCategory {
     Armor = 'armor',
     Sword = 'sword',
     Flask = 'flask',
-    GrapplingHook = 'grapplinghook',
+    WallBreaker = 'wallbreaker',
     IceSkates = 'iceskates',
     TimeTwister = 'timetwister',
     Random = 'randomitem',

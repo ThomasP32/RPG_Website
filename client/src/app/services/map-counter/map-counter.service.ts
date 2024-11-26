@@ -50,7 +50,7 @@ export class MapCounterService {
         this.items = [
             ItemCategory.Armor,
             ItemCategory.IceSkates,
-            ItemCategory.GrapplingHook,
+            ItemCategory.WallBreaker,
             ItemCategory.Sword,
             ItemCategory.TimeTwister,
             ItemCategory.Flask,

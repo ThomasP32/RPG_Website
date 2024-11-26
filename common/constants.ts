@@ -41,7 +41,7 @@ export const ALL_ITEMS: ItemCategory[] = [
     ItemCategory.Flask,
     ItemCategory.Sword,
     ItemCategory.IceSkates,
-    ItemCategory.GrapplingHook,
+    ItemCategory.WallBreaker,
     ItemCategory.TimeTwister,
 ];
 export const DEFAULT_HP = 4;

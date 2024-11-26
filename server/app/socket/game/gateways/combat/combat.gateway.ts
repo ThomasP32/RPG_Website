@@ -1,6 +1,5 @@
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { Player } from '@common/game';
-import { ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -111,9 +110,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         if (combat) {
             const attackingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const defendingPlayer: Player = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
-            if (attackingPlayer.inventory.includes(ItemCategory.Flask) && attackingPlayer.specs.life === 1) {
-                this.itemManagerService.activateItem(ItemCategory.Flask, attackingPlayer);
-            }
+
             const rollResult = this.combatService.rollDice(attackingPlayer, defendingPlayer);
             this.server.to(combat.id).emit('diceRolled', {
                 attackDice: rollResult.attackDice,
@@ -145,15 +142,14 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     handleCombatLost(defendingPlayer: Player, attackingPlayer: Player, gameId: string, combatId: string) {
         const game = this.gameCreationService.getGameById(gameId);
         this.combatService.combatWinStatsUpdate(attackingPlayer, gameId);
-        this.itemManagerService.dropInventory(defendingPlayer.socketId, gameId);
-        this.server.to(defendingPlayer.socketId).emit('itemDropped', { game: game, player: defendingPlayer });
-        console.log(`${defendingPlayer.name} has lost the combat and his inventory has been dropped.` + defendingPlayer.inventory);
+        this.itemManagerService.dropInventory(defendingPlayer, gameId);
         this.combatService.sendBackToInitPos(defendingPlayer, game);
         this.combatService.updatePlayersInGame(game);
 
         this.server.to(combatId).emit('combatFinishedNormally', attackingPlayer);
 
         this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
+
         this.combatCountdownService.deleteCountdown(gameId);
         setTimeout(() => {
             this.server.to(gameId).emit('combatFinished', { updatedGame: game, winner: attackingPlayer });
@@ -209,6 +205,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             }
             const player = game.players.find((player) => player.socketId === client.id);
             if (player) {
+                this.itemManagerService.dropInventory(player, game.id);
                 const updatedGame = this.gameCreationService.handlePlayerLeaving(client, game.id);
                 this.server.to(updatedGame.id).emit('playerLeft', updatedGame.players);
                 if (updatedGame.hasStarted) {
@@ -238,8 +235,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     } else if (game.currentTurn === player.turn) {
                         this.gameCountdownService.emit('timeout', game.id);
                     }
-                    this.itemManagerService.dropInventory(player.socketId, game.id);
-                    this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
                 }
                 return;
             }
