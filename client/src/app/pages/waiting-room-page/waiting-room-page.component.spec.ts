@@ -9,6 +9,7 @@ import { CommunicationMapService } from '@app/services/communication/communicati
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { WaitingRoomParameters } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { ItemCategory, Mode } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
@@ -54,8 +55,8 @@ describe('WaitingRoomPageComponent', () => {
     let CommunicationMapServiceSpy: jasmine.SpyObj<CommunicationMapService>;
     let gameStartedSubject: Subject<Object>;
     let playerJoinedSubject: Subject<Object>;
-    let gameLockToggled$: Subject<{ isLocked: boolean }>;
-    let gameInitialized: Subject<{ game: Game }>;
+    let gameLockToggled$: Subject<boolean>;
+    let gameInitialized: Subject<Game>;
     let playerKicked$: Subject<void>;
 
     beforeEach(async () => {
@@ -70,10 +71,8 @@ describe('WaitingRoomPageComponent', () => {
         gameStartedSubject = new Subject<any>();
         playerJoinedSubject = new Subject<any>();
 
-        gameLockToggled$ = new Subject<{ isLocked: boolean }>();
-        gameInitialized = new Subject<{
-            game: Game;
-        }>();
+        gameLockToggled$ = new Subject<boolean>();
+        gameInitialized = new Subject<Game>();
         playerKicked$ = new Subject<void>();
 
         SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
@@ -81,11 +80,11 @@ describe('WaitingRoomPageComponent', () => {
         SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'gameStarted') {
                 return gameStartedSubject.asObservable() as Observable<T>;
-            } else if (eventName === 'playerJoined') {
+            } else if (eventName === GameCreationEvents.PlayerJoined) {
                 return playerJoinedSubject.asObservable() as Observable<T>;
-            } else if (eventName === 'gameInitialized') {
+            } else if (eventName === GameCreationEvents.GameInitialized) {
                 return gameInitialized.asObservable() as Observable<T>;
-            } else if (eventName === 'gameLockToggled') {
+            } else if (eventName === GameCreationEvents.GameLockToggled) {
                 return gameLockToggled$.asObservable() as Observable<T>;
             } else {
                 return of([] as T);
@@ -237,7 +236,7 @@ describe('WaitingRoomPageComponent', () => {
         component.toggleGameLockState();
 
         expect(component.isGameLocked).toBeTrue();
-        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleGameLockState', {
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.ToggleGameLockState, {
             isLocked: true,
             gameId: '1234',
         });
@@ -245,7 +244,7 @@ describe('WaitingRoomPageComponent', () => {
         component.toggleGameLockState();
 
         expect(component.isGameLocked).toBeFalse();
-        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('toggleGameLockState', {
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.ToggleGameLockState, {
             isLocked: false,
             gameId: '1234',
         });
@@ -253,13 +252,13 @@ describe('WaitingRoomPageComponent', () => {
 
     it('should handle gameLockToggled event correctly and update isGameLocked', () => {
         component.isGameLocked = false;
-        gameLockToggled$.next({ isLocked: true });
+        gameLockToggled$.next(true);
 
         fixture.detectChanges();
 
         expect(component.isGameLocked).toBeTrue();
 
-        gameLockToggled$.next({ isLocked: false });
+        gameLockToggled$.next(false);
 
         fixture.detectChanges();
 
@@ -289,7 +288,7 @@ describe('WaitingRoomPageComponent', () => {
 
         spyOn(component, 'navigateToGamePage').and.callThrough();
 
-        gameInitialized.next({ game: mockGame as Game });
+        gameInitialized.next(mockGame as Game);
 
         fixture.detectChanges();
 
@@ -301,7 +300,7 @@ describe('WaitingRoomPageComponent', () => {
     it('should send initializeGame message when startGame is called', () => {
         component.waitingRoomCode = '1234';
         component.startGame();
-        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith('initializeGame', '1234');
+        expect(SocketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.InitializeGame, '1234');
     });
 
     it('should handle playerJoined event correctly', () => {

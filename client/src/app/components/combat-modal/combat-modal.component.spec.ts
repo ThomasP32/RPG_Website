@@ -5,6 +5,7 @@ import { GameService } from '@app/services/game/game.service';
 import { Player } from '@common/game';
 import { Observable, of, Subject } from 'rxjs';
 import { CombatModalComponent } from './combat-modal.component';
+import { CombatEvents } from '@common/events/combat.events';
 
 describe('CombatModalComponent', () => {
     let component: CombatModalComponent;
@@ -89,7 +90,7 @@ describe('CombatModalComponent', () => {
         it('should send an "attack" message when it is the player’s turn', () => {
             component.isYourTurn = true;
             component.attack();
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('attack', 'game-id');
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(CombatEvents.Attack, 'game-id');
         });
 
         it('should not send an "attack" message when it is not the player’s turn', () => {
@@ -127,7 +128,7 @@ describe('CombatModalComponent', () => {
         it('should set combat message on "attackFailure"', () => {
             const attackFailureSubject = new Subject<Player>();
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
-                return eventName === 'attackFailure' ? (attackFailureSubject.asObservable() as Observable<T>) : (of() as Observable<T>);
+                return eventName === CombatEvents.AttackFailure ? (attackFailureSubject.asObservable() as Observable<T>) : (of() as Observable<T>);
             });
 
             component.listenForAttacks();
@@ -156,9 +157,9 @@ describe('CombatModalComponent', () => {
 
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 switch (eventName) {
-                    case 'yourTurnCombat':
+                    case CombatEvents.YourTurnCombat:
                         return yourTurnSubject.asObservable() as Observable<T>;
-                    case 'playerTurnCombat':
+                    case CombatEvents.PlayerTurnCombat:
                         return playerTurnSubject.asObservable() as Observable<T>;
                     default:
                         return of() as Observable<T>;
@@ -178,9 +179,9 @@ describe('CombatModalComponent', () => {
 
             socketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
                 switch (eventName) {
-                    case 'yourTurnCombat':
+                    case CombatEvents.YourTurnCombat:
                         return yourTurnSubject.asObservable() as Observable<T>;
-                    case 'playerTurnCombat':
+                    case CombatEvents.PlayerTurnCombat:
                         return playerTurnSubject.asObservable() as Observable<T>;
                     default:
                         return of() as Observable<T>;
@@ -259,7 +260,7 @@ describe('CombatModalComponent', () => {
             component.isYourTurn = true;
             component.evade();
 
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startEvasion', 'game-id');
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(CombatEvents.StartEvasion, 'game-id');
             expect(component.isYourTurn).toBeFalse();
         });
 

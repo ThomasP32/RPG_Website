@@ -8,3 +8,8 @@ export interface Combat {
     challengerLife: number;
     opponentLife: number;
 }
+
+export interface RollResult {
+    attackDice: number;
+    defenseDice: number;
+}

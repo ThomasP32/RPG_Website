@@ -141,7 +141,6 @@ describe('MapAreaComponent', () => {
 
     describe('Map management', () => {
         it('should reset the map to default tile when mode is truthy', () => {
-            component.route.snapshot.params['mode'] = 'creation';
             component.map = [[{ tileType: TileCategory.Wall, isHovered: false } as Cell, { tileType: TileCategory.Door, isHovered: false } as Cell]];
             component.resetMapToDefault();
 
@@ -150,13 +149,6 @@ describe('MapAreaComponent', () => {
 
             expect(component.map[0][0].item).toBeUndefined();
             expect(component.map[0][1].item).toBeUndefined();
-        });
-
-        it('should load the map from mapService when mode is falsy', () => {
-            component.route.snapshot.params['mode'] = null;
-            spyOn(component, 'loadMap');
-            component.resetMapToDefault();
-            expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
         });
 
         it('should load map correctly', () => {

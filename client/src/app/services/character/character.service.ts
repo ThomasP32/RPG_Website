@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Character } from '@app/interfaces/character';
 import { Avatar } from '@common/game';
-import { Observable, of } from 'rxjs';
 @Injectable({
     providedIn: 'root',
 })
 export class CharacterService {
-    // il faut rajouter isAvailable pour eviter de rerender la page dans character-form (si on rerender on perd
-    // le socket et je sais pas pourquoi mais le socket se créé seulement à la page de départ on pourrait régler ca après mais
-    // ca me semble quand meme etre bien de l'avoir ici)
-    private characters = [
+    characters : Character[] = [
         {
             id: Avatar.Avatar1,
             name: 'Alistair Clockhaven',
@@ -96,15 +92,12 @@ export class CharacterService {
         },
     ];
 
-    getCharacters(): Observable<Character[]> {
-        return of(this.characters);
-    }
-
     resetCharacterAvailability(): void {
         this.characters.forEach((character) => {
             character.isAvailable = true;
         });
     }
+
     getAvatarPreview(avatar: Avatar): string {
         return this.characters.find((character) => character.id === avatar)?.preview || '';
     }
