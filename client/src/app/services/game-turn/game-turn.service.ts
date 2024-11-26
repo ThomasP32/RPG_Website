@@ -4,6 +4,7 @@ import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY } from '@common/constants';
 import { MovesMap } from '@common/directions';
+import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, DoorTile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -189,7 +190,7 @@ export class GameTurnService {
 
     listenForCombatStarted(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('YouStartedCombat').subscribe((player) => {
+            this.socketService.listen<Player>(CombatEvents.YouStartedCombat).subscribe((player) => {
                 if (player.socketId === this.player.socketId) {
                     this.playerService.setPlayer(player);
                 }
@@ -223,7 +224,7 @@ export class GameTurnService {
 
     listenForCombatConclusion(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ updatedGame: Game; evadingPlayer: Player }>('combatFinishedByEvasion').subscribe((data) => {
+            this.socketService.listen<CombatFinishedByEvasionData>(CombatEvents.CombatFinishedByEvasion).subscribe((data) => {
                 if (data.evadingPlayer.socketId === this.player.socketId) {
                     this.playerService.player = data.evadingPlayer;
                     if (data.updatedGame.currentTurn === this.playerService.player.turn) {
@@ -237,7 +238,7 @@ export class GameTurnService {
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ updatedGame: Game; winner: Player }>('combatFinished').subscribe((data) => {
+            this.socketService.listen<CombatFinishedData>(CombatEvents.CombatFinished).subscribe((data) => {
                 if (data.winner.socketId === this.player.socketId) {
                     this.playerService.player = data.winner;
                 } else {
@@ -247,7 +248,7 @@ export class GameTurnService {
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen('resumeTurnAfterCombatWin').subscribe(() => {
+            this.socketService.listen(CombatEvents.ResumeTurnAfterCombatWin).subscribe(() => {
                 this.clearMoves();
                 this.resumeTurn();
             }),
@@ -264,7 +265,7 @@ export class GameTurnService {
 
     listenForEndOfGame() {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('gameFinishedPlayerWon').subscribe(() => {
+            this.socketService.listen<Player>(CombatEvents.GameFinishedPlayerWon).subscribe(() => {
                 this.playerWon.next(true);
             }),
         );

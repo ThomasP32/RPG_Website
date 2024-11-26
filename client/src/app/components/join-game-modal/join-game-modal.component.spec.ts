@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { of, Subject } from 'rxjs';
 import { JoinGameModalComponent } from './join-game-modal.component';
 
@@ -24,11 +25,11 @@ describe('JoinGameModalComponent', () => {
 
         mockSocketService.listen.and.callFake((eventName: string) => {
             switch (eventName) {
-                case 'gameAccessed':
+                case GameCreationEvents.GameAccessed:
                     return gameAccessedSubject.asObservable();
-                case 'gameNotFound':
+                case GameCreationEvents.GameNotFound:
                     return gameNotFoundSubject.asObservable();
-                case 'gameLocked':
+                case GameCreationEvents.GameLocked:
                     return gameLockedSubject.asObservable();
                 default:
                     return of(null);
@@ -62,7 +63,7 @@ describe('JoinGameModalComponent', () => {
         component.code = ['1', '2', '3', '4'];
         const event = { target: { value: '4' } };
         component.joinGame(event);
-        expect(mockSocketService.sendMessage).toHaveBeenCalledWith('accessGame', '1234');
+        expect(mockSocketService.sendMessage).toHaveBeenCalledWith(GameCreationEvents.AccessGame, '1234');
     });
 
     it('should navigate to create-character on gameAccessed event', () => {
@@ -74,14 +75,14 @@ describe('JoinGameModalComponent', () => {
     });
 
     it('should set errorMessage on gameNotFound event', () => {
-        const errorResponse = { reason: 'Game not found' };
+        const errorResponse = 'Game not found';
         component.configureJoinGameSocketFeatures();
         gameNotFoundSubject.next(errorResponse);
         expect(component.errorMessage).toBe('Game not found');
     });
 
     it('should set errorMessage on gameLocked event', () => {
-        const errorResponse = { reason: 'Game is locked' };
+        const errorResponse = 'Game is locked';
         component.configureJoinGameSocketFeatures();
         gameLockedSubject.next(errorResponse);
         expect(component.errorMessage).toBe('Game is locked');

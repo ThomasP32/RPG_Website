@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { Message } from '@common/message';
+import { ChatEvents} from '@common/events/chat.events'
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -35,13 +36,13 @@ export class ChatroomComponent implements OnInit, OnDestroy {
         const currentUrl = this.router.url;
         this.isWaitingRoom = currentUrl.includes('/waiting-room');
         this.isGamePage = currentUrl.includes('/game-page');
-        this.messageSubscription = this.socketService.listen<Message[]>('previousMessages').subscribe((messages: Message[]) => {
+        this.messageSubscription = this.socketService.listen<Message[]>(ChatEvents.PreviousMessages).subscribe((messages: Message[]) => {
             console.log(messages);
             this.messages = messages;
             this.scrollToBottom();
         });
 
-        this.messageSubscription = this.socketService.listen<Message>('message').subscribe((message) => {
+        this.messageSubscription = this.socketService.listen<Message>(ChatEvents.NewMessage).subscribe((message) => {
             this.messages.push(message);
             this.scrollToBottom();
         });
@@ -55,7 +56,7 @@ export class ChatroomComponent implements OnInit, OnDestroy {
                 timestamp: new Date(),
                 gameId: this.gameId,
             };
-            this.socketService.sendMessage('message', { roomName: this.gameId, message });
+            this.socketService.sendMessage(ChatEvents.Message, { roomName: this.gameId, message });
             this.messageText = '';
             this.scrollToBottom();
         }

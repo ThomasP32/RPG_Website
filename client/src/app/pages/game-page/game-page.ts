@@ -17,6 +17,8 @@ import { ImageService } from '@app/services/image/image.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
+import { ChatEvents } from '@common/events/chat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, Player, Specs } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
@@ -128,7 +130,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
             }
 
-            this.socketService.sendMessage('joinChatRoom', this.game.id);
+            this.socketService.sendMessage(ChatEvents.JoinChatRoom, this.game.id);
         }
     }
 
@@ -288,7 +290,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenPlayersLeft() {
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.PlayerLeft).subscribe((players: Player[]) => {
                 this.gameService.game.players = players;
                 this.activePlayers = players.filter((player) => player.isActive);
                 if (this.activePlayers.length <= 1) {

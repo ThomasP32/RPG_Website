@@ -8,7 +8,8 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_REDIRECTION } from '@common/constants';
-import { Bonus, Player } from '@common/game';
+import { GameCreationEvents, JoinGameData } from '@common/events/game-creation.events';
+import { Bonus, Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -74,7 +75,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.listenToPlayerJoin();
             this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
-            this.socketService.sendMessage('getPlayers', this.gameId);
+            this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.gameId);
         } else {
             this.mapName = this.route.snapshot.params['mapName'];
         }
@@ -110,19 +111,19 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     listenToGameStatus(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
+            this.socketService.listen<string>(GameCreationEvents.GameLocked).subscribe(() => {
                 this.gameLockedModal = true;
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
-                this.gameId = data.gameId;
+            this.socketService.listen<Game>(GameCreationEvents.GameCreated).subscribe((game) => {
+                this.gameId = game.id;
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
+            this.socketService.listen<string>(GameCreationEvents.GameAlreadyStarted).subscribe(() => {
                 this.showGameStartedModal = true;
                 setTimeout(() => {
                     this.characterService.resetCharacterAvailability();
@@ -134,13 +135,13 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
 
     listenToPlayerJoin(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
+            this.socketService.listen<Player>(GameCreationEvents.YouJoined).subscribe((updatedPlayer: Player) => {
                 this.playerService.setPlayer(updatedPlayer);
                 this.router.navigate([`${this.gameId}/waiting-room/player`]);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.CurrentPlayers).subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
@@ -249,7 +250,8 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                     }, TIME_REDIRECTION);
                 }
             } else {
-                this.socketService.sendMessage('joinGame', { player: this.playerService.player, gameId: this.gameId });
+                const joinGameData: JoinGameData = { player: this.playerService.player, gameId: this.gameId! };
+                this.socketService.sendMessage(GameCreationEvents.JoinGame, joinGameData);
             }
         }
     }

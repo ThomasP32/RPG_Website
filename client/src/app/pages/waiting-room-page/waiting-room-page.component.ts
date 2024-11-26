@@ -11,6 +11,8 @@ import { GameService } from '@app/services/game/game.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, WaitingRoomParameters } from '@common/constants';
+import { ChatEvents } from '@common/events/chat.events';
+import { GameCreationEvents, ToggleGameLockStateData } from '@common/events/game-creation.events';
 import { Game, GameCtf, Player } from '@common/game';
 import { Map, Mode } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -76,11 +78,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
+            this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.waitingRoomCode);
         }
-        this.socketService.sendMessage('getGameData', this.waitingRoomCode);
-        this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
-        this.socketService.sendMessage('joinChatRoom', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.GetGameData, this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.waitingRoomCode);
+        this.socketService.sendMessage(ChatEvents.JoinChatRoom, this.waitingRoomCode);
     }
 
     generateRandomNumber(): void {
@@ -101,11 +103,11 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         } else {
             newGame = this.gameService.createNewGame(map, this.waitingRoomCode);
         }
-        this.socketService.sendMessage('createGame', newGame);
+        this.socketService.sendMessage(GameCreationEvents.CreateGame, newGame);
     }
 
     exitGame(): void {
-        this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.LeaveGame, this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
         this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
@@ -121,13 +123,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     startGame(): void {
-        this.socketService.sendMessage('initializeGame', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.InitializeGame, this.waitingRoomCode);
     }
 
     listenToSocketMessages(): void {
         if (!this.isHost) {
             this.socketSubscription.add(
-                this.socketService.listen('gameClosed').subscribe(() => {
+                this.socketService.listen(GameCreationEvents.GameClosed).subscribe(() => {
                     this.dialogBoxMessage = "L'hôte de la partie a quitté.";
                     this.showExitModal = true;
                     setTimeout(() => {
@@ -136,15 +138,15 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 }),
             );
             this.socketSubscription.add(
-                this.socketService.listen<{ isLocked: boolean }>('gameLockToggled').subscribe((data) => {
-                    this.isGameLocked = data.isLocked;
+                this.socketService.listen<boolean>(GameCreationEvents.GameLockToggled).subscribe((isLocked) => {
+                    this.isGameLocked = isLocked;
                 }),
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
-                this.gameService.setGame(data.game);
-                data.game.players.forEach((player) => {
+            this.socketService.listen<Game>(GameCreationEvents.GameInitialized).subscribe((game) => {
+                this.gameService.setGame(game);
+                game.players.forEach((player) => {
                     if (player.socketId === this.player.socketId) {
                         this.playerService.setPlayer(player);
                     }
@@ -155,43 +157,46 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.CurrentPlayers).subscribe((players: Player[]) => {
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game; name: string; size: number }>('currentGameData').subscribe((data) => {
-                if (this.isHost) {
-                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
-                } else {
-                    this.mapName = data.name;
-                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
+            this.socketService.listen<Game>(GameCreationEvents.CurrentGame).subscribe((game) => {
+                if (game && game.mapSize) {
+                    if (this.isHost) {
+                        this.maxPlayers = this.mapConversionService.getMaxPlayers(game.mapSize.x);
+                    } else {
+                        this.mapName = game.name;
+                        this.maxPlayers = this.mapConversionService.getMaxPlayers(game.mapSize.x);
+                    }
                 }
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.PlayerJoined).subscribe((players: Player[]) => {
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
 
                 if (this.isHost) {
-                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketService.sendMessage(GameCreationEvents.IfStartable, this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe(() => {
+                        this.socketService.listen(GameCreationEvents.IsStartable).subscribe(() => {
                             this.isStartable = true;
                         }),
                     );
                 }
                 if (this.numberOfPlayers === this.maxPlayers) {
-                    this.socketService.sendMessage('toggleGameLockState', { isLocked: true, gameId: this.waitingRoomCode });
+                    const toggleGameLockStateData: ToggleGameLockStateData = { isLocked: true, gameId: this.waitingRoomCode };
+                    this.socketService.sendMessage(GameCreationEvents.ToggleGameLockState, toggleGameLockStateData);
                 }
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('playerKicked').subscribe(() => {
+            this.socketService.listen(GameCreationEvents.PlayerKicked).subscribe(() => {
                 this.dialogBoxMessage = 'Vous avez été exclu';
                 this.showExitModal = true;
                 setTimeout(() => {
@@ -203,10 +208,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.PlayerLeft).subscribe((players: Player[]) => {
                 if (this.isHost) {
                     this.isStartable = false;
-                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketService.sendMessage(GameCreationEvents.IfStartable, this.waitingRoomCode);
                 }
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
@@ -214,7 +219,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('isStartable').subscribe(() => {
+            this.socketService.listen(GameCreationEvents.IsStartable).subscribe(() => {
                 this.isStartable = true;
             }),
         );
@@ -226,7 +231,8 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
-        this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
+        const toggleGameLockStateData: ToggleGameLockStateData = { isLocked: this.isGameLocked, gameId: this.waitingRoomCode };
+        this.socketService.sendMessage(GameCreationEvents.ToggleGameLockState, toggleGameLockStateData);
     }
 
     isGameMaxed(): boolean {

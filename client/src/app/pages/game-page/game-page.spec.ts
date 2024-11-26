@@ -15,6 +15,7 @@ import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -162,7 +163,7 @@ describe('GamePageComponent', () => {
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
-                case 'playerLeft':
+                case GameCreationEvents.PlayerLeft:
                     return playerLeftSubject.asObservable() as Observable<T>;
                 case 'delay':
                     return delaySubject.asObservable() as Observable<T>;

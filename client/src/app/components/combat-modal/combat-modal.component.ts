@@ -3,6 +3,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
 import { GameService } from '@app/services/game/game.service';
 import { RollResult } from '@common/combat';
+import { CombatEvents } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { Subscription } from 'rxjs';
 
@@ -54,14 +55,14 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     attack(): void {
         if (this.isYourTurn) {
-            this.socketService.sendMessage('attack', this.gameService.game.id);
+            this.socketService.sendMessage(CombatEvents.Attack, this.gameService.game.id);
             this.isYourTurn = false;
         }
     }
 
     evade(): void {
         if (this.isYourTurn) {
-            this.socketService.sendMessage('startEvasion', this.gameService.game.id);
+            this.socketService.sendMessage(CombatEvents.StartEvasion, this.gameService.game.id);
             this.isYourTurn = false;
         }
     }
@@ -85,7 +86,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player>('attackFailure').subscribe((playerAttacked) => {
+            this.socketService.listen<Player>(CombatEvents.AttackFailure).subscribe((playerAttacked) => {
                 if (playerAttacked.socketId === this.opponent.socketId) {
                     this.combatMessage = `${playerAttacked.name} a survécu à votre attaque`;
                 } else {
@@ -105,12 +106,12 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForCombatTurns(): void {
         this.socketSubscription.add(
-            this.socketService.listen('yourTurnCombat').subscribe(() => {
+            this.socketService.listen(CombatEvents.YourTurnCombat).subscribe(() => {
                 this.isYourTurn = true;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen('playerTurnCombat').subscribe(() => {
+            this.socketService.listen(CombatEvents.PlayerTurnCombat).subscribe(() => {
                 this.isYourTurn = false;
             }),
         );
@@ -118,7 +119,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForDiceRoll(): void {
         this.socketSubscription.add(
-            this.socketService.listen<RollResult>('diceRolled').subscribe((rollResult) => {
+            this.socketService.listen<RollResult>(CombatEvents.DiceRolled).subscribe((rollResult) => {
                 this.defenseTotal = rollResult.defenseDice;
                 this.attackTotal = rollResult.attackDice;
                 if (this.isYourTurn) {
