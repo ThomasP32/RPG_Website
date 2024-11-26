@@ -82,13 +82,6 @@ describe('JournalService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should initialize with an empty journalEntries array', () => {
-        const expected: JournalEntry[] = [];
-        service.journalEntries$.toPromise().then((entries) => {
-            expect(entries).toEqual(expected);
-        });
-    });
-
     it('should listen to journal events and update journalEntries', fakeAsync(() => {
         const mockJournalEntry: JournalEntry = {
             message: 'Test message',

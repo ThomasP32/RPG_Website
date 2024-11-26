@@ -5,6 +5,7 @@ import { Game, GameCtf, Player, Specs } from '@common/game';
 import { Map, Mode } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameService', () => {
     let service: GameService;
@@ -44,9 +45,9 @@ describe('GameService', () => {
 
         socketServiceMock.listen.and.callFake((eventName: string) => {
             switch (eventName) {
-                case 'currentGame':
+                case GameCreationEvents.CurrentGame:
                     return currentGameSubject.asObservable();
-                case 'currentPlayers':
+                case GameCreationEvents.CurrentPlayers:
                     return currentPlayersSubject.asObservable();
                 default:
                     return of({});
