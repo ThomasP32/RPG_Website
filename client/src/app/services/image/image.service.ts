@@ -155,4 +155,27 @@ export class ImageService {
                 return '';
         }
     }
+
+    getIconImage(icon: string): string {
+        switch (icon) {
+            case 'attack':
+                return './assets/icons/sword.png';
+            case 'defense':
+                return './assets/icons/shield.png';
+            case 'health':
+                return './assets/icons/heart.png';
+            case 'speed':
+                return './assets/icons/speed.png';
+            case 'battle':
+                return './assets/icons/fight.png';
+            case 'action':
+                return './assets/icons/action.png';
+            case 'robot':
+                return './assets/icons/robot.png';
+            case 'host':
+                return './assets/icons/crown.png';
+            default:
+                return '';
+        }
+    }
 }
