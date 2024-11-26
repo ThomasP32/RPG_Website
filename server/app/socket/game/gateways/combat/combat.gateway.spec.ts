@@ -7,6 +7,7 @@ import { CombatCountdownService } from '../../service/countdown/combat/combat-co
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 import { CombatGateway } from './combat.gateway';
 
@@ -82,6 +83,8 @@ describe('CombatGateway', () => {
         },
         challengerLife: 5,
         opponentLife: 5,
+        challengerAttack: 4,
+        opponentAttack: 4,
         currentTurnSocketId: 'socket-id',
     };
 
@@ -148,6 +151,14 @@ describe('CombatGateway', () => {
                     provide: GameManagerService,
                     useValue: {
                         updatePlayerActions: jest.fn(),
+                    },
+                },
+                {
+                    provide: ItemsManagerService,
+                    useValue: {
+                        activateItem: jest.fn(),
+                        desactivateItem: jest.fn(),
+                        dropInventory: jest.fn(),
                     },
                 },
             ],

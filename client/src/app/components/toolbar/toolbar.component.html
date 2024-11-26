@@ -71,12 +71,12 @@
                     />
                     <span class="description" draggable="false">Un pot mystique capable de contenir et de libérer des substances puissantes.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.GrapplingHook) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.WallBreaker) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('grapplinghook')"
-                        alt="GrapplingHook"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.GrapplingHook) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.GrapplingHook)"
+                        [src]="getItemImage('wallbreaker')"
+                        alt="WallBreaker"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.WallBreaker) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.WallBreaker)"
                     />
                     <span class="description" draggable="false"
                         >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span

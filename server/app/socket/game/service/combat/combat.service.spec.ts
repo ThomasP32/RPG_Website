@@ -1,12 +1,14 @@
 import { Bonus, Game, Player, Specs } from '@common/game';
-import { Mode } from '@common/map.types';
+import { ItemCategory, Mode } from '@common/map.types';
 import { Server } from 'socket.io';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { ItemsManagerService } from '../items-manager/items-manager.service';
 import { CombatService } from './combat.service';
 
 describe('ServerCombatService', () => {
     let service: CombatService;
     let gameCreationService: GameCreationService;
+    let itemsManagerService: ItemsManagerService;
 
     beforeEach(() => {
         challenger.specs.nVictories = 0;
@@ -23,7 +25,14 @@ describe('ServerCombatService', () => {
             }),
         } as unknown as GameCreationService;
 
-        service = new CombatService(gameCreationService);
+        itemsManagerService = {
+            dropInventory: jest.fn(),
+            pickUpItem: jest.fn(),
+            dropItem: jest.fn(),
+            activateItem: jest.fn(),
+        } as unknown as ItemsManagerService;
+
+        service = new CombatService(gameCreationService, itemsManagerService);
     });
 
     const challenger: Player = {
@@ -236,6 +245,7 @@ describe('ServerCombatService', () => {
             } as Specs,
             position: { x: 0, y: 0 },
             initialPosition: { x: 0, y: 0 },
+            inventory: [],
         } as Player;
 
         const defendingPlayer: Player = {
@@ -256,6 +266,7 @@ describe('ServerCombatService', () => {
             } as Specs,
             position: { x: 1, y: 1 },
             initialPosition: { x: 1, y: 1 },
+            inventory: [],
         } as Player;
 
         let mockServer: jest.Mocked<Server>;
@@ -276,31 +287,59 @@ describe('ServerCombatService', () => {
             expect(defendingPlayer.specs.nLifeLost).toBe(1);
             expect(attackingPlayer.specs.nLifeTaken).toBe(1);
         });
+
+        it('should activate Flask item if defending player has it and life is 1', () => {
+            defendingPlayer.inventory.push(ItemCategory.Flask);
+            defendingPlayer.specs.life = 2;
+
+            const activateItemSpy = jest.spyOn(itemsManagerService, 'activateItem');
+
+            service.handleAttackSuccess(attackingPlayer, defendingPlayer, combatId);
+
+            expect(activateItemSpy).toHaveBeenCalledWith(ItemCategory.Flask, defendingPlayer);
+        });
+
+        it('should not activate Flask item if defending player does not have it', () => {
+            defendingPlayer.specs.life = 2;
+            defendingPlayer.inventory = [];
+
+            const activateItemSpy = jest.spyOn(itemsManagerService, 'activateItem');
+
+            service.handleAttackSuccess(attackingPlayer, defendingPlayer, combatId);
+
+            expect(activateItemSpy).not.toHaveBeenCalled();
+        });
+
+        it('should emit attackSuccess event with defending player', () => {
+            service.handleAttackSuccess(attackingPlayer, defendingPlayer, combatId);
+
+            expect(mockServer.to).toHaveBeenCalledWith(combatId);
+            expect(mockServer.emit).toHaveBeenCalledWith('attackSuccess', defendingPlayer);
+        });
     });
     describe('setServer', () => {
         let mockServer: jest.Mocked<Server>;
-    
+
         beforeEach(() => {
             mockServer = {
                 to: jest.fn().mockReturnThis(),
                 emit: jest.fn(),
             } as unknown as jest.Mocked<Server>;
         });
-    
+
         it('should set the server instance', () => {
             service.setServer(mockServer);
-    
+
             expect(service.server).toBe(mockServer);
         });
-    
+
         it('should allow the server to emit events after being set', () => {
             service.setServer(mockServer);
-    
+
             service.server.to('combat-room').emit('testEvent', { key: 'value' });
-    
+
             expect(mockServer.to).toHaveBeenCalledWith('combat-room');
             expect(mockServer.to('combat-room').emit).toHaveBeenCalledWith('testEvent', { key: 'value' });
         });
     });
-    
 });

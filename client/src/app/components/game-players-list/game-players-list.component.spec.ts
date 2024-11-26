@@ -30,7 +30,7 @@ describe('GamePlayersListComponent', () => {
                 socketId: '123',
                 avatar: {},
                 specs: { nVictories: 0 },
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
             } as Player,
             {
                 turn: 1,
@@ -38,7 +38,7 @@ describe('GamePlayersListComponent', () => {
                 socketId: '456',
                 avatar: {},
                 specs: { nVictories: 0 },
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
             } as Player,
         ];
         fixture.detectChanges();

@@ -59,10 +59,10 @@ describe('MapCounterService', () => {
         expect(service.items).toEqual([
             ItemCategory.Armor,
             ItemCategory.IceSkates,
-            ItemCategory.GrapplingHook,
+            ItemCategory.WallBreaker,
             ItemCategory.Sword,
             ItemCategory.TimeTwister,
-            ItemCategory.Bomb,
+            ItemCategory.Flask,
         ]);
     });
 

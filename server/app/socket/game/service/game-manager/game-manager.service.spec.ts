@@ -481,8 +481,8 @@ describe('GameManagerService', () => {
 
     describe('GameManagerService - hasPickedUpFlag', () => {
         it('should return true when the old inventory does not contain the flag but the new inventory does', () => {
-            const oldInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook];
-            const newInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook, ItemCategory.Flag];
+            const oldInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.WallBreaker];
+            const newInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.WallBreaker, ItemCategory.Flag];
 
             const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
 
@@ -491,7 +491,7 @@ describe('GameManagerService', () => {
 
         it('should return false when both inventories contain the flag', () => {
             const oldInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor];
-            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor, ItemCategory.GrapplingHook];
+            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor, ItemCategory.WallBreaker];
 
             const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
 
@@ -525,4 +525,6 @@ describe('GameManagerService', () => {
             expect(game2.players[0].specs.actions).toBe(initialActions);
         });
     });
+    
+
 });
