@@ -24,11 +24,7 @@ export class ImageService {
     }
 
     getDoorImage(isOpen: boolean): string {
-        if (isOpen) {
-            return './assets/tiles/door_opened.jpg';
-        } else {
-            return './assets/tiles/door_closed.jpg';
-        }
+        return isOpen ? './assets/tiles/door_opened.jpg' : './assets/tiles/door_closed.jpg';
     }
 
     getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number, map: any[][]): string {
