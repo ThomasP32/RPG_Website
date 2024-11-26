@@ -1,0 +1,126 @@
+@if(!delayFinished) {
+<div class="disable-interactions"></div>
+<div class="turn-indicator">
+    <h3>C'est au tour de {{ currentPlayerTurn }} dans</h3>
+    <span class="countdown-timer" [ngClass]="{ pulse: isPulsing }">{{ startTurnCountdown }}</span>
+</div>
+} @if(youFell) {
+<div class="disable-interactions"></div>
+<div class="turn-indicator"><h3>Vous êtes tombé, votre tour est fini.</h3></div>
+}
+<div class="game-page-container">
+    <div class="game-info-panel">
+        <app-player-infos></app-player-infos>
+        <div class="game-info">
+            <h2>Informations de la partie</h2>
+            <p>Taille de la carte : {{ game.mapSize.x }} x {{ game.mapSize.y }}</p>
+            <p>Nombre de joueurs : {{ 10 }}</p>
+            <p>Joueur actif : {{ player.name }}</p>
+        </div>
+
+        <div class="inventory">
+            <h3>Inventaire</h3>
+            <div class="inventory-container">
+                <div class="inventory-slot">
+                    @if(player.inventory[0]) {
+                    <img [src]="imageService.getItemImage(player.inventory[0])" [alt]="player.inventory[0]" class="item-image" />
+                    } @else {
+                    <div class="empty-slot">Vide</div>
+                    }
+                </div>
+                <div class="inventory-slot">
+                    @if(player.inventory[1]) {
+                    <img [src]="imageService.getItemImage(player.inventory[1])" [alt]="player.inventory[1]" class="item-image" />
+                    } @else {
+                    <div class="empty-slot">Vide</div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button (click)="toggleDoor()">{{ actionMessage }}</button>
+        </div>
+        @if(combatAvailable) {
+        <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
+        }
+        <div class="toggle-container">
+            <div class="toggle">
+                <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
+                <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
+            </div>
+        </div>
+
+        <div class="chat-and-journal-container">
+            <div class="game-page-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
+                <app-chatroom [playerName]="player.name" [gameId]="game.id"></app-chatroom>
+            </div>
+
+            <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
+                <app-journal [player]="player"></app-journal>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-container">
+        <div class="countdown-endturn-container">
+            <div class="countdown-container">
+                <h2>Temps restant</h2>
+                <div class="countdown-timer" [ngClass]="{ pulse: isPulsing }">
+                    <h3>{{ countdown }}</h3>
+                </div>
+                <h2>secondes</h2>
+            </div>
+            <button class="end" (click)="endTurn()">Fin du tour</button>
+        </div>
+    </div>
+
+    <div class="game-map-container">
+        <app-game-map> </app-game-map>
+    </div>
+
+    <div class="bottom-container">
+        <button>Quitter la partie</button>
+    </div>
+
+    <div class="right-panel">
+        <div class="player-list">
+            <div class="game-players-list-mock">
+                <!-- Player 1 -->
+                <div class="player active-player">
+                    <div class="avatar-container">
+                        <img [src]="playerImage2" alt="Player 1" class="avatar" />
+                    </div>
+                    <div class="player-info">
+                        <span>
+                            Player 1 - 3 victoires
+                            <span class="host-icon"> </span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Player 2 -->
+                <div class="player">
+                    <div class="avatar-container">
+                        <img [src]="playerImage2" alt="Player 2" class="avatar" />
+                    </div>
+                    <div class="player-info">
+                        <span>
+                            Player 2 - 1 victoire
+                            <span class="virtual-player-icon">🤖</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Player 3 (inactive) -->
+                <div class="player player-left">
+                    <div class="avatar-container">
+                        <img [src]="playerImage2" alt="Player 3" class="avatar" />
+                    </div>
+                    <div class="player-info">
+                        <span> Player 3 - 0 victoire </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

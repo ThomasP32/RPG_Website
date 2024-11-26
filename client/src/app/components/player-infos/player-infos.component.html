@@ -1,0 +1,45 @@
+<div class="player-container">
+    <div class="player">
+        <img [src]="playerPreview" alt="Avatar du joueur" class="player-avatar" />
+    </div>
+
+    <div class="player-infos">
+        <div class="player-name">
+            <h3>{{ player.name }}</h3>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-icon">
+                    <img src="assets/icons/heart_icon.png" alt="Vie" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.life / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <img src="assets/icons/speed_icon.png" alt="Rapidité" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <img src="assets/icons/sword_icon.png" alt="Attaque" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.attack / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <img src="assets/icons/shield_icon.png" alt="Défense" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
