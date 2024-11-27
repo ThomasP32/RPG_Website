@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, GameCtf, Player } from '@common/game';
 import { Map, Mode } from '@common/map.types';
 
@@ -57,7 +58,7 @@ export class GameService {
     }
 
     listenToGameData(): void {
-        this.socketService.listen<Game>('currentGame').subscribe((game: Game) => {
+        this.socketService.listen<Game>(GameCreationEvents.CurrentGame).subscribe((game: Game) => {
             if (game) {
                 if (this.playerService.player.socketId === this.game.hostSocketId) {
                     this.socketService.sendMessage('startGame', this.game.id);
@@ -67,7 +68,7 @@ export class GameService {
     }
 
     listenPlayerData(): void {
-        this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+        this.socketService.listen<Player[]>(GameCreationEvents.CurrentPlayers).subscribe((players: Player[]) => {
             if (players && players.length > 0) {
                 this.game.players = players;
                 this.playerService.setPlayer(players.filter((player) => player.socketId === this.playerService.player.socketId)[0]);

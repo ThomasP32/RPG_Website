@@ -2,6 +2,7 @@ import { GameCountdownService } from '@app/socket/game/service/countdown/game/ga
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { CombatEvents } from '@common/events/combat.events';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { GameManagerGateway } from './game-manager.gateway';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
@@ -59,7 +61,7 @@ describe('GameManagerGateway', () => {
             gateway.getMoves(socket, 'game-id');
 
             expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
-            expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
+            expect((socket.emit as SinonStub).calledWith(GameCreationEvents.GameNotFound)).toBeTruthy();
         });
 
         it('should emit playerPossibleMoves if the game exists', () => {
@@ -93,7 +95,7 @@ describe('GameManagerGateway', () => {
 
             expect(gameManagerService.checkForWinnerCtf.calledWith(player, 'game-id')).toBeTruthy();
             const toRoomStub = serverStub.to('game-id').emit as SinonStub;
-            expect(toRoomStub.calledWith('gameFinishedPlayerWon', { winner: player })).toBeTruthy();
+            expect(toRoomStub.calledWith(CombatEvents.GameFinishedPlayerWon, player)).toBeTruthy();
         });
 
         it('should emit gameNotFound if the game does not exist', async () => {
@@ -102,7 +104,7 @@ describe('GameManagerGateway', () => {
             await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
             expect(gameCreationService.doesGameExist.calledWith('game-id')).toBeTruthy();
-            expect((socket.emit as SinonStub).calledWith('gameNotFound')).toBeTruthy();
+            expect((socket.emit as SinonStub).calledWith(GameCreationEvents.GameNotFound)).toBeTruthy();
         });
 
         it('should emit flagPickedUp and youFinishedMoving when the player picks up the flag', async () => {

@@ -113,11 +113,9 @@ export class GameManagerService {
             const { point: currentPoint, weight: currentWeight } = toVisit.shift();
             const currentKey = this.coordinateToKey(currentPoint);
 
-            if (visited.has(currentKey)) continue;
+            if (visited.has(currentKey) || currentWeight > playerPoints) continue;
 
             visited.add(currentKey);
-
-            if (currentWeight > playerPoints) continue;
 
             const neighbors = this.getNeighbors(currentPoint, game);
 
@@ -129,20 +127,21 @@ export class GameManagerService {
                 const neighborWeight = currentWeight + this.getTileWeight(neighbor, game);
 
                 if (neighborWeight <= playerPoints) {
-                    shortestPaths.set(
-                        neighborKey,
-                        !shortestPaths.has(neighborKey) || neighborWeight < shortestPaths.get(neighborKey).weight
-                            ? {
-                                  path: [...(shortestPaths.get(currentKey)?.path || []), neighbor],
-                                  weight: neighborWeight,
-                              }
-                            : shortestPaths.get(neighborKey),
-                    );
+                    this.updateShortestPaths(shortestPaths, neighborKey, currentKey, neighbor, neighborWeight);
                     toVisit.push({ point: neighbor, weight: neighborWeight });
                 }
             }
         }
         return shortestPaths;
+    }
+
+    private updateShortestPaths(shortestPaths: MovesMap, neighborKey: string, currentKey: string, neighbor: Coordinate, neighborWeight: number) {
+        const currentPath = shortestPaths.get(currentKey)?.path || [];
+        const newPath = [...currentPath, neighbor];
+
+        if (!shortestPaths.has(neighborKey) || neighborWeight < shortestPaths.get(neighborKey).weight) {
+            shortestPaths.set(neighborKey, { path: newPath, weight: neighborWeight });
+        }
     }
 
     private initializeDijkstra(start: Coordinate): {

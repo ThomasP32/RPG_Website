@@ -1,4 +1,6 @@
 import { Combat } from '@common/combat';
+import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
@@ -195,7 +197,7 @@ describe('CombatGateway', () => {
             gateway.attackOnTimeOut('game-id');
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.DiceRolled, {
                 attackDice: 5,
                 defenseDice: 3,
             });
@@ -215,11 +217,11 @@ describe('CombatGateway', () => {
             gateway.attackOnTimeOut('game-id');
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.DiceRolled, {
                 attackDice: 3,
                 defenseDice: 5,
             });
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('attackFailure', mockCombat.opponent);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.AttackFailure, mockCombat.opponent);
             expect(journalService.logMessage).toHaveBeenCalledWith(
                 mockCombat.id,
                 `Dés roulés. Dé d'attaque: 3. Dé de défense: 5. Résultat = 3 - 5.`,
@@ -234,7 +236,7 @@ describe('CombatGateway', () => {
             gateway.attackOnTimeOut('game-id');
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.DiceRolled, {
                 attackDice: 5,
                 defenseDice: 3,
             });
@@ -255,7 +257,7 @@ describe('CombatGateway', () => {
             expect(serverCombatService.combatWinStatsUpdate).toHaveBeenCalledWith(attackingPlayer, 'game-id');
             expect(serverCombatService.sendBackToInitPos).toHaveBeenCalledWith(defendingPlayer, mockGame);
             expect(serverCombatService.updatePlayersInGame).toHaveBeenCalledWith(mockGame);
-            expect(mockServer.to('combat-id').emit).toHaveBeenCalledWith('combatFinishedNormally', attackingPlayer);
+            expect(mockServer.to('combat-id').emit).toHaveBeenCalledWith(CombatEvents.CombatFinishedNormally, attackingPlayer);
             expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [
                 attackingPlayer.name,
             ]);
@@ -273,7 +275,7 @@ describe('CombatGateway', () => {
             gateway.handleCombatLost(defendingPlayer, attackingPlayer, 'game-id', 'game-id-combat');
             jest.runAllTimers();
 
-            expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameFinishedPlayerWon', { winner: attackingPlayer });
+            expect(mockServer.to('game-id').emit).toHaveBeenCalledWith(CombatEvents.GameFinishedPlayerWon, attackingPlayer);
         });
 
         it('should resume countdown if attacker’s turn matches current turn', () => {
@@ -288,7 +290,7 @@ describe('CombatGateway', () => {
             jest.runAllTimers();
 
             expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith('game-id');
-            expect(mockServer.to(attackingPlayer.socketId).emit).toHaveBeenCalledWith('resumeTurnAfterCombatWin');
+            expect(mockServer.to(attackingPlayer.socketId).emit).toHaveBeenCalledWith(CombatEvents.ResumeTurnAfterCombatWin);
             expect(serverCombatService.deleteCombat).toHaveBeenCalledWith(mockGame.id);
         });
 
@@ -318,7 +320,7 @@ describe('CombatGateway', () => {
             jest.runAllTimers();
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionSuccess', mockCombat.challenger);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.EvasionSuccess, mockCombat.challenger);
             expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith('game-id');
             expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.challenger.name} s'est évadé.`, [
@@ -336,7 +338,7 @@ describe('CombatGateway', () => {
             jest.runAllTimers();
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionSuccess', mockCombat.opponent);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.EvasionSuccess, mockCombat.opponent);
             expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             expect(gameCountdownService.resumeCountdown).toHaveBeenCalledWith('game-id');
             expect(journalService.logMessage).toHaveBeenCalledWith('game-id', `Fin de combat. ${mockCombat.opponent.name} s'est évadé.`, [
@@ -351,7 +353,7 @@ describe('CombatGateway', () => {
             mockCombat.challenger.specs.evasions = 0;
             await gateway.startEvasion(mockSocket, 'game-id');
 
-            expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith('evasionSuccess');
+            expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith(CombatEvents.EvasionSuccess);
         });
 
         it('should emit evasionFailed and prepare for the next turn on evasion failure', async () => {
@@ -363,7 +365,7 @@ describe('CombatGateway', () => {
             jest.runAllTimers();
 
             expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('evasionFailed', mockCombat.challenger);
+            expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.EvasionFailed, mockCombat.challenger);
             expect(journalService.logMessage).toHaveBeenCalledWith(
                 'game-id-combat',
                 `Tentative d'évasion par ${mockCombat.challenger.name}: non réussie.`,
@@ -393,7 +395,7 @@ describe('CombatGateway', () => {
                 expect(mockOpponentSocket.join).toHaveBeenCalledWith(mockCombat.id);
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatStarted', {
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.CombatStarted, {
                     challenger: mockCombat.challenger,
                     opponent: mockCombat.opponent,
                 });
@@ -433,7 +435,7 @@ describe('CombatGateway', () => {
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
 
                 expect(mockOpponentSocket.join).not.toHaveBeenCalled();
-                expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith('combatStarted', expect.anything());
+                expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith(CombatEvents.CombatStarted, expect.anything());
             });
 
             it('should set the challenger as the current player and opponent as the other player', () => {
@@ -442,8 +444,8 @@ describe('CombatGateway', () => {
                 gateway.startCombatTurns(mockCombat.id);
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
-                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
-                expect(mockServer.to(mockCombat.opponent.socketId).emit).toHaveBeenCalledWith('playerTurnCombat');
+                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith(CombatEvents.YourTurnCombat);
+                expect(mockServer.to(mockCombat.opponent.socketId).emit).toHaveBeenCalledWith(CombatEvents.PlayerTurnCombat);
             });
 
             it('should set the opponent as the current player and challenger as the other player', () => {
@@ -452,8 +454,8 @@ describe('CombatGateway', () => {
                 gateway.startCombatTurns(mockCombat.id);
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
-                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
-                expect(mockServer.to(mockCombat.challenger.socketId).emit).toHaveBeenCalledWith('playerTurnCombat');
+                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith(CombatEvents.YourTurnCombat);
+                expect(mockServer.to(mockCombat.challenger.socketId).emit).toHaveBeenCalledWith(CombatEvents.PlayerTurnCombat);
                 mockCombat.currentTurnSocketId = mockCombat.challenger.socketId;
             });
         });
@@ -478,7 +480,7 @@ describe('CombatGateway', () => {
                 await gateway.startCombat(mockSocket, { gameId: 'game-id', opponent: mockCombat.opponent });
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatStarted', {
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.CombatStarted, {
                     challenger: mockCombat.challenger,
                     opponent: mockCombat.opponent,
                 });
@@ -509,7 +511,7 @@ describe('CombatGateway', () => {
                 gateway.attack(mockSocket, 'game-id');
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('diceRolled', {
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.DiceRolled, {
                     attackDice: 5,
                     defenseDice: 3,
                 });
@@ -537,7 +539,7 @@ describe('CombatGateway', () => {
                 mockCombat.challenger.specs.evasions = 0;
                 await gateway.startEvasion(mockSocket, 'game-id');
 
-                expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith('evasionSuccess');
+                expect(mockServer.to(mockCombat.id).emit).not.toHaveBeenCalledWith(CombatEvents.EvasionSuccess);
             });
         });
 
@@ -555,7 +557,7 @@ describe('CombatGateway', () => {
                 gateway.startCombatTurns('game-id');
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.currentTurnSocketId);
-                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith('yourTurnCombat');
+                expect(mockServer.to(mockCombat.currentTurnSocketId).emit).toHaveBeenCalledWith(CombatEvents.YourTurnCombat);
             });
         });
 
@@ -568,7 +570,7 @@ describe('CombatGateway', () => {
                 gateway.handleDisconnect(mockSocket);
 
                 expect(mockServer.to).toHaveBeenCalledWith('game-id');
-                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('gameClosed', { reason: "L'organisateur a quitté la partie" });
+                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith(GameCreationEvents.GameClosed);
                 expect(gameCreationService.deleteRoom).toHaveBeenCalledWith('game-id');
             });
 
@@ -581,7 +583,7 @@ describe('CombatGateway', () => {
                 gateway.handleDisconnect(mockSocket);
 
                 expect(mockServer.to).toHaveBeenCalledWith('game-id');
-                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith('playerLeft', mockGame.players);
+                expect(mockServer.to('game-id').emit).toHaveBeenCalledWith(GameCreationEvents.PlayerLeft, mockGame.players);
             });
 
             it('should emit "combatFinishedByDisconnection" if player disconnects during combat', () => {
@@ -594,7 +596,7 @@ describe('CombatGateway', () => {
                 gateway.handleDisconnect(mockSocket);
 
                 expect(mockServer.to).toHaveBeenCalledWith(mockCombat.id);
-                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith('combatFinishedByDisconnection', mockWinner);
+                expect(mockServer.to(mockCombat.id).emit).toHaveBeenCalledWith(CombatEvents.CombatFinishedByDisconnection, mockWinner);
                 expect(combatCountdownService.deleteCountdown).toHaveBeenCalledWith('game-id');
             });
 

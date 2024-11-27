@@ -3,6 +3,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { CombatEvents } from '@common/events/combat.events';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
@@ -99,9 +100,9 @@ describe('GameTurnService', () => {
                     return youFellSubject.asObservable() as Observable<T>;
                 case 'yourCombats':
                     return yourCombatsSubject.asObservable() as Observable<T>;
-                case 'combatFinishedByEvasion':
+                case CombatEvents.CombatFinishedByEvasion:
                     return combatFinishedByEvasionSubject.asObservable() as Observable<T>;
-                case 'combatFinished':
+                case CombatEvents.CombatFinished:
                     return combatFinishedSubject.asObservable() as Observable<T>;
                 default:
                     return of({}) as Observable<T>;
@@ -536,7 +537,7 @@ describe('GameTurnService', () => {
 
             socketServiceSpy.listen.and.returnValue(of(mockCombatPlayer));
 
-            socketServiceSpy.listen<Player>('YouStartedCombat').subscribe((player) => {
+            socketServiceSpy.listen<Player>(CombatEvents.YouStartedCombat).subscribe((player) => {
                 expect(player).toEqual(mockCombatPlayer);
                 expect(spySetPlayer).not.toHaveBeenCalled();
             });
