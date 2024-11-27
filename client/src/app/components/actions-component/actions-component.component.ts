@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { ImageService } from '@app/services/image/image.service';
+import { Player } from '@common/game';
 
 @Component({
     selector: 'app-actions-component',
@@ -9,10 +11,19 @@ import { Component } from '@angular/core';
     styleUrl: './actions-component.component.scss',
 })
 export class ActionsComponentComponent {
-    isOpened = false; // État pour gérer l'ouverture/fermeture
+    @Input() player: Player;
+    actionDescription: string | null = null;
 
-    toggleActions(): void {
-        this.isOpened = !this.isOpened; // Alterne entre ouvert et fermé
+    constructor(protected readonly imageService: ImageService) {
+        this.imageService = imageService;
+    }
+
+    showDescription(description: string) {
+        this.actionDescription = description;
+    }
+
+    hideDescription() {
+        this.actionDescription = null;
     }
 
     fight(): void {
@@ -23,5 +34,11 @@ export class ActionsComponentComponent {
     }
     breakWall(): void {
         console.log('breakWall');
+    }
+    endTurn(): void {
+        console.log('endTurn');
+    }
+    quitGame(): void {
+        console.log('quitGame');
     }
 }
