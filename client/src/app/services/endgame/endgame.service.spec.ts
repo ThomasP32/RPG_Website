@@ -185,9 +185,9 @@ describe('EndgameService', () => {
     });
 
     describe('sortTable', () => {
-        it('should not sort table if no table', () => {
-            service.sortTable(0);
-            expect(service.isSortingAsc).toBe(false);
+        it('should sort table', () => {
+            service.sortTable(1);
+            expect(service.isSortingAsc).toBe(true);
         });
         it('should sort table by column', () => {
             const table = document.createElement('table');
@@ -198,7 +198,7 @@ describe('EndgameService', () => {
             row.insertCell(2).innerHTML = '3';
             document.body.appendChild(table);
             service.sortTable(1);
-            expect(service.isSortingAsc).toBe(false);
+            expect(service.isSortingAsc).toBe(true);
             expect(table.rows[0].cells[0].innerHTML).toBe('1');
             document.body.removeChild(table);
         });
@@ -228,6 +228,25 @@ describe('EndgameService', () => {
                 const sortedRows = table.rows;
                 expect(sortedRows[1].cells[1].textContent).toBe('5');
                 expect(sortedRows[2].cells[1].textContent).toBe('15');
+
+                document.body.removeChild(table);
+            });
+            it('should sort a table of numbers in ascending order', () => {
+                const table = document.createElement('table');
+                const tbody = document.createElement('tbody');
+                tbody.innerHTML = `
+                  <tr><td>10</td><td>20</td></tr>
+                  <tr><td>5</td><td>30</td></tr>
+                `;
+                table.appendChild(tbody);
+                document.body.appendChild(table);
+
+                service.sortTable(0);
+                service.sortTable(1);
+
+                const rows = tbody.rows;
+                expect(rows[0].cells[0].textContent).toBe('10');
+                expect(rows[1].cells[0].textContent).toBe('5');
 
                 document.body.removeChild(table);
             });
