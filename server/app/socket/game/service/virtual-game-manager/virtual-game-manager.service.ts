@@ -1,5 +1,6 @@
 import { Combat } from '@common/combat';
-import { ProfileType } from '@common/constants';
+import { ProfileType, TIME_LIMIT_DELAY } from '@common/constants';
+import { CombatEvents, CombatFinishedByEvasionData } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
@@ -91,7 +92,7 @@ export class VirtualGameManagerService extends EventEmitter {
         }
     }
 
-    executeDefensiveBehavior(activePlayer: Player, game: Game): void {
+    async executeDefensiveBehavior(activePlayer: Player, game: Game): Promise<void> {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
 
@@ -107,8 +108,13 @@ export class VirtualGameManagerService extends EventEmitter {
             const targetPlayer = visiblePlayers[randomIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
             this.gameManagerService.updatePlayerPosition(activePlayer, adjacentTiles, game);
-            // commencer un combat
-            // s'évade dès qu'il perd un point de vie
+            const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
+            if (possibleOpponents.length > 0) {
+                const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
+                const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
+                const combatStarted = await this.startCombat(combat, game);
+                if (combatStarted) return;
+            }
         } else {
             this.updateVirtualPlayerPosition(activePlayer, game.id);
         }
@@ -163,9 +169,92 @@ export class VirtualGameManagerService extends EventEmitter {
 
             this.combatCountdownService.initCountdown(game.id, 5);
             this.gameCountdownService.pauseCountdown(game.id);
-            this.combatGateway.startCombatTurns(game.id);
+            this.startCombatTurns(game.id);
             return true;
         }
         return false;
+    }
+
+    handleVirtualPlayerCombat(player: Player, opponent: Player, gameId: string, combat: Combat): void {
+        if (player.socketId.includes('virtual')) {
+            if (player.profile === ProfileType.AGGRESSIVE) {
+                return this.handleAggressiveCombat(player, opponent, combat, gameId);
+            } else if (player.profile === ProfileType.DEFENSIVE) {
+                return this.handleDefensiveCombat(player, opponent, combat, gameId);
+            }
+        }
+    }
+
+    handleAggressiveCombat(player: Player, opponent: Player, combat: Combat, gameId: string): void {
+        return this.attack(player, opponent, combat, gameId);
+    }
+
+    handleDefensiveCombat(player: Player, opponent: Player, combat: Combat, gameId: string): void {
+        if (player.specs.evasions > 0) {
+            player.specs.evasions--;
+            player.specs.nEvasions++;
+            this.attemptEvasion(player, opponent, combat, gameId);
+        }
+        return this.attack(player, opponent, combat, gameId);
+    }
+
+    attack(player: Player, opponent: Player, combat: Combat, gameId: string): void {
+        const rollResult = this.combatService.rollDice(player, opponent);
+        this.server.to(combat.id).emit(CombatEvents.DiceRolled, rollResult);
+        this.journalService.logMessage(
+            combat.id,
+            `Dés roulés. Dé d'attaque: ${rollResult.attackDice}. Dé de défense: ${rollResult.defenseDice}. Résultat = ${rollResult.attackDice} - ${rollResult.defenseDice}.`,
+            [player.name, opponent.name],
+        );
+
+        if (this.combatService.isAttackSuccess(player, opponent, rollResult)) {
+            this.combatService.handleAttackSuccess(player, opponent, combat.id);
+            this.journalService.logMessage(combat.id, `Réussite de l'attaque sur ${opponent.name}.`, [opponent.name]);
+        } else {
+            this.server.to(combat.id).emit(CombatEvents.AttackFailure, opponent);
+            this.journalService.logMessage(combat.id, `Échec de l'attaque sur ${opponent.name}.`, [opponent.name]);
+        }
+
+        if (opponent.specs.life === 0) {
+            this.combatGateway.handleCombatLost(opponent, player, gameId, combat.id);
+        } else {
+            this.combatCountdownService.resetTimerSubscription(gameId);
+            this.combatGateway.prepareNextTurn(gameId);
+        }
+    }
+
+    attemptEvasion(player: Player, opponent: Player, combat: Combat, gameId: string): void {
+        const evasionSuccess = Math.random() < 0.4;
+        if (evasionSuccess) {
+            const game = this.gameCreationService.getGameById(gameId);
+            this.combatService.updatePlayersInGame(game);
+            this.server.to(combat.id).emit(CombatEvents.EvasionSuccess, player);
+            this.journalService.logMessage(gameId, `Fin de combat. ${player.name} s'est évadé.`, [player.name]);
+            this.combatCountdownService.deleteCountdown(gameId);
+            setTimeout(() => {
+                const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: player };
+                this.server.to(gameId).emit(CombatEvents.CombatFinishedByEvasion, combatFinishedByEvasionData);
+                this.gameCountdownService.resumeCountdown(gameId);
+                this.combatGateway.cleanupCombatRoom(combat.id);
+                this.combatService.deleteCombat(gameId);
+            }, TIME_LIMIT_DELAY);
+        } else {
+            this.server.to(combat.id).emit(CombatEvents.EvasionFailed, player);
+            this.combatGateway.prepareNextTurn(gameId);
+            this.journalService.logMessage(combat.id, `Tentative d'évasion par ${player.name}: non réussie.`, [player.name]);
+        }
+    }
+
+    startCombatTurns(gameId: string): void {
+        const combat = this.combatService.getCombatByGameId(gameId);
+        const game = this.gameCreationService.getGameById(gameId);
+        if (combat) {
+            this.server.to(combat.currentTurnSocketId).emit(CombatEvents.YourTurnCombat);
+            const currentPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
+            const otherPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
+            this.server.to(otherPlayer.socketId).emit(CombatEvents.PlayerTurnCombat);
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
+            this.handleVirtualPlayerCombat(currentPlayer, otherPlayer, gameId, combat);
+        }
     }
 }
