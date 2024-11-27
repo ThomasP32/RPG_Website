@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { ActionsComponentComponent } from '@app/components/actions-component/actions-component.component';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
@@ -14,7 +15,15 @@ import { ItemCategory } from '@common/map.types';
 @Component({
     selector: 'app-mock-game-page',
     standalone: true,
-    imports: [CommonModule, GameMapComponent, JournalComponent, ChatroomComponent, CombatListComponent, PlayerInfosComponent],
+    imports: [
+        CommonModule,
+        GameMapComponent,
+        JournalComponent,
+        ChatroomComponent,
+        CombatListComponent,
+        PlayerInfosComponent,
+        ActionsComponentComponent,
+    ],
     templateUrl: './mock-game-page.component.html',
     styleUrl: './mock-game-page.component.scss',
 })
