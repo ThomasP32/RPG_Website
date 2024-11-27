@@ -81,21 +81,31 @@ export class EndgameService {
 
             if (!cellA || !cellB) return 0;
 
-            const valueA = Number(cellA.textContent?.replace('%', '') ?? 0);
-            const valueB = Number(cellB.textContent?.replace('%', '') ?? 0);
+            const textA = cellA.textContent?.trim() ?? '';
+            const textB = cellB.textContent?.trim() ?? '';
 
-            const comparison = valueA - valueB;
-            return this.isSortingAsc ? comparison : -comparison;
+            if (columnIndex === 8) {
+                const valueA = Number(textA.replace('%', ''));
+                const valueB = Number(textB.replace('%', ''));
+                return this.isSortingAsc ? valueA - valueB : valueB - valueA;
+            }
+            if (columnIndex > 1 && columnIndex < 8) {
+                const numA = Number(textA);
+                const numB = Number(textB);
+                return this.isSortingAsc ? numA - numB : numB - numA;
+            }
+
+            return this.isSortingAsc ? textA.localeCompare(textB) : textB.localeCompare(textA);
         });
 
-        while (tbody.firstChild) {
-            tbody.removeChild(tbody.firstChild);
-        }
-        rows.forEach((row) => tbody.appendChild(row));
+        const fragment = document.createDocumentFragment();
+        rows.forEach((row) => fragment.appendChild(row));
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
 
-        // const fragment = document.createDocumentFragment();
-        // rows.forEach((row) => fragment.appendChild(row));
-        // tbody.innerHTML = '';
-        // tbody.appendChild(fragment);
+        // while (tbody.firstChild) {
+        //     tbody.removeChild(tbody.firstChild);
+        // }
+        // rows.forEach((row) => tbody.appendChild(row));
     }
 }
