@@ -1,16 +1,44 @@
-<div class="action-container" [ngClass]="{ opened: isOpened }">
-    <div class="action-circle" (click)="toggleActions()">
-        <img src="assets/icons/action.png" alt="Actions" (click)="toggleActions()" />
-        <div class="action-options">
-            <div class="action combat" (click)="fight()">
-                <img src="assets/icons/fight.png" alt="Combat" />
+<div class="action-bar">
+    <!-- Boutons d'actions à gauche -->
+    <div class="left-actions">
+        <div class="action-button" (mouseenter)="showDescription('Combat')" (mouseleave)="hideDescription()" (click)="fight()">
+            <img src="assets/icons/fight.png" alt="Combat" />
+        </div>
+        <div class="action-button" (mouseenter)="showDescription('Ouvrir/Fermer une Porte')" (mouseleave)="hideDescription()" (click)="toggleDoor()">
+            <img src="assets/icons/door.png" alt="Porte" />
+        </div>
+        <div class="action-button" (mouseenter)="showDescription('Détruire un Mur')" (mouseleave)="hideDescription()" (click)="breakWall()">
+            <img src="assets/items/grapplinghook.png" alt="Mur" />
+        </div>
+        <div class="action-description" *ngIf="actionDescription">
+            {{ actionDescription }}
+        </div>
+    </div>
+
+    <!-- Inventaire au centre -->
+    <div class="inventory">
+        <h3>Inventaire</h3>
+        <div class="inventory-container">
+            <div class="inventory-slot">
+                @if(player.inventory[0]) {
+                <img [src]="imageService.getItemImage(player.inventory[0])" [alt]="player.inventory[0]" class="item-image" />
+                } @else {
+                <div class="empty-slot">Vide</div>
+                }
             </div>
-            <div class="action door" (click)="toggleDoor()">
-                <img src="assets/icons/door.png" alt="Door" />
-            </div>
-            <div class="action wall" (click)="breakWall()">
-                <img src="assets/items/grapplinghook.png" alt="Wall" />
+            <div class="inventory-slot">
+                @if(player.inventory[1]) {
+                <img [src]="imageService.getItemImage(player.inventory[1])" [alt]="player.inventory[1]" class="item-image" />
+                } @else {
+                <div class="empty-slot">Vide</div>
+                }
             </div>
         </div>
+    </div>
+
+    <!-- Boutons pour finir le tour et quitter la partie à droite -->
+    <div class="right-actions">
+        <button class="end-turn" (click)="endTurn()">Finir le Tour</button>
+        <button class="quit-game" (click)="quitGame()">Quitter la Partie</button>
     </div>
 </div>
