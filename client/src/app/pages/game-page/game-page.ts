@@ -20,6 +20,7 @@ import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@
 import { MovesMap } from '@common/directions';
 import { ChatEvents } from '@common/events/chat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
@@ -278,18 +279,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForInventoryFull() {
         this.socketSubscription.add(
-            this.socketService.listen('inventoryFull').subscribe(() => {
+            this.socketService.listen(ItemsEvents.InventoryFull).subscribe(() => {
                 this.isInventoryModalOpen = true;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game; player: Player }>('itemDropped').subscribe((data) => {
+            this.socketService.listen<ItemDroppedData>(ItemsEvents.ItemDropped).subscribe((data) => {
                 this.isInventoryModalOpen = false;
-                if (data.player && data.player.socketId === this.player.socketId) {
-                    this.playerService.setPlayer(data.player);
+                if (data.updatedPlayer && data.updatedPlayer.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.updatedPlayer);
                     this.gameTurnService.resumeTurn();
                 }
-                this.gameService.setGame(data.game);
+                this.gameService.setGame(data.updatedGame);
             }),
         );
     }
