@@ -28,13 +28,13 @@ export class MapAreaComponent implements OnInit {
     defaultTile = TileCategory.Floor;
 
     constructor(
-        private tileService: TileService,
-        public route: ActivatedRoute,
-        private mapService: MapService,
-        private mapCounterService: MapCounterService,
-        private imageService: ImageService,
-        private router: Router,
-        private screenshotService: ScreenShotService,
+        private readonly tileService: TileService,
+        private readonly route: ActivatedRoute,
+        private readonly mapService: MapService,
+        private readonly mapCounterService: MapCounterService,
+        private readonly imageService: ImageService,
+        private readonly router: Router,
+        private readonly screenshotService: ScreenShotService,
     ) {
         this.tileService = tileService;
         this.mapService = mapService;
@@ -278,4 +278,5 @@ export class MapAreaComponent implements OnInit {
             this.map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
     }
+
 }

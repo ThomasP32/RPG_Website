@@ -132,39 +132,69 @@ export class GameMapComponent implements OnInit, OnChanges {
     onRightClickTile(event: MouseEvent, position: Coordinate) {
         if (event.button === 2) {
             event.preventDefault();
-            this.tileDescription = 'Un déplacement sur une tuile de terrain nécessite 1 point de mouvement.';
-            this.loadedMap.tiles.forEach((tile) => {
-                if (tile.category === TileCategory.Water && tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
-                    this.tileDescription = "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.";
-                }
-                if (tile.category === TileCategory.Ice && tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
-                    this.tileDescription =
-                        "Un déplacement sur une tuile de glace ne nécessite aucun point de mouvement, mais a un risque de chute qui s'élève à 10%.";
-                }
-                if (tile.category === TileCategory.Wall && tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
-                    this.tileDescription = "Aucun déplacement n'est possible sur ou à travers un mur.";
-                }
-            });
-
-            this.loadedMap.doorTiles.forEach((doorTile) => {
-                if (!doorTile.isOpened && doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
-                    this.tileDescription = 'Une porte fermée ne peut être franchie, mais peut être ouverte par une action.';
-                }
-                if (doorTile.isOpened && doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
-                    this.tileDescription = 'Une porte ouverte peut être franchie, mais peut être fermée par une action.';
-                }
-            });
-
-            this.loadedMap.players.forEach((player) => {
-                if (player.position.x === position.x && player.position.y === position.y) {
-                    this.tileDescription = `nom du joueur: ${player.name}`;
-                }
-            });
-
+            this.tileDescription = this.getTileDescription(position);
             this.tooltipX = event.pageX + 10;
             this.tooltipY = event.pageY + 10;
             this.explanationIsVisible = true;
         }
+    }
+
+    private getTileDescription(position: Coordinate): string {
+        const terrainDescription = this.getNormalTileDescription(position);
+        if (terrainDescription) {
+            return terrainDescription;
+        }
+
+        const doorDescription = this.getDoorDescription(position);
+        if (doorDescription) {
+            return doorDescription;
+        }
+
+        const playerDescription = this.getPlayerDescription(position);
+        if (playerDescription) {
+            return playerDescription;
+        }
+
+        return 'Un déplacement sur une tuile de terrain nécessite 1 point de mouvement.';
+    }
+
+    private getNormalTileDescription(position: Coordinate): string | null {
+        for (const tile of this.loadedMap.tiles) {
+            if (tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
+                switch (tile.category) {
+                    case TileCategory.Water:
+                        return "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.";
+                    case TileCategory.Ice:
+                        return "Un déplacement sur une tuile de glace ne nécessite aucun point de mouvement, mais a un risque de chute qui s'élève à 10%.";
+                    case TileCategory.Wall:
+                        return "Aucun déplacement n'est possible sur ou à travers un mur.";
+                }
+            }
+        }
+        return null;
+    }
+
+    private getDoorDescription(position: Coordinate): string | null {
+        for (const doorTile of this.loadedMap.doorTiles) {
+            if (doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
+                if (!doorTile.isOpened) {
+                    return 'Une porte fermée ne peut être franchie, mais peut être ouverte par une action.';
+                }
+                if (doorTile.isOpened) {
+                    return 'Une porte ouverte peut être franchie, mais peut être fermée par une action.';
+                }
+            }
+        }
+        return null;
+    }
+
+    private getPlayerDescription(position: Coordinate): string | null {
+        for (const player of this.loadedMap.players) {
+            if (player.position.x === position.x && player.position.y === position.y) {
+                return `nom du joueur: ${player.name}`;
+            }
+        }
+        return null;
     }
 
     @HostListener('window:mouseup', ['$event'])

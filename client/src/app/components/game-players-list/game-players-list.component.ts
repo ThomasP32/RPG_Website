@@ -15,9 +15,8 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     @Input() players: Player[];
     @Input() hostSocketId: string;
     @Input() currentPlayerTurn: string;
-    hoveredPlayerId: string | null = null;
 
-    constructor(private characterService: CharacterService) {
+    constructor(private readonly characterService: CharacterService) {
         this.characterService = characterService;
     }
 
@@ -27,7 +26,6 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(): void {
-        this.sortPlayersByTurn();
         this.initializePlayerSpecs();
     }
 
