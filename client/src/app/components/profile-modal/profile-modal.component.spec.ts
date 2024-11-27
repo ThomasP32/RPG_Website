@@ -3,6 +3,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { BONUS, DEFAULT_HP, DEFAULT_SPEED } from '@common/constants';
 import { Avatar, Bonus } from '@common/game';
 import { ProfileModalComponent } from './profile-modal.component';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('ProfileModalComponent', () => {
     let component: ProfileModalComponent;
@@ -132,7 +133,7 @@ describe('ProfileModalComponent', () => {
         expect(component.assignRandomAttackOrDefenseBonus).toHaveBeenCalled();
         expect(component.createVirtualSocketId).toHaveBeenCalled();
         expect(component.createVirtualPlayer).toHaveBeenCalled();
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinGame', { player: component.virtualPlayer, gameId: component.gameId });
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.JoinGame, { player: component.virtualPlayer, gameId: component.gameId });
         expect(component.closeProfileModal).toHaveBeenCalled();
     });
 });

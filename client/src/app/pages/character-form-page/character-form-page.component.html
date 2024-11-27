@@ -109,13 +109,13 @@
                 <button class="start-button" (click)="onSubmit()">Rejoindre la partie</button>
                 }@else {
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
-                } @if (showErrorMessage.characterNameError) {
+                } @if (showCharacterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>
-                } @if (showErrorMessage.bonusError) {
+                } @if (showBonusError) {
                 <div class="error-message">Ajoutez le bonus (+2 Vie ou Rapidité)</div>
-                } @if (showErrorMessage.diceError) {
+                } @if (showDiceError) {
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
-                } @if (showErrorMessage.selectionError) {
+                } @if (showSelectionError) {
                 <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
                 }
             </div>

@@ -3,6 +3,8 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
+import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
@@ -33,7 +35,7 @@ export class GameManagerGateway implements OnGatewayInit {
     @SubscribeMessage('getMovements')
     getMoves(client: Socket, gameId: string): void {
         if (!this.gameCreationService.doesGameExist(gameId)) {
-            client.emit('gameNotFound');
+            client.emit(GameCreationEvents.GameNotFound);
             return;
         }
         const moves = this.gameManagerService.getMoves(gameId, client.id);
@@ -44,7 +46,7 @@ export class GameManagerGateway implements OnGatewayInit {
     async getMove(client: Socket, data: { gameId: string; destination: Coordinate }): Promise<void> {
         let wasOnIceTile = false;
         if (!this.gameCreationService.doesGameExist(data.gameId)) {
-            client.emit('gameNotFound');
+            client.emit(GameCreationEvents.GameNotFound);
             return;
         }
         const game = this.gameCreationService.getGameById(data.gameId);
@@ -196,7 +198,7 @@ export class GameManagerGateway implements OnGatewayInit {
             this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
-                this.server.to(game.id).emit('gameFinishedPlayerWon', { winner: player });
+                this.server.to(game.id).emit(CombatEvents.GameFinishedPlayerWon, player);
                 return true;
             }
         }

@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Character } from '@app/interfaces/character';
 import { Avatar } from '@common/game';
-import { Observable, of } from 'rxjs';
 @Injectable({
     providedIn: 'root',
 })
 export class CharacterService {
-    private characters = [
+    characters: Character[] = [
         {
             id: Avatar.Avatar1,
             image: './assets/characters/1.png',
@@ -81,15 +80,12 @@ export class CharacterService {
         },
     ];
 
-    getCharacters(): Observable<Character[]> {
-        return of(this.characters);
-    }
-
     resetCharacterAvailability(): void {
         this.characters.forEach((character) => {
             character.isAvailable = true;
         });
     }
+
     getAvatarPreview(avatar: Avatar): string {
         return this.characters.find((character) => character.id === avatar)?.preview || '';
     }
