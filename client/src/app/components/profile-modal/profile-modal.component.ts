@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, HALF } from '@common/constants';
+import { GameCreationEvents, JoinGameData } from '@common/events/game-creation.events';
 import { Avatar, Bonus, BotName, Player, Specs } from '@common/game';
 
 @Component({
@@ -17,7 +18,7 @@ export class ProfileModalComponent implements OnInit {
     selectedProfile: string;
     virtualPlayer: Player;
 
-    constructor(private socketService: SocketService) {
+    constructor(private readonly socketService: SocketService) {
         this.socketService = socketService;
     }
 
@@ -139,7 +140,8 @@ export class ProfileModalComponent implements OnInit {
         this.createVirtualSocketId();
 
         this.createVirtualPlayer();
-        this.socketService.sendMessage('joinGame', { player: this.virtualPlayer, gameId: this.gameId });
+        const joinGameData: JoinGameData = { player: this.virtualPlayer, gameId: this.gameId! };
+        this.socketService.sendMessage(GameCreationEvents.JoinGame, joinGameData);
         this.closeProfileModal();
     }
 }

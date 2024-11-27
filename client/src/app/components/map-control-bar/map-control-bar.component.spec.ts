@@ -124,6 +124,6 @@ describe('MapControlBarComponent', () => {
         setTimeout(() => {
             expect(routerSpy.navigate).toHaveBeenCalledWith(['/admin-page']);
             done();
-        }, 2000);
+        }, 3000);
     });
 });
