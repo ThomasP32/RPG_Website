@@ -20,7 +20,7 @@ export class JournalComponent implements OnInit, OnDestroy {
     subscription: Subscription;
     filter: 'all' | 'involved-only' = 'all';
 
-    constructor(public journalService: JournalService) {
+    constructor(private readonly journalService: JournalService) {
         this.journalService = journalService;
     }
 

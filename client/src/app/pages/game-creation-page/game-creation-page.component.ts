@@ -25,12 +25,12 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
     mapId: string = '';
     mapSize: number;
     mode: Mode;
-    private unsubscribe$ = new Subject<void>();
+    private readonly unsubscribe$ = new Subject<void>();
 
     constructor(
-        private mapService: MapService,
-        private route: ActivatedRoute,
-        private router: Router,
+        private readonly mapService: MapService,
+        private readonly route: ActivatedRoute,
+        private readonly router: Router,
     ) {
         this.mapService = mapService;
         this.route = route;
@@ -72,11 +72,6 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnDestroy(): void {
-        this.unsubscribe$.next();
-        this.unsubscribe$.complete();
-    }
-
     getUrlParams(): void {
         if (this.route.snapshot.params['id']) {
             this.mapId = this.route.snapshot.params['id'];
@@ -104,5 +99,10 @@ export class GameCreationPageComponent implements OnInit, OnDestroy {
                 this.router.navigate(['/']);
             }
         }
+    }
+
+    ngOnDestroy(): void {
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
     }
 }

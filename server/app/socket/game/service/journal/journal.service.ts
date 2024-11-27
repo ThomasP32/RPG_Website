@@ -1,3 +1,5 @@
+import { JournalEvents } from '@common/events/journal.events';
+import { JournalEntry } from '@common/journal-entry';
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 
@@ -10,7 +12,7 @@ export class JournalService {
     }
 
     logMessage(roomId: string, message: string, playersInvolved: String[]): void {
-        const entry = { message, timestamp: new Date(), playersInvolved };
-        this.server.to(roomId).emit('journalEntry', entry);
+        const entry: JournalEntry = { message, timestamp: new Date(), playersInvolved };
+        this.server.to(roomId).emit(JournalEvents.JournalEntry, entry);
     }
 }

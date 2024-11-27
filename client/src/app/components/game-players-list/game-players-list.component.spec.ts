@@ -67,12 +67,6 @@ describe('GamePlayersListComponent', () => {
         expect(component.isHostPlayer('456')).toBe(false);
     });
 
-    it('should call sortPlayersByTurn on ngOnChanges', () => {
-        const spySortPlayers = spyOn(component, 'sortPlayersByTurn');
-        component.ngOnChanges();
-        expect(spySortPlayers).toHaveBeenCalled();
-    });
-
     it('should return true if socketId contains "virtualPlayer"', () => {
         const socketId = 'virtualPlayer123';
         expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();

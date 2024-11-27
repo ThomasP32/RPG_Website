@@ -36,7 +36,7 @@ export class MapService {
 
     async getMap(id: string): Promise<void> {
         try {
-            
+            // _id, isVisible, lastModified are used to extract the properties from the map returned by basicGet
             // eslint-disable-next-line no-unused-vars
             const { _id, isVisible, lastModified, ...restOfMap } = await firstValueFrom(
                 this.communicationMapService.basicGet<DetailedMap>(`admin/${id}`),
