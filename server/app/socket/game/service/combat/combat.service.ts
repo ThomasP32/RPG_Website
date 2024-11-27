@@ -1,5 +1,5 @@
 import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
-import { Combat } from '@common/combat';
+import { Combat, RollResult } from '@common/combat';
 import { DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Mode } from '@common/map.types';
@@ -13,7 +13,7 @@ export class CombatService {
     private combatRooms: Record<string, Combat> = {};
     server: Server;
 
-    constructor(private gameCreationService: GameCreationService) {
+    constructor(private readonly gameCreationService: GameCreationService) {
         this.gameCreationService = gameCreationService;
     }
 
@@ -72,7 +72,7 @@ export class CombatService {
         combat.currentTurnSocketId = currentTurnSocket === combat.challenger.socketId ? combat.opponent.socketId : combat.challenger.socketId;
     }
 
-    rollDice(attackPlayer: Player, opponent: Player): { attackDice: number; defenseDice: number } {
+    rollDice(attackPlayer: Player, opponent: Player): RollResult {
         const attackingPlayerAttackDice = Math.floor(Math.random() * attackPlayer.specs.attackBonus) + 1;
         const opponentDefenseDice = Math.floor(Math.random() * opponent.specs.defenseBonus) + 1;
         const attackDice = attackPlayer.specs.attack + attackingPlayerAttackDice;

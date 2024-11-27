@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { TURN_DURATION } from '@common/constants';
+import { CombatEvents } from '@common/events/combat.events';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
@@ -24,7 +25,7 @@ export class CountdownService {
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen('combatStartedSignal').subscribe(() => {
+            this.socketService.listen(CombatEvents.CombatStartedSignal).subscribe(() => {
                 this.countdown.next('--');
             }),
         );

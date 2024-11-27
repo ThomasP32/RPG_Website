@@ -25,8 +25,8 @@ export class GameChoicePageComponent implements OnInit {
     private readonly router: Router = inject(Router);
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private mapConversionService: MapConversionService,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly mapConversionService: MapConversionService,
     ) {
         this.communicationMapService = communicationMapService;
         this.mapConversionService = mapConversionService;

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameCreationEvents, KickPlayerData } from '@common/events/game-creation.events';
 import { Avatar, Player } from '@common/game';
 
 @Component({
@@ -23,8 +24,8 @@ export class PlayersListComponent implements OnInit {
     hoveredPlayerId: string | null = null;
 
     constructor(
-        private characterService: CharacterService,
-        private socketService: SocketService,
+        private readonly characterService: CharacterService,
+        private readonly socketService: SocketService,
     ) {
         this.characterService = characterService;
         this.socketService = socketService;
@@ -48,7 +49,8 @@ export class PlayersListComponent implements OnInit {
     }
 
     kickPlayer(playerId: string): void {
-        this.socketService.sendMessage('kickPlayer', { playerId: playerId, gameId: this.gameId });
+        const kickPlayer: KickPlayerData = { playerId: playerId, gameId: this.gameId };
+        this.socketService.sendMessage(GameCreationEvents.KickPlayer, kickPlayer);
     }
 
     isVirtualPlayerSocketId(socketId: string): boolean {
