@@ -1,15 +1,15 @@
 <div class="action-container" [ngClass]="{ opened: isOpened }">
     <div class="action-circle" (click)="toggleActions()">
-        <img src="assets/icons/action.png" alt="Actions" />
+        <img src="assets/icons/action.png" alt="Actions" (click)="toggleActions()" />
         <div class="action-options">
-            <div class="action combat">
+            <div class="action combat" (click)="fight()">
                 <img src="assets/icons/fight.png" alt="Combat" />
             </div>
-            <div class="action door">
+            <div class="action door" (click)="toggleDoor()">
                 <img src="assets/icons/door.png" alt="Door" />
             </div>
-            <div class="action wall">
-                <img src="assets/icons/wall.png" alt="Wall" />
+            <div class="action wall" (click)="breakWall()">
+                <img src="assets/items/grapplinghook.png" alt="Wall" />
             </div>
         </div>
     </div>

@@ -9,8 +9,8 @@
 
 .action-circle {
     position: relative;
-    width: 9vw;
-    height: 9vw;
+    width: 7vw;
+    height: 7vw;
     background-color: #1c242c; /* Fond harmonisé */
     border: 2px solid #b85c38; /* Bordure */
     border-radius: 50%; /* Forme circulaire */
@@ -29,10 +29,10 @@
     height: 80%;
 }
 
-.action-circle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(243, 156, 18, 0.7);
-}
+// .action-circle:hover {
+//     transform: scale(1.1);
+//     box-shadow: 0 0 20px rgba(243, 156, 18, 0.7);
+// }
 
 .action-options {
     position: absolute;
@@ -57,6 +57,11 @@
     transition:
         transform 0.4s ease,
         opacity 0.4s ease;
+}
+
+.action:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(243, 156, 18, 0.7);
 }
 
 /* Cercle 1 (Combat) - À gauche */

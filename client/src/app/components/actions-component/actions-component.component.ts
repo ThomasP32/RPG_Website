@@ -14,4 +14,14 @@ export class ActionsComponentComponent {
     toggleActions(): void {
         this.isOpened = !this.isOpened; // Alterne entre ouvert et fermé
     }
+
+    fight(): void {
+        console.log('fight');
+    }
+    toggleDoor(): void {
+        console.log('toggleDoor');
+    }
+    breakWall(): void {
+        console.log('breakWall');
+    }
 }
