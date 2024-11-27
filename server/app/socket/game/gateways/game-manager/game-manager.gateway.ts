@@ -156,7 +156,7 @@ export class GameManagerGateway implements OnGatewayInit {
             setTimeout(() => {
                 this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
                 this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
-                this.prepareNextTurn(game.id);
+                // this.prepareNextTurn(game.id);
             }, delay);
         } else {
             this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
