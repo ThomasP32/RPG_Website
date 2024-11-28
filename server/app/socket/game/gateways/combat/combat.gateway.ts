@@ -206,7 +206,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                             this.gameCountdownService.resumeCountdown(gameId);
                             this.cleanupCombatRoom(combat.id);
                             this.combatService.deleteCombat(gameId);
-                            if(this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
+                            if (this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
                                 this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                             }
                         }, TIME_LIMIT_DELAY);
@@ -214,7 +214,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatCountdownService.resetTimerSubscription(gameId);
                         this.prepareNextTurn(gameId);
                     }
-                }, 2000);
+                }, 3000);
             }
         }
     }
