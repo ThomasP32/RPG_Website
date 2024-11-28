@@ -84,14 +84,14 @@ export class EndgameService {
             const textA = cellA.textContent?.trim() ?? '';
             const textB = cellB.textContent?.trim() ?? '';
 
-            if (columnIndex === 8) {
+            if (columnIndex === 10) {
                 const valueA = Number(textA.replace('%', ''));
                 const valueB = Number(textB.replace('%', ''));
                 return this.isSortingAsc ? valueA - valueB : valueB - valueA;
             }
-            if (columnIndex > 1 && columnIndex < 8) {
-                const numA = Number(textA);
-                const numB = Number(textB);
+            if (columnIndex > 4 && columnIndex < 10) {
+                const numA = parseInt(textA);
+                const numB = parseInt(textB);
                 return this.isSortingAsc ? numA - numB : numB - numA;
             }
 
@@ -102,10 +102,5 @@ export class EndgameService {
         rows.forEach((row) => fragment.appendChild(row));
         tbody.innerHTML = '';
         tbody.appendChild(fragment);
-
-        // while (tbody.firstChild) {
-        //     tbody.removeChild(tbody.firstChild);
-        // }
-        // rows.forEach((row) => tbody.appendChild(row));
     }
 }
