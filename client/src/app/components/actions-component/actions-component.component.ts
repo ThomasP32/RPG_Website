@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { ImageService } from '@app/services/image/image.service';
 import { Player } from '@common/game';
+import { DoorTile } from '@common/map.types';
 
 @Component({
     selector: 'app-actions-component',
@@ -10,12 +12,35 @@ import { Player } from '@common/game';
     templateUrl: './actions-component.component.html',
     styleUrl: './actions-component.component.scss',
 })
-export class ActionsComponentComponent {
+export class ActionsComponentComponent implements OnInit, OnDestroy {
     @Input() player: Player;
+    @Output() showExitModalChange = new EventEmitter<boolean>();
+    possibleDoors: DoorTile[];
+    possibleOpponents: Player[];
+    doorActionAvailable: boolean = false;
+    breakWallAvailable: boolean = false;
+    combatAvailable: boolean = false;
+
+    showExitModal: boolean = false;
     actionDescription: string | null = null;
 
-    constructor(protected readonly imageService: ImageService) {
+    doorMessage: string = 'Ouvrir la porte';
+    // this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
+
+    constructor(
+        protected readonly imageService: ImageService,
+        private readonly gameTurnService: GameTurnService,
+    ) {
         this.imageService = imageService;
+        this.gameTurnService = gameTurnService;
+    }
+    ngOnDestroy(): void {
+        throw new Error('Method not implemented.');
+    }
+    ngOnInit(): void {
+        this.listenForPossibleOpponents();
+        this.listenForDoorOpening();
+        this.listenForWallBreaking();
     }
 
     showDescription(description: string) {
@@ -29,16 +54,53 @@ export class ActionsComponentComponent {
     fight(): void {
         console.log('fight');
     }
-    toggleDoor(): void {
-        console.log('toggleDoor');
+    toggleDoor() {
+        if (this.doorActionAvailable) {
+            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+        }
     }
     breakWall(): void {
         console.log('breakWall');
     }
-    endTurn(): void {
-        console.log('endTurn');
+    endTurn() {
+        this.gameTurnService.endTurn();
     }
-    quitGame(): void {
-        console.log('quitGame');
+    openExitConfirmationModal(): void {
+        this.showExitModal = true;
+        this.showExitModalChange.emit(this.showExitModal);
+    }
+
+    private listenForPossibleOpponents() {
+        this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
+            if (this.player.specs.actions > 0 && possibleOpponents.length > 0) {
+                this.combatAvailable = true;
+                this.possibleOpponents = possibleOpponents;
+            } else {
+                this.combatAvailable = false;
+                this.possibleOpponents = [];
+            }
+        });
+    }
+
+    private listenForDoorOpening() {
+        this.gameTurnService.possibleDoors$.subscribe((doors) => {
+            if (this.gameTurnService.doorAlreadyToggled) {
+                this.doorActionAvailable = false;
+                this.possibleDoors = [];
+            } else if (doors.length > 0) {
+                this.doorActionAvailable = true;
+                this.possibleDoors = doors;
+            } else {
+                this.doorActionAvailable = false;
+                this.possibleDoors = [];
+            }
+        });
+    }
+    private listenForWallBreaking() {
+        this.gameTurnService.possibleWalls$.subscribe((walls) => {
+            if (walls.length > 0) {
+                this.breakWallAvailable = true;
+            }
+        });
     }
 }

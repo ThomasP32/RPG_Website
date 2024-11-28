@@ -34,6 +34,19 @@ export class MapConversionService {
             }
         }
     }
+
+    convertNumberToString(size: number): string {
+        switch (size) {
+            case 10:
+                return 'Petite';
+            case 15:
+                return 'Moyenne';
+            case 20:
+                return 'Large';
+            default:
+                return 'Petite';
+        }
+    }
     getMaxPlayers(mapSize: number): number {
         const size = this.convertToMapSize(mapSize);
         return MapConfig[size].maxPlayers;

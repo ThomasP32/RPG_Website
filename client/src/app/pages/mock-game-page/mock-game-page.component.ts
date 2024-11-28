@@ -9,6 +9,7 @@ import { JournalComponent } from '@app/components/journal/journal.component';
 import { PlayerInfosComponent } from '@app/components/player-infos/player-infos.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { ImageService } from '@app/services/image/image.service';
+import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { Avatar, Bonus, Player } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { ItemCategory } from '@common/map.types';
@@ -162,11 +163,13 @@ export class MockGamePageComponent {
     };
 
     constructor(
+        protected readonly mapConversionService: MapConversionService,
         protected readonly imageService: ImageService,
         protected readonly characterService: CharacterService,
     ) {
         this.imageService = imageService;
         this.characterService = characterService;
+        this.mapConversionService = mapConversionService;
     }
 
     playerPreview: string = this.characterService.getAvatarPreview(Avatar.Avatar1); // Mock player avatar

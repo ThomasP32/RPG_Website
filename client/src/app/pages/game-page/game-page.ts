@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { ActionsComponentComponent } from '@app/components/actions-component/actions-component.component';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
+import { PlayerInfosComponent } from '@app/components/player-infos/player-infos.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
@@ -14,6 +16,7 @@ import { CountdownService } from '@app/services/countdown/game/countdown.service
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
+import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
@@ -31,11 +34,12 @@ import { Subscription } from 'rxjs';
         CommonModule,
         GameMapComponent,
         ChatroomComponent,
-        RouterLink,
         GamePlayersListComponent,
         CombatListComponent,
         CombatModalComponent,
         JournalComponent,
+        ActionsComponentComponent,
+        PlayerInfosComponent,
     ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
@@ -49,6 +53,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     opponent: Player;
     possibleOpponents: Player[];
     possibleDoors: DoorTile[];
+    doorActionAvailable: boolean = false;
+
+    totalTime: number = 10;
+    dashArray: string = '100';
+    dashOffset: string = '100';
 
     currentPlayerTurn: string;
     playerPreview: string;
@@ -60,7 +69,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     countdown: number | string = TURN_DURATION;
     startTurnCountdown: number = 3;
 
-    showExitModal = false;
+    showExitModal: boolean = false;
     showActionModal = false;
     showKickedModal = false;
     showEndGameModal = false;
@@ -70,8 +79,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     youFell: boolean = false;
     map: Map;
     specs: Specs;
-    actionMessage: string = 'Actions possibles';
-    doorActionAvailable: boolean = false;
     combatAvailable: boolean = false;
     gameMapComponent: GameMapComponent;
 
@@ -85,6 +92,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private readonly countDownService: CountdownService,
         private readonly combatService: CombatService,
         protected readonly imageService: ImageService,
+        protected readonly mapConversionService: MapConversionService,
     ) {
         this.router = router;
         this.socketService = socketService;
@@ -95,6 +103,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.gameService = gameService;
         this.combatService = combatService;
         this.imageService = imageService;
+        this.mapConversionService = mapConversionService;
     }
 
     ngOnInit() {
@@ -115,8 +124,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForEndOfGame();
             this.listenForIsCombatModalOpen();
             this.listenForOpponent();
-            this.listenForPossibleOpponents();
-            this.listenForDoorOpening();
             this.listenForStartTurnDelay();
             this.listenForFalling();
             this.listenForCountDown();
@@ -150,10 +157,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.activeView = view;
     }
 
-    endTurn() {
-        this.gameTurnService.endTurn();
-    }
-
     navigateToMain(): void {
         this.playerService.resetPlayer();
         this.characterService.resetCharacterAvailability();
@@ -181,22 +184,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.showExitModal = true;
     }
 
-    openActionModal(): void {
-        this.showActionModal = true;
-    }
-
     closeExitModal(): void {
         this.showExitModal = false;
     }
 
     onTileClickToMove(position: Coordinate) {
         this.gameTurnService.movePlayer(position);
-    }
-
-    toggleDoor() {
-        if (this.doorActionAvailable) {
-            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
-        }
     }
 
     triggerPulse(): void {
@@ -238,36 +231,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 setTimeout(() => {
                     this.navigateToEndOfGame();
                 }, TIME_REDIRECTION);
-            }
-        });
-    }
-
-    private listenForPossibleOpponents() {
-        this.gameTurnService.possibleOpponents$.subscribe((possibleOpponents: Player[]) => {
-            if (this.player.specs.actions > 0 && possibleOpponents.length > 0) {
-                this.combatAvailable = true;
-                this.possibleOpponents = possibleOpponents;
-            } else {
-                this.combatAvailable = false;
-                this.possibleOpponents = [];
-            }
-        });
-    }
-
-    private listenForDoorOpening() {
-        this.gameTurnService.possibleDoors$.subscribe((doors) => {
-            if (this.gameTurnService.doorAlreadyToggled) {
-                this.doorActionAvailable = false;
-                this.possibleDoors = [];
-                this.actionMessage = 'Actions possibles';
-            } else if (doors.length > 0) {
-                this.doorActionAvailable = true;
-                this.possibleDoors = doors;
-                this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
-            } else {
-                this.doorActionAvailable = false;
-                this.possibleDoors = [];
-                this.actionMessage = 'Actions possibles';
             }
         });
     }
@@ -318,5 +281,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.socketSubscription.unsubscribe();
+    }
+
+    onShowExitModalChange(newValue: boolean) {
+        this.showExitModal = newValue;
     }
 }

@@ -112,5 +112,22 @@ describe('MapConversionService', () => {
             expect(service.getPlayerCountMessage(25)).toBe('2 joueurs');
             expect(console.warn).toHaveBeenCalledWith('Invalid numeric size: 25, defaulting to SMALL');
         });
+        describe('convertNumberToString', () => {
+            it('should return "Petite" for size 10', () => {
+                expect(service.convertNumberToString(10)).toBe('Petite');
+            });
+
+            it('should return "Moyenne" for size 15', () => {
+                expect(service.convertNumberToString(15)).toBe('Moyenne');
+            });
+
+            it('should return "Large" for size 20', () => {
+                expect(service.convertNumberToString(20)).toBe('Large');
+            });
+
+            it('should return "Petite" for invalid size', () => {
+                expect(service.convertNumberToString(25)).toBe('Petite');
+            });
+        });
     });
 });

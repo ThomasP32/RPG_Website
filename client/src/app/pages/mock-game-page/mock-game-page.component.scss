@@ -9,7 +9,6 @@
 
 .game-info-panel {
     height: 100vh;
-    border-right: 2px solid #202020;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -18,27 +17,55 @@
 }
 
 .game-info {
-    h2 {
-        font-size: 14px;
-        line-height: 1.2;
-        margin-left: 10px;
-        margin-bottom: 10px;
-        color: #ffffff;
-        text-shadow:
-            -1px -1px 0 #000,
-            1px -1px 0 #000,
-            -1px 1px 0 #000,
-            1px 1px 0 #000;
-    }
+    position: fixed;
+    bottom: 10px;
+    width: 28.2vw;
+    height: 35vh;
+    border: 2px solid #b85c38;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: left;
+    border-radius: 0 40px 0 0;
+    z-index: 10;
+    gap: 0.5vw;
+}
 
-    p {
-        color: #c0c0c0;
-        font-size: 9px;
-        margin: 0;
-        line-height: 1.5;
-        margin-bottom: 8px;
-        padding-left: 10px;
-    }
+/* Titre */
+.game-info h2 {
+    text-align: start;
+    font-size: 0.8rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.info-item {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(28, 36, 44, 0.8);
+    border: 1px solid #f39c12;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-item p {
+    color: #c0c0c0;
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.info-item span {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
 }
 
 .game-map-container {
@@ -57,7 +84,6 @@
     justify-content: flex-start;
     align-items: center;
     height: 100vh;
-    border-left: 2px solid #202020;
     padding: 20px;
     box-sizing: border-box;
     position: absolute;
@@ -146,7 +172,6 @@
     right: 10px;
     cursor: pointer;
     font-size: 24px;
-    font-family: 'Press Start 2P', sans-serif;
     color: #c0c0c0;
     font-weight: bold;
     background: none;
@@ -163,7 +188,6 @@
     color: white;
     cursor: pointer;
     margin-top: 20px;
-    font-family: 'Press Start 2P', sans-serif;
     transition: background-color 0.3s ease;
 }
 
@@ -191,7 +215,6 @@
     height: 25vh;
     overflow-y: auto;
     margin-bottom: 15px;
-    font-family: 'Press Start 2P', sans-serif;
     color: white;
     background-color: #282c34;
     border-radius: 10px;
@@ -207,7 +230,6 @@
     width: 28vw;
     margin-top: 10px;
     color: #c0c0c0;
-    font-family: 'Press Start 2P', sans-serif;
     flex-direction: row;
     gap: 15px;
     z-index: 300;
@@ -217,7 +239,6 @@
     width: 100%;
     border: 2px solid #b85c38;
     box-sizing: border-box;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -357,7 +378,7 @@
     height: 40vh;
 
     overflow: hidden;
-    font-family: 'Press Start 2P', sans-serif;
+
     display: flex;
     flex-direction: column;
     z-index: 25;
@@ -383,7 +404,7 @@
 }
 
 .toggle-container button.active {
-    background-color: rgba(28, 36, 44, 0.8);
+    background-color: rgba(28, 36, 44, 0.6);
     color: #f39c12;
 }
 
@@ -436,4 +457,45 @@ button {
         box-shadow: none;
         transform: translateY(4px);
     }
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 5vw;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 5vw;
+    width: 100%;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.actions {
+    width: 40vw;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions p {
+    color: #c0c0c0;
+    padding: 1vw;
+    font-size: 0.8rem;
+    background-color: rgba(28, 36, 44, 0.8);
+    border: 2px solid #b85c38;
+    box-sizing: border-box;
 }
