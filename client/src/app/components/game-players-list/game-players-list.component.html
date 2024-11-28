@@ -1,5 +1,5 @@
 <div class="game-players-list">
-    @for (player of players ; track player.socketId) {
+    @for (player of players; track player.socketId) {
     <div
         class="player"
         [ngClass]="{
@@ -7,20 +7,25 @@
             'player-left': !isPlayerActive(player)
         }"
     >
-        <div class="avatar-container">
-            <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />
-        </div>
+        <!-- Flèche pour le joueur actif -->
+        <div class="turn-arrow" *ngIf="player.name === currentPlayerTurn"><img src="assets/icons/arrow.png" alt="Trophée" class="icon" /></div>
 
+        <!-- Infos joueur -->
         <div class="player-info">
-            <span
-                >{{ player.name }} - {{ player.specs.nVictories }} victoires @if (isHostPlayer(player.socketId)) {
-                <span class="host-icon">👑</span>
+            <span class="player-status">
+                @if (isHostPlayer(player.socketId)) {
+                <span class="host-icon"> <img src="assets/icons/crown.png" alt="Host" class="icon" /></span>
                 } @if (isPlayerFlagDetentor(player)) {
-                <span class="flag-icon">🚩</span>
+                <span class="flag-icon"> <img src="assets/icons/flag_player.png" alt="Flag" class="icon" /></span>
                 } @if (isVirtualPlayerSocketId(player.socketId)) {
-                <span class="virtual-player-icon">🤖</span>
+                <span class="virtual-player-icon"> <img src="assets/icons/robot.png" alt="Bot" class="icon" /></span>
                 }
             </span>
+            <span class="victories"> {{ player.specs.nVictories }} <img src="assets/icons/trophy_icon.png" alt="Trophy" class="icon" /></span>
+            <span class="player-name">{{ player.name }}</span>
+        </div>
+        <div class="avatar-container">
+            <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />
         </div>
     </div>
     }
