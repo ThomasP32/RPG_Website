@@ -66,7 +66,6 @@ export class MapCounterService {
             this.itemsCounter -= 1;
         }
         this.items = this.items.filter((i) => i !== item);
-        console.log(this.items);
     }
 
     releaseItem(item: ItemCategory) {

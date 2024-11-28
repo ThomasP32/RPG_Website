@@ -124,29 +124,29 @@ export class ImageService {
     getPixelatedPlayerImage(avatar: Avatar): string {
         switch (avatar) {
             case Avatar.Avatar1:
-                return './assets/pixelcharacters/1.png';
+                return './assets/pixelcharacters/1_pixelated.png';
             case Avatar.Avatar2:
-                return './assets/pixelcharacters/2.png';
+                return './assets/pixelcharacters/2_pixelated.png';
             case Avatar.Avatar3:
-                return './assets/pixelcharacters/3.png';
+                return './assets/pixelcharacters/3_pixelated.png';
             case Avatar.Avatar4:
-                return './assets/pixelcharacters/4.png';
+                return './assets/pixelcharacters/4_pixelated.png';
             case Avatar.Avatar5:
-                return './assets/pixelcharacters/5.png';
+                return './assets/pixelcharacters/5_pixelated.png';
             case Avatar.Avatar6:
-                return './assets/pixelcharacters/6.png';
+                return './assets/pixelcharacters/6_pixelated.png';
             case Avatar.Avatar7:
-                return './assets/pixelcharacters/7.png';
+                return './assets/pixelcharacters/7_pixelated.png';
             case Avatar.Avatar8:
-                return './assets/pixelcharacters/8.png';
+                return './assets/pixelcharacters/8_pixelated.png';
             case Avatar.Avatar9:
-                return './assets/pixelcharacters/9.png';
+                return './assets/pixelcharacters/9_pixelated.png';
             case Avatar.Avatar10:
-                return './assets/pixelcharacters/10.png';
+                return './assets/pixelcharacters/10_pixelated.png';
             case Avatar.Avatar11:
-                return './assets/pixelcharacters/11.png';
+                return './assets/pixelcharacters/11_pixelated.png';
             case Avatar.Avatar12:
-                return './assets/pixelcharacters/12.png';
+                return './assets/pixelcharacters/12_pixelated.png';
             default:
                 return '';
         }

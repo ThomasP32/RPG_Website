@@ -2,15 +2,17 @@ import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
+import { DEFAULT_ACTIONS, ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
-import { Coordinate } from '@common/map.types';
+import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameManagerGateway implements OnGatewayInit {
@@ -21,6 +23,7 @@ export class GameManagerGateway implements OnGatewayInit {
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
     @Inject(JournalService) private readonly journalService: JournalService;
+    @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
 
     afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
@@ -53,8 +56,6 @@ export class GameManagerGateway implements OnGatewayInit {
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
         if (this.gameManagerService.onIceTile(player, game.id)) wasOnIceTile = true;
         if (moves.length === 0) return;
-
-        moves.shift();
         const gameFinished = await this.movePlayer(moves, game, wasOnIceTile, player);
 
         if (!gameFinished) {
@@ -66,8 +67,9 @@ export class GameManagerGateway implements OnGatewayInit {
                     `Le drapeau a été récupéré par ${player.name}.`,
                     game.players.map((player) => player.name),
                 );
-            } else if (this.gameManagerService.hasFallen(moves, data.destination)) {
+            } else if (this.gameManagerService.hasFallen) {
                 this.server.to(client.id).emit('youFell');
+                this.gameManagerService.hasFallen = false;
             } else {
                 this.server.to(client.id).emit('youFinishedMoving');
             }
@@ -101,6 +103,15 @@ export class GameManagerGateway implements OnGatewayInit {
         this.server.to(client.id).emit('yourDoors', adjacentDoors);
     }
 
+    @SubscribeMessage(ItemsEvents.dropItem)
+    dropItem(client: Socket, data: DropItemData): void {
+        const game = this.gameCreationService.getGameById(data.gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        const coordinates = player.position;
+        this.itemsManagerService.dropItem(data.itemDropping, game.id, client.id, coordinates);
+        const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
+        this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
+    }
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
         this.gameCountdownService.initCountdown(gameId, TURN_DURATION);
@@ -150,6 +161,12 @@ export class GameManagerGateway implements OnGatewayInit {
             .forEach((player) => {
                 if (player.socketId !== activePlayer.socketId) {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
+                    if (player.inventory.length > 2) {
+                        const coordinates = player.position;
+                        this.itemsManagerService.dropItem(player.inventory[2], game.id, player.socketId, coordinates);
+                        const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
+                        this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
+                    }
                 }
             });
         this.gameCountdownService.startNewCountdown(game);
@@ -157,13 +174,14 @@ export class GameManagerGateway implements OnGatewayInit {
 
     adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
         const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
-        if (isOnIceTile && !wasOnIceTile) {
-            player.specs.attack -= 2;
-            player.specs.defense -= 2;
+        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
+            player.specs.attack -= ICE_ATTACK_PENALTY;
+            player.specs.defense -= ICE_DEFENSE_PENALTY;
             wasOnIceTile = true;
-        } else if (!isOnIceTile && wasOnIceTile) {
-            player.specs.attack += 2;
-            player.specs.defense += 2;
+        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
+            player.specs.attack += ICE_ATTACK_PENALTY;
+            player.specs.defense += ICE_DEFENSE_PENALTY;
             wasOnIceTile = false;
         }
         return wasOnIceTile;
@@ -172,6 +190,13 @@ export class GameManagerGateway implements OnGatewayInit {
     async movePlayer(moves: Coordinate[], game: Game, wasOnIceTile: boolean, player: Player): Promise<boolean> {
         for (const move of moves) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
+            const onItem = this.itemsManagerService.onItem(player, game.id);
+            if (onItem) {
+                this.itemsManagerService.pickUpItem(move, game.id, player);
+                if (player.inventory.length > 2) {
+                    this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
+                }
+            }
             wasOnIceTile = this.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
             this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));

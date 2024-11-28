@@ -6,6 +6,7 @@ import { CombatListComponent } from '@app/components/combat-list/combat-list.com
 import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
+import { InventoryModalComponent } from '@app/components/inventory-modal/inventory-modal.component';
 import { JournalComponent } from '@app/components/journal/journal.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { CombatService } from '@app/services/combat/combat.service';
@@ -19,6 +20,7 @@ import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@
 import { MovesMap } from '@common/directions';
 import { ChatEvents } from '@common/events/chat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { Coordinate, DoorTile, Map } from '@common/map.types';
@@ -36,6 +38,7 @@ import { Subscription } from 'rxjs';
         CombatListComponent,
         CombatModalComponent,
         JournalComponent,
+        InventoryModalComponent,
     ],
     templateUrl: './game-page.html',
     styleUrl: './game-page.scss',
@@ -66,6 +69,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     showEndGameModal = false;
     gameOverMessage = false;
     isCombatModalOpen = false;
+    isInventoryModalOpen = false;
 
     youFell: boolean = false;
     map: Map;
@@ -122,6 +126,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForCountDown();
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
+            this.listenForInventoryFull();
 
             this.activePlayers = this.gameService.game.players;
             this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
@@ -270,6 +275,24 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.actionMessage = 'Actions possibles';
             }
         });
+    }
+
+    listenForInventoryFull() {
+        this.socketSubscription.add(
+            this.socketService.listen(ItemsEvents.InventoryFull).subscribe(() => {
+                this.isInventoryModalOpen = true;
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<ItemDroppedData>(ItemsEvents.ItemDropped).subscribe((data) => {
+                this.isInventoryModalOpen = false;
+                if (data.updatedPlayer && data.updatedPlayer.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.updatedPlayer);
+                    this.gameTurnService.resumeTurn();
+                }
+                this.gameService.setGame(data.updatedGame);
+            }),
+        );
     }
 
     private listenForIsCombatModalOpen() {
