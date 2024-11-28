@@ -17,17 +17,20 @@
             <p>Nombre de joueurs : {{ 10 }}</p>
             <p>Joueur actif : {{ player.name }}</p>
         </div>
-
-        @if(combatAvailable) {
-        <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
-        }
-        <div class="toggle-container">
-            <div class="toggle">
-                <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
-                <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
-            </div>
-        </div>
     </div>
+    <!-- @if(combatAvailable) {
+    <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
+    } -->
+
+    <div class="game-map-container">
+        <app-game-map> </app-game-map>
+    </div>
+
+    <app-game-players-list
+        [players]="game.players"
+        [hostSocketId]="game.hostSocketId"
+        [currentPlayerTurn]="currentPlayerTurn"
+    ></app-game-players-list>
 
     <div class="top-container">
         <div class="countdown-endturn-container">
@@ -51,26 +54,19 @@
             </div>
         </div>
     </div>
-
-    <div class="game-map-container">
-        <app-game-map> </app-game-map>
-    </div>
-
-    <app-game-players-list
-        [players]="game.players"
-        [hostSocketId]="game.hostSocketId"
-        [currentPlayerTurn]="currentPlayerTurn"
-    ></app-game-players-list>
-
-    <div class="chat-and-journal-container">
-        <div class="game-page-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
-            <app-chatroom [playerName]="player.name" [gameId]="game.id"></app-chatroom>
+    <div class="bottom-right-container">
+        <div class="toggle-container">
+            <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
+            <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
         </div>
-
-        <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
-            <app-journal [player]="player"></app-journal>
+        <div class="chat-and-journal-container">
+            <div class="game-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
+                <app-chatroom [playerName]="player.name" [gameId]="game.id"></app-chatroom>
+            </div>
+            <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
+                <app-journal [player]="player"></app-journal>
+            </div>
         </div>
     </div>
-
     <app-actions-component [player]="player"></app-actions-component>
 </div>

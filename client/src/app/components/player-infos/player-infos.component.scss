@@ -1,7 +1,6 @@
 .player-container {
     display: flex;
     flex-direction: row;
-    // background-color: #1c242c;
     border: 2px solid #b85c38;
     border-radius: 0 0 40px 0;
     padding: 2%;
@@ -68,7 +67,8 @@
         }
         .stat-bar {
             flex-grow: 1;
-            height: 0.9vw;
+            height: 1.7vh;
+            width: 15vw;
             background-color: #1a1d23;
             border: 1px solid #f39c12;
             overflow: hidden;
