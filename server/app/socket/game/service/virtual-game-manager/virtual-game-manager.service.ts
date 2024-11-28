@@ -83,9 +83,16 @@ export class VirtualGameManagerService extends EventEmitter {
             const randomIndex = Math.floor(Math.random() * visiblePlayers.length);
             const targetPlayer = visiblePlayers[randomIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
-            this.updatePosition(activePlayer, adjacentTiles, game.id);
+            const validMove = adjacentTiles.find((tile) =>
+                possibleMoves.some((move) => move[1].path.some((pathTile) => pathTile.x === tile.x && pathTile.y === tile.y)),
+            );
+            console.log('validMove:', validMove);
+            const pathToTargetPlayer = this.gameManagerService.getMove(game.id, activePlayer.socketId, validMove);
+            console.log('pathToTargetPlayer:', pathToTargetPlayer);
+            this.updatePosition(activePlayer, pathToTargetPlayer, game.id);
             if (activePlayer.specs.actions > 0) {
                 const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
+                console.log('possibleOpponents:', possibleOpponents);
                 if (possibleOpponents.length > 0) {
                     const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
                     const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
