@@ -82,4 +82,4 @@ export interface GameCtf extends GameClassic {
     nPlayersCtf: number;
 }
 
-export type Game = GameClassic | GameCtf
+export type Game = GameClassic | GameCtf;

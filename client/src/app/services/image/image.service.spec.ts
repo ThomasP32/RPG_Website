@@ -95,18 +95,18 @@ describe('ImageService', () => {
     });
 
     it('should get pixelated player image', () => {
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar1)).toBe('./assets/pixelcharacters/1.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar2)).toBe('./assets/pixelcharacters/2.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar3)).toBe('./assets/pixelcharacters/3.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar4)).toBe('./assets/pixelcharacters/4.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar5)).toBe('./assets/pixelcharacters/5.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar6)).toBe('./assets/pixelcharacters/6.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar7)).toBe('./assets/pixelcharacters/7.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar8)).toBe('./assets/pixelcharacters/8.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar9)).toBe('./assets/pixelcharacters/9.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar10)).toBe('./assets/pixelcharacters/10.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar11)).toBe('./assets/pixelcharacters/11.png');
-        expect(service.getPixelatedPlayerImage(Avatar.Avatar12)).toBe('./assets/pixelcharacters/12.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar1)).toBe('./assets/pixelcharacters/1_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar2)).toBe('./assets/pixelcharacters/2_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar3)).toBe('./assets/pixelcharacters/3_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar4)).toBe('./assets/pixelcharacters/4_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar5)).toBe('./assets/pixelcharacters/5_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar6)).toBe('./assets/pixelcharacters/6_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar7)).toBe('./assets/pixelcharacters/7_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar8)).toBe('./assets/pixelcharacters/8_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar9)).toBe('./assets/pixelcharacters/9_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar10)).toBe('./assets/pixelcharacters/10_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar11)).toBe('./assets/pixelcharacters/11_pixelated.png');
+        expect(service.getPixelatedPlayerImage(Avatar.Avatar12)).toBe('./assets/pixelcharacters/12_pixelated.png');
         expect(service.getPixelatedPlayerImage({} as Avatar)).toBe('');
     });
 });
