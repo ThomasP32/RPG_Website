@@ -1,14 +1,11 @@
 .action-bar {
     position: fixed;
-    width: 30vw;
-    bottom: 2vw;
-    left: 50;
+    bottom: 0.25vw;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1vw;
-    background-color: #1c242c;
-    border-top: 2px solid #b85c38;
 }
 
 .left-actions,
@@ -38,17 +35,19 @@ button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5vw;
+    gap: 1vw;
+    margin-left: 1.3vw;
+    margin-right: 1.3vw;
 }
 
 .inventory-container {
     display: flex;
-    gap: 1vw;
+    gap: 1.4vw;
 }
 
 .inventory-slot {
-    width: 5vw;
-    height: 5vw;
+    width: 4.5vw;
+    height: 4.5vw;
     border: 2px dashed #b85c38;
     display: flex;
     justify-content: center;
@@ -68,10 +67,10 @@ button:hover {
 
 .action-button {
     position: relative;
-    width: 4vw;
-    height: 4vw;
+    width: 4.5vw;
+    height: 4.5vw;
     background-color: #1c242c;
-    border: 1px solid #b85c38;
+    border: 2px solid #b85c38;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -82,18 +81,35 @@ button:hover {
 }
 
 .action-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(243, 156, 18, 0.7);
+    transform: translateY(-0.5vw) scale(1.1);
+    border: 2px solid #f39c12;
 }
-
 .action-button img {
-    width: 80%;
-    height: 80%;
+    width: 90%;
+    height: 90%;
 }
 
-.action-description {
-    margin-top: 0.5vw;
-    color: #b85c38;
-    font-size: 1vw;
-    text-align: center;
+.tooltip {
+    position: absolute;
+    bottom: 110%; /* Placer au-dessus */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #b85c38;
+    color: #fff;
+    padding: 0.5vw 1vw;
+    font-size: 0.9vw;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* Placer sous la boîte */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #b85c38 transparent transparent transparent;
 }

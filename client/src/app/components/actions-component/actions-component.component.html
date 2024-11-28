@@ -1,23 +1,22 @@
 <div class="action-bar">
     <!-- Boutons d'actions à gauche -->
     <div class="left-actions">
-        <div class="action-button" (mouseenter)="showDescription('Combat')" (mouseleave)="hideDescription()" (click)="fight()">
+        <div class="action-button" (mouseenter)="showDescription('Combattre')" (mouseleave)="hideDescription()" (click)="fight()">
+            <div class="tooltip" *ngIf="actionDescription === 'Combattre'">{{ actionDescription }}</div>
             <img src="assets/icons/fight.png" alt="Combat" />
         </div>
         <div class="action-button" (mouseenter)="showDescription('Ouvrir/Fermer une Porte')" (mouseleave)="hideDescription()" (click)="toggleDoor()">
+            <div class="tooltip" *ngIf="actionDescription === 'Ouvrir/Fermer une Porte'">{{ actionDescription }}</div>
             <img src="assets/icons/door.png" alt="Porte" />
         </div>
         <div class="action-button" (mouseenter)="showDescription('Détruire un Mur')" (mouseleave)="hideDescription()" (click)="breakWall()">
+            <div class="tooltip" *ngIf="actionDescription === 'Détruire un Mur'">{{ actionDescription }}</div>
             <img src="assets/items/grapplinghook.png" alt="Mur" />
-        </div>
-        <div class="action-description" *ngIf="actionDescription">
-            {{ actionDescription }}
         </div>
     </div>
 
     <!-- Inventaire au centre -->
     <div class="inventory">
-        <h3>Inventaire</h3>
         <div class="inventory-container">
             <div class="inventory-slot">
                 @if(player.inventory[0]) {
@@ -38,7 +37,13 @@
 
     <!-- Boutons pour finir le tour et quitter la partie à droite -->
     <div class="right-actions">
-        <button class="end-turn" (click)="endTurn()">Finir le Tour</button>
-        <button class="quit-game" (click)="quitGame()">Quitter la Partie</button>
+        <div class="action-button" (mouseenter)="showDescription('Finir le tour')" (mouseleave)="hideDescription()" (click)="endTurn()">
+            <div class="tooltip" *ngIf="actionDescription === 'Finir le tour'">{{ actionDescription }}</div>
+            <img src="assets/icons/endturn_icon.png" alt="Finir le tour" />
+        </div>
+        <div class="action-button" (mouseenter)="showDescription('Quitter la partie')" (mouseleave)="hideDescription()" (click)="quitGame()">
+            <div class="tooltip" *ngIf="actionDescription === 'Quitter la partie'">{{ actionDescription }}</div>
+            <img src="assets/icons/quit_icon.png" alt="Quitter la partie" />
+        </div>
     </div>
 </div>
