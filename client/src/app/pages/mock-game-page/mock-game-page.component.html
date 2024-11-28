@@ -13,9 +13,18 @@
         <app-player-infos></app-player-infos>
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{ game.mapSize.x }} x {{ game.mapSize.y }}</p>
-            <p>Nombre de joueurs : {{ 10 }}</p>
-            <p>Joueur actif : {{ player.name }}</p>
+            <div class="info-item">
+                <p>Taille de la carte :</p>
+                <span>{{ mapConversionService.convertNumberToString(game.mapSize.x) }}</span>
+            </div>
+            <div class="info-item">
+                <p>Nombre de joueurs :</p>
+                <span>{{ 10 }}</span>
+            </div>
+            <div class="info-item">
+                <p>Joueur Actif :</p>
+                <span>{{ player.name }}</span>
+            </div>
         </div>
     </div>
     <!-- @if(combatAvailable) {
@@ -68,5 +77,13 @@
             </div>
         </div>
     </div>
-    <app-actions-component [player]="player"></app-actions-component>
+    <div class="actions-container">
+        <app-actions-component [player]="player"></app-actions-component>
+        <div class="actions-info">
+            <div class="actions">
+                <p>Actions restantes: {{ player.specs.actions }}</p>
+                <p>Mouvements restants: {{ player.specs.movePoints }}</p>
+            </div>
+        </div>
+    </div>
 </div>

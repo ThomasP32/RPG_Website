@@ -6,7 +6,7 @@ import { TIME_LIMIT_DELAY } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, DoorTile } from '@common/map.types';
+import { Coordinate, DoorTile, Tile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
@@ -31,10 +31,13 @@ export class GameTurnService {
     private possibleDoors = new BehaviorSubject<DoorTile[]>([]);
     public possibleDoors$ = this.possibleDoors.asObservable();
 
+    private possibleWalls = new BehaviorSubject<Tile[]>([]);
+    public possibleWalls$ = this.possibleWalls.asObservable();
+
     isMoving = false;
 
     doorAlreadyToggled = false;
-    possibleActions = { combat: false, door: false };
+    possibleActions = { combat: false, door: false, wall: false };
 
     constructor(
         private gameService: GameService,
@@ -217,6 +220,18 @@ export class GameTurnService {
                     this.possibleActions.door = false;
                 }
                 this.possibleDoors.next(possibleDoors);
+                this.getMoves();
+            }),
+        );
+    }
+
+    listenForWallBreaking() {
+        this.socketSubscription.add(
+            this.socketService.listen<Tile[]>('wallBroken').subscribe((possibleWalls) => {
+                if (possibleWalls.length === 0) {
+                    this.possibleActions.wall = false;
+                }
+                this.possibleWalls.next(possibleWalls);
                 this.getMoves();
             }),
         );
