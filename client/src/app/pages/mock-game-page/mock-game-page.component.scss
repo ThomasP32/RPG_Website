@@ -4,6 +4,7 @@
     background-image: url('../../../assets/backgrounds/backgroundcombat.png');
     background-size: cover;
     overflow: hidden;
+    z-index: 1;
 }
 
 .game-info-panel {
@@ -42,13 +43,12 @@
 
 .game-map-container {
     position: fixed;
-    top: 0;
+    top: 10px;
     left: 0;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .right-panel {
@@ -62,34 +62,6 @@
     box-sizing: border-box;
     position: absolute;
     right: 0;
-}
-
-button {
-    width: 100%;
-    max-width: 250px;
-    padding: 12px;
-    font-size: 12px;
-    font-family: 'Press Start 2P', sans-serif;
-    color: #ffffff;
-    background-color: #2c3e50;
-    border: 2px solid #202020;
-    box-shadow: 0px 4px 0px #000;
-    cursor: pointer;
-    text-align: center;
-    text-transform: uppercase;
-    transition: all 0.3s ease-in-out;
-
-    &:hover {
-        background-color: #3b3b3b;
-        color: #f39c12;
-        box-shadow: 0px 4px 0px #b85c38;
-        border: 2px solid #b85c38;
-    }
-
-    &:active {
-        box-shadow: none;
-        transform: translateY(4px);
-    }
 }
 
 .modal h2 {
@@ -109,12 +81,10 @@ button {
     overflow: hidden;
     color: #c0c0c0;
     max-width: fit-content;
-    white-space: normal;
     word-wrap: break-word;
     text-align: center;
     min-height: 3em;
     line-height: 1.5em;
-    font-family: 'Press Start 2P';
 }
 
 .modal-overlay {
@@ -201,26 +171,6 @@ button {
     background-color: #3b3f46;
 }
 
-// app-chatroom {
-//     position: absolute;
-//     width: 100%;
-//     height: 100%;
-//     bottom: 10%;
-//     width: 100%;
-//     max-height: 150px;
-//     overflow-y: hidden;
-// }
-
-// app-journal {
-//     position: absolute;
-//     width: 100%;
-//     height: 100%;
-//     bottom: 10%;
-//     width: 100%;
-//     max-height: 150px;
-//     overflow-y: auto;
-// }
-
 .disable-interactions {
     position: fixed;
     top: 0;
@@ -231,13 +181,30 @@ button {
     pointer-events: all;
 }
 
+.game-players-list-mock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+    width: 330px;
+    height: 25vh;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: white;
+    background-color: #282c34;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
 .top-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    position: absolute;
-    top: 0;
-    width: 100%;
+    position: fixed;
+    right: 10px;
+    width: 28vw;
     margin-top: 10px;
     color: #c0c0c0;
     font-family: 'Press Start 2P', sans-serif;
@@ -247,7 +214,7 @@ button {
 }
 
 .countdown-endturn-container {
-    width: 40vw;
+    width: 100%;
     border: 2px solid #b85c38;
     box-sizing: border-box;
 
@@ -318,52 +285,6 @@ button {
     color: #f39c12;
 }
 
-.toggle-container {
-    position: absolute;
-    top: 70vh;
-    left: 0;
-    width: 100%;
-    background-color: #2c3e50;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    justify-content: center;
-}
-
-.toggle {
-    display: flex;
-    width: 100%;
-}
-
-.toggle button {
-    flex: 1;
-    height: 30px;
-    font-size: 14px;
-    font-family: 'Press Start 2P', sans-serif;
-    color: #ffffff;
-    background-color: #2c3e50;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    text-align: center;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    box-sizing: border-box;
-}
-
-.toggle button.active {
-    background-color: #1c242c;
-    color: #f39c12;
-    border-bottom: 2px solid #1c242c;
-}
-
-.toggle button:hover:not(.active) {
-    background-color: #3b3b3b;
-    color: #f39c12;
-}
-
 .hidden {
     display: none;
 }
@@ -391,34 +312,10 @@ button {
     cursor: none;
 }
 
-.game-players-list-mock {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    width: 330px;
-    height: 25vh;
-    overflow-y: auto;
-    margin-bottom: 15px;
-    font-family: 'Press Start 2P', sans-serif;
-    color: white;
-    background-color: #282c34;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-}
-
-.countdown-timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
 .timer-circle {
     position: relative;
-    width: 6vw;
-    height: 6vh;
+    width: 8vw;
+    height: 8vh;
 }
 
 .timer-circle svg {
@@ -452,15 +349,91 @@ button {
     font-weight: bold;
     color: #ffffff;
 }
-
-.chat-and-journal-container {
+.bottom-right-container {
     position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 26vw;
-    max-height: 33vh;
-    background-color: #1c242c;
-    font-family: 'Press Start 2P', sans-serif;
-    margin-top: 65vh;
+    bottom: 10px;
+    right: 10px;
+    width: 28vw;
+    height: 40vh;
+
     overflow: hidden;
+    font-family: 'Press Start 2P', sans-serif;
+    display: flex;
+    flex-direction: column;
+    z-index: 25;
+}
+
+/* Conteneur des boutons de bascule */
+.toggle-container {
+    display: flex;
+    justify-content: center;
+}
+
+/* Boutons de bascule */
+.toggle-container button {
+    flex: 1;
+    height: 8vh;
+    font-size: 1rem;
+    color: #ffffff;
+    border: 2px solid #b85c38;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-container button.active {
+    background-color: rgba(28, 36, 44, 0.8);
+    color: #f39c12;
+}
+
+.toggle-container button:hover:not(.active) {
+    color: #f39c12;
+}
+
+/* Conteneur du chat et du journal */
+.chat-and-journal-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background-color: rgba(28, 36, 44, 0.3);
+    border-bottom: 2px solid #b85c38;
+    border-right: 2px solid #b85c38;
+    border-left: 2px solid #b85c38;
+}
+
+.game-page-chat {
+    height: 50vh;
+}
+
+.journal {
+    flex: 1;
+    // display: flex;
+    // flex-direction: column;
+    // overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: #ffffff;
+    background-color: transparent;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+        background-color: rgba(28, 36, 44, 0.3);
+        color: #f39c12;
+    }
+
+    &:active {
+        box-shadow: none;
+        transform: translateY(4px);
+    }
 }
