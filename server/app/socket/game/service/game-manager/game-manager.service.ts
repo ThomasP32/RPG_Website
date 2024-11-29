@@ -1,13 +1,14 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { DIRECTIONS, MovesMap } from '@common/directions';
-import { Game, GameCtf, Player } from '@common/game';
+import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class GameManagerService {
-    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    public hasFallen: boolean = false;
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -84,21 +85,19 @@ export class GameManagerService {
             return [];
         } else {
             const finalPath: Coordinate[] = [];
-
+            const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+            shortestPath.shift();
             for (const position of shortestPath) {
-                if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
+                if (this.onTileItem(position, game)) {
                     finalPath.push(position);
                     break;
-                }
-
-                if (this.itemOnTile(position, game)) {
-                    this.pickUpItem(position, game, player);
-                    player.specs.nItemsUsed++;
+                } else if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1 && !hasSkates) {
+                    this.hasFallen = true;
                     finalPath.push(position);
                     break;
+                } else {
+                    finalPath.push(position);
                 }
-
-                finalPath.push(position);
             }
 
             return finalPath;
@@ -172,7 +171,7 @@ export class GameManagerService {
         return neighbors;
     }
 
-    private isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
+    public isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
         return pos.x < 0 || pos.y < 0 || pos.x >= mapSize.x || pos.y >= mapSize.y;
     }
 
@@ -195,6 +194,10 @@ export class GameManagerService {
         return true;
     }
 
+    private onTileItem(pos: Coordinate, game: Game): boolean {
+        return game.items.some((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
+    }
+
     private getTileWeight(pos: Coordinate, game: Game): number {
         for (const tile of game.tiles) {
             if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
@@ -205,39 +208,12 @@ export class GameManagerService {
         return 1;
     }
 
-    private itemOnTile(pos: Coordinate, game: Game): boolean {
-        for (const item of game.items) {
-            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pickUpItem(pos: Coordinate, game: Game, player: Player): void {
-        const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
-        if (itemIndex !== -1) {
-            const item = game.items[itemIndex].category;
-            player.inventory.push(item);
-            if (item === ItemCategory.Flag) {
-                if (game.mode === Mode.Ctf) {
-                    (game as GameCtf).nPlayersCtf.push(player);
-                }
-            }
-            game.items.splice(itemIndex, 1);
-        }
-    }
-
     onIceTile(player: Player, gameId: string): boolean {
         return this.gameCreationService
             .getGameById(gameId)
             .tiles.some(
                 (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
             );
-    }
-
-    hasFallen(moves: Coordinate[], destination: Coordinate) {
-        return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
 
     hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
