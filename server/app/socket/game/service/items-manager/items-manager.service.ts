@@ -1,6 +1,6 @@
 import { ARMOR_DEFENSE_BONUS, ARMOR_SPEED_PENALTY, SWORD_ATTACK_BONUS, SWORD_SPEED_BONUS } from '@common/constants';
-import { Player } from '@common/game';
-import { Coordinate, ItemCategory } from '@common/map.types';
+import { GameCtf, Player } from '@common/game';
+import { Coordinate, ItemCategory, Mode } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
@@ -14,6 +14,12 @@ export class ItemsManagerService {
         if (itemIndex !== -1) {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
+            player.specs.nItemsUsed++;
+            if (item === ItemCategory.Flag) {
+                if (game.mode === Mode.Ctf) {
+                    (game as GameCtf).nPlayersCtf.push(player);
+                }
+            }
             game.items.splice(itemIndex, 1);
             this.activateItem(item, player);
         }
