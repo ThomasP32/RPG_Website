@@ -87,6 +87,8 @@ describe('CombatGateway', () => {
         opponentLife: 5,
         challengerAttack: 4,
         opponentAttack: 4,
+        challengerDefense: 3,
+        opponentDefense: 3,
         currentTurnSocketId: 'socket-id',
     };
 
@@ -161,6 +163,7 @@ describe('CombatGateway', () => {
                         activateItem: jest.fn(),
                         desactivateItem: jest.fn(),
                         dropInventory: jest.fn(),
+                        checkForAmulet: jest.fn(),
                     },
                 },
             ],

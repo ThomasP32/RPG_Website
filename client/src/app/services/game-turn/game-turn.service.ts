@@ -226,13 +226,13 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<CombatFinishedByEvasionData>(CombatEvents.CombatFinishedByEvasion).subscribe((data) => {
                 if (data.evadingPlayer.socketId === this.player.socketId) {
-                    this.playerService.player = data.evadingPlayer;
+                    this.playerService.setPlayer(data.evadingPlayer);
                     if (data.updatedGame.currentTurn === this.playerService.player.turn) {
                         this.clearMoves();
                         this.resumeTurn();
                     }
                 } else {
-                    this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
+                    this.playerService.setPlayer(data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0]);
                 }
                 this.gameService.setGame(data.updatedGame);
             }),

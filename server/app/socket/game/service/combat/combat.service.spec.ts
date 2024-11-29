@@ -290,7 +290,7 @@ describe('ServerCombatService', () => {
 
         it('should activate Flask item if defending player has it and life is 1', () => {
             defendingPlayer.inventory.push(ItemCategory.Flask);
-            defendingPlayer.specs.life = 2;
+            defendingPlayer.specs.life = 3;
 
             const activateItemSpy = jest.spyOn(itemsManagerService, 'activateItem');
 

@@ -22,7 +22,7 @@ export enum ItemCategory {
     Flask = 'flask',
     WallBreaker = 'wallbreaker',
     IceSkates = 'iceskates',
-    TimeTwister = 'timetwister',
+    Amulet = 'amulet',
     Random = 'randomitem',
     Flag = 'flag',
     StartingPoint = 'startingPoint',
