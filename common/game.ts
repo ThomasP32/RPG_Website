@@ -63,7 +63,7 @@ export interface Player {
     initialPosition: Coordinate;
     turn: number;
     visitedTiles: Coordinate[];
-    profile: ProfileType | null;
+    profile: ProfileType;
 }
 
 export interface GameClassic extends Map {

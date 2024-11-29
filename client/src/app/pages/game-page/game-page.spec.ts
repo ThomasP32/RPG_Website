@@ -7,9 +7,10 @@ import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TURN_DURATION } from '@common/constants';
+import { ProfileType, TIME_LIMIT_DELAY, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
@@ -44,6 +45,7 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Amulet, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 const mockGame: Game = {
@@ -227,19 +229,6 @@ describe('GamePageComponent', () => {
         expect(component.navigateToMain).toHaveBeenCalled();
     });
 
-    it('should update active players when player leaves', fakeAsync(() => {
-        const mockPlayers = [
-            { isActive: true, position: { x: 0, y: 1 }, inventory: [ItemCategory.Amulet, ItemCategory.Armor] },
-            { isActive: false, position: { x: 1, y: 0 }, inventory: [ItemCategory.Amulet, ItemCategory.Armor] },
-        ] as unknown as Player;
-        socketService.listen.and.returnValue(of(mockPlayers));
-
-        component.listenPlayersLeft();
-        expect(component.activePlayers.length).toBe(1);
-        tick(3000);
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    }));
-
     it('should start game if player is host', () => {
         playerService.player.socketId = 'hostSocketId';
         gameService.game.hostSocketId = 'hostSocketId';
@@ -417,6 +406,78 @@ describe('GamePageComponent', () => {
             expect(component.actionMessage).toBe('Actions possibles');
         });
     });
+
+    it('should set isInventoryModalOpen to true when InventoryFull event is received', () => {
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.InventoryFull) {
+                return of(undefined);
+            }
+            return of();
+        });
+
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeTrue();
+    });
+
+    it('should update active players and show kicked modal when player leaves', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'player1' },
+            { ...mockPlayer, isActive: false, socketId: 'player2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
+
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(1);
+        expect(component.showKickedModal).toBeTrue();
+        tick(TIME_LIMIT_DELAY);
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
+
+    it('should update active players and not show kicked modal when there are still active players', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'player1' },
+            { ...mockPlayer, isActive: true, socketId: 'player2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
+
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(2);
+        expect(component.showKickedModal).toBeFalse();
+    }));
+
+    it('should update active players and show kicked modal when all active players are virtual', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'virtualPlayer1' },
+            { ...mockPlayer, isActive: true, socketId: 'virtualPlayer2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
+
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(2);
+        expect(component.showKickedModal).toBeTrue();
+        tick(TIME_LIMIT_DELAY);
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
 
     it('should set showActionModal to true when openActionModal is called', () => {
         component.showActionModal = false;

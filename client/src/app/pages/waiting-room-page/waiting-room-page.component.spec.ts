@@ -8,7 +8,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { WaitingRoomParameters } from '@common/constants';
+import { ProfileType, WaitingRoomParameters } from '@common/constants';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { ItemCategory, Mode } from '@common/map.types';
@@ -41,6 +41,7 @@ const mockPlayer: Player = {
     turn: 1,
     visitedTiles: [],
     initialPosition: { x: 0, y: 0 },
+    profile: ProfileType.NORMAL,
 };
 
 describe('WaitingRoomPageComponent', () => {
@@ -317,6 +318,7 @@ describe('WaitingRoomPageComponent', () => {
                 turn: 2,
                 visitedTiles: [],
                 initialPosition: { x: 1, y: 1 },
+                profile: ProfileType.NORMAL,
             },
         ];
 

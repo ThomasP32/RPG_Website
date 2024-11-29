@@ -47,8 +47,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @SubscribeMessage(CombatEvents.StartCombat)
     async startCombat(client: Socket, data: StartCombatData): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
-        const player = game.players.find((player) => player.turn === game.currentTurn);
         if (game) {
+            const player = game.players.find((player) => player.turn === game.currentTurn);
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
             this.itemManagerService.checkForAmulet(player, data.opponent);
             await client.join(combat.id);
@@ -98,8 +98,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 }
                 evadingPlayer.specs.nEvasions++;
                 evadingPlayer.specs.evasions--;
-                // const evasionSuccess = Math.random() < 0.4;
-                const evasionSuccess = true;
+                const evasionSuccess = Math.random() < 0.4;
+
                 if (evasionSuccess) {
                     const game = this.gameCreationService.getGameById(gameId);
                     this.combatService.updatePlayersInGame(game);
@@ -112,9 +112,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.gameCountdownService.resumeCountdown(gameId);
                         this.cleanupCombatRoom(combat.id);
                         this.combatService.deleteCombat(gameId);
-                        console.log('le joueur ses evade et cest le JV qui a commencé le ocmbat 2');
+
                         if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
-                            console.log('le joueur ses evade et cest le JV qui a commencé le ocmbat');
                             this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
                         }
                     }, TIME_LIMIT_DELAY);
@@ -218,10 +217,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                             this.gameCountdownService.resumeCountdown(gameId);
                             this.cleanupCombatRoom(combat.id);
                             this.combatService.deleteCombat(gameId);
-                            console.log('combat finished by evasion', isCombatFinishedByEvasion);
 
                             if (this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
-                                console.log('inside execute virtual');
                                 this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                             }
                         }, TIME_LIMIT_DELAY);
