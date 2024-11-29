@@ -41,15 +41,15 @@ export class CombatService {
 
     socketSubscription: Subscription = new Subscription();
 
-    private isCombatModalOpen = new BehaviorSubject<boolean>(false);
+    private readonly isCombatModalOpen = new BehaviorSubject<boolean>(false);
     public isCombatModalOpen$ = this.isCombatModalOpen.asObservable();
 
-    private opponent = new BehaviorSubject<Player>(this.defaultPlayer);
+    private readonly opponent = new BehaviorSubject<Player>(this.defaultPlayer);
     public opponent$ = this.opponent.asObservable();
 
     constructor(
-        private socketService: SocketService,
-        private playerService: PlayerService,
+        private readonly socketService: SocketService,
+        private readonly playerService: PlayerService,
     ) {
         this.socketService = socketService;
         this.playerService = playerService;

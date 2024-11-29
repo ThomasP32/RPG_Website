@@ -45,8 +45,8 @@ export class ItemsManagerService {
     activateItem(item: ItemCategory, player: Player): void {
         switch (item) {
             case ItemCategory.Sword:
-                player.specs.speed += SWORD_ATTACK_BONUS;
-                player.specs.attack += SWORD_SPEED_BONUS;
+                player.specs.speed += SWORD_SPEED_BONUS;
+                player.specs.attack += SWORD_ATTACK_BONUS;
                 break;
             case ItemCategory.Armor:
                 player.specs.defense += ARMOR_DEFENSE_BONUS;

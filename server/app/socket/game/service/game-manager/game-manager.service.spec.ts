@@ -525,6 +525,56 @@ describe('GameManagerService', () => {
             expect(game2.players[0].specs.actions).toBe(initialActions);
         });
     });
-    
+    describe('getFirstFreePosition', () => {
+        it('should return the first free position adjacent to the start position', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                players: [{ ...player, position: { x: 6, y: 5 } }],
+                tiles: [{ coordinate: { x: 5, y: 6 }, category: TileCategory.Wall }],
+                items: [{ coordinate: { x: 4, y: 5 }, category: ItemCategory.Flag }],
+            };
 
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).toEqual({ x: 5, y: 4 });
+        });
+
+        it('should return null if there are no free positions adjacent to the start position', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                players: [
+                    { ...player, position: { x: 4, y: 5 } },
+                    { ...player, position: { x: 6, y: 5 } },
+                    { ...player, position: { x: 5, y: 4 } },
+                    { ...player, position: { x: 5, y: 6 } },
+                ],
+                tiles: [
+                    { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+                    { coordinate: { x: 6, y: 6 }, category: TileCategory.Wall },
+                ],
+                items: [
+                    { coordinate: { x: 4, y: 6 }, category: ItemCategory.Flag },
+                    { coordinate: { x: 6, y: 4 }, category: ItemCategory.Flag },
+                ],
+            };
+
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).toBeNull();
+        });
+
+        it('should not return a position that is a start tile', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                startTiles: [{ coordinate: { x: 5, y: 4 } }],
+            };
+
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).not.toEqual({ x: 5, y: 4 });
+        });
+    });
 });

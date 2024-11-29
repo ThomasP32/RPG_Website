@@ -155,8 +155,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.combatCountdownService.deleteCountdown(gameId);
         setTimeout(() => {
             const combatFinishedData: CombatFinishedData = { updatedGame: game, winner: attackingPlayer, loser: defendingPlayer };
-            console.log('defendingPlayer', defendingPlayer.socketId);
-            console.log('attackingPlayer', attackingPlayer.socketId);
             this.server.to(gameId).emit(CombatEvents.CombatFinished, combatFinishedData);
             if (this.combatService.checkForGameWinner(game.id, attackingPlayer)) {
                 this.server.to(gameId).emit(CombatEvents.GameFinishedPlayerWon, attackingPlayer);
@@ -171,9 +169,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             this.combatService.deleteCombat(game.id);
             this.cleanupCombatRoom(combatId);
         }, TIME_LIMIT_DELAY);
-
-        console.log('defendingPlayer', defendingPlayer);
-        console.log('attackingPlayer', attackingPlayer);
     }
 
     prepareNextTurn(gameId: string) {
