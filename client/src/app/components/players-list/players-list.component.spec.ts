@@ -4,6 +4,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { Avatar, Bonus, Player } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { PlayersListComponent } from './players-list.component';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('PlayersListComponent', () => {
     let component: PlayersListComponent;
@@ -148,7 +149,7 @@ describe('PlayersListComponent', () => {
             const playerId = 'player1Id';
             component.gameId = 'game123';
             component.kickPlayer(playerId);
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', { playerId: playerId, gameId: 'game123' });
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.KickPlayer, { playerId: playerId, gameId: 'game123' });
         });
 
         it('should not call sendMessage if playerId is empty', () => {

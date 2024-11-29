@@ -3,6 +3,7 @@ import { CombatListComponent } from './combat-list.component';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { Player, Specs } from '@common/game';
+import { CombatEvents } from '@common/events/combat.events';
 
 describe('CombatListComponent', () => {
     let component: CombatListComponent;
@@ -48,7 +49,7 @@ describe('CombatListComponent', () => {
 
     it('should send "startCombat" message with gameId and opponent when attack is called', () => {
         component.attack(mockPlayer);
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('startCombat', { gameId: mockGameId, opponent: mockPlayer });
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(CombatEvents.StartCombat, { gameId: mockGameId, opponent: mockPlayer });
     });
 
     it('should set combatAlreadyStarted to true after attack is called', () => {

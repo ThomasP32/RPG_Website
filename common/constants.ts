@@ -71,3 +71,15 @@ export const COUNTDOWN_DURATION: number = 5;
 export const COUNTDOWN_NOEVASION_DURATION: number = 3;
 
 export const COUNTDOWN_COMBAT_DURATION: number = 5;
+
+export const SWORD_ATTACK_BONUS: number = 4;
+
+export const SWORD_SPEED_BONUS: number = 2;
+
+export const ARMOR_DEFENSE_BONUS: number = 5;
+
+export const ARMOR_SPEED_PENALTY: number = 1;
+
+export const ICE_ATTACK_PENALTY: number = 2;
+
+export const ICE_DEFENSE_PENALTY: number = 2;

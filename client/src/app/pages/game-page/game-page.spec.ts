@@ -1,6 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@common/directions';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
@@ -9,12 +8,14 @@ import { GameService } from '@app/services/game/game.service';
 import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
+import { MovesMap } from '@common/directions';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
-import { GamePageActiveView } from '@common/game-page';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -125,6 +126,7 @@ describe('GamePageComponent', () => {
                 'listenForDoorUpdates',
                 'listenForCombatConclusion',
                 'toggleDoor',
+                'listenForEndOfGame',
             ],
             {
                 playerTurn$: playerTurnSubject,
@@ -161,7 +163,7 @@ describe('GamePageComponent', () => {
 
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
-                case 'playerLeft':
+                case GameCreationEvents.PlayerLeft:
                     return playerLeftSubject.asObservable() as Observable<T>;
                 case 'delay':
                     return delaySubject.asObservable() as Observable<T>;
@@ -218,29 +220,6 @@ describe('GamePageComponent', () => {
         tick(500);
         expect(component.isPulsing).toBeFalse();
     }));
-
-    it('should initialize game turn and combat listeners on init', () => {
-        spyOn(component, 'listenForFalling').and.callThrough();
-        spyOn(component, 'listenForCountDown').and.callThrough();
-        spyOn(component, 'listenPlayersLeft').and.callThrough();
-        spyOn(component, 'listenForCurrentPlayerUpdates').and.callThrough();
-        spyOn(component, 'listenForStartTurnDelay').and.callThrough();
-        spyOn(component, 'listenForOpponent').and.callThrough();
-        spyOn(component, 'listenForIsCombatModalOpen').and.callThrough();
-
-        component.ngOnInit();
-
-        expect(gameTurnService.listenForTurn).toHaveBeenCalled();
-        expect(gameTurnService.listenForPlayerMove).toHaveBeenCalled();
-        expect(gameTurnService.listenMoves).toHaveBeenCalled();
-        expect(component.listenForFalling).toHaveBeenCalled();
-        expect(component.listenForCountDown).toHaveBeenCalled();
-        expect(component.listenPlayersLeft).toHaveBeenCalled();
-        expect(component.listenForCurrentPlayerUpdates).toHaveBeenCalled();
-        expect(component.listenForStartTurnDelay).toHaveBeenCalled();
-        expect(component.listenForOpponent).toHaveBeenCalled();
-        expect(component.listenForIsCombatModalOpen).toHaveBeenCalled();
-    });
 
     it('should navigate to main menu on confirm exit', () => {
         spyOn(component, 'navigateToMain');
@@ -334,10 +313,10 @@ describe('GamePageComponent', () => {
 
     it('should listen for game over updates and set gameOverMessage', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
-        component.listenForGameOver();
+        component.ngOnInit();
         (gameTurnService.playerWon$ as Subject<boolean>).next(true);
 
-        expect(component.gameOverMessage).toBe(true);
+        expect(component.showEndGameModal).toBe(true);
 
         tick(5000);
 
@@ -346,7 +325,7 @@ describe('GamePageComponent', () => {
 
     it('should not call navigateToEndOfGame if game is not over', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
-        component.listenForGameOver();
+        component.ngOnInit();
         (gameTurnService.playerWon$ as Subject<boolean>).next(false);
 
         expect(component.gameOverMessage).toBe(false);
@@ -389,7 +368,7 @@ describe('GamePageComponent', () => {
 
     describe('#listenForDoorOpening', () => {
         beforeEach(() => {
-            component.listenForDoorOpening();
+            component.ngOnInit();
         });
 
         it('should set doorActionAvailable to true and update actionMessage to "Fermer la porte" if first door is opened', () => {
@@ -417,7 +396,7 @@ describe('GamePageComponent', () => {
         it('should set doorActionAvailable to false and reset actionMessage if actionsDone.door is true', () => {
             gameTurnService.doorAlreadyToggled = true;
 
-            component.listenForDoorOpening();
+            component.ngOnInit();
 
             const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
             (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
@@ -453,7 +432,7 @@ describe('GamePageComponent', () => {
 
         (gameTurnService.possibleOpponents$ as Subject<Player[]>).next([]);
 
-        component.listenForPossibleOpponents();
+        component.ngOnInit();
 
         expect(component.combatAvailable).toBeFalse();
         expect(component.possibleOpponents).toEqual([]);

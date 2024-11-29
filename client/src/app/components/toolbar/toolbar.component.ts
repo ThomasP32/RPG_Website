@@ -131,10 +131,6 @@ export class ToolbarComponent implements OnInit {
     }
 
     setMode() {
-        if (this.mapService.map.mode === Mode.Classic) {
-            this.mode = Mode.Classic;
-        } else {
-            this.mode = Mode.Ctf;
-        }
+        this.mode = this.mapService.map.mode === Mode.Classic ? Mode.Classic : Mode.Ctf;
     }
 }
