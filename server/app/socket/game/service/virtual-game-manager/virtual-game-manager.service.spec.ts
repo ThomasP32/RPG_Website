@@ -2,7 +2,7 @@ import { Combat } from '@common/combat';
 import { ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, Item } from '@common/map.types';
+import { Coordinate, Item, ItemCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server } from 'socket.io';
 import { CombatService } from '../combat/combat.service';
@@ -135,6 +135,21 @@ describe('VirtualGameManagerService', () => {
 
             expect(result).toEqual([]);
         });
+
+        it('should return a random path from possible moves', () => {
+            const player: Player = {} as Player;
+            const game: Game = { id: 'gameId' } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [
+                ['move1', { path: [{ x: 1, y: 1 }], weight: 1 }],
+                ['move2', { path: [{ x: 2, y: 2 }], weight: 1 }],
+            ];
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+            jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+            const result = service.calculateVirtualPlayerPath(player, game);
+
+            expect(result).toEqual([{ x: 2, y: 2 }]);
+        });
     });
 
     describe('updateVirtualPlayerPosition', () => {
@@ -162,6 +177,16 @@ describe('VirtualGameManagerService', () => {
 
             expect(result).toBe(true);
         });
+
+        it('should return false if player is not found', async () => {
+            const player: Player = null;
+            const gameId = 'gameId';
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue({ id: gameId } as Game);
+
+            const result = await service.updateVirtualPlayerPosition(player, gameId);
+
+            expect(result).toBe(undefined);
+        });
     });
 
     describe('updatePosition', () => {
@@ -179,6 +204,22 @@ describe('VirtualGameManagerService', () => {
 
             expect(gameManagerService.updatePosition).toHaveBeenCalledWith(gameId, player.socketId, [path[0]]);
             expect(server.to).toHaveBeenCalledWith(gameId);
+        });
+
+        it('should emit GameFinishedPlayerWon event if player wins', async () => {
+            const player: Player = { socketId: 'socketId', position: { x: 0, y: 0 } } as Player;
+            const path: Coordinate[] = [{ x: 1, y: 1 }];
+            const gameId = 'gameId';
+            const game: Game = { id: gameId } as Game;
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
+            jest.spyOn(gameManagerService, 'updatePosition').mockImplementation();
+            jest.spyOn(gameManagerService, 'checkForWinnerCtf').mockReturnValue(true);
+            jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
+
+            await service.updatePosition(player, path, gameId, false);
+
+            expect(server.to).toHaveBeenCalledWith(game.id);
+            expect(server.to(game.id).emit).toHaveBeenCalledWith(CombatEvents.GameFinishedPlayerWon, player);
         });
     });
 
@@ -209,38 +250,168 @@ describe('VirtualGameManagerService', () => {
     });
 
     describe('executeAggressiveBehavior', () => {
-        it('should update position and pick up sword if visible', async () => {
+        it('should update position and start combat if visible players are present and actions are available', async () => {
             const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
-            const game: Game = { id: 'gameId', players: [], items: [{ category: 'sword', coordinate: { x: 1, y: 1 } }] } as Game;
-            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue([]);
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const visiblePlayers: Player[] = [{ position: { x: 1, y: 1 } } as Player];
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+            const adjacentTiles: Coordinate[] = [{ x: 1, y: 1 }];
+            const pathToTargetPlayer: Coordinate[] = [{ x: 1, y: 1 }];
+            const possibleOpponents: Player[] = [{ socketId: 'opponentSocketId' } as Player];
+            const combat: Combat = { id: 'combatId', challenger: player, opponent: possibleOpponents[0] } as Combat;
+
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
             jest.spyOn(service, 'getAdjacentTilesToPossibleMoves').mockReturnValue([]);
-            jest.spyOn(service, 'getPlayersInArea').mockReturnValue([]);
-            jest.spyOn(service, 'getItemsInArea').mockReturnValue(game.items);
+            jest.spyOn(service, 'getPlayersInArea').mockReturnValue(visiblePlayers);
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue(adjacentTiles);
+            jest.spyOn(gameManagerService, 'getMove').mockReturnValue(pathToTargetPlayer);
             jest.spyOn(service, 'updatePosition').mockResolvedValue();
-            jest.spyOn(itemsManagerService, 'pickUpItem').mockImplementation();
+            jest.spyOn(gameManagerService, 'getAdjacentPlayers').mockReturnValue(possibleOpponents);
+            jest.spyOn(combatService, 'createCombat').mockReturnValue(combat);
+            jest.spyOn(service, 'startCombat').mockResolvedValue(true);
 
             await service.executeAggressiveBehavior(player, game);
 
-            expect(service.updatePosition).toHaveBeenCalledWith(player, [{ x: 1, y: 1 }], game.id, false);
-            expect(itemsManagerService.pickUpItem).toHaveBeenCalledWith({ x: 1, y: 1 }, game.id, player);
+            expect(service.updatePosition).toHaveBeenCalledWith(player, pathToTargetPlayer, game.id, false);
+            expect(service.startCombat).toHaveBeenCalledWith(combat, game);
+        });
+
+        it('should update position and pick up sword if visible', async () => {
+            const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [{ category: 'sword', coordinate: { x: 1, y: 1 } }] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+            const adjacentTiles: Coordinate[] = [{ x: 1, y: 1 }];
+            const pathToTargetPlayer: Coordinate[] = [{ x: 1, y: 1 }];
+            const possibleOpponents: Player[] = [{ socketId: 'opponentSocketId' } as Player];
+            const combat: Combat = { id: 'combatId', challenger: player, opponent: possibleOpponents[0] } as Combat;
+
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+            jest.spyOn(service, 'getAdjacentTilesToPossibleMoves').mockReturnValue([]);
+            jest.spyOn(service, 'getItemsInArea').mockReturnValue([{ category: ItemCategory.Sword, coordinate: { x: 1, y: 1 } } as Item]);
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue(adjacentTiles);
+            jest.spyOn(gameManagerService, 'getMove').mockReturnValue(pathToTargetPlayer);
+            jest.spyOn(service, 'updatePosition').mockResolvedValue();
+            jest.spyOn(gameManagerService, 'getAdjacentPlayers').mockReturnValue(possibleOpponents);
+            jest.spyOn(combatService, 'createCombat').mockReturnValue(combat);
+            jest.spyOn(service, 'startCombat').mockResolvedValue(true);
+
+            await service.executeAggressiveBehavior(player, game);
+
+            expect(service.updatePosition).toHaveBeenCalled();
+            expect(itemsManagerService.pickUpItem).toHaveBeenCalled();
+        });
+
+        it('should emit virtualPlayerFinishedMoving if player actions are 0 after moving', async () => {
+            const player: Player = { specs: { actions: 0 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+
+            jest.spyOn(service, 'updateVirtualPlayerPosition').mockResolvedValue(true);
+            jest.spyOn(service, 'emit').mockImplementation();
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+
+            await service.executeAggressiveBehavior(player, game);
+
+            expect(service.emit).toHaveBeenCalledWith('virtualPlayerFinishedMoving', game.id);
+        });
+
+        it('should emit virtualPlayerFinishedMoving if shouldContinue is false', async () => {
+            const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+
+            jest.spyOn(service, 'updateVirtualPlayerPosition').mockResolvedValue(true);
+            jest.spyOn(Math, 'random').mockReturnValue(0.5);
+            jest.spyOn(service, 'emit').mockImplementation();
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+
+            await service.executeAggressiveBehavior(player, game);
+
+            expect(service.emit).toHaveBeenCalledWith('virtualPlayerFinishedMoving', game.id);
         });
     });
 
     describe('executeDefensiveBehavior', () => {
-        it('should update position and pick up armor if visible', async () => {
+        it('should update position and start combat if visible players are present and actions are available', async () => {
             const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
-            const game: Game = { id: 'gameId', players: [], items: [{ category: 'armor', coordinate: { x: 1, y: 1 } }] } as Game;
-            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue([]);
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const visiblePlayers: Player[] = [{ position: { x: 1, y: 1 } } as Player];
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+            const adjacentTiles: Coordinate[] = [{ x: 1, y: 1 }];
+            const pathToTargetPlayer: Coordinate[] = [{ x: 1, y: 1 }];
+            const possibleOpponents: Player[] = [{ socketId: 'opponentSocketId' } as Player];
+            const combat: Combat = { id: 'combatId', challenger: player, opponent: possibleOpponents[0] } as Combat;
+
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
             jest.spyOn(service, 'getAdjacentTilesToPossibleMoves').mockReturnValue([]);
-            jest.spyOn(service, 'getPlayersInArea').mockReturnValue([]);
-            jest.spyOn(service, 'getItemsInArea').mockReturnValue(game.items);
+            jest.spyOn(service, 'getPlayersInArea').mockReturnValue(visiblePlayers);
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue(adjacentTiles);
+            jest.spyOn(gameManagerService, 'getMove').mockReturnValue(pathToTargetPlayer);
             jest.spyOn(service, 'updatePosition').mockResolvedValue();
-            jest.spyOn(itemsManagerService, 'pickUpItem').mockImplementation();
+            jest.spyOn(gameManagerService, 'getAdjacentPlayers').mockReturnValue(possibleOpponents);
+            jest.spyOn(combatService, 'createCombat').mockReturnValue(combat);
+            jest.spyOn(service, 'startCombat').mockResolvedValue(true);
 
             await service.executeDefensiveBehavior(player, game);
 
-            expect(service.updatePosition).toHaveBeenCalledWith(player, [{ x: 1, y: 1 }], game.id, false);
+            expect(service.updatePosition).toHaveBeenCalledWith(player, pathToTargetPlayer, game.id, false);
+            expect(service.startCombat).toHaveBeenCalledWith(combat, game);
+        });
+
+        it('should update position and pick up armor if visible', async () => {
+            const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [{ category: 'armor', coordinate: { x: 1, y: 1 } }] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+            const adjacentTiles: Coordinate[] = [{ x: 1, y: 1 }];
+            const pathToTargetPlayer: Coordinate[] = [{ x: 1, y: 1 }];
+            const possibleOpponents: Player[] = [{ socketId: 'opponentSocketId' } as Player];
+            const combat: Combat = { id: 'combatId', challenger: player, opponent: possibleOpponents[0] } as Combat;
+
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+            jest.spyOn(service, 'getAdjacentTilesToPossibleMoves').mockReturnValue([]);
+            jest.spyOn(service, 'getItemsInArea').mockReturnValue([{ category: ItemCategory.Armor, coordinate: { x: 1, y: 1 } } as Item]);
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue(adjacentTiles);
+            jest.spyOn(gameManagerService, 'getMove').mockReturnValue(pathToTargetPlayer);
+            jest.spyOn(service, 'updatePosition').mockResolvedValue();
+            jest.spyOn(gameManagerService, 'getAdjacentPlayers').mockReturnValue(possibleOpponents);
+            jest.spyOn(combatService, 'createCombat').mockReturnValue(combat);
+            jest.spyOn(service, 'startCombat').mockResolvedValue(true);
+
+            await service.executeDefensiveBehavior(player, game);
+
+            expect(service.updatePosition).toHaveBeenCalled();
             expect(itemsManagerService.pickUpItem).toHaveBeenCalledWith({ x: 1, y: 1 }, game.id, player);
+        });
+
+        it('should emit virtualPlayerFinishedMoving if player actions are 0 after moving', async () => {
+            const player: Player = { specs: { actions: 0 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+
+            jest.spyOn(service, 'updateVirtualPlayerPosition').mockResolvedValue(true);
+            jest.spyOn(service, 'emit').mockImplementation();
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+
+            await service.executeDefensiveBehavior(player, game);
+
+            expect(service.emit).toHaveBeenCalledWith('virtualPlayerFinishedMoving', game.id);
+        });
+
+        it('should emit virtualPlayerFinishedMoving if shouldContinue is false', async () => {
+            const player: Player = { specs: { actions: 1 }, socketId: 'socketId' } as Player;
+            const game: Game = { id: 'gameId', players: [], items: [] } as Game;
+            const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [['move1', { path: [{ x: 1, y: 1 }], weight: 1 }]];
+
+            jest.spyOn(service, 'updateVirtualPlayerPosition').mockResolvedValue(true);
+            jest.spyOn(Math, 'random').mockReturnValue(0.5);
+            jest.spyOn(service, 'emit').mockImplementation();
+            jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
+
+            await service.executeDefensiveBehavior(player, game);
+
+            expect(service.emit).toHaveBeenCalledWith('virtualPlayerFinishedMoving', game.id);
         });
     });
 
@@ -269,6 +440,22 @@ describe('VirtualGameManagerService', () => {
             expect(combatCountdownService.initCountdown).toHaveBeenCalledWith(game.id, 5);
             expect(gameCountdownService.pauseCountdown).toHaveBeenCalledWith(game.id);
             expect(service.startCombatTurns).toHaveBeenCalledWith(game.id);
+        });
+
+        it('should return false if opponent socket is not found', async () => {
+            const combat = {
+                id: 'combatId',
+                challenger: { name: 'challenger', socketId: 'challengerSocketId' },
+                opponent: { name: 'opponent', socketId: 'opponentSocketId' },
+            } as Combat;
+            const game: Game = { id: 'gameId' } as Game;
+            jest.spyOn(server, 'in').mockReturnValue({
+                fetchSockets: jest.fn().mockResolvedValue([]),
+            } as any);
+
+            const result = await service.startCombat(combat, game);
+
+            expect(result).toBe(false);
         });
     });
 
@@ -301,6 +488,77 @@ describe('VirtualGameManagerService', () => {
 
             expect(service.handleDefensiveCombat).toHaveBeenCalledWith(player, opponent, combat, gameId);
             expect(result).toBe(true);
+        });
+
+        describe('handleDefensiveCombat', () => {
+            it('should attempt evasion if player has evasions, speed is 6, and life is less than 4', () => {
+                const player: Player = { specs: { evasions: 1, speed: 6, life: 3, nEvasions: 0 } } as Player;
+                const opponent: Player = {} as Player;
+                const combat: Combat = {} as Combat;
+                const gameId = 'gameId';
+                jest.spyOn(service, 'attemptEvasion').mockReturnValue(true);
+
+                const result = service.handleDefensiveCombat(player, opponent, combat, gameId);
+
+                expect(service.attemptEvasion).toHaveBeenCalledWith(player, opponent, combat, gameId);
+                expect(player.specs.evasions).toBe(0);
+                expect(player.specs.nEvasions).toBe(1);
+                expect(result).toBe(true);
+            });
+
+            it('should attempt evasion if player has evasions, speed is 4, and life is less than 6', () => {
+                const player: Player = { specs: { evasions: 1, speed: 4, life: 5, nEvasions: 0 } } as Player;
+                const opponent: Player = {} as Player;
+                const combat: Combat = {} as Combat;
+                const gameId = 'gameId';
+                jest.spyOn(service, 'attemptEvasion').mockReturnValue(true);
+
+                const result = service.handleDefensiveCombat(player, opponent, combat, gameId);
+
+                expect(service.attemptEvasion).toHaveBeenCalledWith(player, opponent, combat, gameId);
+                expect(player.specs.evasions).toBe(0);
+                expect(player.specs.nEvasions).toBe(1);
+                expect(result).toBe(true);
+            });
+
+            it('should attack if player has no evasions left', () => {
+                const player: Player = { specs: { evasions: 0, speed: 6, life: 3, nEvasions: 0 } } as Player;
+                const opponent: Player = {} as Player;
+                const combat: Combat = {} as Combat;
+                const gameId = 'gameId';
+                jest.spyOn(service, 'attack').mockImplementation();
+
+                const result = service.handleDefensiveCombat(player, opponent, combat, gameId);
+
+                expect(service.attack).toHaveBeenCalledWith(player, opponent, combat);
+                expect(result).toBe(false);
+            });
+
+            it('should attack if player speed is not 6 or 4', () => {
+                const player: Player = { specs: { evasions: 1, speed: 5, life: 3, nEvasions: 0 } } as Player;
+                const opponent: Player = {} as Player;
+                const combat: Combat = {} as Combat;
+                const gameId = 'gameId';
+                jest.spyOn(service, 'attack').mockImplementation();
+
+                const result = service.handleDefensiveCombat(player, opponent, combat, gameId);
+
+                expect(service.attack).toHaveBeenCalledWith(player, opponent, combat);
+                expect(result).toBe(false);
+            });
+
+            it('should attack if player life is not less than 4 or 6', () => {
+                const player: Player = { specs: { evasions: 1, speed: 6, life: 4, nEvasions: 0 } } as Player;
+                const opponent: Player = {} as Player;
+                const combat: Combat = {} as Combat;
+                const gameId = 'gameId';
+                jest.spyOn(service, 'attack').mockImplementation();
+
+                const result = service.handleDefensiveCombat(player, opponent, combat, gameId);
+
+                expect(service.attack).toHaveBeenCalledWith(player, opponent, combat);
+                expect(result).toBe(false);
+            });
         });
     });
 
@@ -508,102 +766,6 @@ describe('VirtualGameManagerService', () => {
                 expect(server.to).toHaveBeenCalledWith(combat.currentTurnSocketId);
                 expect(server.to).toHaveBeenCalledWith(combat.opponent.socketId);
                 expect(combatCountdownService.startTurnCounter).toHaveBeenCalledWith(game, true);
-            });
-        });
-
-        describe('calculateVirtualPlayerPath', () => {
-            it('should return a random path from possible moves', () => {
-                const player: Player = {} as Player;
-                const game: Game = { id: 'gameId' } as Game;
-                const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [
-                    ['move1', { path: [{ x: 1, y: 1 }], weight: 1 }],
-                    ['move2', { path: [{ x: 2, y: 2 }], weight: 1 }],
-                ];
-                jest.spyOn(gameManagerService, 'getMoves').mockReturnValue(possibleMoves);
-                jest.spyOn(Math, 'random').mockReturnValue(0.5);
-
-                const result = service.calculateVirtualPlayerPath(player, game);
-
-                expect(result).toEqual([{ x: 2, y: 2 }]);
-            });
-        });
-
-        describe('updateVirtualPlayerPosition', () => {
-            it('should return false if player is not found', async () => {
-                const player: Player = null;
-                const gameId = 'gameId';
-                jest.spyOn(gameCreationService, 'getGameById').mockReturnValue({ id: gameId } as Game);
-
-                const result = await service.updateVirtualPlayerPosition(player, gameId);
-
-                expect(result).toBe(undefined);
-            });
-        });
-
-        describe('updatePosition', () => {
-            it('should emit GameFinishedPlayerWon event if player wins', async () => {
-                const player: Player = { socketId: 'socketId', position: { x: 0, y: 0 } } as Player;
-                const path: Coordinate[] = [{ x: 1, y: 1 }];
-                const gameId = 'gameId';
-                const game: Game = { id: gameId } as Game;
-                jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
-                jest.spyOn(gameManagerService, 'updatePosition').mockImplementation();
-                jest.spyOn(gameManagerService, 'checkForWinnerCtf').mockReturnValue(true);
-                jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
-
-                await service.updatePosition(player, path, gameId, false);
-
-                expect(server.to).toHaveBeenCalledWith(game.id);
-                expect(server.to(game.id).emit).toHaveBeenCalledWith(CombatEvents.GameFinishedPlayerWon, player);
-            });
-        });
-
-        describe('startCombat', () => {
-            it('should return false if opponent socket is not found', async () => {
-                const combat = {
-                    id: 'combatId',
-                    challenger: { name: 'challenger', socketId: 'challengerSocketId' },
-                    opponent: { name: 'opponent', socketId: 'opponentSocketId' },
-                } as Combat;
-                const game: Game = { id: 'gameId' } as Game;
-                jest.spyOn(server, 'in').mockReturnValue({
-                    fetchSockets: jest.fn().mockResolvedValue([]),
-                } as any);
-
-                const result = await service.startCombat(combat, game);
-
-                expect(result).toBe(false);
-            });
-        });
-
-        describe('handleVirtualPlayerCombat', () => {
-            it('should return undefined for non-virtual player', () => {
-                const player: Player = { socketId: 'real1', profile: ProfileType.AGGRESSIVE } as Player;
-                const opponent: Player = {} as Player;
-                const gameId = 'gameId';
-                const combat: Combat = {} as Combat;
-
-                const result = service.handleVirtualPlayerCombat(player, opponent, gameId, combat);
-
-                expect(result).toBeUndefined();
-            });
-        });
-
-        describe('attemptEvasion', () => {
-            it('should not update players in game if evasion fails', () => {
-                const player: Player = { name: 'player' } as Player;
-                const opponent: Player = { name: 'opponent' } as Player;
-                const combat: Combat = { id: 'combatId' } as Combat;
-                const gameId = 'gameId';
-                jest.spyOn(Math, 'random').mockReturnValue(0.5);
-                jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
-                jest.spyOn(journalService, 'logMessage').mockImplementation();
-                jest.spyOn(combatService, 'updatePlayersInGame').mockImplementation();
-
-                const result = service.attemptEvasion(player, opponent, combat, gameId);
-
-                expect(result).toBe(false);
-                expect(combatService.updatePlayersInGame).not.toHaveBeenCalled();
             });
         });
     });
