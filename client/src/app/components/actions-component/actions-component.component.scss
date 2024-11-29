@@ -32,40 +32,6 @@ button:hover {
     background-color: #f39c12;
 }
 
-.inventory {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1vw;
-    margin-left: 1.3vw;
-    margin-right: 1.3vw;
-}
-
-.inventory-container {
-    display: flex;
-    gap: 1.4vw;
-}
-
-.inventory-slot {
-    width: 4.5vw;
-    height: 4.5vw;
-    border: 2px dashed #b85c38;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.empty-slot {
-    color: #b85c38;
-    font-size: 0.9vw;
-}
-
-.item-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
 .action-button {
     position: relative;
     width: 4.5vw;

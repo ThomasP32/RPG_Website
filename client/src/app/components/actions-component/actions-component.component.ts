@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
-import { ImageService } from '@app/services/image/image.service';
 import { Player } from '@common/game';
 import { DoorTile } from '@common/map.types';
 
@@ -27,11 +26,7 @@ export class ActionsComponentComponent implements OnInit, OnDestroy {
     doorMessage: string = 'Ouvrir la porte';
     // this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
 
-    constructor(
-        protected readonly imageService: ImageService,
-        private readonly gameTurnService: GameTurnService,
-    ) {
-        this.imageService = imageService;
+    constructor(private readonly gameTurnService: GameTurnService) {
         this.gameTurnService = gameTurnService;
     }
     ngOnDestroy(): void {
