@@ -6,45 +6,52 @@
                 <tr>
                     <th></th>
                     <th>Nom</th>
-                    <th (click)="endgameService.sortTable(3)" (keypress)="endgameService.sortTable(3)">
-                        Combats @if (endgameService.sortColumn === 3) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortCombats()">
+                        Combats @if(endgameService.sortColumn !== 4) {<span>-</span>} @else {<span>{{
+                            endgameService.isCombatSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(4)" (keypress)="endgameService.sortTable(4)">
-                        Évasions @if (endgameService.sortColumn === 4) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortEvasions()">
+                        Évasions @if(endgameService.sortColumn !== 5) {<span>-</span>} @else {<span>{{
+                            endgameService.isEvasionSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(5)" (keypress)="endgameService.sortTable(5)">
-                        Victoires @if (endgameService.sortColumn === 5) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortVictories()">
+                        Victoires @if(endgameService.sortColumn !== 6) {<span>-</span>} @else {<span>{{
+                            endgameService.isVictoriesSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(6)" (keypress)="endgameService.sortTable(6)">
-                        Défaites @if (endgameService.sortColumn === 6) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortDefeats()">
+                        Défaites @if(endgameService.sortColumn !== 7) {<span>-</span>} @else {<span>{{
+                            endgameService.isDefeatsSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(7)" (keypress)="endgameService.sortTable(7)">
-                        Vie perdue @if (endgameService.sortColumn === 7) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortLostLife()">
+                        Vie perdue @if(endgameService.sortColumn !== 8) {<span>-</span>} @else {
+                        <span>{{ endgameService.isLostLifeSortingAsc ? '↓' : '↑' }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(8)" (keypress)="endgameService.sortTable(8)">
-                        Vie infligée @if (endgameService.sortColumn === 8) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortStolenLife()">
+                        Vie infligée @if(endgameService.sortColumn !== 9) {<span>-</span>} @else {<span>{{
+                            endgameService.isStolenLifeSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(9)" (keypress)="endgameService.sortTable(9)">
-                        Objets ramassés @if (endgameService.sortColumn === 9) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortObjects()">
+                        Objets ramassés @if(endgameService.sortColumn !== 10) {<span>-</span>} @else {<span>{{
+                            endgameService.isObjectsSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
-                    <th (click)="endgameService.sortTable(10)" (keypress)="endgameService.sortTable(10)">
-                        Tuiles visitées @if (endgameService.sortColumn === 10) {
-                        <span>{{ endgameService.isSortingAsc ? '↑' : '↓' }}</span>
-                        }
+                    <th (click)="endgameService.sortVisitedTiles()">
+                        Tuiles visitées @if(endgameService.sortColumn !== 11) {<span>-</span>} @else {<span>{{
+                            endgameService.isTilesSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
                     </th>
                 </tr>
             </thead>

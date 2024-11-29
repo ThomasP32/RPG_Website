@@ -2,15 +2,25 @@ import { Injectable } from '@angular/core';
 import { MAX_CHAR, MINUTE, PERCENTAGE } from '@common/constants';
 import { Game, GameCtf, Player } from '@common/game';
 import { Coordinate } from '@common/map.types';
+import { GameService } from '../game/game.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class EndgameService {
-    isSortingAsc: boolean = true;
+    isCombatSortingAsc: boolean = true;
+    isEvasionSortingAsc: boolean = true;
     sortColumn: number = -1;
+    isVictoriesSortingAsc: boolean = true;
+    isDefeatsSortingAsc: boolean = true;
+    isLostLifeSortingAsc: boolean = true;
+    isStolenLifeSortingAsc: boolean = true;
+    isObjectsSortingAsc: boolean = true;
+    isTilesSortingAsc: boolean = true;
 
-    constructor() {}
+    constructor(private gameService: GameService) {
+        this.gameService = gameService;
+    }
 
     getPlayerTilePercentage(player: Player, game: Game): number {
         return Math.floor((player.visitedTiles.length / (game.mapSize.x * game.mapSize.y)) * PERCENTAGE);
@@ -57,50 +67,83 @@ export class EndgameService {
         return uniquePlayers.size;
     }
 
-    sortTable(columnIndex: number): void {
-        this.isSortingAsc = this.sortColumn === columnIndex ? !this.isSortingAsc : true;
-        this.sortColumn = columnIndex;
-
-        const table = document.getElementById('stats-table');
-        if (!table) {
-            console.error('Table not found');
-            return;
+    sortCombats(): void {
+        this.isCombatSortingAsc = !this.isCombatSortingAsc;
+        if (this.isCombatSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nCombats - b.specs.nCombats);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nCombats - a.specs.nCombats);
         }
+        this.sortColumn = 4;
+    }
 
-        const tbody = table.getElementsByTagName('tbody')[0];
-        if (!tbody) {
-            console.error('Table body not found');
-            return;
+    sortEvasions(): void {
+        this.isEvasionSortingAsc = !this.isEvasionSortingAsc;
+        if (this.isEvasionSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nEvasions - b.specs.nEvasions);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nEvasions - a.specs.nEvasions);
         }
+        this.sortColumn = 5;
+    }
 
-        const rows = Array.from(tbody.rows);
+    sortVictories(): void {
+        this.isVictoriesSortingAsc = !this.isVictoriesSortingAsc;
+        if (this.isVictoriesSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nVictories - b.specs.nVictories);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nVictories - a.specs.nVictories);
+        }
+        this.sortColumn = 6;
+    }
 
-        rows.sort((rowA, rowB) => {
-            const cellA = rowA.cells[columnIndex];
-            const cellB = rowB.cells[columnIndex];
+    sortDefeats(): void {
+        this.isDefeatsSortingAsc = !this.isDefeatsSortingAsc;
+        if (this.isDefeatsSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nDefeats - b.specs.nDefeats);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nDefeats - a.specs.nDefeats);
+        }
+        this.sortColumn = 7;
+    }
 
-            if (!cellA || !cellB) return 0;
+    sortLostLife(): void {
+        this.isLostLifeSortingAsc = !this.isLostLifeSortingAsc;
+        if (this.isLostLifeSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nLifeLost - b.specs.nLifeLost);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nLifeLost - a.specs.nLifeLost);
+        }
+        this.sortColumn = 8;
+    }
 
-            const textA = cellA.textContent?.trim() ?? '';
-            const textB = cellB.textContent?.trim() ?? '';
+    sortStolenLife(): void {
+        this.isStolenLifeSortingAsc = !this.isStolenLifeSortingAsc;
+        if (this.isStolenLifeSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nLifeTaken - b.specs.nLifeTaken);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nLifeTaken - a.specs.nLifeTaken);
+        }
+        this.sortColumn = 9;
+    }
 
-            if (columnIndex === 10) {
-                const valueA = Number(textA.replace('%', ''));
-                const valueB = Number(textB.replace('%', ''));
-                return this.isSortingAsc ? valueA - valueB : valueB - valueA;
-            }
-            if (columnIndex > 4 && columnIndex < 10) {
-                const numA = parseInt(textA);
-                const numB = parseInt(textB);
-                return this.isSortingAsc ? numA - numB : numB - numA;
-            }
+    sortObjects(): void {
+        this.isObjectsSortingAsc = !this.isObjectsSortingAsc;
+        if (this.isObjectsSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.specs.nItemsUsed - b.specs.nItemsUsed);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.specs.nItemsUsed - a.specs.nItemsUsed);
+        }
+        this.sortColumn = 10;
+    }
 
-            return this.isSortingAsc ? textA.localeCompare(textB) : textB.localeCompare(textA);
-        });
-
-        const fragment = document.createDocumentFragment();
-        rows.forEach((row) => fragment.appendChild(row));
-        tbody.innerHTML = '';
-        tbody.appendChild(fragment);
+    sortVisitedTiles(): void {
+        this.isTilesSortingAsc = !this.isTilesSortingAsc;
+        if (this.isTilesSortingAsc) {
+            this.gameService.game.players.sort((a, b) => a.visitedTiles.length - b.visitedTiles.length);
+        } else {
+            this.gameService.game.players.sort((a, b) => b.visitedTiles.length - a.visitedTiles.length);
+        }
+        this.sortColumn = 11;
     }
 }
