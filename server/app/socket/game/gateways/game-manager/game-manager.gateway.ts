@@ -2,7 +2,10 @@ import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { DEFAULT_ACTIONS, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
+import { DEFAULT_ACTIONS, ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
+import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
+import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
@@ -33,7 +36,7 @@ export class GameManagerGateway implements OnGatewayInit {
     @SubscribeMessage('getMovements')
     getMoves(client: Socket, gameId: string): void {
         if (!this.gameCreationService.doesGameExist(gameId)) {
-            client.emit('gameNotFound');
+            client.emit(GameCreationEvents.GameNotFound);
             return;
         }
         const moves = this.gameManagerService.getMoves(gameId, client.id);
@@ -44,7 +47,7 @@ export class GameManagerGateway implements OnGatewayInit {
     async getMove(client: Socket, data: { gameId: string; destination: Coordinate }): Promise<void> {
         let wasOnIceTile = false;
         if (!this.gameCreationService.doesGameExist(data.gameId)) {
-            client.emit('gameNotFound');
+            client.emit(GameCreationEvents.GameNotFound);
             return;
         }
         const game = this.gameCreationService.getGameById(data.gameId);
@@ -100,13 +103,16 @@ export class GameManagerGateway implements OnGatewayInit {
         this.server.to(client.id).emit('yourDoors', adjacentDoors);
     }
 
-    @SubscribeMessage('dropItem')
-    dropItem(client: Socket, data: { itemDropping: ItemCategory; gameId: string }): void {
+    @SubscribeMessage(ItemsEvents.dropItem)
+    dropItem(client: Socket, data: DropItemData): void {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const coordinates = player.position;
         this.itemsManagerService.dropItem(data.itemDropping, game.id, player, coordinates);
-        this.server.to(client.id).emit('itemDropped', { game: game, player: player });
+        const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
+        console.log('player');
+        console.log(player);
+        this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
     }
     @SubscribeMessage('startGame')
     startGame(client: Socket, gameId: string): void {
@@ -160,7 +166,8 @@ export class GameManagerGateway implements OnGatewayInit {
                     if (player.inventory.length > 2) {
                         const coordinates = player.position;
                         this.itemsManagerService.dropItem(player.inventory[2], game.id, player, coordinates);
-                        this.server.to(player.socketId).emit('itemDropped', { game: game, player: player });
+                        const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
+                        this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
                     }
                 }
             });
@@ -171,12 +178,12 @@ export class GameManagerGateway implements OnGatewayInit {
         const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
         const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
         if (isOnIceTile && !wasOnIceTile && !hasSkates) {
-            player.specs.attack -= 2;
-            player.specs.defense -= 2;
+            player.specs.attack -= ICE_ATTACK_PENALTY;
+            player.specs.defense -= ICE_DEFENSE_PENALTY;
             wasOnIceTile = true;
         } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
-            player.specs.attack += 2;
-            player.specs.defense += 2;
+            player.specs.attack += ICE_ATTACK_PENALTY;
+            player.specs.defense += ICE_DEFENSE_PENALTY;
             wasOnIceTile = false;
         }
         return wasOnIceTile;
@@ -189,14 +196,14 @@ export class GameManagerGateway implements OnGatewayInit {
             if (onItem) {
                 this.itemsManagerService.pickUpItem(move, game.id, player);
                 if (player.inventory.length > 2) {
-                    this.server.to(player.socketId).emit('inventoryFull');
+                    this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
                 }
             }
             wasOnIceTile = this.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
             this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
-                this.server.to(game.id).emit('gameFinishedPlayerWon', { winner: player });
+                this.server.to(game.id).emit(CombatEvents.GameFinishedPlayerWon, player);
                 return true;
             }
         }

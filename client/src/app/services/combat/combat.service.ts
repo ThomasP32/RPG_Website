@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY } from '@common/constants';
+import { CombatEvents, CombatStartedData } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -56,7 +57,7 @@ export class CombatService {
 
     listenCombatStart() {
         this.socketSubscription.add(
-            this.socketService.listen<{ challenger: Player; opponent: Player }>('combatStarted').subscribe((data) => {
+            this.socketService.listen<CombatStartedData>(CombatEvents.CombatStarted).subscribe((data) => {
                 if (this.playerService.player.socketId === data.challenger.socketId) {
                     this.opponent.next(data.opponent);
                 } else {
@@ -69,14 +70,14 @@ export class CombatService {
 
     listenForCombatFinish(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('combatFinishedNormally').subscribe(() => {
+            this.socketService.listen<Player>(CombatEvents.CombatFinishedNormally).subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<Player>('combatFinishedByDisconnection').subscribe(() => {
+            this.socketService.listen<Player>(CombatEvents.CombatFinishedByDisconnection).subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);
@@ -86,14 +87,14 @@ export class CombatService {
 
     listenForEvasionInfo(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('evasionSuccess').subscribe(() => {
+            this.socketService.listen<Player>(CombatEvents.EvasionSuccess).subscribe(() => {
                 setTimeout(() => {
                     this.isCombatModalOpen.next(false);
                 }, TIME_LIMIT_DELAY);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<Player>('evasionFailed').subscribe((evadingPlayer) => {
+            this.socketService.listen<Player>(CombatEvents.EvasionFailed).subscribe((evadingPlayer) => {
                 if (evadingPlayer.socketId === this.playerService.player.socketId) {
                     this.playerService.setPlayer(evadingPlayer);
                 } else {

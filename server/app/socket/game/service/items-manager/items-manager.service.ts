@@ -1,3 +1,4 @@
+import { ARMOR_DEFENSE_BONUS, ARMOR_SPEED_PENALTY, SWORD_ATTACK_BONUS, SWORD_SPEED_BONUS } from '@common/constants';
 import { Player } from '@common/game';
 import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -44,12 +45,12 @@ export class ItemsManagerService {
     activateItem(item: ItemCategory, player: Player): void {
         switch (item) {
             case ItemCategory.Sword:
-                player.specs.speed += 2;
-                player.specs.attack += 4;
+                player.specs.speed += SWORD_ATTACK_BONUS;
+                player.specs.attack += SWORD_SPEED_BONUS;
                 break;
             case ItemCategory.Armor:
-                player.specs.defense += 5;
-                player.specs.speed -= 1;
+                player.specs.defense += ARMOR_DEFENSE_BONUS;
+                player.specs.speed -= ARMOR_SPEED_PENALTY;
                 break;
             case ItemCategory.Flask:
                 player.specs.attack += 4;
@@ -60,12 +61,12 @@ export class ItemsManagerService {
     desactivateItem(item: ItemCategory, player: Player): void {
         switch (item) {
             case ItemCategory.Sword:
-                player.specs.speed -= 2;
-                player.specs.attack -= 4;
+                player.specs.speed -= SWORD_ATTACK_BONUS;
+                player.specs.attack -= SWORD_SPEED_BONUS;
                 break;
             case ItemCategory.Armor:
-                player.specs.defense -= 5;
-                player.specs.speed += 1;
+                player.specs.defense -= ARMOR_DEFENSE_BONUS;
+                player.specs.speed += ARMOR_SPEED_PENALTY;
                 break;
             case ItemCategory.Flask:
                 player.specs.attack -= 4;
