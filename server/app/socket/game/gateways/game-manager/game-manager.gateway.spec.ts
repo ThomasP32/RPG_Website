@@ -3,14 +3,15 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
+import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
 import { GameManagerGateway } from './game-manager.gateway';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
@@ -20,6 +21,7 @@ describe('GameManagerGateway', () => {
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
     let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
     let journalService: SinonStubbedInstance<JournalService>;
+    let virtualGameManagerService: SinonStubbedInstance<VirtualGameManagerService>;
     let serverStub: SinonStubbedInstance<Server>;
 
     beforeEach(async () => {
@@ -32,6 +34,7 @@ describe('GameManagerGateway', () => {
             return Promise.resolve();
         });
         journalService = createStubInstance<JournalService>(JournalService);
+        virtualGameManagerService = createStubInstance<VirtualGameManagerService>(VirtualGameManagerService);
         serverStub = createStubInstance<Server>(Server);
 
         const module: TestingModule = await Test.createTestingModule({
@@ -42,6 +45,7 @@ describe('GameManagerGateway', () => {
                 { provide: GameManagerService, useValue: gameManagerService },
                 { provide: GameCountdownService, useValue: gameCountdownService },
                 { provide: JournalService, useValue: journalService },
+                { provide: VirtualGameManagerService, useValue: virtualGameManagerService },
             ],
         }).compile();
 

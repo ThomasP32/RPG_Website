@@ -42,6 +42,7 @@ describe('CombatCountdownService', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        profile: null,
     };
 
     const mockGame: Game = {

@@ -11,6 +11,7 @@ import { GameCreationService } from '../../service/game-creation/game-creation.s
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 import { CombatGateway } from './combat.gateway';
+import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
 
 describe('CombatGateway', () => {
     let gateway: CombatGateway;
@@ -53,6 +54,7 @@ describe('CombatGateway', () => {
             initialPosition: undefined,
             turn: 0,
             visitedTiles: [],
+            profile: null,
         },
         opponent: {
             socketId: 'opponent-id',
@@ -81,6 +83,7 @@ describe('CombatGateway', () => {
             initialPosition: undefined,
             turn: 1,
             visitedTiles: [],
+            profile: null,
         },
         challengerLife: 5,
         opponentLife: 5,
@@ -152,6 +155,12 @@ describe('CombatGateway', () => {
                         updatePlayerActions: jest.fn(),
                     },
                 },
+                {
+                    provide: VirtualGameManagerService, 
+                    useValue: {
+                        executeVirtualPlayerBehavior: jest.fn(),
+                    }
+                }
             ],
         }).compile();
 

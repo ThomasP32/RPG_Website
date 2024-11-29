@@ -33,6 +33,7 @@ let player: Player = {
     inventory: [],
     turn: 0,
     visitedTiles: [],
+    profile: null,
 };
 
 let game2: Game = {
@@ -315,6 +316,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: null,
             };
 
             adjacentPlayer = {
@@ -328,6 +330,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: null,
             };
 
             nonAdjacentPlayer = {
@@ -341,6 +344,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: null,
             };
 
             game2 = {
@@ -398,6 +402,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: null,
             };
 
             game2.players.push(anotherAdjacentPlayer);
@@ -554,27 +559,26 @@ describe('GameManagerService', () => {
         it('should decrement player actions if the player exists', () => {
             const playerSocketId = 'player-1';
             const initialActions = game2.players[0].specs.actions;
-    
+
             gameManagerService.updatePlayerActions('game-1', playerSocketId);
-    
+
             expect(game2.players[0].specs.actions).toBe(initialActions - 1);
         });
-    
+
         it('should not throw an error if the player does not exist', () => {
             const nonExistentSocketId = 'nonexistent-socket-id';
             expect(() => {
                 gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
             }).not.toThrow();
         });
-    
+
         it('should not decrement actions if the player does not exist', () => {
             const nonExistentSocketId = 'nonexistent-socket-id';
             const initialActions = game2.players[0].specs.actions;
-    
+
             gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
-    
+
             expect(game2.players[0].specs.actions).toBe(initialActions);
         });
     });
-    
 });
