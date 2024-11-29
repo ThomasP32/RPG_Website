@@ -31,7 +31,11 @@ export class GameManagerGateway implements OnGatewayInit {
         });
         this.virtualGameManagerService.setServer(this.server);
         this.virtualGameManagerService.on('virtualPlayerFinishedMoving', (gameId: string) => {
+            console.log('virtualPlayerFinishedMoving');
             this.prepareNextTurn(gameId);
+        });
+        this.virtualGameManagerService.on('virtualPlayerCanResumeTurn', (gameId: string) => {
+            this.startTurn(gameId);
         });
         this.journalService.initializeServer(server);
     }
@@ -129,6 +133,7 @@ export class GameManagerGateway implements OnGatewayInit {
     prepareNextTurn(gameId: string): void {
         this.gameCountdownService.resetTimerSubscription(gameId);
         this.gameManagerService.updateTurnCounter(gameId);
+        console.log('cest au tour de ', this.gameCreationService.getGameById(gameId).currentTurn);
         this.startTurn(gameId);
     }
 
