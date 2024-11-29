@@ -1,5 +1,5 @@
 <div class="action-bar">
-    <div class="left-actions">
+    <div class="actions">
         <div class="action-button" (mouseenter)="showDescription('Combattre')" (mouseleave)="hideDescription()" (click)="fight()">
             <div class="tooltip" *ngIf="actionDescription === 'Combattre'">{{ actionDescription }}</div>
             <img src="assets/icons/fight.png" alt="Combat" />
@@ -12,9 +12,6 @@
             <div class="tooltip" *ngIf="actionDescription === 'Détruire un Mur'">{{ actionDescription }}</div>
             <img src="assets/items/grapplinghook.png" alt="Mur" />
         </div>
-    </div>
-
-    <div class="right-actions">
         <div class="action-button" (mouseenter)="showDescription('Finir le tour')" (mouseleave)="hideDescription()" (click)="endTurn()">
             <div class="tooltip" *ngIf="actionDescription === 'Finir le tour'">{{ actionDescription }}</div>
             <img src="assets/icons/endturn_icon.png" alt="Finir le tour" />

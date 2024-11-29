@@ -9,8 +9,7 @@
     z-index: 30;
 }
 
-.left-actions,
-.right-actions {
+.actions {
     display: flex;
     flex-direction: row;
     gap: 1vw;
@@ -58,7 +57,7 @@ button:hover {
 
 .tooltip {
     position: absolute;
-    bottom: 110%; /* Placer au-dessus */
+    bottom: 110%;
     left: 50%;
     transform: translateX(-50%);
     background-color: #b85c38;
@@ -73,7 +72,7 @@ button:hover {
 .tooltip::after {
     content: '';
     position: absolute;
-    top: 100%; /* Placer sous la boîte */
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     border-width: 5px;
