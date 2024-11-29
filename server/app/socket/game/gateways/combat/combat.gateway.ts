@@ -11,6 +11,7 @@ import { CombatCountdownService } from '../../service/countdown/combat/combat-co
 import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { GameCreationService } from '../../service/game-creation/game-creation.service';
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
 import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
 
@@ -19,6 +20,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
+    @Inject(ItemsManagerService) private readonly itemManagerService: ItemsManagerService;
     @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(JournalService) private readonly journalService: JournalService;
@@ -48,6 +50,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const player = game.players.find((player) => player.turn === game.currentTurn);
         if (game) {
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
+            this.itemManagerService.checkForAmulet(player, data.opponent);
             await client.join(combat.id);
             let opponentSocket;
             if (data.opponent.socketId.includes('virtual')) {
@@ -158,15 +161,18 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     handleCombatLost(defendingPlayer: Player, attackingPlayer: Player, gameId: string, combatId: string) {
         const game = this.gameCreationService.getGameById(gameId);
         this.combatService.combatWinStatsUpdate(attackingPlayer, gameId);
+
+        this.itemManagerService.dropInventory(defendingPlayer, gameId);
         this.combatService.sendBackToInitPos(defendingPlayer, game);
         this.combatService.updatePlayersInGame(game);
 
         this.server.to(combatId).emit(CombatEvents.CombatFinishedNormally, attackingPlayer);
 
         this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
+
         this.combatCountdownService.deleteCountdown(gameId);
         setTimeout(() => {
-            const combatFinishedData: CombatFinishedData = { updatedGame: game, winner: attackingPlayer };
+            const combatFinishedData: CombatFinishedData = { updatedGame: game, winner: attackingPlayer, loser: defendingPlayer };
             this.server.to(gameId).emit(CombatEvents.CombatFinished, combatFinishedData);
             if (this.combatService.checkForGameWinner(game.id, attackingPlayer)) {
                 this.server.to(gameId).emit(CombatEvents.GameFinishedPlayerWon, attackingPlayer);
@@ -225,6 +231,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     }
                 }, 3000);
             }
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions !== 0);
         }
     }
 
@@ -288,7 +295,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.combatCountdownService.deleteCountdown(updatedGame.id);
 
         setTimeout(() => {
-            const combatFinishedData: CombatFinishedData = { updatedGame: updatedGame, winner: winner };
+            const combatFinishedData: CombatFinishedData = { updatedGame: updatedGame, winner: winner, loser: disconnectedPlayer };
             this.server.to(updatedGame.id).emit(CombatEvents.CombatFinished, combatFinishedData);
 
             if (this.combatService.checkForGameWinner(updatedGame.id, winner)) {

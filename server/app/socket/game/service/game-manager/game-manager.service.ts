@@ -1,5 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { DIRECTIONS, MovesMap } from '@common/directions';
+import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -7,7 +7,8 @@ import { GameCreationService } from '../game-creation/game-creation.service';
 
 @Injectable()
 export class GameManagerService {
-    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameCreationService) private gameCreationService: GameCreationService;
+    public hasFallen: boolean = false;
 
     updatePosition(gameId: string, playerSocket: string, path: Coordinate[]): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -55,7 +56,7 @@ export class GameManagerService {
     ][] {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((p) => p.socketId === playerSocket);
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
         const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
@@ -68,7 +69,7 @@ export class GameManagerService {
         const player = game.players.find((p) => p.socketId === playerSocket);
         let shortestPath: Coordinate[];
 
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
 
@@ -85,20 +86,19 @@ export class GameManagerService {
             return [];
         } else {
             const finalPath: Coordinate[] = [];
-
+            const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+            shortestPath.shift();
             for (const position of shortestPath) {
-                if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1) {
+                if (this.onTileItem(position, game)) {
                     finalPath.push(position);
                     break;
-                }
-
-                if (this.itemOnTile(position, game)) {
-                    this.pickUpItem(position, game, player);
+                } else if (this.getTileWeight(position, game) === 0 && Math.random() <= 0.1 && !hasSkates) {
+                    this.hasFallen = true;
                     finalPath.push(position);
                     break;
+                } else {
+                    finalPath.push(position);
                 }
-
-                finalPath.push(position);
             }
 
             return finalPath;
@@ -172,7 +172,7 @@ export class GameManagerService {
         return neighbors;
     }
 
-    private isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
+    public isOutOfMap(pos: Coordinate, mapSize: Coordinate): boolean {
         return pos.x < 0 || pos.y < 0 || pos.x >= mapSize.x || pos.y >= mapSize.y;
     }
 
@@ -195,6 +195,10 @@ export class GameManagerService {
         return true;
     }
 
+    private onTileItem(pos: Coordinate, game: Game): boolean {
+        return game.items.some((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
+    }
+
     private getTileWeight(pos: Coordinate, game: Game): number {
         for (const tile of game.tiles) {
             if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
@@ -205,34 +209,12 @@ export class GameManagerService {
         return 1;
     }
 
-    private itemOnTile(pos: Coordinate, game: Game): boolean {
-        for (const item of game.items) {
-            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pickUpItem(pos: Coordinate, game: Game, player: Player): void {
-        const itemIndex = game.items.findIndex((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
-        if (itemIndex !== -1) {
-            const item = game.items[itemIndex].category;
-            player.inventory.push(item);
-            game.items.splice(itemIndex, 1);
-        }
-    }
-
     onIceTile(player: Player, gameId: string): boolean {
         return this.gameCreationService
             .getGameById(gameId)
             .tiles.some(
                 (tile) => tile.coordinate.x === player.position.x && tile.coordinate.y === player.position.y && tile.category === TileCategory.Ice,
             );
-    }
-
-    hasFallen(moves: Coordinate[], destination: Coordinate) {
-        return moves[moves.length - 1].x !== destination.x || moves[moves.length - 1].y !== destination.y;
     }
 
     hasPickedUpFlag(oldInventory: ItemCategory[], newInventory: ItemCategory[]): boolean {
@@ -281,6 +263,30 @@ export class GameManagerService {
         });
 
         return adjacentDoors;
+    }
+
+    getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
+        const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
+
+        for (const direction of allDirections) {
+            const newPosition: Coordinate = {
+                x: start.x + direction.x,
+                y: start.y + direction.y,
+            };
+            //@chargé, on empêche l'item de drop sur une case de départ
+            const isStartTile = game.startTiles.some((tile) => tile.coordinate.x === newPosition.x && tile.coordinate.y === newPosition.y);
+
+            if (
+                !this.isOutOfMap(newPosition, game.mapSize) &&
+                this.isReachableTile(newPosition, game) &&
+                !this.onTileItem(newPosition, game) &&
+                !game.players.some((player) => player.position.x === newPosition.x && player.position.y === newPosition.y) &&
+                !isStartTile
+            ) {
+                return newPosition;
+            }
+        }
+        return null;
     }
 
     isGameResumable(gameId: string): boolean {

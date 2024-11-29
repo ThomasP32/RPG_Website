@@ -137,7 +137,7 @@ describe('AdminServiceEndToEnd', () => {
             startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 0 } }],
             items: [
                 { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-                { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
+                { coordinate: { x: 2, y: 2 }, category: ItemCategory.WallBreaker },
             ],
             tiles: [],
             doorTiles: [],
@@ -243,7 +243,7 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
             { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.WallBreaker },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
@@ -261,7 +261,7 @@ describe('AdminServiceEndToEnd', () => {
         startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 9, y: 9 } }],
         items: [
             { coordinate: { x: 1, y: 0 }, category: ItemCategory.IceSkates },
-            { coordinate: { x: 2, y: 2 }, category: ItemCategory.GrapplingHook },
+            { coordinate: { x: 2, y: 2 }, category: ItemCategory.WallBreaker },
         ],
         tiles: [
             { coordinate: { x: 1, y: 2 }, category: TileCategory.Wall },
