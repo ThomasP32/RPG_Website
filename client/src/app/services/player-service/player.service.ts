@@ -31,6 +31,7 @@ export class PlayerService {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const player: Player = {
             name: this.player.name,
@@ -96,6 +97,7 @@ export class PlayerService {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const player: Player = {
             name: '',

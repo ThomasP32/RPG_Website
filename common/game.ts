@@ -49,6 +49,7 @@ export interface Specs {
     nEvasions: number;
     nLifeTaken: number;
     nLifeLost: number;
+    nItemsUsed: number;
 }
 
 export interface Player {
@@ -69,7 +70,7 @@ export interface GameClassic extends Map {
     hostSocketId: string;
     players: Player[];
     currentTurn: number;
-    nDoorsManipulated: number;
+    nDoorsManipulated: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;
@@ -79,7 +80,7 @@ export interface GameClassic extends Map {
 
 export interface GameCtf extends GameClassic {
     mode: Mode.Ctf;
-    nPlayersCtf: number;
+    nPlayersCtf: Player[];
 }
 
 export type Game = GameClassic | GameCtf;
