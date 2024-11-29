@@ -240,15 +240,11 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<CombatFinishedData>(CombatEvents.CombatFinished).subscribe((data) => {
                 this.gameService.setGame(data.updatedGame);
-                console.log(this.player);
-                console.log(this.playerService.player);
                 if (data.winner.socketId === this.playerService.player.socketId) {
                     this.playerService.setPlayer(data.winner);
                 } else {
                     this.playerService.setPlayer(data.loser);
                 }
-
-                console.log(this.playerService.player);
             }),
         );
         this.socketSubscription.add(

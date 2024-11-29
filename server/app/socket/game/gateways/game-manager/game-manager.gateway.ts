@@ -110,8 +110,6 @@ export class GameManagerGateway implements OnGatewayInit {
         const coordinates = player.position;
         this.itemsManagerService.dropItem(data.itemDropping, game.id, player, coordinates);
         const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
-        console.log('player');
-        console.log(player);
         this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
     }
     @SubscribeMessage('startGame')

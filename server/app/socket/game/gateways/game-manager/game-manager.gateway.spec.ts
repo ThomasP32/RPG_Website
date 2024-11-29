@@ -3,6 +3,8 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
@@ -11,7 +13,6 @@ import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon
 import { Server, Socket } from 'socket.io';
 import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { GameManagerGateway } from './game-manager.gateway';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
@@ -641,6 +642,105 @@ describe('GameManagerGateway', () => {
             gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
 
             expect(serverStub.to.called).toBeTruthy();
+        });
+    });
+    describe('dropItem', () => {
+        it('should drop the item and emit ItemDropped event', () => {
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: [] } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
+            const gameId = game.id;
+            const itemDropping = ItemCategory.Sword;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.dropItem(socket, { gameId, itemDropping });
+
+            expect(itemsManagerService.dropItem.calledWith(itemDropping, gameId, player, player.position)).toBeTruthy();
+            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
+            expect(emitStub.calledWith(ItemsEvents.ItemDropped, { updatedGame: game, updatedPlayer: player })).toBeTruthy();
+        });
+    });
+    describe('movePlayer', () => {
+        let player: Player;
+        let game: Game;
+        let moves: Coordinate[];
+
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+                inventory: [],
+            } as Player;
+
+            game = {
+                id: 'game-1',
+                players: [player],
+                currentTurn: 0,
+                hasStarted: true,
+            } as Game;
+
+            moves = [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ];
+
+            gameCreationService.getGameById.returns(game);
+        });
+
+        it('should update player position for each move', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(false);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(gameManagerService.updatePosition.calledWith(game.id, player.socketId, [moves[0]])).toBeTruthy();
+            expect(gameManagerService.updatePosition.calledWith(game.id, player.socketId, [moves[1]])).toBeTruthy();
+        });
+
+        it('should pick up item if player is on item', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(true);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(itemsManagerService.pickUpItem.calledWith(moves[0], game.id, player)).toBeTruthy();
+        });
+
+        it('should emit InventoryFull if player inventory exceeds limit', async () => {
+            const activePlayer: Player = {
+                socketId: 'active-player-id',
+                turn: 0,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor, ItemCategory.Sword], // Plus de 2 items
+                name: 'ActivePlayer',
+                specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
+            } as Player;
+
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(true);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, activePlayer);
+
+            const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
+            expect(toActivePlayerStub.calledWith(ItemsEvents.InventoryFull)).toBeTruthy();
+        });
+
+        it('should adapt specs for ice tile move', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(false);
+            gameManagerService.checkForWinnerCtf.returns(false);
+            gameManagerService.onIceTile.returns(true);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(player.specs.attack).toBe(8);
+            expect(player.specs.defense).toBe(8);
         });
     });
 });
