@@ -1,5 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { DIRECTIONS, MovesMap } from '@common/directions';
+import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -55,7 +55,7 @@ export class GameManagerService {
     ][] {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((p) => p.socketId === playerSocket);
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
         const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
@@ -68,7 +68,7 @@ export class GameManagerService {
         const player = game.players.find((p) => p.socketId === playerSocket);
         let shortestPath: Coordinate[];
 
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
 
@@ -262,6 +262,30 @@ export class GameManagerService {
         });
 
         return adjacentDoors;
+    }
+
+    getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
+        const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
+
+        for (const direction of allDirections) {
+            const newPosition: Coordinate = {
+                x: start.x + direction.x,
+                y: start.y + direction.y,
+            };
+            //@chargé, on empêche l'item de drop sur une case de départ
+            const isStartTile = game.startTiles.some((tile) => tile.coordinate.x === newPosition.x && tile.coordinate.y === newPosition.y);
+
+            if (
+                !this.isOutOfMap(newPosition, game.mapSize) &&
+                this.isReachableTile(newPosition, game) &&
+                !this.onTileItem(newPosition, game) &&
+                !game.players.some((player) => player.position.x === newPosition.x && player.position.y === newPosition.y) &&
+                !isStartTile
+            ) {
+                return newPosition;
+            }
+        }
+        return null;
     }
 
     isGameResumable(gameId: string): boolean {

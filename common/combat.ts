@@ -7,6 +7,10 @@ export interface Combat {
     currentTurnSocketId: string;
     challengerLife: number;
     opponentLife: number;
+    challengerAttack: number;
+    opponentAttack: number;
+    challengerDefense: number;
+    opponentDefense: number;
 }
 
 export interface RollResult {
