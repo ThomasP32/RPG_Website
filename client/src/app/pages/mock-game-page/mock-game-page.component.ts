@@ -65,7 +65,7 @@ export class MockGamePageComponent {
             nLifeTaken: 0,
             nLifeLost: 0,
         },
-        inventory: [ItemCategory.TimeTwister, ItemCategory.Armor],
+        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
         turn: 0,
         visitedTiles: [],
     };
