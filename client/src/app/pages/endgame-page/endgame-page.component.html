@@ -1,25 +1,64 @@
 <div class="endgame-container">
     <div class="stats-container">
-        <p>Fin de partie</p>
-        <table>
+        <h1>Fin de partie</h1>
+        <table id="stats-table">
             <thead>
                 <tr>
                     <th></th>
                     <th>Nom</th>
-                    <th>Combats</th>
-                    <th>Évasions</th>
-                    <th>Victoires</th>
-                    <th>Défaites</th>
-                    <th>Vie perdue</th>
-                    <th>Vie infligée</th>
-                    <th>Objets ramassés</th>
-                    <th>Tuiles visitées</th>
+                    <th (click)="endgameService.sortCombats()">
+                        Combats @if(endgameService.sortColumn !== 4) {<span>-</span>} @else {<span>{{
+                            endgameService.isCombatSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortEvasions()">
+                        Évasions @if(endgameService.sortColumn !== 5) {<span>-</span>} @else {<span>{{
+                            endgameService.isEvasionSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortVictories()">
+                        Victoires @if(endgameService.sortColumn !== 6) {<span>-</span>} @else {<span>{{
+                            endgameService.isVictoriesSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortDefeats()">
+                        Défaites @if(endgameService.sortColumn !== 7) {<span>-</span>} @else {<span>{{
+                            endgameService.isDefeatsSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortLostLife()">
+                        Vie perdue @if(endgameService.sortColumn !== 8) {<span>-</span>} @else {
+                        <span>{{ endgameService.isLostLifeSortingAsc ? '↓' : '↑' }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortStolenLife()">
+                        Vie infligée @if(endgameService.sortColumn !== 9) {<span>-</span>} @else {<span>{{
+                            endgameService.isStolenLifeSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortObjects()">
+                        Objets ramassés @if(endgameService.sortColumn !== 10) {<span>-</span>} @else {<span>{{
+                            endgameService.isObjectsSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
+                    <th (click)="endgameService.sortVisitedTiles()">
+                        Tuiles visitées @if(endgameService.sortColumn !== 11) {<span>-</span>} @else {<span>{{
+                            endgameService.isTilesSortingAsc ? '↓' : '↑'
+                        }}</span
+                        >}
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                @for (gamePlayer of players; track gamePlayer) {
+                @for (gamePlayer of players; track gamePlayer.socketId) {
                 <tr>
-                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" /></td>
+                    <td><img [src]="getAvatarPreview(gamePlayer.avatar)" class="player-avatar" alt="avatar" /></td>
                     <td>{{ gamePlayer.name }}</td>
                     <td>{{ gamePlayer.specs.nCombats }}</td>
                     <td>{{ gamePlayer.specs.nEvasions }}</td>
@@ -27,7 +66,7 @@
                     <td>{{ gamePlayer.specs.nDefeats }}</td>
                     <td>{{ gamePlayer.specs.nLifeLost }}</td>
                     <td>{{ gamePlayer.specs.nLifeTaken }}</td>
-                    <td>TODO</td>
+                    <td>{{ gamePlayer.specs.nItemsUsed }}</td>
                     <td>{{ endgameService.getPlayerTilePercentage(gamePlayer, game) }}%</td>
                 </tr>
                 }
@@ -42,11 +81,10 @@
         <p>Durée de la partie : {{ endgameService.gameDurationInMinutes(game.duration) }}</p>
         <p>Tours de jeu : {{ game.nTurns }}</p>
         <p>Pourcentage total de tuiles visitées : {{ endgameService.gameTilePercentage(game) }}%</p>
-        <p>Pourcentage total des portes manipulées : TODO</p>
-        <!-- <p>Pourcentage total des portes manipulées : {{ game.nDoorsManipulated }}</p> -->
-        <!-- @if (game.mode === Mode.Ctf) { -->
-        <!-- <p>Nombre de joueurs différents ayant détenu le drapeau : {{game.}}</p> -->
-        <!-- } -->
+        <p>Pourcentage total des portes manipulées : {{ endgameService.gameDoorPercentage(game) }}%</p>
+        @if (isGameCtf(game)) {
+        <p>Nombre de joueurs différents ayant détenu le drapeau : {{ endgameService.getFlagPickupPlayers(game) }}</p>
+        }
     </div>
     <div class="exit-button-container">
         <button (click)="navigateToMain()">Menu principal</button>

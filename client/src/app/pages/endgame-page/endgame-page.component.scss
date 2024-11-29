@@ -22,12 +22,13 @@
     min-height: 400px;
 }
 
-.stats-container p {
+.title-endgame {
     font-size: 21px;
     margin-bottom: 15px;
     font-weight: bold;
     color: #c0c0c0;
 }
+
 .global-stats-container {
     grid-area: global-stats;
     background-color: #2a3038;
@@ -36,7 +37,7 @@
     max-height: 200px;
 }
 
-.global-stats-container h1 {
+h1 {
     font-size: 21px;
     margin-bottom: 15px;
     color: #c0c0c0;
@@ -59,7 +60,7 @@ table {
 th,
 td {
     padding: 12px 15px;
-    text-align: left;
+    text-align: center;
     font-size: 10px;
     border-bottom: 1px solid #3a4148;
 }
@@ -76,6 +77,8 @@ th {
     position: sticky;
     top: 0;
     z-index: 1;
+    cursor: pointer;
+    user-select: none;
 }
 
 tr:hover {
