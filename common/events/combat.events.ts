@@ -44,4 +44,5 @@ export interface CombatFinishedByEvasionData {
 export interface CombatFinishedData {
     updatedGame: Game;
     winner: Player;
+    loser: Player;
 }

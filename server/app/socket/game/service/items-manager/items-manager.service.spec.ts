@@ -2,6 +2,7 @@ import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { GameManagerService } from '../game-manager/game-manager.service';
 import { ItemsManagerService } from './items-manager.service';
 
 let specs: Specs = {
@@ -60,6 +61,7 @@ let game2: Game = {
 describe('ItemsManagerService', () => {
     let service: ItemsManagerService;
     let gameCreationService: GameCreationService;
+    let gameManagerService: GameManagerService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -71,11 +73,18 @@ describe('ItemsManagerService', () => {
                         getGameById: jest.fn(),
                     },
                 },
+                {
+                    provide: GameManagerService,
+                    useValue: {
+                        getFirstFreePosition: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
         service = module.get<ItemsManagerService>(ItemsManagerService);
         gameCreationService = module.get<GameCreationService>(GameCreationService);
+        gameManagerService = module.get<GameManagerService>(GameManagerService);
 
         player.inventory = [];
         game2.items = [];
@@ -83,6 +92,48 @@ describe('ItemsManagerService', () => {
 
     it('should be defined', () => {
         expect(service).toBeDefined();
+    });
+
+    describe('dropInventory', () => {
+        it('should drop all items from player inventory to the game', () => {
+            const gameId = 'game-1';
+            const player = game2.players[0];
+            player.inventory.push(ItemCategory.Sword, ItemCategory.Armor);
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game2);
+            jest.spyOn(gameManagerService, 'getFirstFreePosition').mockReturnValue({ x: 1, y: 1 });
+
+            service.dropInventory(player, gameId);
+
+            expect(game2.items).toContainEqual({ coordinate: player.position, category: ItemCategory.Sword });
+            expect(game2.items).toContainEqual({ coordinate: { x: 1, y: 1 }, category: ItemCategory.Armor });
+            expect(player.inventory).toHaveLength(0);
+        });
+
+        it('should not drop items if game is not found', () => {
+            const gameId = 'invalid-game-id';
+            const player = game2.players[0];
+            player.inventory.push(ItemCategory.Sword, ItemCategory.Armor);
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(undefined);
+
+            service.dropInventory(player, gameId);
+
+            expect(game2.items).toHaveLength(0);
+            expect(player.inventory).toHaveLength(2);
+        });
+
+        it('should drop items to the first available tile if player position is occupied', () => {
+            const gameId = 'game-1';
+            const player = game2.players[0];
+            player.inventory.push(ItemCategory.Sword, ItemCategory.Armor);
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game2);
+            jest.spyOn(gameManagerService, 'getFirstFreePosition').mockReturnValue({ x: 2, y: 2 });
+
+            service.dropInventory(player, gameId);
+
+            expect(game2.items).toContainEqual({ coordinate: player.position, category: ItemCategory.Sword });
+            expect(game2.items).toContainEqual({ coordinate: { x: 2, y: 2 }, category: ItemCategory.Armor });
+            expect(player.inventory).toHaveLength(0);
+        });
     });
 
     describe('pickUpItem', () => {
@@ -105,7 +156,7 @@ describe('ItemsManagerService', () => {
             player.inventory.push(ItemCategory.Sword);
             jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game2);
 
-            service.dropItem(ItemCategory.Sword, game2.id, player.socketId, coordinates);
+            service.dropItem(ItemCategory.Sword, game2.id, player, coordinates);
 
             expect(game2.items).toContainEqual({ coordinate: coordinates, category: ItemCategory.Sword });
             expect(player.inventory).not.toContain(ItemCategory.Sword);
@@ -121,6 +172,105 @@ describe('ItemsManagerService', () => {
             const result = service.onItem(player, gameId);
 
             expect(result).toBe(true);
+        });
+    });
+    describe('activateItem', () => {
+        it('should increase player speed and attack when activating a sword', () => {
+            const initialSpeed = player.specs.speed;
+            const initialAttack = player.specs.attack;
+
+            service.activateItem(ItemCategory.Sword, player);
+
+            expect(player.specs.speed).toBe(initialSpeed + 2);
+            expect(player.specs.attack).toBe(initialAttack + 4);
+        });
+
+        it('should increase player defense and decrease speed when activating armor', () => {
+            const initialDefense = player.specs.defense;
+            const initialSpeed = player.specs.speed;
+
+            service.activateItem(ItemCategory.Armor, player);
+
+            expect(player.specs.defense).toBe(initialDefense + 5);
+            expect(player.specs.speed).toBe(initialSpeed - 1);
+        });
+
+        it('should increase player attack when activating a flask', () => {
+            const initialAttack = player.specs.attack;
+
+            service.activateItem(ItemCategory.Flask, player);
+
+            expect(player.specs.attack).toBe(initialAttack + 4);
+        });
+    });
+    describe('desactivateItem', () => {
+        it('should decrease player speed and attack when deactivating a sword', () => {
+            player.specs.speed += 2;
+            player.specs.attack += 4;
+
+            service.desactivateItem(ItemCategory.Sword, player);
+
+            expect(player.specs.speed).toBe(specs.speed);
+            expect(player.specs.attack).toBe(specs.attack);
+        });
+
+        it('should decrease player defense and increase speed when deactivating armor', () => {
+            player.specs.defense += 5;
+            player.specs.speed -= 1;
+
+            service.desactivateItem(ItemCategory.Armor, player);
+
+            expect(player.specs.defense).toBe(specs.defense);
+            expect(player.specs.speed).toBe(specs.speed);
+        });
+
+        it('should decrease player attack when deactivating a flask', () => {
+            player.specs.attack += 4;
+
+            service.desactivateItem(ItemCategory.Flask, player);
+
+            expect(player.specs.attack).toBe(specs.attack);
+        });
+    });
+    describe('checkForAmulet', () => {
+        it('should activate amulet for challenger if challenger has amulet and opponent has more life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 5 }, inventory: [ItemCategory.Amulet] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).toHaveBeenCalledWith(ItemCategory.Amulet, challenger);
+        });
+
+        it('should activate amulet for opponnent if opponent has amulet and challenger has more life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            const opponent = { ...player, specs: { ...player.specs, life: 5 }, inventory: [ItemCategory.Amulet] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).toHaveBeenCalledWith(ItemCategory.Amulet, opponent);
+        });
+
+        it('should not activate amulet if neither player has an amulet', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 5 }, inventory: [] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).not.toHaveBeenCalled();
+        });
+
+        it('should not activate amulet if both players have equal life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 10 }, inventory: [ItemCategory.Amulet] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [ItemCategory.Amulet] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).not.toHaveBeenCalled();
         });
     });
 });

@@ -1,20 +1,25 @@
 import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat, RollResult } from '@common/combat';
-import { DIRECTIONS } from '@common/directions';
+import { CORNER_DIRECTIONS, DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
-import { Mode, TileCategory } from '@common/map.types';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { N_WIN_VICTORIES } from '../../../../../constants/constants';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { ItemsManagerService } from '../items-manager/items-manager.service';
 
 @Injectable()
 export class CombatService {
     private combatRooms: Record<string, Combat> = {};
     server: Server;
 
-    constructor(private readonly gameCreationService: GameCreationService) {
+    constructor(
+        private readonly gameCreationService: GameCreationService,
+        private readonly itemManagerService: ItemsManagerService,
+    ) {
         this.gameCreationService = gameCreationService;
+        this.itemManagerService = itemManagerService;
     }
 
     setServer(server: Server) {
@@ -26,6 +31,7 @@ export class CombatService {
         if (challenger.specs.speed < opponent.specs.speed) {
             currentTurnSocketId = opponent.socketId;
         }
+
         const combatRoomId = gameId + '-combat';
         const combat: Combat = {
             challenger: challenger,
@@ -33,6 +39,10 @@ export class CombatService {
             currentTurnSocketId: currentTurnSocketId,
             challengerLife: challenger.specs.life,
             opponentLife: opponent.specs.life,
+            challengerAttack: challenger.specs.attack,
+            opponentAttack: opponent.specs.attack,
+            challengerDefense: challenger.specs.defense,
+            opponentDefense: opponent.specs.defense,
             id: combatRoomId,
         };
         this.combatRooms[gameId] = combat;
@@ -63,6 +73,10 @@ export class CombatService {
         defendingPlayer.specs.life--;
         defendingPlayer.specs.nLifeLost++;
         attackingPlayer.specs.nLifeTaken++;
+
+        if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === 2) {
+            this.itemManagerService.activateItem(ItemCategory.Flask, defendingPlayer);
+        }
         this.server.to(combatId).emit('attackSuccess', defendingPlayer);
     }
 
@@ -110,6 +124,7 @@ export class CombatService {
             const closestPosition = this.findClosestAvailablePosition(currentPlayer.initialPosition, game);
             currentPlayer.position = closestPosition;
         }
+        currentPlayer.inventory = [];
     }
 
     findClosestAvailablePosition(initialPosition: Coordinate, game: Game): Coordinate {
@@ -160,11 +175,13 @@ export class CombatService {
         game.players.forEach((player, index) => {
             if (player.socketId === combat.challenger.socketId) {
                 combat.challenger.specs.life = combat.challengerLife;
+                combat.challenger.specs.attack = combat.challengerAttack;
                 combat.challenger.specs.evasions = 2;
                 combat.challenger.specs.nCombats++;
                 game.players[index] = combat.challenger;
             } else if (player.socketId === combat.opponent.socketId) {
                 combat.opponent.specs.life = combat.opponentLife;
+                combat.opponent.specs.attack = combat.opponentAttack;
                 combat.opponent.specs.evasions = 2;
                 combat.opponent.specs.nCombats++;
                 game.players[index] = combat.opponent;

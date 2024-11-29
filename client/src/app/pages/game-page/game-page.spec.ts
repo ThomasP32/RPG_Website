@@ -9,13 +9,13 @@ import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 const mockPlayer: Player = {
     socketId: 'test-socket',
@@ -42,7 +42,7 @@ const mockPlayer: Player = {
         nLifeLost: 0,
         nItemsUsed: 0,
     },
-    inventory: [ItemCategory.TimeTwister, ItemCategory.Armor],
+    inventory: [ItemCategory.Amulet, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
 };
@@ -230,8 +230,8 @@ describe('GamePageComponent', () => {
 
     it('should update active players when player leaves', fakeAsync(() => {
         const mockPlayers = [
-            { isActive: true, position: { x: 0, y: 1 }, inventory: [ItemCategory.TimeTwister, ItemCategory.Armor] },
-            { isActive: false, position: { x: 1, y: 0 }, inventory: [ItemCategory.TimeTwister, ItemCategory.Armor] },
+            { isActive: true, position: { x: 0, y: 1 }, inventory: [ItemCategory.Amulet, ItemCategory.Armor] },
+            { isActive: false, position: { x: 1, y: 0 }, inventory: [ItemCategory.Amulet, ItemCategory.Armor] },
         ] as unknown as Player;
         socketService.listen.and.returnValue(of(mockPlayers));
 
