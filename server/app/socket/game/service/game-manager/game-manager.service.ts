@@ -284,6 +284,7 @@ export class GameManagerService {
     }
 
     isGameResumable(gameId: string): boolean {
+        console.log(this.gameCreationService.getGameById(gameId)?.players);
         return (
             this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
         );
