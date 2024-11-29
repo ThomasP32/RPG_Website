@@ -45,6 +45,7 @@ describe('GameGateway', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        profile: null,
     };
 
     let gameRoom: Game = {

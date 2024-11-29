@@ -1,3 +1,4 @@
+import { MapConfig, MapSize } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -5,7 +6,6 @@ import * as sinon from 'sinon';
 import { stub } from 'sinon';
 import { Socket } from 'socket.io';
 import { GameCreationService } from './game-creation.service';
-import { MapConfig, MapSize } from '@common/constants';
 
 describe('GameCreationService', () => {
     let service: GameCreationService;
@@ -49,6 +49,7 @@ describe('GameCreationService', () => {
             inventory: [],
             visitedTiles: [],
             turn: 0,
+            profile: null,
         };
 
         gameRoom = {
