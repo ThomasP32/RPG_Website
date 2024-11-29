@@ -232,4 +232,45 @@ describe('ItemsManagerService', () => {
             expect(player.specs.attack).toBe(specs.attack);
         });
     });
+    describe('checkForAmulet', () => {
+        it('should activate amulet for challenger if challenger has amulet and opponent has more life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 5 }, inventory: [ItemCategory.Amulet] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).toHaveBeenCalledWith(ItemCategory.Amulet, challenger);
+        });
+
+        it('should activate amulet for opponnent if opponent has amulet and challenger has more life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            const opponent = { ...player, specs: { ...player.specs, life: 5 }, inventory: [ItemCategory.Amulet] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).toHaveBeenCalledWith(ItemCategory.Amulet, opponent);
+        });
+
+        it('should not activate amulet if neither player has an amulet', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 5 }, inventory: [] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).not.toHaveBeenCalled();
+        });
+
+        it('should not activate amulet if both players have equal life', () => {
+            const challenger = { ...player, specs: { ...player.specs, life: 10 }, inventory: [ItemCategory.Amulet] };
+            const opponent = { ...player, specs: { ...player.specs, life: 10 }, inventory: [ItemCategory.Amulet] };
+            jest.spyOn(service, 'activateItem');
+
+            service.checkForAmulet(challenger, opponent);
+
+            expect(service.activateItem).not.toHaveBeenCalled();
+        });
+    });
 });

@@ -31,6 +31,7 @@ export class CombatService {
         if (challenger.specs.speed < opponent.specs.speed) {
             currentTurnSocketId = opponent.socketId;
         }
+
         const combatRoomId = gameId + '-combat';
         const combat: Combat = {
             challenger: challenger,
@@ -40,6 +41,8 @@ export class CombatService {
             opponentLife: opponent.specs.life,
             challengerAttack: challenger.specs.attack,
             opponentAttack: opponent.specs.attack,
+            challengerDefense: challenger.specs.defense,
+            opponentDefense: opponent.specs.defense,
             id: combatRoomId,
         };
         this.combatRooms[gameId] = combat;
@@ -71,7 +74,7 @@ export class CombatService {
         defendingPlayer.specs.nLifeLost++;
         attackingPlayer.specs.nLifeTaken++;
 
-        if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === 1) {
+        if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === 2) {
             this.itemManagerService.activateItem(ItemCategory.Flask, defendingPlayer);
         }
         this.server.to(combatId).emit('attackSuccess', defendingPlayer);

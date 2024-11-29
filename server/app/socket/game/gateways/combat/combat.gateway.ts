@@ -47,6 +47,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
+            this.itemManagerService.checkForAmulet(player, data.opponent);
             await client.join(combat.id);
             const sockets = await this.server.in(data.gameId).fetchSockets();
             const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);

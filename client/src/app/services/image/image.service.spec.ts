@@ -63,7 +63,7 @@ describe('ImageService', () => {
         expect(service.getItemImage(ItemCategory.IceSkates)).toBe('./assets/items/iceskates.png');
         expect(service.getItemImage(ItemCategory.WallBreaker)).toBe('./assets/items/wallbreaker.png');
         expect(service.getItemImage(ItemCategory.Flask)).toBe('./assets/items/flask.png');
-        expect(service.getItemImage(ItemCategory.TimeTwister)).toBe('./assets/items/timetwister.png');
+        expect(service.getItemImage(ItemCategory.Amulet)).toBe('./assets/items/amulet.png');
         expect(service.getItemImage(ItemCategory.Random)).toBe('./assets/items/randomitem.png');
     });
 
@@ -88,7 +88,7 @@ describe('ImageService', () => {
         expect(service.getItemImageByString('sword')).toBe('./assets/items/sword.png');
         expect(service.getItemImageByString('iceskates')).toBe('./assets/items/iceskates.png');
         expect(service.getItemImageByString('wallbreaker')).toBe('./assets/items/wallbreaker.png');
-        expect(service.getItemImageByString('timetwister')).toBe('./assets/items/timetwister.png');
+        expect(service.getItemImageByString('Amulet')).toBe('./assets/items/amulet.png');
         expect(service.getItemImageByString('random')).toBe('./assets/items/randomitem.png');
         expect(service.getItemImageByString('invalid')).toBe('');
     });

@@ -55,14 +55,16 @@ export class ItemsManagerService {
             case ItemCategory.Flask:
                 player.specs.attack += 4;
                 break;
+            case ItemCategory.Amulet:
+                player.specs.defense += 4;
         }
     }
 
     desactivateItem(item: ItemCategory, player: Player): void {
         switch (item) {
             case ItemCategory.Sword:
-                player.specs.speed -= SWORD_ATTACK_BONUS;
-                player.specs.attack -= SWORD_SPEED_BONUS;
+                player.specs.speed -= SWORD_SPEED_BONUS;
+                player.specs.attack -= SWORD_ATTACK_BONUS;
                 break;
             case ItemCategory.Armor:
                 player.specs.defense -= ARMOR_DEFENSE_BONUS;
@@ -71,6 +73,8 @@ export class ItemsManagerService {
             case ItemCategory.Flask:
                 player.specs.attack -= 4;
                 break;
+            case ItemCategory.Amulet:
+                player.specs.defense -= 4;
         }
     }
 
@@ -78,5 +82,14 @@ export class ItemsManagerService {
         return this.gameCreationService
             .getGameById(gameId)
             .items.some((item) => item.coordinate.x === player.position.x && item.coordinate.y === player.position.y);
+    }
+
+    checkForAmulet(challenger: Player, opponent: Player): void {
+        if (challenger.inventory.includes(ItemCategory.Amulet) && opponent.specs.life > challenger.specs.life) {
+            this.activateItem(ItemCategory.Amulet, challenger);
+        }
+        if (opponent.inventory.includes(ItemCategory.Amulet) && challenger.specs.life > opponent.specs.life) {
+            this.activateItem(ItemCategory.Amulet, opponent);
+        }
     }
 }

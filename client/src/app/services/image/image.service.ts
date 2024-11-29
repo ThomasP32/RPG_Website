@@ -52,8 +52,8 @@ export class ImageService {
                 return './assets/items/iceskates.png';
             case ItemCategory.WallBreaker:
                 return './assets/items/wallbreaker.png';
-            case ItemCategory.TimeTwister:
-                return './assets/items/timetwister.png';
+            case ItemCategory.Amulet:
+                return './assets/items/amulet.png';
             case ItemCategory.Flask:
                 return './assets/items/flask.png';
             case ItemCategory.Random:
@@ -75,8 +75,8 @@ export class ImageService {
                 return './assets/items/wallbreaker.png';
             case 'flask':
                 return './assets/items/flask.png';
-            case 'timetwister':
-                return './assets/items/timetwister.png';
+            case 'Amulet':
+                return './assets/items/amulet.png';
             case 'iceskates':
                 return './assets/items/iceskates.png';
             case 'random':

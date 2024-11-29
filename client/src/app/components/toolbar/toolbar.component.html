@@ -82,12 +82,12 @@
                         >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span
                     >
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.TimeTwister) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Amulet) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('timetwister')"
-                        alt="TimeTwister"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.TimeTwister) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.TimeTwister)"
+                        [src]="getItemImage('amulet')"
+                        alt="Amulet"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Amulet) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Amulet)"
                     />
                     <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
                 </div>

@@ -52,7 +52,7 @@ export class MapCounterService {
             ItemCategory.IceSkates,
             ItemCategory.WallBreaker,
             ItemCategory.Sword,
-            ItemCategory.TimeTwister,
+            ItemCategory.Amulet,
             ItemCategory.Flask,
         ];
     }
