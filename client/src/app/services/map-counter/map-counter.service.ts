@@ -50,10 +50,10 @@ export class MapCounterService {
         this.items = [
             ItemCategory.Armor,
             ItemCategory.IceSkates,
-            ItemCategory.GrapplingHook,
+            ItemCategory.WallBreaker,
             ItemCategory.Sword,
-            ItemCategory.TimeTwister,
-            ItemCategory.Bomb,
+            ItemCategory.Amulet,
+            ItemCategory.Flask,
         ];
     }
 
@@ -66,7 +66,6 @@ export class MapCounterService {
             this.itemsCounter -= 1;
         }
         this.items = this.items.filter((i) => i !== item);
-        console.log(this.items);
     }
 
     releaseItem(item: ItemCategory) {

@@ -3,14 +3,16 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { CombatEvents } from '@common/events/combat.events';
+import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
+import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { GameManagerGateway } from './game-manager.gateway';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameManagerGateway', () => {
     let gateway: GameManagerGateway;
@@ -19,6 +21,7 @@ describe('GameManagerGateway', () => {
     let gameCreationService: SinonStubbedInstance<GameCreationService>;
     let gameManagerService: SinonStubbedInstance<GameManagerService>;
     let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
+    let itemsManagerService: SinonStubbedInstance<ItemsManagerService>;
     let journalService: SinonStubbedInstance<JournalService>;
     let serverStub: SinonStubbedInstance<Server>;
 
@@ -27,6 +30,7 @@ describe('GameManagerGateway', () => {
         socket = createStubInstance<Socket>(Socket);
         gameCreationService = createStubInstance<GameCreationService>(GameCreationService);
         gameManagerService = createStubInstance<GameManagerService>(GameManagerService);
+        itemsManagerService = createStubInstance<ItemsManagerService>(ItemsManagerService);
         gameCountdownService = createStubInstance<GameCountdownService>(GameCountdownService);
         gameCountdownService.startNewCountdown.callsFake(() => {
             return Promise.resolve();
@@ -42,6 +46,7 @@ describe('GameManagerGateway', () => {
                 { provide: GameManagerService, useValue: gameManagerService },
                 { provide: GameCountdownService, useValue: gameCountdownService },
                 { provide: JournalService, useValue: journalService },
+                { provide: ItemsManagerService, useValue: itemsManagerService },
             ],
         }).compile();
 
@@ -140,6 +145,7 @@ describe('GameManagerGateway', () => {
             const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
             const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
             gameCreationService.getGameById.returns(game);
+            gameManagerService.hasFallen = true;
 
             const moves = [
                 { x: 1, y: 1 },
@@ -147,7 +153,7 @@ describe('GameManagerGateway', () => {
             ];
             gameManagerService.getMove.returns(moves);
             gameManagerService.updatePosition.resolves();
-            gameManagerService.hasFallen.returns(true);
+            expect(gameManagerService.hasFallen).toBe(true);
 
             await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
@@ -205,7 +211,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         specs: { speed: 3, movePoints: 3, attack: 5, defense: 5 },
                         isActive: true,
-                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -229,7 +235,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
-                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -256,7 +262,7 @@ describe('GameManagerGateway', () => {
                         specs: { attack: 5, defense: 5, speed: 3, movePoints: 3 },
                         position: { x: 0, y: 0 },
                         isActive: true,
-                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -282,7 +288,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 0,
                 isActive: true,
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                 name: 'ActivePlayer',
                 specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
             } as Player;
@@ -291,7 +297,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'other-player-id',
                 turn: 1,
                 isActive: true,
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                 name: 'OtherPlayer',
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
@@ -324,7 +330,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'inactive-player-id',
                 turn: 0,
                 isActive: false,
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -332,7 +338,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 1,
                 isActive: true,
-                inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                 specs: { speed: 5, movePoints: 0 },
             } as Player;
 
@@ -407,53 +413,73 @@ describe('GameManagerGateway', () => {
 
             expect(gameManagerService.updatePosition.notCalled).toBeTruthy();
         });
-        it('should apply -2 penalty to attack and defense when moving to an ice tile', async () => {
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([
-                { x: 0, y: 1 },
-                { x: 0, y: 1 },
-            ]);
-            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(false);
-            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(true);
+    });
 
-            const destination: Coordinate = { x: 0, y: 1 };
+    describe('adaptSpecsForIceTileMove', () => {
+        let player: Player;
+        let gameId: string;
 
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+                inventory: [],
+            } as Player;
+            gameId = 'game-1';
+        });
+
+        it('should decrease attack and defense by 2 when moving onto an ice tile without skates', () => {
+            gameManagerService.onIceTile.returns(true);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
 
             expect(player.specs.attack).toBe(8);
             expect(player.specs.defense).toBe(8);
+            expect(wasOnIceTile).toBe(true);
         });
 
-        it('should remove -2 penalty from attack and defense when moving off an ice tile', async () => {
-            player.specs.attack = 8;
-            player.specs.defense = 8;
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([
-                { x: 0, y: 2 },
-                { x: 0, y: 2 },
-            ]);
-            gameManagerService.onIceTile.withArgs(player, game.id).onFirstCall().returns(true);
-            gameManagerService.onIceTile.withArgs(player, game.id).onSecondCall().returns(false);
-
-            const destination: Coordinate = { x: 0, y: 2 };
-
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
-
-            expect(player.specs.attack).toBe(10);
-            expect(player.specs.defense).toBe(10);
-        });
-
-        it('should not change attack and defense if remaining on the same type of tile', async () => {
-            gameCreationService.doesGameExist.returns(true);
-            gameManagerService.getMove.returns([{ x: 1, y: 1 }]);
+        it('should increase attack and defense by 2 when moving off an ice tile without skates', () => {
             gameManagerService.onIceTile.returns(false);
 
-            const destination: Coordinate = { x: 1, y: 1 };
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, true);
 
-            await gateway.getMove({ id: player.socketId } as any, { gameId: game.id, destination });
+            expect(player.specs.attack).toBe(12);
+            expect(player.specs.defense).toBe(12);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when moving onto an ice tile with skates', () => {
+            player.inventory.push(ItemCategory.IceSkates);
+            gameManagerService.onIceTile.returns(true);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
 
             expect(player.specs.attack).toBe(10);
             expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when moving off an ice tile with skates', () => {
+            player.inventory.push(ItemCategory.IceSkates);
+            gameManagerService.onIceTile.returns(false);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
+        });
+
+        it('should not change attack and defense when staying on the same type of tile', () => {
+            gameManagerService.onIceTile.returns(false);
+
+            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
+
+            expect(player.specs.attack).toBe(10);
+            expect(player.specs.defense).toBe(10);
+            expect(wasOnIceTile).toBe(false);
         });
     });
 
@@ -528,7 +554,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         isActive: false,
                         specs: { speed: 5 } as Specs,
-                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -552,7 +578,7 @@ describe('GameManagerGateway', () => {
                         turn: 0,
                         isActive: true,
                         specs: { speed: 5 } as Specs,
-                        inventory: [ItemCategory.GrapplingHook, ItemCategory.Armor],
+                        inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
                     },
                 ],
                 currentTurn: 0,
@@ -616,6 +642,105 @@ describe('GameManagerGateway', () => {
             gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
 
             expect(serverStub.to.called).toBeTruthy();
+        });
+    });
+    describe('dropItem', () => {
+        it('should drop the item and emit ItemDropped event', () => {
+            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, name: 'Player 1', inventory: [] } as Player;
+            const game = { players: [player], currentTurn: 0, id: 'game-id', hostSocketId: 'host-1' } as Game;
+            gameCreationService.getGameById.returns(game);
+            const gameId = game.id;
+            const itemDropping = ItemCategory.Sword;
+
+            gameCreationService.getGameById.returns(game);
+
+            gateway.dropItem(socket, { gameId, itemDropping });
+
+            expect(itemsManagerService.dropItem.calledWith(itemDropping, gameId, player, player.position)).toBeTruthy();
+            const emitStub = serverStub.to(player.socketId).emit as SinonStub;
+            expect(emitStub.calledWith(ItemsEvents.ItemDropped, { updatedGame: game, updatedPlayer: player })).toBeTruthy();
+        });
+    });
+    describe('movePlayer', () => {
+        let player: Player;
+        let game: Game;
+        let moves: Coordinate[];
+
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+                inventory: [],
+            } as Player;
+
+            game = {
+                id: 'game-1',
+                players: [player],
+                currentTurn: 0,
+                hasStarted: true,
+            } as Game;
+
+            moves = [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ];
+
+            gameCreationService.getGameById.returns(game);
+        });
+
+        it('should update player position for each move', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(false);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(gameManagerService.updatePosition.calledWith(game.id, player.socketId, [moves[0]])).toBeTruthy();
+            expect(gameManagerService.updatePosition.calledWith(game.id, player.socketId, [moves[1]])).toBeTruthy();
+        });
+
+        it('should pick up item if player is on item', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(true);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(itemsManagerService.pickUpItem.calledWith(moves[0], game.id, player)).toBeTruthy();
+        });
+
+        it('should emit InventoryFull if player inventory exceeds limit', async () => {
+            const activePlayer: Player = {
+                socketId: 'active-player-id',
+                turn: 0,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor, ItemCategory.Sword], // Plus de 2 items
+                name: 'ActivePlayer',
+                specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
+            } as Player;
+
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(true);
+            gameManagerService.checkForWinnerCtf.returns(false);
+
+            await gateway.movePlayer(moves, game, false, activePlayer);
+
+            const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
+            expect(toActivePlayerStub.calledWith(ItemsEvents.InventoryFull)).toBeTruthy();
+        });
+
+        it('should adapt specs for ice tile move', async () => {
+            gameManagerService.updatePosition.resolves();
+            itemsManagerService.onItem.returns(false);
+            gameManagerService.checkForWinnerCtf.returns(false);
+            gameManagerService.onIceTile.returns(true);
+
+            await gateway.movePlayer(moves, game, false, player);
+
+            expect(player.specs.attack).toBe(8);
+            expect(player.specs.defense).toBe(8);
         });
     });
 });

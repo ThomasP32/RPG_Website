@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { JournalEvents } from '@common/events/journal.events';
 import { JournalEntry } from '@common/journal-entry';
-import { JournalEvents } from '@common/events/journal.events'
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({

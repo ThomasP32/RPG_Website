@@ -1,3 +1,4 @@
+import { MapConfig, MapSize } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -5,7 +6,6 @@ import * as sinon from 'sinon';
 import { stub } from 'sinon';
 import { Socket } from 'socket.io';
 import { GameCreationService } from './game-creation.service';
-import { MapConfig, MapSize } from '@common/constants';
 
 describe('GameCreationService', () => {
     let service: GameCreationService;
@@ -63,7 +63,7 @@ describe('GameCreationService', () => {
             startTiles: [{ coordinate: { x: 1, y: 1 } }, { coordinate: { x: 19, y: 19 } }],
             items: [
                 { coordinate: { x: 5, y: 5 }, category: ItemCategory.Flag },
-                { coordinate: { x: 10, y: 10 }, category: ItemCategory.GrapplingHook },
+                { coordinate: { x: 10, y: 10 }, category: ItemCategory.WallBreaker },
             ],
             doorTiles: [{ coordinate: { x: 15, y: 15 }, isOpened: false }],
             tiles: [
