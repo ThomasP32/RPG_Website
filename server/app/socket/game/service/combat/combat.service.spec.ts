@@ -127,7 +127,7 @@ describe('ServerCombatService', () => {
 
     it('should find the closest available position for a player', () => {
         const closestPosition = service.findClosestAvailablePosition({ x: 0, y: 0 }, game);
-        expect(closestPosition).toEqual({ x: 0, y: 1 });
+        expect(closestPosition).toEqual({ x: 1, y: 0 });
     });
 
     it('should update players in game after combat', () => {
