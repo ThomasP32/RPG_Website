@@ -287,7 +287,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.socketService.listen<ItemDroppedData>(ItemsEvents.ItemDropped).subscribe((data) => {
                 this.isInventoryModalOpen = false;
                 if (data.updatedPlayer && data.updatedPlayer.socketId === this.player.socketId) {
-                    // this.playerService.setPlayer(data.updatedPlayer);
+                    this.playerService.setPlayer(data.updatedPlayer);
                     this.gameTurnService.resumeTurn();
                 }
                 this.gameService.setGame(data.updatedGame);

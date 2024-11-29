@@ -137,7 +137,9 @@ export class CombatService {
                 const isOccupied = game.players.some(
                     (otherPlayer) => otherPlayer.position.x === newPosition.x && otherPlayer.position.y === newPosition.y,
                 );
-                if (!isOccupied) {
+                const isOutOfMap = newPosition.x < 0 || newPosition.y < 0 || newPosition.x >= game.mapSize.x || newPosition.y >= game.mapSize.y;
+
+                if (!isOccupied && !isOutOfMap) {
                     return newPosition;
                 }
             }

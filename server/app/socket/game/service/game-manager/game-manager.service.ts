@@ -272,7 +272,7 @@ export class GameManagerService {
                 x: start.x + direction.x,
                 y: start.y + direction.y,
             };
-
+            //@chargé, on empêche l'item de drop sur une case de départ
             const isStartTile = game.startTiles.some((tile) => tile.coordinate.x === newPosition.x && tile.coordinate.y === newPosition.y);
 
             if (
