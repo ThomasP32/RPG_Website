@@ -22,6 +22,7 @@ let specs: Specs = {
     nEvasions: 0,
     nLifeTaken: 0,
     nLifeLost: 0,
+    nItemsUsed: 0,
 };
 
 let player: Player = {
@@ -52,7 +53,7 @@ let game2: Game = {
     players: [player],
     currentTurn: 0,
     nTurns: 0,
-    nDoorsManipulated: 0,
+    nDoorsManipulated: [],
     duration: 0,
     debug: false,
     mode: Mode.Classic,

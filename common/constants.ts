@@ -31,6 +31,16 @@ export class WaitingRoomParameters {
         return 9999;
     }
 }
+export enum tableColumns {
+    COMBAT_COLUMN = 4,
+    EVASION_COLUMN = 5,
+    VICTORIES_COLUMN = 6,
+    DEFEATS_COLUMN = 7,
+    LOST_LIFE_COLUMN = 8,
+    STOLEN_LIFE_COLUMN = 9,
+    OBJECT_COLUMN = 10,
+    TILES_COLUMN = 11,
+}
 
 export const TIME_LIMIT_DELAY: number = 3000;
 
@@ -71,8 +81,6 @@ export const PERCENTAGE: number = 100;
 export const MINUTE: number = 60;
 
 export const MAX_CHAR: number = 2;
-
-export const COUNTDOWN_DURATION: number = 5;
 
 export const COUNTDOWN_NOEVASION_DURATION: number = 3;
 

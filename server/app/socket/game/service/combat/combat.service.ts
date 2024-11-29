@@ -1,8 +1,8 @@
 import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat, RollResult } from '@common/combat';
-import { DIRECTIONS } from '@common/directions';
+import { CORNER_DIRECTIONS, DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
-import { ItemCategory, Mode } from '@common/map.types';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { N_WIN_VICTORIES } from '../../../../../constants/constants';
@@ -129,21 +129,45 @@ export class CombatService {
 
     findClosestAvailablePosition(initialPosition: Coordinate, game: Game): Coordinate {
         for (let distance = 1; distance <= game.mapSize.x; distance++) {
-            for (const direction of DIRECTIONS) {
+            for (const direction of [...DIRECTIONS, ...CORNER_DIRECTIONS]) {
                 const newPosition = {
                     x: initialPosition.x + direction.x * distance,
                     y: initialPosition.y + direction.y * distance,
                 };
-                const isOccupied = game.players.some(
-                    (otherPlayer) => otherPlayer.position.x === newPosition.x && otherPlayer.position.y === newPosition.y,
-                );
+
                 const isOutOfMap = newPosition.x < 0 || newPosition.y < 0 || newPosition.x >= game.mapSize.x || newPosition.y >= game.mapSize.y;
 
-                if (!isOccupied && !isOutOfMap) {
+                const isReachableTile = this.isReachableTile(newPosition, game);
+
+                if (!isReachableTile && !isOutOfMap) {
                     return newPosition;
                 }
             }
         }
+    }
+
+    isReachableTile(pos: Coordinate, game: Game): boolean {
+        for (const tile of game.tiles) {
+            if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
+                if (tile.category === TileCategory.Wall) return false;
+            }
+        }
+        for (const door of game.doorTiles) {
+            if (door.coordinate.x === pos.x && door.coordinate.y === pos.y && !door.isOpened) {
+                return false;
+            }
+        }
+        for (const player of game.players) {
+            if (player.isActive && player.position.x === pos.x && player.position.y === pos.y) {
+                return false;
+            }
+        }
+        for (const item of game.items) {
+            if (item.coordinate.x === pos.x && item.coordinate.y === pos.y) {
+                return false;
+            }
+        }
+        return true;
     }
 
     updatePlayersInGame(game: Game) {

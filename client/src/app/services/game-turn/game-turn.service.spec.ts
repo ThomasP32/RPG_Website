@@ -42,6 +42,7 @@ describe('GameTurnService', () => {
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
+        nItemsUsed: 0,
     };
 
     const mockPlayer: Player = {
