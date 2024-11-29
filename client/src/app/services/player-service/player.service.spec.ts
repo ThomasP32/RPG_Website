@@ -105,6 +105,7 @@ describe('PlayerService', () => {
                     nEvasions: 0,
                     nLifeTaken: 0,
                     nLifeLost: 0,
+                    nItemsUsed: 0,
                 },
                 inventory: [],
                 position: { x: 0, y: 0 },
