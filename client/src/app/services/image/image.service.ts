@@ -50,12 +50,12 @@ export class ImageService {
                 return './assets/items/sword.png';
             case ItemCategory.IceSkates:
                 return './assets/items/iceskates.png';
-            case ItemCategory.GrapplingHook:
-                return './assets/items/grapplinghook.png';
-            case ItemCategory.TimeTwister:
-                return './assets/items/timetwister.png';
-            case ItemCategory.Bomb:
-                return './assets/items/bomb.png';
+            case ItemCategory.WallBreaker:
+                return './assets/items/wallbreaker.png';
+            case ItemCategory.Amulet:
+                return './assets/items/amulet.png';
+            case ItemCategory.Flask:
+                return './assets/items/flask.png';
             case ItemCategory.Random:
                 return './assets/items/randomitem.png';
             case ItemCategory.Flag:
@@ -71,12 +71,12 @@ export class ImageService {
                 return './assets/items/armor.png';
             case 'sword':
                 return './assets/items/sword.png';
-            case 'grapplinghook':
-                return './assets/items/grapplinghook.png';
-            case 'bomb':
-                return './assets/items/bomb.png';
-            case 'timetwister':
-                return './assets/items/timetwister.png';
+            case 'wallbreaker':
+                return './assets/items/wallbreaker.png';
+            case 'flask':
+                return './assets/items/flask.png';
+            case 'Amulet':
+                return './assets/items/amulet.png';
             case 'iceskates':
                 return './assets/items/iceskates.png';
             case 'random':
@@ -124,29 +124,29 @@ export class ImageService {
     getPixelatedPlayerImage(avatar: Avatar): string {
         switch (avatar) {
             case Avatar.Avatar1:
-                return './assets/pixelcharacters/1.png';
+                return './assets/pixelcharacters/1_pixelated.png';
             case Avatar.Avatar2:
-                return './assets/pixelcharacters/2.png';
+                return './assets/pixelcharacters/2_pixelated.png';
             case Avatar.Avatar3:
-                return './assets/pixelcharacters/3.png';
+                return './assets/pixelcharacters/3_pixelated.png';
             case Avatar.Avatar4:
-                return './assets/pixelcharacters/4.png';
+                return './assets/pixelcharacters/4_pixelated.png';
             case Avatar.Avatar5:
-                return './assets/pixelcharacters/5.png';
+                return './assets/pixelcharacters/5_pixelated.png';
             case Avatar.Avatar6:
-                return './assets/pixelcharacters/6.png';
+                return './assets/pixelcharacters/6_pixelated.png';
             case Avatar.Avatar7:
-                return './assets/pixelcharacters/7.png';
+                return './assets/pixelcharacters/7_pixelated.png';
             case Avatar.Avatar8:
-                return './assets/pixelcharacters/8.png';
+                return './assets/pixelcharacters/8_pixelated.png';
             case Avatar.Avatar9:
-                return './assets/pixelcharacters/9.png';
+                return './assets/pixelcharacters/9_pixelated.png';
             case Avatar.Avatar10:
-                return './assets/pixelcharacters/10.png';
+                return './assets/pixelcharacters/10_pixelated.png';
             case Avatar.Avatar11:
-                return './assets/pixelcharacters/11.png';
+                return './assets/pixelcharacters/11_pixelated.png';
             case Avatar.Avatar12:
-                return './assets/pixelcharacters/12.png';
+                return './assets/pixelcharacters/12_pixelated.png';
             default:
                 return '';
         }

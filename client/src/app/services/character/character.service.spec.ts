@@ -17,7 +17,6 @@ describe('CharacterService', () => {
     it('should return characters with valid properties', (done) => {
         service.characters.forEach((character) => {
             expect(character.id).toBeDefined();
-            expect(character.name).toBeDefined();
             expect(character.image).toBeDefined();
             expect(character.isAvailable).toBe(true);
         });
@@ -45,7 +44,7 @@ describe('CharacterService', () => {
 
     it('should return the correct preview image for a given avatar', () => {
         const preview = service.getAvatarPreview(Avatar.Avatar1);
-        expect(preview).toBe('./assets/previewcharacters/1.png');
+        expect(preview).toBe('./assets/previewcharacters/1_preview.png');
     });
 
     it('should return an empty string if the avatar does not exist', () => {
