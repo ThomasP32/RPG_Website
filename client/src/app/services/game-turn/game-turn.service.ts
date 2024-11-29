@@ -269,5 +269,6 @@ export class GameTurnService {
                 this.playerWon.next(true);
             }),
         );
+        this.playerWon.next(false);
     }
 }
