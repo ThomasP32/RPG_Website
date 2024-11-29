@@ -55,7 +55,7 @@ export class GameManagerService {
     ][] {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((p) => p.socketId === playerSocket);
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
         const moves = this.runDijkstra(player.position, game, player.specs.movePoints);
@@ -68,7 +68,7 @@ export class GameManagerService {
         const player = game.players.find((p) => p.socketId === playerSocket);
         let shortestPath: Coordinate[];
 
-        if (!player || !player.isActive) {
+        if (!player?.isActive) {
             return [];
         }
 

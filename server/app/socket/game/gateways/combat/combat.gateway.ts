@@ -147,15 +147,16 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.itemManagerService.dropInventory(defendingPlayer, gameId);
         this.combatService.sendBackToInitPos(defendingPlayer, game);
         this.combatService.updatePlayersInGame(game);
-        console.log('defendingPlayer', defendingPlayer);
-        console.log('attackingPlayer', attackingPlayer);
+
         this.server.to(combatId).emit(CombatEvents.CombatFinishedNormally, attackingPlayer);
 
         this.journalService.logMessage(gameId, `Fin de combat. ${attackingPlayer.name} est le gagnant.`, [attackingPlayer.name]);
 
         this.combatCountdownService.deleteCountdown(gameId);
         setTimeout(() => {
-            const combatFinishedData: CombatFinishedData = { updatedGame: game, winner: attackingPlayer };
+            const combatFinishedData: CombatFinishedData = { updatedGame: game, winner: attackingPlayer, loser: defendingPlayer };
+            console.log('defendingPlayer', defendingPlayer.socketId);
+            console.log('attackingPlayer', attackingPlayer.socketId);
             this.server.to(gameId).emit(CombatEvents.CombatFinished, combatFinishedData);
             if (this.combatService.checkForGameWinner(game.id, attackingPlayer)) {
                 this.server.to(gameId).emit(CombatEvents.GameFinishedPlayerWon, attackingPlayer);
@@ -189,7 +190,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             const currentPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const otherPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
             this.server.to(otherPlayer.socketId).emit(CombatEvents.PlayerTurnCombat);
-            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions !== 0);
         }
     }
 
@@ -253,7 +254,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.combatCountdownService.deleteCountdown(updatedGame.id);
 
         setTimeout(() => {
-            const combatFinishedData: CombatFinishedData = { updatedGame: updatedGame, winner: winner };
+            const combatFinishedData: CombatFinishedData = { updatedGame: updatedGame, winner: winner, loser: disconnectedPlayer };
             this.server.to(updatedGame.id).emit(CombatEvents.CombatFinished, combatFinishedData);
 
             if (this.combatService.checkForGameWinner(updatedGame.id, winner)) {

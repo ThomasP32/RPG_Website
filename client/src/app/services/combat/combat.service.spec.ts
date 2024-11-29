@@ -122,7 +122,7 @@ describe('CombatService', () => {
             service.listenForEvasionInfo();
 
             evasionSuccessSubject.next(mockPlayer);
-            tick(3000); // Simulate 3 seconds delay
+            tick(3000);
 
             service.isCombatModalOpen$.pipe(take(1)).subscribe((isOpen) => {
                 expect(isOpen).toBeFalse();

@@ -121,7 +121,7 @@ export class CombatService {
             const closestPosition = this.findClosestAvailablePosition(currentPlayer.initialPosition, game);
             currentPlayer.position = closestPosition;
         }
-        player.inventory = [];
+        currentPlayer.inventory = [];
     }
 
     findClosestAvailablePosition(initialPosition: Coordinate, game: Game): Coordinate {
