@@ -19,7 +19,7 @@ export class GameGateway {
         client.join(newGame.id);
         newGame.hostSocketId = client.id;
         this.gameCreationService.addGame(newGame);
-        this.server.to(newGame.id).emit(GameCreationEvents.GameCreated, newGame );
+        this.server.to(newGame.id).emit(GameCreationEvents.GameCreated, newGame);
     }
 
     @SubscribeMessage(GameCreationEvents.JoinGame)
@@ -155,7 +155,6 @@ export class GameGateway {
             client.leave(gameId);
             client.leave(gameId + '-combat');
             this.server.to(game.id).emit(GameCreationEvents.PlayerLeft, game.players);
-            return;
         } else {
             return;
         }

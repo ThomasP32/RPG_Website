@@ -48,7 +48,7 @@ describe('InventoryModalComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should call sendMessage on dropItem', () => {
-        const item: ItemCategory = ItemCategory.Bomb;
+        const item: ItemCategory = ItemCategory.Flask;
         component.dropItem(item);
         expect(socketSpy.sendMessage).toHaveBeenCalledWith('dropItem', { itemDropping: item, gameId: component.gameId });
     });
