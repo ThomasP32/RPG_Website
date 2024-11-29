@@ -7,8 +7,8 @@ import { GameManagerService } from '../game-manager/game-manager.service';
 
 @Injectable()
 export class ItemsManagerService {
-    @Inject(GameCreationService) private gameCreationService: GameCreationService;
-    @Inject(GameManagerService) private gameManagerService: GameManagerService;
+    @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
+    @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
 
     dropInventory(player: Player, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
