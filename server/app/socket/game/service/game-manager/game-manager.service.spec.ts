@@ -196,19 +196,6 @@ describe('GameManagerService', () => {
     });
 
     describe('getMove', () => {
-        it('should stop and add the position to the path if tile weight is 0 and random chance is met', () => {
-            const destination: Coordinate = { x: 2, y: 8 };
-            game2.players[0].position = { x: 2, y: 7 };
-            game2.players[0].specs.movePoints = 10;
-            game2.tiles.push({ coordinate: { x: 2, y: 8 }, category: TileCategory.Ice });
-
-            jest.spyOn(global.Math, 'random').mockReturnValue(0.05);
-
-            const result = gameManagerService.getMove(game2.id, game2.players[0].socketId, destination);
-
-            expect(result).toEqual([{ x: 2, y: 7 }]);
-        });
-
         it('should return an empty path if the player is not found', () => {
             const destination: Coordinate = { x: 2, y: 8 };
             const result = gameManagerService.getMove(game2.id, 'Nonexistent Player', destination);
@@ -251,32 +238,6 @@ describe('GameManagerService', () => {
             const isOnIce = gameManagerService.onIceTile(player, game2.id);
 
             expect(isOnIce).toBe(false);
-        });
-    });
-
-    describe('hasFallen', () => {
-        it('should return true if the last move does not match the destination', () => {
-            const moves: Coordinate[] = [
-                { x: 1, y: 1 },
-                { x: 2, y: 2 },
-            ];
-            const destination: Coordinate = { x: 3, y: 3 };
-
-            const result = gameManagerService.hasFallen(moves, destination);
-
-            expect(result).toBe(true);
-        });
-
-        it('should return false if the last move matches the destination', () => {
-            const moves: Coordinate[] = [
-                { x: 1, y: 1 },
-                { x: 2, y: 2 },
-            ];
-            const destination: Coordinate = { x: 2, y: 2 };
-
-            const result = gameManagerService.hasFallen(moves, destination);
-
-            expect(result).toBe(false);
         });
     });
 
@@ -338,7 +299,7 @@ describe('GameManagerService', () => {
                 name: 'Player 3',
                 avatar: Avatar.Avatar3,
                 isActive: true,
-                position: { x: 7, y: 7 }, // Positioned non-adjacent to player
+                position: { x: 7, y: 7 },
                 initialPosition: { x: 7, y: 7 },
                 specs,
                 inventory: [],
@@ -455,18 +416,6 @@ describe('GameManagerService', () => {
         });
     });
 
-    it('should add the item to the player inventory and remove it from the game items', () => {
-        const item = { coordinate: { x: 1, y: 1 }, category: ItemCategory.Armor };
-        game2.items.push(item);
-        const player = game2.players[0];
-        player.position = { x: 1, y: 1 };
-
-        gameManagerService.pickUpItem(player.position, game2, player);
-
-        expect(player.inventory).toContain(ItemCategory.Armor);
-        expect(game2.items).not.toContain(item);
-    });
-
     describe('isGameResumable', () => {
         it('should return true if there is at least one active player', () => {
             game2.players[0].isActive = true;
@@ -537,8 +486,8 @@ describe('GameManagerService', () => {
 
     describe('GameManagerService - hasPickedUpFlag', () => {
         it('should return true when the old inventory does not contain the flag but the new inventory does', () => {
-            const oldInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook];
-            const newInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.GrapplingHook, ItemCategory.Flag];
+            const oldInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.WallBreaker];
+            const newInventory: ItemCategory[] = [ItemCategory.Armor, ItemCategory.WallBreaker, ItemCategory.Flag];
 
             const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
 
@@ -547,7 +496,7 @@ describe('GameManagerService', () => {
 
         it('should return false when both inventories contain the flag', () => {
             const oldInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor];
-            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor, ItemCategory.GrapplingHook];
+            const newInventory: ItemCategory[] = [ItemCategory.Flag, ItemCategory.Armor, ItemCategory.WallBreaker];
 
             const result = gameManagerService.hasPickedUpFlag(oldInventory, newInventory);
 
@@ -579,6 +528,58 @@ describe('GameManagerService', () => {
             gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
 
             expect(game2.players[0].specs.actions).toBe(initialActions);
+        });
+    });
+    describe('getFirstFreePosition', () => {
+        it('should return the first free position adjacent to the start position', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                players: [{ ...player, position: { x: 6, y: 5 } }],
+                tiles: [{ coordinate: { x: 5, y: 6 }, category: TileCategory.Wall }],
+                items: [{ coordinate: { x: 4, y: 5 }, category: ItemCategory.Flag }],
+            };
+
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).toEqual({ x: 5, y: 4 });
+        });
+
+        it('should return null if there are no free positions adjacent to the start position', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                players: [
+                    { ...player, position: { x: 4, y: 5 } },
+                    { ...player, position: { x: 6, y: 5 } },
+                    { ...player, position: { x: 5, y: 4 } },
+                    { ...player, position: { x: 5, y: 6 } },
+                ],
+                tiles: [
+                    { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+                    { coordinate: { x: 6, y: 6 }, category: TileCategory.Wall },
+                ],
+                items: [
+                    { coordinate: { x: 4, y: 6 }, category: ItemCategory.Flag },
+                    { coordinate: { x: 6, y: 4 }, category: ItemCategory.Flag },
+                ],
+            };
+
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).toBeNull();
+        });
+
+        it('should not return a position that is a start tile', () => {
+            const start: Coordinate = { x: 5, y: 5 };
+            const game: Game = {
+                ...game2,
+                startTiles: [{ coordinate: { x: 5, y: 4 } }],
+            };
+
+            const freePosition = gameManagerService.getFirstFreePosition(start, game);
+
+            expect(freePosition).not.toEqual({ x: 5, y: 4 });
         });
     });
 });

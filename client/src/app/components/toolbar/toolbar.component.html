@@ -71,32 +71,32 @@
                     />
                     <span class="description" draggable="false">Un pot mystique capable de contenir et de libérer des substances puissantes.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.GrapplingHook) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.WallBreaker) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('grapplinghook')"
-                        alt="GrapplingHook"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.GrapplingHook) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.GrapplingHook)"
+                        [src]="getItemImage('wallbreaker')"
+                        alt="WallBreaker"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.WallBreaker) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.WallBreaker)"
                     />
                     <span class="description" draggable="false"
                         >Une arme dangereuse qui tire des projectiles acides, infligeant des dégâts sur la durée.</span
                     >
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.TimeTwister) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Amulet) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('timetwister')"
-                        alt="TimeTwister"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.TimeTwister) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.TimeTwister)"
+                        [src]="getItemImage('amulet')"
+                        alt="Amulet"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Amulet) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Amulet)"
                     />
                     <span class="description" draggable="false">Une clé qui déverrouille certaines portes ou coffres au trésor dans le jeu.</span>
                 </div>
-                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Bomb) || mapCounterService.itemsCounter === 0">
+                <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Flask) || mapCounterService.itemsCounter === 0">
                     <img
-                        [src]="getItemImage('bomb')"
-                        alt="Bomb"
-                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Bomb) && mapCounterService.itemsCounter > 0"
-                        (dragstart)="startDrag($event, ItemCategory.Bomb)"
+                        [src]="getItemImage('flask')"
+                        alt="Flask"
+                        [draggable]="!mapCounterService.isItemUsed(ItemCategory.Flask) && mapCounterService.itemsCounter > 0"
+                        (dragstart)="startDrag($event, ItemCategory.Flask)"
                     />
                     <span class="description" draggable="false">Un chapeau élégant qui offre de légers bonus à l'agilité et au charme.</span>
                 </div>

@@ -59,10 +59,10 @@ describe('MapCounterService', () => {
         expect(service.items).toEqual([
             ItemCategory.Armor,
             ItemCategory.IceSkates,
-            ItemCategory.GrapplingHook,
+            ItemCategory.WallBreaker,
             ItemCategory.Sword,
-            ItemCategory.TimeTwister,
-            ItemCategory.Bomb,
+            ItemCategory.Amulet,
+            ItemCategory.Flask,
         ]);
     });
 
@@ -90,5 +90,16 @@ describe('MapCounterService', () => {
 
         expect(service.items).toContain(ItemCategory.Armor);
         expect(service.itemsCounter).toBe(2);
+    });
+    it('should increase randomItemCounter when releasing a random item', () => {
+        service.items = [ItemCategory.IceSkates];
+        service.itemsCounter = 1;
+        service.randomItemCounter = 0;
+
+        service.releaseItem(ItemCategory.Random);
+
+        expect(service.items).toContain(ItemCategory.Random);
+        expect(service.itemsCounter).toBe(2);
+        expect(service.randomItemCounter).toBe(1);
     });
 });
