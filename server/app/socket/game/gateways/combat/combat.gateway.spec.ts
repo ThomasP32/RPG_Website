@@ -26,7 +26,6 @@ describe('CombatGateway', () => {
     let mockSocket: jest.Mocked<Socket>;
     let mockOpponentSocket: jest.Mocked<Socket>;
     let journalService: jest.Mocked<JournalService>;
-    let virtualGameManagerService: jest.Mocked<VirtualGameManagerService>;
 
     const mockCombat: Combat = {
         id: 'game-id-combat',
@@ -190,7 +189,6 @@ describe('CombatGateway', () => {
         gameCreationService = module.get(GameCreationService);
         gameManagerService = module.get(GameManagerService);
         journalService = module.get(JournalService);
-        virtualGameManagerService = module.get(VirtualGameManagerService);
 
         mockSocket = {
             id: 'socket-id',
