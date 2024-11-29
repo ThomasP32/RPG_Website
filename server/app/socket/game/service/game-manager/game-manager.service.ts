@@ -284,7 +284,9 @@ export class GameManagerService {
     }
 
     isGameResumable(gameId: string): boolean {
-        return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
+        return (
+            this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
+        );
     }
 
     checkForWinnerCtf(player: Player, gameId: string): boolean {

@@ -30,6 +30,9 @@ export class GameManagerGateway implements OnGatewayInit {
             this.prepareNextTurn(gameId);
         });
         this.virtualGameManagerService.setServer(this.server);
+        this.virtualGameManagerService.on('virtualPlayerFinishedMoving', (gameId: string) => {
+            this.prepareNextTurn(gameId);
+        });
         this.journalService.initializeServer(server);
     }
 
