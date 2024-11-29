@@ -1,3 +1,4 @@
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -34,6 +35,7 @@ let player: Player = {
     inventory: [],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 let game2: Game = {

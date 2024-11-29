@@ -9,6 +9,7 @@ export enum MapSize {
 export enum ProfileType {
     AGGRESSIVE = 'aggressive',
     DEFENSIVE = 'defensive',
+    NORMAL = '',
 }
 
 export const MapConfig = {

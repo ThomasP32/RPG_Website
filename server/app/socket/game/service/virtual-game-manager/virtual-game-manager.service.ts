@@ -12,6 +12,7 @@ import { CombatCountdownService } from '../countdown/combat/combat-countdown.ser
 import { GameCountdownService } from '../countdown/game/game-countdown.service';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { GameManagerService } from '../game-manager/game-manager.service';
+import { ItemsManagerService } from '../items-manager/items-manager.service';
 import { JournalService } from '../journal/journal.service';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class VirtualGameManagerService extends EventEmitter {
     @Inject(JournalService) private readonly journalService: JournalService;
     @Inject(CombatCountdownService) private readonly combatCountdownService: CombatCountdownService;
     @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
+    @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
     server: Server;
 
     setServer(server: Server): void {
@@ -121,7 +123,7 @@ export class VirtualGameManagerService extends EventEmitter {
             }
         } else if (sword) {
             await this.updatePosition(activePlayer, [sword.coordinate], game.id, wasOnIceTile);
-            this.gameManagerService.pickUpItem(sword.coordinate, game, activePlayer);
+            this.itemsManagerService.pickUpItem(sword.coordinate, game.id, activePlayer);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
             if (moved) {
@@ -148,9 +150,8 @@ export class VirtualGameManagerService extends EventEmitter {
 
         if (armor) {
             await this.updatePosition(activePlayer, [armor.coordinate], game.id, wasOnIceTile);
-            this.gameManagerService.pickUpItem(armor.coordinate, game, activePlayer);
+            this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
-            console.log('il a plus de points de vie');
             const randomPlayerIndex = Math.floor(Math.random() * visiblePlayers.length);
             const targetPlayer = visiblePlayers[randomPlayerIndex];
             const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);

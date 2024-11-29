@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ProfileType } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { EndgameService } from './endgame.service';
@@ -33,6 +34,7 @@ describe('EndgameService', () => {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [{ x: 0, y: 0 }],
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {

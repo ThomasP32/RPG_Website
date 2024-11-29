@@ -62,7 +62,7 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
-            profile: null,
+            profile: ProfileType.NORMAL,
         };
         this.virtualPlayer = virtualPlayer;
     }
@@ -75,11 +75,11 @@ export class ProfileModalComponent implements OnInit {
         switch (profile) {
             case 'aggressive':
                 this.selectedProfile = ProfileType.AGGRESSIVE;
-                console.log('SelectedProfile:', this.selectedProfile);
+
                 break;
             case 'defensive':
                 this.selectedProfile = ProfileType.DEFENSIVE;
-                console.log('SelectedProfile:', this.selectedProfile);
+
                 break;
         }
     }

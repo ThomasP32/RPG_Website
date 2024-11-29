@@ -1,3 +1,4 @@
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { interval, Subscription } from 'rxjs';
@@ -42,7 +43,7 @@ describe('CombatCountdownService', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
-        profile: null,
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {

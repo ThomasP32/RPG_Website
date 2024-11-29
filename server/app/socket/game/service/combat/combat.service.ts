@@ -166,7 +166,6 @@ export class CombatService {
     }
 
     checkForGameWinner(gameId: string, player: Player): boolean {
-        console.log('on a demandé a verifier si la partie est perdue ', player);
         if (this.gameCreationService.getGameById(gameId).mode === Mode.Classic) {
             return player.specs.nVictories >= N_WIN_VICTORIES;
         }
