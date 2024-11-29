@@ -14,25 +14,6 @@
         </div>
     </div>
 
-    <div class="inventory">
-        <div class="inventory-container">
-            <div class="inventory-slot">
-                @if(player.inventory[0]) {
-                <img [src]="imageService.getItemImage(player.inventory[0])" [alt]="player.inventory[0]" class="item-image" />
-                } @else {
-                <div class="empty-slot">Vide</div>
-                }
-            </div>
-            <div class="inventory-slot">
-                @if(player.inventory[1]) {
-                <img [src]="imageService.getItemImage(player.inventory[1])" [alt]="player.inventory[1]" class="item-image" />
-                } @else {
-                <div class="empty-slot">Vide</div>
-                }
-            </div>
-        </div>
-    </div>
-
     <div class="right-actions">
         <div class="action-button" (mouseenter)="showDescription('Finir le tour')" (mouseleave)="hideDescription()" (click)="endTurn()">
             <div class="tooltip" *ngIf="actionDescription === 'Finir le tour'">{{ actionDescription }}</div>
