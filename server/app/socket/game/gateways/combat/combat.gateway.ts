@@ -47,7 +47,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.turn === game.currentTurn);
         if (game) {
-            console.log('un joueur essaie de commencer un combat contre', data.opponent.name);
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
             await client.join(combat.id);
             let opponentSocket;
@@ -61,7 +60,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 }
             }
             if (opponentSocket) {
-                console.log('un joueur a reussi de commencer un combat contre', opponentSocket);
                 const combatStartedData: CombatStartedData = {
                     challenger: player,
                     opponent: data.opponent,
@@ -199,6 +197,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     const isCombatFinishedByEvasion = this.virtualGameManager.handleVirtualPlayerCombat(currentPlayer, otherPlayer, game.id, combat);
                     if (otherPlayer.specs.life === 0) {
                         this.handleCombatLost(otherPlayer, currentPlayer, game.id, combat.id);
+                        this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                     } else if (isCombatFinishedByEvasion) {
                         setTimeout(() => {
                             const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: currentPlayer };
@@ -206,6 +205,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                             this.gameCountdownService.resumeCountdown(gameId);
                             this.cleanupCombatRoom(combat.id);
                             this.combatService.deleteCombat(gameId);
+
                             if (this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
                                 this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                             }
