@@ -1,5 +1,14 @@
 import { Combat } from '@common/combat';
-import { ProfileType, TIME_FOR_POSITION_UPDATE } from '@common/constants';
+import {
+    BONUS_REDUCTION,
+    COUNTDOWN_COMBAT_DURATION,
+    EVASION_SUCCESS_RATE,
+    MAXIMUM_BONUS,
+    MINIMUM_BONUS,
+    MINIMUM_MOVES,
+    ProfileType,
+    TIME_FOR_POSITION_UPDATE,
+} from '@common/constants';
 import { CombatEvents, CombatStartedData } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item } from '@common/map.types';
@@ -40,13 +49,13 @@ export class VirtualGameManagerService extends EventEmitter {
 
     calculateVirtualPlayerPath(player: Player, game: Game): Coordinate[] {
         const possibleMoves = this.gameManagerService.getMoves(game.id, player.socketId);
-        if (possibleMoves.length === 1) {
+        if (possibleMoves.length === MINIMUM_MOVES) {
             this.emit('virtualPlayerFinishedMoving', game.id);
             return [];
         }
 
         const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-        randomMove[1].path[randomMove[1].path.length - 1];
+        randomMove[1].path[randomMove[1].path.length - MINIMUM_MOVES];
 
         return randomMove[1].path;
     }
@@ -74,18 +83,18 @@ export class VirtualGameManagerService extends EventEmitter {
                 this.server.to(game.id).emit(CombatEvents.GameFinishedPlayerWon, player);
             }
         }
-        player.position = path[path.length - 1];
+        player.position = path[path.length - MINIMUM_MOVES];
     }
 
     adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
         const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
         if (isOnIceTile && !wasOnIceTile) {
-            player.specs.attack -= 2;
-            player.specs.defense -= 2;
+            player.specs.attack -= BONUS_REDUCTION;
+            player.specs.defense -= BONUS_REDUCTION;
             wasOnIceTile = true;
         } else if (!isOnIceTile && wasOnIceTile) {
-            player.specs.attack += 2;
-            player.specs.defense += 2;
+            player.specs.attack += BONUS_REDUCTION;
+            player.specs.defense += BONUS_REDUCTION;
             wasOnIceTile = false;
         }
         return wasOnIceTile;
@@ -128,7 +137,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 this.emit('virtualPlayerFinishedMoving', game.id);
                 console.log('inside actions and move points if');
             } else {
-                const shouldContinue = Math.random() < 0.4;
+                const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
                 if (shouldContinue) this.executeVirtualPlayerBehavior;
                 else this.emit('virtualPlayerFinishedMoving', game.id);
             }
@@ -138,7 +147,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 if (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0) {
                     this.emit('virtualPlayerFinishedMoving', game.id);
                 } else {
-                    const shouldContinue = Math.random() < 0.4;
+                    const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
                     if (shouldContinue) this.executeVirtualPlayerBehavior;
                     else this.emit('virtualPlayerFinishedMoving', game.id);
                 }
@@ -185,7 +194,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 if (activePlayer.specs.actions < 0) {
                     this.emit('virtualPlayerFinishedMoving', game.id);
                 } else {
-                    const shouldContinue = Math.random() < 0.4;
+                    const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
                     if (shouldContinue) this.executeVirtualPlayerBehavior;
                     else this.emit('virtualPlayerFinishedMoving', game.id);
                 }
@@ -245,7 +254,7 @@ export class VirtualGameManagerService extends EventEmitter {
             this.server.to(game.id).emit(CombatEvents.CombatStartedSignal);
             this.gameManagerService.updatePlayerActions(game.id, combat.challenger.socketId);
 
-            this.combatCountdownService.initCountdown(game.id, 5);
+            this.combatCountdownService.initCountdown(game.id, COUNTDOWN_COMBAT_DURATION);
             this.gameCountdownService.pauseCountdown(game.id);
             this.startCombatTurns(game.id);
             return true;
@@ -270,11 +279,11 @@ export class VirtualGameManagerService extends EventEmitter {
 
     handleDefensiveCombat(player: Player, opponent: Player, combat: Combat, gameId: string): boolean {
         if (player.specs.evasions > 0) {
-            if (player.specs.speed === 6 && player.specs.life < 4) {
+            if (player.specs.speed === MAXIMUM_BONUS && player.specs.life < MINIMUM_BONUS) {
                 player.specs.evasions--;
                 player.specs.nEvasions++;
                 return this.attemptEvasion(player, opponent, combat, gameId);
-            } else if (player.specs.speed === 4 && player.specs.life < 6) {
+            } else if (player.specs.speed === MINIMUM_BONUS && player.specs.life < MAXIMUM_BONUS) {
                 player.specs.evasions--;
                 player.specs.nEvasions++;
                 return this.attemptEvasion(player, opponent, combat, gameId);
@@ -303,7 +312,7 @@ export class VirtualGameManagerService extends EventEmitter {
     }
 
     attemptEvasion(player: Player, opponent: Player, combat: Combat, gameId: string): boolean {
-        const evasionSuccess = Math.random() < 0.4;
+        const evasionSuccess = Math.random() < EVASION_SUCCESS_RATE;
         if (evasionSuccess) {
             const game = this.gameCreationService.getGameById(gameId);
             this.combatService.updatePlayersInGame(game);

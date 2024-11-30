@@ -1,5 +1,6 @@
 import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat, RollResult } from '@common/combat';
+import { DEFAULT_EVASIONS, DEFENDING_PLAYER_LIFE, ROLL_DICE_CONSTANT } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
@@ -74,7 +75,7 @@ export class CombatService {
         defendingPlayer.specs.nLifeLost++;
         attackingPlayer.specs.nLifeTaken++;
 
-        if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === 2) {
+        if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === DEFENDING_PLAYER_LIFE) {
             this.itemManagerService.activateItem(ItemCategory.Flask, defendingPlayer);
         }
         this.server.to(combatId).emit('attackSuccess', defendingPlayer);
@@ -87,8 +88,8 @@ export class CombatService {
     }
 
     rollDice(attackPlayer: Player, opponent: Player): RollResult {
-        const attackingPlayerAttackDice = Math.floor(Math.random() * attackPlayer.specs.attackBonus) + 1;
-        const opponentDefenseDice = Math.floor(Math.random() * opponent.specs.defenseBonus) + 1;
+        const attackingPlayerAttackDice = Math.floor(Math.random() * attackPlayer.specs.attackBonus) + ROLL_DICE_CONSTANT;
+        const opponentDefenseDice = Math.floor(Math.random() * opponent.specs.defenseBonus) + ROLL_DICE_CONSTANT;
         const attackDice = attackPlayer.specs.attack + attackingPlayerAttackDice;
         const defenseDice = opponent.specs.defense + opponentDefenseDice;
 
@@ -176,13 +177,13 @@ export class CombatService {
             if (player.socketId === combat.challenger.socketId) {
                 combat.challenger.specs.life = combat.challengerLife;
                 combat.challenger.specs.attack = combat.challengerAttack;
-                combat.challenger.specs.evasions = 2;
+                combat.challenger.specs.evasions = DEFAULT_EVASIONS;
                 combat.challenger.specs.nCombats++;
                 game.players[index] = combat.challenger;
             } else if (player.socketId === combat.opponent.socketId) {
                 combat.opponent.specs.life = combat.opponentLife;
                 combat.opponent.specs.attack = combat.opponentAttack;
-                combat.opponent.specs.evasions = 2;
+                combat.opponent.specs.evasions = DEFAULT_EVASIONS;
                 combat.opponent.specs.nCombats++;
                 game.players[index] = combat.opponent;
             }
