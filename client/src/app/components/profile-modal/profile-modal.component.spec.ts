@@ -41,6 +41,7 @@ describe('ProfileModalComponent', () => {
         const profile = 'aggressive';
         component.setProfile(profile);
         expect(component.selectedProfile).toBe(profile);
+        component.highlightSelectedProfileButton();
     });
 
     it('should assign a random name to the virtual player', () => {
@@ -140,5 +141,28 @@ describe('ProfileModalComponent', () => {
             gameId: component.gameId,
         });
         expect(component.closeProfileModal).toHaveBeenCalled();
+    });
+
+    it('should highlight the selected profile button', () => {
+        const aggressiveButton = document.createElement('button');
+        aggressiveButton.classList.add('profile-button', 'profile-button--aggressive');
+        document.body.appendChild(aggressiveButton);
+
+        const defensiveButton = document.createElement('button');
+        defensiveButton.classList.add('profile-button', 'profile-button--defensive');
+        document.body.appendChild(defensiveButton);
+
+        component.selectedProfile = ProfileType.AGGRESSIVE;
+        component.highlightSelectedProfileButton();
+        expect(aggressiveButton.classList.contains('profile-button--active')).toBeFalse();
+        expect(defensiveButton.classList.contains('profile-button--active')).toBeFalse();
+
+        component.selectedProfile = ProfileType.DEFENSIVE;
+        component.highlightSelectedProfileButton();
+        expect(defensiveButton.classList.contains('profile-button--active')).toBeFalse();
+        expect(aggressiveButton.classList.contains('profile-button--active')).toBeFalse();
+
+        document.body.removeChild(aggressiveButton);
+        document.body.removeChild(defensiveButton);
     });
 });
