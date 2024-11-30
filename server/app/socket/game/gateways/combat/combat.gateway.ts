@@ -114,7 +114,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatService.deleteCombat(gameId);
 
                         if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
-                            this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
+                            this.server.to(gameId).emit('virtualPlayerCanResumeTurn');
                         }
                     }, TIME_LIMIT_DELAY);
                 } else {
