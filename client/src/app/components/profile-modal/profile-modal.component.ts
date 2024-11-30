@@ -28,6 +28,7 @@ export class ProfileModalComponent implements OnInit {
     profile: 'aggressive' | 'defensive';
     selectedProfile: ProfileType;
     virtualPlayer: Player;
+    profileButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('.profile-button');
 
     constructor(private readonly socketService: SocketService) {
         this.socketService = socketService;
@@ -83,6 +84,13 @@ export class ProfileModalComponent implements OnInit {
 
                 break;
         }
+
+        document.querySelectorAll('.profile-button').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.profile-button').forEach((btn) => btn.classList.remove('profile-button--active'));
+                button.classList.add('profile-button--active');
+            });
+        });
     }
 
     assignRandomName(): void {

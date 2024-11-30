@@ -124,10 +124,18 @@ export class VirtualGameManagerService extends EventEmitter {
         } else if (sword) {
             await this.updatePosition(activePlayer, [sword.coordinate], game.id, wasOnIceTile);
             this.itemsManagerService.pickUpItem(sword.coordinate, game.id, activePlayer);
+            if (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0) {
+                this.emit('virtualPlayerFinishedMoving', game.id);
+                console.log('inside actions and move points if');
+            } else {
+                const shouldContinue = Math.random() < 0.4;
+                if (shouldContinue) this.executeVirtualPlayerBehavior;
+                else this.emit('virtualPlayerFinishedMoving', game.id);
+            }
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
             if (moved) {
-                if (activePlayer.specs.actions === 0) {
+                if (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0) {
                     this.emit('virtualPlayerFinishedMoving', game.id);
                 } else {
                     const shouldContinue = Math.random() < 0.4;
@@ -174,7 +182,7 @@ export class VirtualGameManagerService extends EventEmitter {
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
             if (moved) {
-                if (activePlayer.specs.actions === 0) {
+                if (activePlayer.specs.actions < 0) {
                     this.emit('virtualPlayerFinishedMoving', game.id);
                 } else {
                     const shouldContinue = Math.random() < 0.4;
@@ -217,6 +225,7 @@ export class VirtualGameManagerService extends EventEmitter {
     async startCombat(combat: Combat, game: Game): Promise<boolean> {
         const sockets = await this.server.in(game.id).fetchSockets();
         const opponentSocket = sockets.find((socket) => socket.id === combat.opponent.socketId);
+        // verifier si ici ca cherche un vrai socket a combattre - pt pour ca que jv entre eux peuvent pas se battre
         if (opponentSocket) {
             await opponentSocket.join(combat.id);
 
@@ -301,7 +310,6 @@ export class VirtualGameManagerService extends EventEmitter {
             this.server.to(combat.id).emit(CombatEvents.EvasionSuccess, player);
             this.journalService.logMessage(gameId, `Fin de combat. ${player.name} s'est évadé.`, [player.name]);
             this.combatCountdownService.deleteCountdown(gameId);
-
             return true;
         } else {
             this.server.to(combat.id).emit(CombatEvents.EvasionFailed, player);
