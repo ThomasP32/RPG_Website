@@ -176,6 +176,12 @@ export class GameTurnService {
                 this.endTurnBecauseFell();
             }),
         );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Game>('moveVirtualPlayer').subscribe((game) => {
+                this.gameService.setGame(game);
+            }),
+        );
     }
 
     listenForDoorUpdates(): void {

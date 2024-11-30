@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { ProfileType } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Player } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { PlayersListComponent } from './players-list.component';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('PlayersListComponent', () => {
     let component: PlayersListComponent;
@@ -52,6 +53,7 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         },
         {
             socketId: 'player1Id',
@@ -81,6 +83,7 @@ describe('PlayersListComponent', () => {
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         },
     ];
 
@@ -98,7 +101,6 @@ describe('PlayersListComponent', () => {
         fixture = TestBed.createComponent(PlayersListComponent);
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService);
-
 
         component.players = mockPlayers;
         component.isHost = true;

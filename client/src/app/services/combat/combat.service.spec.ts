@@ -1,6 +1,7 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { ProfileType } from '@common/constants';
 import { Player } from '@common/game';
 import { Subject, take } from 'rxjs';
 import { CombatService } from './combat.service';
@@ -38,6 +39,7 @@ describe('CombatService', () => {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     const mockOpponent: Player = {

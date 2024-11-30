@@ -1,7 +1,9 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
+import { GameCountdownService } from '@app/socket/game/service/countdown/game/game-countdown.service';
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { VirtualGameManagerService } from '@app/socket/game/service/virtual-game-manager/virtual-game-manager.service';
 import { DEFAULT_ACTIONS, ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY, TIME_FOR_POSITION_UPDATE, TURN_DURATION } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
@@ -11,7 +13,6 @@ import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
 import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
@@ -23,12 +24,20 @@ export class GameManagerGateway implements OnGatewayInit {
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
     @Inject(JournalService) private readonly journalService: JournalService;
+    @Inject(VirtualGameManagerService) private virtualGameManagerService: VirtualGameManagerService;
     @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
 
     afterInit(server: Server) {
         this.gameCountdownService.setServer(this.server);
         this.gameCountdownService.on('timeout', (gameId: string) => {
             this.prepareNextTurn(gameId);
+        });
+        this.virtualGameManagerService.setServer(this.server);
+        this.virtualGameManagerService.on('virtualPlayerFinishedMoving', (gameId: string) => {
+            this.prepareNextTurn(gameId);
+        });
+        this.virtualGameManagerService.on('virtualPlayerCanResumeTurn', (gameId: string) => {
+            this.startTurn(gameId);
         });
         this.journalService.initializeServer(server);
     }
@@ -51,6 +60,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const game = this.gameCreationService.getGameById(data.gameId);
+
         const player = game.players.filter((player) => player.socketId === client.id)[0];
         const beforeMoveInventory = [...player.inventory];
         const moves = this.gameManagerService.getMove(data.gameId, client.id, data.destination);
@@ -134,6 +144,7 @@ export class GameManagerGateway implements OnGatewayInit {
     prepareNextTurn(gameId: string): void {
         this.gameCountdownService.resetTimerSubscription(gameId);
         this.gameManagerService.updateTurnCounter(gameId);
+
         this.startTurn(gameId);
     }
 
@@ -156,7 +167,20 @@ export class GameManagerGateway implements OnGatewayInit {
         this.journalService.logMessage(gameId, `C'est au tour de ${activePlayer.name}.`, involvedPlayers);
         activePlayer.specs.movePoints = activePlayer.specs.speed;
         activePlayer.specs.actions = DEFAULT_ACTIONS;
-        this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+
+        this.gameCountdownService.startNewCountdown(game);
+
+        if (activePlayer.socketId.includes('virtualPlayer')) {
+            const delay = Math.floor(Math.random() * 6000) + 5000;
+            setTimeout(() => {
+                this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
+                this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
+                // this.prepareNextTurn(game.id);
+            }, delay);
+        } else {
+            this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+        }
+
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)
             .forEach((player) => {
@@ -170,7 +194,6 @@ export class GameManagerGateway implements OnGatewayInit {
                     }
                 }
             });
-        this.gameCountdownService.startNewCountdown(game);
     }
 
     adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {

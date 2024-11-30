@@ -1,3 +1,4 @@
+import { ProfileType } from '@common/constants';
 import { Bonus, Game, Player, Specs } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Server } from 'socket.io';
@@ -51,6 +52,7 @@ describe('ServerCombatService', () => {
         } as Specs,
         position: { x: 0, y: 0 },
         initialPosition: { x: 0, y: 0 },
+        profile: ProfileType.NORMAL,
     } as Player;
 
     const opponent: Player = {
@@ -69,6 +71,7 @@ describe('ServerCombatService', () => {
         } as Specs,
         position: { x: 1, y: 1 },
         initialPosition: { x: 1, y: 1 },
+        profile: ProfileType.NORMAL,
     } as Player;
 
     const game: Game = {

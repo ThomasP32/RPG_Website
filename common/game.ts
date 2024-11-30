@@ -1,4 +1,5 @@
 import { Coordinate, ItemCategory, Map, Mode } from '@common/map.types';
+import { ProfileType } from './constants';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -63,6 +64,7 @@ export interface Player {
     initialPosition: Coordinate;
     turn: number;
     visitedTiles: Coordinate[];
+    profile: ProfileType;
 }
 
 export interface GameClassic extends Map {

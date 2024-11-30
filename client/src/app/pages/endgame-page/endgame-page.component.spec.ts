@@ -7,6 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { ProfileType } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { EndgamePageComponent } from './endgame-page.component';
@@ -46,6 +47,7 @@ const mockPlayer: Player = {
     initialPosition: { x: 0, y: 0 },
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 const mockGame: Game = {
