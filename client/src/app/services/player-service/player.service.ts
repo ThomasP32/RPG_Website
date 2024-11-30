@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED } from '@common/constants';
+import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, ProfileType } from '@common/constants';
 import { Avatar, Bonus, Player, Specs } from '@common/game';
 
 @Injectable({
@@ -44,6 +44,7 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         };
         this.player = player;
     }
@@ -110,6 +111,7 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         };
         this.player = player;
     }

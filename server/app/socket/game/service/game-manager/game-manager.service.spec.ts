@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -34,6 +35,7 @@ let player: Player = {
     inventory: [],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 let game2: Game = {
@@ -278,6 +280,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             adjacentPlayer = {
@@ -291,6 +294,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             nonAdjacentPlayer = {
@@ -304,6 +308,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             game2 = {
@@ -361,6 +366,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             game2.players.push(anotherAdjacentPlayer);

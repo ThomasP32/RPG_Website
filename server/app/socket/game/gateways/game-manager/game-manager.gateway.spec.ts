@@ -12,6 +12,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
+import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
 import { GameManagerGateway } from './game-manager.gateway';
 
 describe('GameManagerGateway', () => {
@@ -23,6 +24,7 @@ describe('GameManagerGateway', () => {
     let gameCountdownService: SinonStubbedInstance<GameCountdownService>;
     let itemsManagerService: SinonStubbedInstance<ItemsManagerService>;
     let journalService: SinonStubbedInstance<JournalService>;
+    let virtualGameManagerService: SinonStubbedInstance<VirtualGameManagerService>;
     let serverStub: SinonStubbedInstance<Server>;
 
     beforeEach(async () => {
@@ -36,6 +38,7 @@ describe('GameManagerGateway', () => {
             return Promise.resolve();
         });
         journalService = createStubInstance<JournalService>(JournalService);
+        virtualGameManagerService = createStubInstance<VirtualGameManagerService>(VirtualGameManagerService);
         serverStub = createStubInstance<Server>(Server);
 
         const module: TestingModule = await Test.createTestingModule({
@@ -46,6 +49,7 @@ describe('GameManagerGateway', () => {
                 { provide: GameManagerService, useValue: gameManagerService },
                 { provide: GameCountdownService, useValue: gameCountdownService },
                 { provide: JournalService, useValue: journalService },
+                { provide: VirtualGameManagerService, useValue: virtualGameManagerService },
                 { provide: ItemsManagerService, useValue: itemsManagerService },
             ],
         }).compile();

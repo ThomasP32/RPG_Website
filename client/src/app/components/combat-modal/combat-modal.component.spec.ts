@@ -2,10 +2,11 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CombatCountdownService } from '@app/services/countdown/combat/combat-countdown.service';
 import { GameService } from '@app/services/game/game.service';
+import { ProfileType } from '@common/constants';
+import { CombatEvents } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { Observable, of, Subject } from 'rxjs';
 import { CombatModalComponent } from './combat-modal.component';
-import { CombatEvents } from '@common/events/combat.events';
 
 describe('CombatModalComponent', () => {
     let component: CombatModalComponent;
@@ -42,6 +43,7 @@ describe('CombatModalComponent', () => {
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     const mockOpponent: Player = {

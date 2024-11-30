@@ -3,6 +3,7 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile } from '@common/map.types';
@@ -55,6 +56,7 @@ describe('GameTurnService', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {

@@ -6,6 +6,12 @@ export enum MapSize {
     LARGE = 'LARGE',
 }
 
+export enum ProfileType {
+    AGGRESSIVE = 'aggressive',
+    DEFENSIVE = 'defensive',
+    NORMAL = '',
+}
+
 export const MapConfig = {
     [MapSize.SMALL]: { size: 10, minPlayers: 2, maxPlayers: 2, nbItems: 2 },
     [MapSize.MEDIUM]: { size: 15, minPlayers: 2, maxPlayers: 4, nbItems: 4 },

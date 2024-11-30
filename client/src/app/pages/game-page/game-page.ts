@@ -316,7 +316,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.socketService.listen<Player[]>(GameCreationEvents.PlayerLeft).subscribe((players: Player[]) => {
                 this.gameService.game.players = players;
                 this.activePlayers = players.filter((player) => player.isActive);
-                if (this.activePlayers.length <= 1) {
+                const allVirtual = this.activePlayers.length > 0 && this.activePlayers.every((player) => player.socketId.includes('virtualPlayer'));
+                if (this.activePlayers.length <= 1 || allVirtual) {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {

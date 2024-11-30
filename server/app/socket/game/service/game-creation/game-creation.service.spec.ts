@@ -1,4 +1,4 @@
-import { MapConfig, MapSize } from '@common/constants';
+import { MapConfig, MapSize, ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -50,6 +50,7 @@ describe('GameCreationService', () => {
             inventory: [],
             visitedTiles: [],
             turn: 0,
+            profile: ProfileType.NORMAL,
         };
 
         gameRoom = {
