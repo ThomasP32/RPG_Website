@@ -4,6 +4,7 @@ import {
     CONTINUE_ODDS,
     COUNTDOWN_COMBAT_DURATION,
     EVASION_SUCCESS_RATE,
+    INVENTORY_SIZE,
     MAXIMUM_BONUS,
     MINIMUM_BONUS,
     MINIMUM_MOVES,
@@ -11,6 +12,7 @@ import {
     TIME_FOR_POSITION_UPDATE,
 } from '@common/constants';
 import { CombatEvents, CombatStartedData } from '@common/events/combat.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
@@ -46,6 +48,7 @@ export class VirtualGameManagerService extends EventEmitter {
         } else if (player.profile === ProfileType.DEFENSIVE) {
             this.executeDefensiveBehavior(player, game);
         }
+        this.checkAndToggleDoor(player, game);
     }
 
     calculateVirtualPlayerPath(player: Player, game: Game): Coordinate[] {
@@ -77,6 +80,13 @@ export class VirtualGameManagerService extends EventEmitter {
         const game = this.gameCreationService.getGameById(gameId);
         for (const move of path) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
+            const onItem = this.itemsManagerService.onItem(player, game.id);
+            if (onItem) {
+                this.itemsManagerService.pickUpItem(move, game.id, player);
+                if (player.inventory.length > INVENTORY_SIZE) {
+                    this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
+                }
+            }
             wasOnIceTile = this.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
             this.server.to(gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
@@ -137,7 +147,7 @@ export class VirtualGameManagerService extends EventEmitter {
         const wasOnIceTile = this.gameManagerService.onIceTile(activePlayer, game.id) ? true : false;
 
         if (armor) {
-            await this.updatePosition(activePlayer, [armor.coordinate], game.id, wasOnIceTile);
+            await this.moveToTargetItem(activePlayer, visibleItems, wasOnIceTile, game);
             this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
             activePlayer.specs.movePoints > 0 ? this.executeDefensiveBehavior(activePlayer, game) : this.emit('virtualPlayerFinishedMoving', game.id);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
@@ -185,32 +195,35 @@ export class VirtualGameManagerService extends EventEmitter {
     async startCombat(combat: Combat, game: Game): Promise<boolean> {
         const sockets = await this.server.in(game.id).fetchSockets();
         const opponentSocket = sockets.find((socket) => socket.id === combat.opponent.socketId);
-        // verifier si ici ca cherche un vrai socket a combattre - pt pour ca que jv entre eux peuvent pas se battre
-        if (opponentSocket) {
+
+        if (combat.challenger.socketId.includes('virtual') && combat.opponent.socketId.includes('virtual')) {
+            console.log('Starting combat between two virtual players');
+            this.startRegularCombat(combat, game);
+            return true;
+        } else if (opponentSocket) {
             await opponentSocket.join(combat.id);
-
-            const involvedPlayers = [combat.challenger.name];
-            this.journalService.logMessage(
-                game.id,
-                `${combat.challenger.name} a commencé un combat contre ${combat.opponent.name}.`,
-                involvedPlayers,
-            );
-
-            const combatStartedData: CombatStartedData = {
-                challenger: combat.challenger,
-                opponent: combat.opponent,
-            };
-
-            this.server.to(combat.id).emit(CombatEvents.CombatStarted, combatStartedData);
-            this.server.to(game.id).emit(CombatEvents.CombatStartedSignal);
-            this.gameManagerService.updatePlayerActions(game.id, combat.challenger.socketId);
-
-            this.combatCountdownService.initCountdown(game.id, COUNTDOWN_COMBAT_DURATION);
-            this.gameCountdownService.pauseCountdown(game.id);
-            this.startCombatTurns(game.id);
+            this.startRegularCombat(combat, game);
             return true;
         }
         return false;
+    }
+
+    startRegularCombat(combat: Combat, game: Game): void {
+        const involvedPlayers = [combat.challenger.name];
+        this.journalService.logMessage(game.id, `${combat.challenger.name} a commencé un combat contre ${combat.opponent.name}.`, involvedPlayers);
+
+        const combatStartedData: CombatStartedData = {
+            challenger: combat.challenger,
+            opponent: combat.opponent,
+        };
+
+        this.server.to(combat.id).emit(CombatEvents.CombatStarted, combatStartedData);
+        this.server.to(game.id).emit(CombatEvents.CombatStartedSignal);
+        this.gameManagerService.updatePlayerActions(game.id, combat.challenger.socketId);
+
+        this.combatCountdownService.initCountdown(game.id, COUNTDOWN_COMBAT_DURATION);
+        this.gameCountdownService.pauseCountdown(game.id);
+        this.startCombatTurns(game.id);
     }
 
     handleVirtualPlayerCombat(player: Player, opponent: Player, gameId: string, combat: Combat): boolean {
@@ -326,5 +339,20 @@ export class VirtualGameManagerService extends EventEmitter {
         const targetItem = visibleItems[randomItemIndex];
         const pathToTargetItem = this.gameManagerService.getMove(game.id, activePlayer.socketId, targetItem.coordinate);
         await this.updatePosition(activePlayer, pathToTargetItem, game.id, wasOnIceTile);
+    }
+
+    checkAndToggleDoor(player: Player, game: Game): void {
+        const playerPosition = player.position;
+        const adjacentTiles = this.getAdjacentTiles(playerPosition);
+        const adjacentDoors = game.doorTiles.filter((door) =>
+            adjacentTiles.some((tile) => tile.x === door.coordinate.x && tile.y === door.coordinate.y),
+        );
+        if (adjacentDoors.length > 0) {
+            const selectedDoor = adjacentDoors[Math.floor(Math.random() * adjacentDoors.length)];
+            selectedDoor.isOpened = !selectedDoor.isOpened;
+            const playerInGame = game.players.find((p) => p.socketId === player.socketId);
+            this.server.to(game.id).emit('doorToggled', { game, player: playerInGame });
+            this.journalService.logMessage(game.id, `Une porte a été ouverte par ${player.name}.`, [player.name]);
+        }
     }
 }
