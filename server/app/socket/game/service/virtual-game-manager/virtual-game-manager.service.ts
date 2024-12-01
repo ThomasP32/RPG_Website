@@ -1,6 +1,7 @@
 import { Combat } from '@common/combat';
 import {
     BONUS_REDUCTION,
+    CONTINUE_ODDS,
     COUNTDOWN_COMBAT_DURATION,
     EVASION_SUCCESS_RATE,
     MAXIMUM_BONUS,
@@ -103,102 +104,52 @@ export class VirtualGameManagerService extends EventEmitter {
     async executeAggressiveBehavior(activePlayer: Player, game: Game): Promise<void> {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
-
         const visiblePlayers = this.getPlayersInArea(area, game.players, activePlayer);
         const visibleItems = this.getItemsInArea(area, game);
         const sword = visibleItems.filter((item) => item.category === 'sword')[0];
-        let wasOnIceTile = false;
-        if (this.gameManagerService.onIceTile(activePlayer, game.id)) wasOnIceTile = true;
+        const wasOnIceTile = this.gameManagerService.onIceTile(activePlayer, game.id) ? true : false;
 
         if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
-            const randomPlayerIndex = Math.floor(Math.random() * visiblePlayers.length);
-            const targetPlayer = visiblePlayers[randomPlayerIndex];
-            const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
-
-            const validMove = adjacentTiles.find((tile) =>
-                possibleMoves.some((move) => move[1].path.some((pathTile) => pathTile.x === tile.x && pathTile.y === tile.y)),
-            );
-
-            const pathToTargetPlayer = this.gameManagerService.getMove(game.id, activePlayer.socketId, validMove);
-
-            await this.updatePosition(activePlayer, pathToTargetPlayer, game.id, wasOnIceTile);
-
-            const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
-            if (possibleOpponents.length > 0) {
-                const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
-                const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
-                const combatStarted = await this.startCombat(combat, game);
-                if (combatStarted) return;
-            }
+            await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else if (sword) {
-            await this.updatePosition(activePlayer, [sword.coordinate], game.id, wasOnIceTile);
+            await this.moveToTargetItem(activePlayer, visibleItems, wasOnIceTile, game);
             this.itemsManagerService.pickUpItem(sword.coordinate, game.id, activePlayer);
-            if (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0) {
-                this.emit('virtualPlayerFinishedMoving', game.id);
-                console.log('inside actions and move points if');
-            } else {
-                const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
-                if (shouldContinue) this.executeVirtualPlayerBehavior;
-                else this.emit('virtualPlayerFinishedMoving', game.id);
-            }
+            activePlayer.specs.movePoints > 0
+                ? this.executeAggressiveBehavior(activePlayer, game)
+                : this.emit('virtualPlayerFinishedMoving', game.id);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
-            if (moved) {
-                if (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0) {
-                    this.emit('virtualPlayerFinishedMoving', game.id);
-                } else {
-                    const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
-                    if (shouldContinue) this.executeVirtualPlayerBehavior;
-                    else this.emit('virtualPlayerFinishedMoving', game.id);
-                }
-            }
+            moved &&
+                (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
+                    ? this.emit('virtualPlayerFinishedMoving', game.id)
+                    : Math.random() < CONTINUE_ODDS
+                    ? this.executeAggressiveBehavior(activePlayer, game)
+                    : this.emit('virtualPlayerFinishedMoving', game.id));
         }
     }
 
     async executeDefensiveBehavior(activePlayer: Player, game: Game): Promise<void> {
         const possibleMoves = this.gameManagerService.getMoves(game.id, activePlayer.socketId);
         const area = this.getAdjacentTilesToPossibleMoves(possibleMoves);
-
         const visiblePlayers = this.getPlayersInArea(area, game.players, activePlayer);
         const visibleItems = this.getItemsInArea(area, game);
         const armor = visibleItems.filter((item) => item.category === 'armor')[0];
-        let wasOnIceTile = false;
-        if (this.gameManagerService.onIceTile(activePlayer, game.id)) wasOnIceTile = true;
+        const wasOnIceTile = this.gameManagerService.onIceTile(activePlayer, game.id) ? true : false;
 
         if (armor) {
             await this.updatePosition(activePlayer, [armor.coordinate], game.id, wasOnIceTile);
             this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
+            activePlayer.specs.movePoints > 0 ? this.executeDefensiveBehavior(activePlayer, game) : this.emit('virtualPlayerFinishedMoving', game.id);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
-            const randomPlayerIndex = Math.floor(Math.random() * visiblePlayers.length);
-            const targetPlayer = visiblePlayers[randomPlayerIndex];
-            const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
-
-            const validMove = adjacentTiles.find((tile) =>
-                possibleMoves.some((move) => move[1].path.some((pathTile) => pathTile.x === tile.x && pathTile.y === tile.y)),
-            );
-
-            const pathToTargetPlayer = this.gameManagerService.getMove(game.id, activePlayer.socketId, validMove);
-
-            await this.updatePosition(activePlayer, pathToTargetPlayer, game.id, wasOnIceTile);
-
-            const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
-            if (possibleOpponents.length > 0) {
-                const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
-                const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
-                const combatStarted = await this.startCombat(combat, game);
-                if (combatStarted) return;
-            }
+            await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
-            if (moved) {
-                if (activePlayer.specs.actions < 0) {
-                    this.emit('virtualPlayerFinishedMoving', game.id);
-                } else {
-                    const shouldContinue = Math.random() < EVASION_SUCCESS_RATE;
-                    if (shouldContinue) this.executeVirtualPlayerBehavior;
-                    else this.emit('virtualPlayerFinishedMoving', game.id);
-                }
-            }
+            moved &&
+                (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
+                    ? this.emit('virtualPlayerFinishedMoving', game.id)
+                    : Math.random() < CONTINUE_ODDS
+                    ? this.executeDefensiveBehavior(activePlayer, game)
+                    : this.emit('virtualPlayerFinishedMoving', game.id));
         }
     }
 
@@ -337,5 +288,43 @@ export class VirtualGameManagerService extends EventEmitter {
             this.server.to(otherPlayer.socketId).emit(CombatEvents.PlayerTurnCombat);
             this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
         }
+    }
+
+    async moveToTargetPlayer(
+        activePlayer: Player,
+        visiblePlayers: Player[],
+        wasOnIceTile: boolean,
+        game: Game,
+        possibleMoves: [
+            string,
+            {
+                path: Coordinate[];
+                weight: number;
+            },
+        ][],
+    ): Promise<void> {
+        const randomPlayerIndex = Math.floor(Math.random() * visiblePlayers.length);
+        const targetPlayer = visiblePlayers[randomPlayerIndex];
+        const adjacentTiles = this.getAdjacentTiles(targetPlayer.position);
+        const validMove = adjacentTiles.find((tile) =>
+            possibleMoves.some((move) => move[1].path.some((pathTile) => pathTile.x === tile.x && pathTile.y === tile.y)),
+        );
+
+        const pathToTargetPlayer = this.gameManagerService.getMove(game.id, activePlayer.socketId, validMove);
+        await this.updatePosition(activePlayer, pathToTargetPlayer, game.id, wasOnIceTile);
+        const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
+        if (possibleOpponents.length > 0) {
+            const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
+            const combat = this.combatService.createCombat(game.id, activePlayer, opponent);
+            const combatStarted = await this.startCombat(combat, game);
+            if (combatStarted) return;
+        }
+    }
+
+    async moveToTargetItem(activePlayer: Player, visibleItems: Item[], wasOnIceTile: boolean, game: Game): Promise<void> {
+        const randomItemIndex = Math.floor(Math.random() * visibleItems.length);
+        const targetItem = visibleItems[randomItemIndex];
+        const pathToTargetItem = this.gameManagerService.getMove(game.id, activePlayer.socketId, targetItem.coordinate);
+        await this.updatePosition(activePlayer, pathToTargetItem, game.id, wasOnIceTile);
     }
 }
