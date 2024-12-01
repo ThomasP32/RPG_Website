@@ -91,6 +91,7 @@ export class GameManagerGateway implements OnGatewayInit {
                 this.gameManagerService.hasFallen = false;
                 if (player.socketId.includes('virtualPlayer')) {
                     this.server.to(data.gameId).emit('virtualPlayerFinishedMoving', data.gameId);
+                    this.gameManagerService.hasFallen = false;
                 }
             } else {
                 this.server.to(client.id).emit('youFinishedMoving');

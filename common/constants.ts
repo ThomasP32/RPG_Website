@@ -127,3 +127,5 @@ export const SUFFIX_VALUE: number = 10;
 export const BONUS_REDUCTION: number = 2;
 
 export const MINIMUM_MOVES: number = 1;
+
+export const CONTINUE_ODDS: number = 0.4;
