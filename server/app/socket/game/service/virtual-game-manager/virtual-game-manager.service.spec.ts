@@ -45,6 +45,7 @@ describe('VirtualGameManagerService', () => {
                         getAdjacentPlayers: jest.fn(),
                         getMove: jest.fn(),
                         updatePlayerActions: jest.fn(),
+                        getTileWeight: jest.fn(),
                     },
                 },
                 {
@@ -82,6 +83,7 @@ describe('VirtualGameManagerService', () => {
                     provide: ItemsManagerService,
                     useValue: {
                         pickUpItem: jest.fn(),
+                        onItem: jest.fn(),
                     },
                 },
             ],
@@ -105,8 +107,8 @@ describe('VirtualGameManagerService', () => {
 
     describe('executeVirtualPlayerBehavior', () => {
         it('should execute aggressive behavior for aggressive profile', () => {
-            const player: Player = { profile: ProfileType.AGGRESSIVE } as Player;
-            const game: Game = {} as Game;
+            const player: Player = { profile: ProfileType.AGGRESSIVE, position: { x: 1, y: 1 } } as Player;
+            const game: Game = {doorTiles: []} as Game;
             jest.spyOn(service, 'executeAggressiveBehavior').mockImplementation();
 
             service.executeVirtualPlayerBehavior(player, game);
@@ -115,8 +117,8 @@ describe('VirtualGameManagerService', () => {
         });
 
         it('should execute defensive behavior for defensive profile', () => {
-            const player: Player = { profile: ProfileType.DEFENSIVE } as Player;
-            const game: Game = {} as Game;
+            const player: Player = { profile: ProfileType.DEFENSIVE, position: { x: 1, y: 1 } } as Player;
+            const game: Game = {doorTiles: []} as Game;
             jest.spyOn(service, 'executeDefensiveBehavior').mockImplementation();
 
             service.executeVirtualPlayerBehavior(player, game);
@@ -127,7 +129,7 @@ describe('VirtualGameManagerService', () => {
 
     describe('calculateVirtualPlayerPath', () => {
         it('should return an empty array if only one possible move', () => {
-            const player: Player = {} as Player;
+            const player: Player = { inventory: [ItemCategory.Armor] } as Player;
             const game: Game = { id: 'gameId' } as Game;
             jest.spyOn(gameManagerService, 'getMoves').mockReturnValue([['move1', { path: [], weight: 1 }]]);
 
@@ -137,7 +139,7 @@ describe('VirtualGameManagerService', () => {
         });
 
         it('should return a random path from possible moves', () => {
-            const player: Player = {} as Player;
+            const player: Player = { inventory: [ItemCategory.Armor] } as Player;
             const game: Game = { id: 'gameId' } as Game;
             const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [
                 ['move1', { path: [{ x: 1, y: 1 }], weight: 1 }],

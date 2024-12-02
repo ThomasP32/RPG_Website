@@ -224,21 +224,22 @@ export class GameManagerService {
     getAdjacentPlayers(player: Player, gameId: string): Player[] {
         const game = this.gameCreationService.getGameById(gameId);
         const adjacentPlayers: Player[] = [];
-
-        game.players.forEach((otherPlayer) => {
-            if (otherPlayer.isActive) {
-                if (otherPlayer.socketId !== player.socketId) {
-                    const isAdjacent = DIRECTIONS.some(
-                        (direction) =>
-                            otherPlayer.position.x === player.position.x + direction.x && otherPlayer.position.y === player.position.y + direction.y,
-                    );
-                    if (isAdjacent) {
-                        adjacentPlayers.push(otherPlayer);
+        if (game?.players) {
+            game.players.forEach((otherPlayer) => {
+                if (otherPlayer.isActive) {
+                    if (otherPlayer.socketId !== player.socketId) {
+                        const isAdjacent = DIRECTIONS.some(
+                            (direction) =>
+                                otherPlayer.position.x === player.position.x + direction.x &&
+                                otherPlayer.position.y === player.position.y + direction.y,
+                        );
+                        if (isAdjacent) {
+                            adjacentPlayers.push(otherPlayer);
+                        }
                     }
                 }
-            }
-        });
-
+            });
+        }
         return adjacentPlayers;
     }
 
