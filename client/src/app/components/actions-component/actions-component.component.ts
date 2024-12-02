@@ -6,11 +6,12 @@ import { GameService } from '@app/services/game/game.service';
 import { CombatEvents, StartCombatData } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { DoorTile, Tile } from '@common/map.types';
+import { CombatListComponent } from '../combat-list/combat-list.component';
 
 @Component({
     selector: 'app-actions-component',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, CombatListComponent],
     templateUrl: './actions-component.component.html',
     styleUrl: './actions-component.component.scss',
 })
@@ -18,7 +19,7 @@ export class ActionsComponentComponent implements OnInit {
     @Input() player: Player;
     @Input() currentPlayerTurn: string;
     @Output() showExitModalChange = new EventEmitter<boolean>();
-    @Output() showCombatModalChange = new EventEmitter<boolean>();
+
     possibleDoors: DoorTile[] = [];
     possibleOpponents: Player[] = [];
     possibleWalls: Tile[] = [];
@@ -128,5 +129,9 @@ export class ActionsComponentComponent implements OnInit {
 
     thisPlayerTurn(): boolean {
         return this.currentPlayerTurn === this.player.name;
+    }
+
+    onShowCombatModalChange(newValue: boolean) {
+        this.showCombatModal = newValue;
     }
 }

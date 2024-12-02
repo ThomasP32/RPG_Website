@@ -4,6 +4,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter, withHashLocation } from '@angular/router';
 import { ActionsComponentComponent } from '@app/components/actions-component/actions-component.component';
+import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { PlayerInfosComponent } from '@app/components/player-infos/player-infos.component';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
@@ -13,7 +14,6 @@ import { GameChoicePageComponent } from '@app/pages/game-choice-page/game-choice
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page';
 import { HomePageComponent } from '@app/pages/home-page/home-page.component';
-import { MockGamePageComponent } from '@app/pages/mock-game-page/mock-game-page.component';
 import { WaitingRoomPageComponent } from '@app/pages/waiting-room-page/waiting-room-page.component';
 import { environment } from './environments/environment';
 
@@ -36,7 +36,7 @@ const routes: Routes = [
     { path: ':gameId/waiting-room/player', component: WaitingRoomPageComponent },
     { path: 'join-game/:gameId/waiting-room', component: WaitingRoomPageComponent },
     { path: 'game/:gameId/:mapName', component: GamePageComponent },
-    { path: 'mock-game', component: MockGamePageComponent },
+    { path: 'combat', component: CombatListComponent },
     { path: 'players-info', component: PlayerInfosComponent },
     { path: 'actions', component: ActionsComponentComponent },
     { path: '**', redirectTo: '/main-menu' },
