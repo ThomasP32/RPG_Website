@@ -75,7 +75,7 @@ export class ImageService {
                 return './assets/items/wallbreaker.png';
             case 'flask':
                 return './assets/items/flask.png';
-            case 'Amulet':
+            case 'amulet':
                 return './assets/items/amulet.png';
             case 'iceskates':
                 return './assets/items/iceskates.png';
@@ -163,7 +163,7 @@ export class ImageService {
             case 'speed':
                 return './assets/icons/speed.png';
             case 'battle':
-                return './assets/icons/fight.png';
+                return './assets/icons/fighting.png';
             case 'action':
                 return './assets/icons/action.png';
             case 'robot':

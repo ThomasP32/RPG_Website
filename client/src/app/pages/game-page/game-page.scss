@@ -30,11 +30,10 @@
     box-sizing: border-box;
     text-align: left;
     border-radius: 0 40px 0 0;
-    z-index: 1;
+    z-index: 10;
     gap: 0.5vw;
 }
 
-/* Titre */
 .game-info h2 {
     text-align: start;
     font-size: 0.8rem;
@@ -135,13 +134,14 @@
     max-width: 90%;
     max-height: 90%;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     border: 4px solid #7d7f7d;
     position: relative;
     z-index: 1001;
 }
-.modal-buttons .open-exit-confirmation-modal {
+
+.open-exit-confirmation-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -226,8 +226,8 @@
     align-items: center;
     position: fixed;
     right: 10px;
+    bottom: 42vh;
     width: 28vw;
-    margin-top: 10px;
     color: #c0c0c0;
     flex-direction: row;
     gap: 15px;
@@ -314,19 +314,6 @@
 }
 
 .combat-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 250;
-    overflow: hidden;
-}
-.inventory-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -473,14 +460,15 @@ button {
 
 .actions-container {
     display: flex;
-    flex-direction: column;
-    position: fixed;
-    bottom: 5vw;
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: center;
+    position: fixed;
+    right: 10px;
+    bottom: 52.4vh;
+    width: 28vw;
+    color: #c0c0c0;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .actions-info {
@@ -488,26 +476,36 @@ button {
     justify-content: center;
     align-items: center;
     position: fixed;
-    bottom: 5vw;
-    width: 100%;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    left: 10px;
+    bottom: 37vh;
+    width: 28.2vw;
+    padding: 0;
 }
 
 .actions {
-    width: 40vw;
+    width: 100%;
     display: flex;
     flex: 1;
     flex-direction: row;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 .actions p {
     color: #c0c0c0;
-    padding: 1vw;
+    padding: 0.7vw;
     font-size: 0.8rem;
-    background-color: rgba(28, 36, 44, 0.8);
+    align-items: center;
+    background-color: rgba(28, 36, 44, 0.3);
     border: 2px solid #b85c38;
     box-sizing: border-box;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.actions .number {
+    align-items: center;
+    color: #f39c12;
 }

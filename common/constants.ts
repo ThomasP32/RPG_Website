@@ -80,6 +80,10 @@ export const ARMOR_DEFENSE_BONUS: number = 5;
 
 export const ARMOR_SPEED_PENALTY: number = 1;
 
+export const FLASK_ATTACK_BONUS: number = 4;
+
+export const AMULET_LIFE_BONUS: number = 2;
+
 export const ICE_ATTACK_PENALTY: number = 2;
 
 export const ICE_DEFENSE_PENALTY: number = 2;

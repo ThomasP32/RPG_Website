@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
+import { GameService } from '@app/services/game/game.service';
+import { CombatEvents, StartCombatData } from '@common/events/combat.events';
 import { Player } from '@common/game';
-import { DoorTile } from '@common/map.types';
+import { DoorTile, Tile } from '@common/map.types';
 
 @Component({
     selector: 'app-actions-component',
@@ -11,27 +14,35 @@ import { DoorTile } from '@common/map.types';
     templateUrl: './actions-component.component.html',
     styleUrl: './actions-component.component.scss',
 })
-export class ActionsComponentComponent implements OnInit, OnDestroy {
+export class ActionsComponentComponent implements OnInit {
     @Input() player: Player;
+    @Input() currentPlayerTurn: string;
     @Output() showExitModalChange = new EventEmitter<boolean>();
     possibleDoors: DoorTile[];
     possibleOpponents: Player[];
+    possibleWalls: Tile[];
+
     doorActionAvailable: boolean = false;
-    breakWallAvailable: boolean = false;
+    breakWallActionAvailable: boolean = false;
     combatAvailable: boolean = false;
 
     showExitModal: boolean = false;
+    showCombatModal: boolean = false;
+    showDoorModal: boolean = false;
     actionDescription: string | null = null;
 
     doorMessage: string = 'Ouvrir la porte';
-    // this.actionMessage = doors[0].isOpened ? 'Fermer la porte' : 'Ouvrir la porte';
 
-    constructor(private readonly gameTurnService: GameTurnService) {
+    constructor(
+        private readonly gameTurnService: GameTurnService,
+        private readonly socketService: SocketService,
+        private readonly gameService: GameService,
+    ) {
         this.gameTurnService = gameTurnService;
+        this.socketService = socketService;
+        this.gameService = gameService;
     }
-    ngOnDestroy(): void {
-        throw new Error('Method not implemented.');
-    }
+
     ngOnInit(): void {
         this.listenForPossibleOpponents();
         this.listenForDoorOpening();
@@ -47,15 +58,28 @@ export class ActionsComponentComponent implements OnInit, OnDestroy {
     }
 
     fight(): void {
-        console.log('fight');
+        if (this.combatAvailable) {
+            if (this.possibleOpponents.length === 1) {
+                const startCombatData: StartCombatData = { gameId: this.gameService.game.id, opponent: this.possibleOpponents[0] };
+                this.socketService.sendMessage(CombatEvents.StartCombat, startCombatData);
+            } else {
+                this.showCombatModal = true;
+            }
+        }
     }
     toggleDoor() {
         if (this.doorActionAvailable) {
-            this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+            if (this.possibleDoors.length === 1) {
+                this.gameTurnService.toggleDoor(this.possibleDoors[0]);
+            } else {
+                this.showDoorModal = true;
+            }
         }
     }
     breakWall(): void {
-        console.log('breakWall');
+        if (this.breakWallActionAvailable) {
+            this.gameTurnService.breakWall(this.possibleWalls[0]);
+        }
     }
     endTurn() {
         this.gameTurnService.endTurn();
@@ -79,22 +103,24 @@ export class ActionsComponentComponent implements OnInit, OnDestroy {
 
     private listenForDoorOpening() {
         this.gameTurnService.possibleDoors$.subscribe((doors) => {
-            if (this.gameTurnService.doorAlreadyToggled) {
+            if (!this.gameTurnService.possibleActions.door) {
                 this.doorActionAvailable = false;
                 this.possibleDoors = [];
             } else if (doors.length > 0) {
                 this.doorActionAvailable = true;
                 this.possibleDoors = doors;
-            } else {
-                this.doorActionAvailable = false;
-                this.possibleDoors = [];
             }
         });
     }
+
     private listenForWallBreaking() {
         this.gameTurnService.possibleWalls$.subscribe((walls) => {
             if (walls.length > 0) {
-                this.breakWallAvailable = true;
+                this.breakWallActionAvailable = true;
+                this.possibleWalls = walls;
+            } else {
+                this.doorActionAvailable = false;
+                this.possibleWalls = [];
             }
         });
     }

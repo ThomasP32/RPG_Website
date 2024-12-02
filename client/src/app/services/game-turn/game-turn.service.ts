@@ -6,7 +6,7 @@ import { TIME_LIMIT_DELAY } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, DoorTile, Tile } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Tile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
@@ -36,7 +36,6 @@ export class GameTurnService {
 
     isMoving = false;
 
-    doorAlreadyToggled = false;
     possibleActions = { combat: false, door: false, wall: false };
 
     constructor(
@@ -63,11 +62,18 @@ export class GameTurnService {
             this.possibleDoors.next([]);
             this.possibleActions.combat = true;
             this.possibleActions.door = true;
+
             if (this.player.specs.actions !== 0) {
+                if (this.player.inventory.includes(ItemCategory.WallBreaker)) {
+                    this.possibleActions.wall = true;
+                    this.getWalls();
+                }
                 this.getCombats();
+                this.getDoors();
             } else {
                 this.getMoves();
             }
+            this.gameService.setGame(this.game);
         }
     }
 
@@ -91,7 +97,6 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
                 this.clearMoves();
-                this.doorAlreadyToggled = false;
                 this.playerService.player = yourPlayer;
                 this.playerTurn.next(yourPlayer.name);
             }),
@@ -108,6 +113,9 @@ export class GameTurnService {
                 if (this.playerTurn.getValue() === this.player.name) {
                     this.possibleActions.combat = true;
                     this.possibleActions.door = true;
+                    if (this.player.inventory.includes(ItemCategory.WallBreaker)) {
+                        this.possibleActions.wall = true;
+                    }
                     this.getCombats();
                 }
             }),
@@ -115,13 +123,16 @@ export class GameTurnService {
     }
 
     getCombats(): void {
-        this.listenForPossibleCombats();
         this.socketService.sendMessage('getCombats', this.game.id);
     }
 
     getDoors(): void {
-        this.listenForDoors();
         this.socketService.sendMessage('getAdjacentDoors', this.game.id);
+    }
+
+    getWalls(): void {
+        this.listenForWallBreaking();
+        this.socketService.sendMessage('getAdjacentWalls', this.game.id);
     }
     getMoves(): void {
         this.socketService.sendMessage('getMovements', this.game.id);
@@ -142,17 +153,26 @@ export class GameTurnService {
                 this.moves = new Map(paths);
                 if (
                     this.moves.size === 1 &&
-                    (this.playerService.player.specs.actions === 0 || (!this.possibleActions.combat && !this.possibleActions.door))
-                )
+                    (this.playerService.player.specs.actions === 0 ||
+                        (!this.possibleActions.combat && !this.possibleActions.door && !this.possibleActions.wall))
+                ) {
                     this.endTurn();
+                }
             }),
         );
     }
 
     toggleDoor(door: DoorTile) {
-        if (this.possibleActions.door && !this.doorAlreadyToggled) {
+        if (this.possibleActions.door) {
             this.socketService.sendMessage('toggleDoor', { gameId: this.game.id, door });
-            this.doorAlreadyToggled = true;
+            this.possibleActions.door = false;
+        }
+    }
+
+    breakWall(wall: Tile) {
+        if (this.possibleActions.wall) {
+            this.socketService.sendMessage('breakWall', { gameId: this.game.id, wall });
+            this.possibleActions.wall = false;
         }
     }
 
@@ -163,6 +183,7 @@ export class GameTurnService {
                     this.playerService.setPlayer(data.player);
                 }
                 this.gameService.setGame(data.game);
+                this.resumeTurn();
             }),
         );
 
@@ -181,16 +202,6 @@ export class GameTurnService {
         );
     }
 
-    listenForDoorUpdates(): void {
-        this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
-            if (data.player && data.player.socketId === this.player.socketId) {
-                this.playerService.setPlayer(data.player);
-                this.resumeTurn();
-            }
-            this.gameService.setGame(data.game);
-        });
-    }
-
     listenForCombatStarted(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player>(CombatEvents.YouStartedCombat).subscribe((player) => {
@@ -201,7 +212,7 @@ export class GameTurnService {
         );
     }
 
-    listenForPossibleCombats(): void {
+    listenForPossibleActions(): void {
         this.socketSubscription.add(
             this.socketService.listen<Player[]>('yourCombats').subscribe((possibleOpponents) => {
                 if (possibleOpponents.length === 0) {
@@ -211,9 +222,6 @@ export class GameTurnService {
                 this.getDoors();
             }),
         );
-    }
-
-    listenForDoors(): void {
         this.socketSubscription.add(
             this.socketService.listen<DoorTile[]>('yourDoors').subscribe((possibleDoors) => {
                 if (possibleDoors.length === 0) {
@@ -223,18 +231,35 @@ export class GameTurnService {
                 this.getMoves();
             }),
         );
-    }
-
-    listenForWallBreaking() {
         this.socketSubscription.add(
-            this.socketService.listen<Tile[]>('wallBroken').subscribe((possibleWalls) => {
+            this.socketService.listen<Tile[]>('yourWalls').subscribe((possibleWalls) => {
                 if (possibleWalls.length === 0) {
-                    this.possibleActions.wall = false;
+                    this.possibleActions.door = false;
                 }
                 this.possibleWalls.next(possibleWalls);
                 this.getMoves();
             }),
         );
+    }
+
+    listenForWallBreaking(): void {
+        this.socketService.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
+            if (data.player && data.player.socketId === this.player.socketId) {
+                this.playerService.setPlayer(data.player);
+                this.resumeTurn();
+            }
+            this.gameService.setGame(data.game);
+        });
+    }
+
+    listenForDoorUpdates(): void {
+        this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
+            if (data.player && data.player.socketId === this.player.socketId) {
+                this.playerService.setPlayer(data.player);
+                this.resumeTurn();
+            }
+            this.gameService.setGame(data.game);
+        });
     }
 
     listenForCombatConclusion(): void {
@@ -254,12 +279,12 @@ export class GameTurnService {
         );
         this.socketSubscription.add(
             this.socketService.listen<CombatFinishedData>(CombatEvents.CombatFinished).subscribe((data) => {
-                this.gameService.setGame(data.updatedGame);
                 if (data.winner.socketId === this.playerService.player.socketId) {
                     this.playerService.setPlayer(data.winner);
                 } else {
                     this.playerService.setPlayer(data.loser);
                 }
+                this.gameService.setGame(data.updatedGame);
             }),
         );
         this.socketSubscription.add(

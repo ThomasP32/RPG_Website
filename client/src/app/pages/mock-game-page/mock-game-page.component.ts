@@ -31,9 +31,9 @@ import { ItemCategory } from '@common/map.types';
     styleUrl: './mock-game-page.component.scss',
 })
 export class MockGamePageComponent {
-    totalTime: number = 10; // Durée totale pour le calcul
-    dashArray: string = '100'; // Dash array pour le cercle SVG
-    dashOffset: string = '100'; // Offset initial du cercle
+    totalTime: number = 10;
+    dashArray: string = '100';
+    dashOffset: string = '100';
 
     GamePageActiveView = GamePageActiveView;
     activeView: GamePageActiveView = GamePageActiveView.Chat;

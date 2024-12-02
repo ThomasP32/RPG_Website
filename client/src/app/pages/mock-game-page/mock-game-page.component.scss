@@ -34,7 +34,6 @@
     gap: 0.5vw;
 }
 
-/* Titre */
 .game-info h2 {
     text-align: start;
     font-size: 0.8rem;
@@ -227,8 +226,8 @@
     align-items: center;
     position: fixed;
     right: 10px;
+    bottom: 42vh;
     width: 28vw;
-    margin-top: 10px;
     color: #c0c0c0;
     flex-direction: row;
     gap: 15px;
@@ -461,14 +460,15 @@ button {
 
 .actions-container {
     display: flex;
-    flex-direction: column;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    padding: 10px;
-    box-sizing: border-box;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: center;
+    position: fixed;
+    right: 10px;
+    bottom: 52.4vh;
+    width: 28vw;
+    color: #c0c0c0;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .actions-info {
@@ -476,27 +476,36 @@ button {
     justify-content: center;
     align-items: center;
     position: fixed;
-    top: 10px;
-    width: 40vw;
+    left: 10px;
+    bottom: 37vh;
+    width: 28.2vw;
     padding: 0;
 }
 
 .actions {
-    width: 40vw;
+    width: 100%;
     display: flex;
     flex: 1;
     flex-direction: row;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 .actions p {
     color: #c0c0c0;
-    padding-left: 1vw;
+    padding: 0.7vw;
     font-size: 0.8rem;
-    background-color: rgba(28, 36, 44, 0.8);
+    align-items: center;
+    background-color: rgba(28, 36, 44, 0.3);
     border: 2px solid #b85c38;
     box-sizing: border-box;
     margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.actions .number {
+    align-items: center;
+    color: #f39c12;
 }

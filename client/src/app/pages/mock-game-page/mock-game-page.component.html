@@ -63,6 +63,17 @@
             </div>
         </div>
     </div>
+    <div class="actions-container">
+        <app-actions-component [player]="player"></app-actions-component>
+        <div class="actions-info">
+            <div class="actions">
+                <p>Actions restantes</p>
+                <p class="number">{{ player.specs.actions }}</p>
+                <p>Mouvements restants</p>
+                <p class="number">{{ player.specs.actions }}</p>
+            </div>
+        </div>
+    </div>
     <div class="bottom-right-container">
         <div class="toggle-container">
             <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
@@ -74,15 +85,6 @@
             </div>
             <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
                 <app-journal [player]="player"></app-journal>
-            </div>
-        </div>
-    </div>
-    <div class="actions-container">
-        <app-actions-component [player]="player"></app-actions-component>
-        <div class="actions-info">
-            <div class="actions">
-                <p>Actions restantes: {{ player.specs.actions }}</p>
-                <p>Mouvements restants: {{ player.specs.movePoints }}</p>
             </div>
         </div>
     </div>

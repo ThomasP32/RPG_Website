@@ -6,7 +6,7 @@
         </div>
         <span class="player-name">{{ player.name }}</span>
         @if (isVirtualPlayerSocketId(player.socketId)) {
-        <span class="virtual-player-icon">🤖</span>
+        <span class="virtual-player-icon"> <img src="assets/icons/robot.png" alt="Bot" class="icon" /></span>
         } @if(isHost && player.socketId !== hostPlayerId && hoveredPlayerId === player.socketId){
         <button (click)="kickPlayer(player.socketId)" class="kick-button">exclure</button>
         }
