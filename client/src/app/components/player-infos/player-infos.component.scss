@@ -36,7 +36,7 @@
     .player-avatar {
         width: 10vw;
         height: 10vw;
-        border-color: #222;
+        border: 2px solid #b85c38;
     }
 
     p {
@@ -78,7 +78,7 @@
         .stat-bar {
             flex-grow: 1;
             height: 1.7vh;
-            width: 14vw;
+            width: 13vw;
             background-color: #1a1d23;
             border: 1px solid #f39c12;
             overflow: hidden;
@@ -90,6 +90,10 @@
                 background-color: #f39c12;
                 transition: width 0.3s ease;
             }
+        }
+        h2 {
+            margin-right: 5px;
+            margin-left: 5px;
         }
     }
 }
@@ -110,6 +114,7 @@
         width: 100%;
     }
     img {
+        align-items: center;
         width: 2vw;
         height: 2vw;
     }

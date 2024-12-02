@@ -65,3 +65,10 @@
         </div>
     </div>
 </div>
+@if(showCombatModal) {
+<app-combat-list
+    class="combat-list"
+    [possibleOpponents]="possibleOpponents"
+    (showCombatModalChange)="onShowCombatModalChange($event)"
+></app-combat-list>
+}
