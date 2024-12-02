@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CombatService } from '@app/services/combat/combat.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
@@ -18,9 +19,9 @@ export class ActionsComponentComponent implements OnInit {
     @Input() player: Player;
     @Input() currentPlayerTurn: string;
     @Output() showExitModalChange = new EventEmitter<boolean>();
-    possibleDoors: DoorTile[];
-    possibleOpponents: Player[];
-    possibleWalls: Tile[];
+    possibleDoors: DoorTile[] = [];
+    possibleOpponents: Player[] = [];
+    possibleWalls: Tile[] = [];
 
     doorActionAvailable: boolean = false;
     breakWallActionAvailable: boolean = false;
@@ -34,19 +35,22 @@ export class ActionsComponentComponent implements OnInit {
     doorMessage: string = 'Ouvrir la porte';
 
     constructor(
-        private readonly gameTurnService: GameTurnService,
+        protected readonly gameTurnService: GameTurnService,
         private readonly socketService: SocketService,
         private readonly gameService: GameService,
+        private readonly combatService: CombatService,
     ) {
         this.gameTurnService = gameTurnService;
         this.socketService = socketService;
         this.gameService = gameService;
+        this.combatService = combatService;
     }
 
     ngOnInit(): void {
         this.listenForPossibleOpponents();
         this.listenForDoorOpening();
         this.listenForWallBreaking();
+        this.listenForIsCombatModalOpen();
     }
 
     showDescription(description: string) {
@@ -123,5 +127,19 @@ export class ActionsComponentComponent implements OnInit {
                 this.possibleWalls = [];
             }
         });
+    }
+
+    private listenForIsCombatModalOpen() {
+        this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
+            this.showCombatModal = isCombatModalOpen;
+            if (isCombatModalOpen) {
+                this.gameTurnService.clearMoves();
+                this.combatAvailable = false;
+            }
+        });
+    }
+
+    thisPlayerTurn(): boolean {
+        return this.currentPlayerTurn === this.player.name;
     }
 }

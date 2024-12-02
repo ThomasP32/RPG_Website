@@ -84,7 +84,6 @@ export class GameCreationService {
             }
             return currentItem;
         });
-        return;
     }
 
     isPlayerHost(socketId: string, gameId: string): boolean {

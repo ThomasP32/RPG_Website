@@ -3,6 +3,7 @@ import { Coordinate, ItemCategory, Mode } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { GameManagerService } from '../game-manager/game-manager.service';
+import { JournalService } from '../journal/journal.service';
 import { ItemsManagerService } from './items-manager.service';
 
 let specs: Specs = {
@@ -77,6 +78,12 @@ describe('ItemsManagerService', () => {
                     provide: GameManagerService,
                     useValue: {
                         getFirstFreePosition: jest.fn(),
+                    },
+                },
+                {
+                    provide: JournalService,
+                    useValue: {
+                        logMessage: jest.fn(),
                     },
                 },
             ],

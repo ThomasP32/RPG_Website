@@ -81,8 +81,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const doorTile = game.doorTiles.find((door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y);
-
-        this.gameManagerService.updatePlayerActions(data.gameId, client.id);
+        this.gameManagerService.updatePlayerActions(game.id, player.socketId);
         doorTile.isOpened = !doorTile.isOpened;
         this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
     }
@@ -100,7 +99,7 @@ export class GameManagerGateway implements OnGatewayInit {
                 game.tiles.splice(index, 1);
             }
         });
-        this.gameManagerService.updatePlayerActions(data.gameId, client.id);
+        this.gameManagerService.updatePlayerActions(game.id, player.socketId);
         const involvedPlayers = game.players.map((player) => player.name);
         this.journalService.logMessage(data.gameId, `${player.name}. a brisé un mur !`, involvedPlayers);
         this.server.to(data.gameId).emit('wallBroken', { game: game, player: player });
