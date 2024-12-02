@@ -1,28 +1,66 @@
 <div class="action-bar">
     <div class="actions">
-        <div class="action-button" (mouseenter)="showDescription('Combattre')" (mouseleave)="hideDescription()" (click)="fight()">
-            <div class="tooltip" *ngIf="actionDescription === 'Combattre'">{{ actionDescription }}</div>
-            <img src="assets/icons/fight.png" alt="Combat" />
+        <div
+            class="action-button"
+            [class.disabled]="possibleOpponents.length === 0 || player.specs.actions === 0"
+            (mouseenter)="showDescription('Combattre')"
+            (mouseleave)="hideDescription()"
+            (click)="fight()"
+        >
+            @if(actionDescription === 'Combattre') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img src="assets/icons/fighting.png" alt="Combat" />
         </div>
-        <div class="action-button" (mouseenter)="showDescription('Ouvrir/Fermer une Porte')" (mouseleave)="hideDescription()" (click)="toggleDoor()">
-            <div class="tooltip" *ngIf="actionDescription === 'Ouvrir/Fermer une Porte'">{{ actionDescription }}</div>
+
+        <div
+            class="action-button"
+            [class.disabled]="possibleDoors.length === 0 || player.specs.actions === 0"
+            (mouseenter)="showDescription('Ouvrir/Fermer une Porte')"
+            (mouseleave)="hideDescription()"
+            (click)="toggleDoor()"
+        >
+            @if(actionDescription === 'Ouvrir/Fermer une Porte') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
             <img src="assets/icons/door.png" alt="Porte" />
         </div>
-        <div class="action-button" (mouseenter)="showDescription('Détruire un Mur')" (mouseleave)="hideDescription()" (click)="breakWall()">
-            <div class="tooltip" *ngIf="actionDescription === 'Détruire un Mur'">{{ actionDescription }}</div>
+
+        <div
+            class="action-button"
+            [class.disabled]="possibleWalls.length === 0 || player.specs.actions === 0"
+            (mouseenter)="showDescription('Détruire un Mur')"
+            (mouseleave)="hideDescription()"
+            (click)="breakWall()"
+        >
+            @if(actionDescription === 'Détruire un Mur') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
             <img src="assets/items/wallbreaker.png" alt="Mur" />
         </div>
-        <div class="action-button" (mouseenter)="showDescription('Finir le tour')" (mouseleave)="hideDescription()" (click)="endTurn()">
-            <div class="tooltip" *ngIf="actionDescription === 'Finir le tour'">{{ actionDescription }}</div>
+
+        <div
+            class="action-button"
+            [class.disabled]="currentPlayerTurn !== player.name"
+            (mouseenter)="showDescription('Finir le tour')"
+            (mouseleave)="hideDescription()"
+            (click)="endTurn()"
+        >
+            @if(actionDescription === 'Finir le tour') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
             <img src="assets/icons/endturn_icon.png" alt="Finir le tour" />
         </div>
+
         <div
             class="action-button"
             (mouseenter)="showDescription('Quitter la partie')"
             (mouseleave)="hideDescription()"
             (click)="openExitConfirmationModal()"
         >
-            <div class="tooltip" *ngIf="actionDescription === 'Quitter la partie'">{{ actionDescription }}</div>
+            @if(actionDescription === 'Quitter la partie') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
             <img src="assets/icons/quit_icon.png" alt="Quitter la partie" />
         </div>
     </div>

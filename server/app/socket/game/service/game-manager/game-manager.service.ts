@@ -1,7 +1,7 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
 import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
-import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 
@@ -262,6 +262,30 @@ export class GameManagerService {
         });
 
         return adjacentDoors;
+    }
+
+    getAdjacentWalls(player: Player, gameId: string): Tile[] {
+        const game = this.gameCreationService.getGameById(gameId);
+        const adjacentWalls: Tile[] = [];
+
+        game.tiles.forEach((tile) => {
+            const isAdjacent = DIRECTIONS.some(
+                (direction) => tile.coordinate.x === player.position.x + direction.x && tile.coordinate.y === player.position.y + direction.y,
+            );
+
+            if (isAdjacent && tile.category === TileCategory.Wall) {
+                const hasAdjacentDoor = DIRECTIONS.some((direction) => {
+                    const adjacentPosition = { x: tile.coordinate.x + direction.x, y: tile.coordinate.y + direction.y };
+                    return game.doorTiles.some((door) => door.coordinate.x === adjacentPosition.x && door.coordinate.y === adjacentPosition.y);
+                });
+
+                if (!hasAdjacentDoor) {
+                    adjacentWalls.push(tile);
+                }
+            }
+        });
+
+        return adjacentWalls;
     }
 
     getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {

@@ -12,8 +12,9 @@
 .actions {
     display: flex;
     flex-direction: row;
-    gap: 1vw;
+    width: 25vw;
     align-items: center;
+    justify-content: space-between;
 }
 
 button {
@@ -53,6 +54,10 @@ button:hover {
 .action-button img {
     width: 90%;
     height: 90%;
+}
+.action-button.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .tooltip {

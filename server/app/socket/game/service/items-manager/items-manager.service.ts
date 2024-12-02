@@ -1,14 +1,23 @@
-import { ARMOR_DEFENSE_BONUS, ARMOR_SPEED_PENALTY, SWORD_ATTACK_BONUS, SWORD_SPEED_BONUS } from '@common/constants';
+import {
+    AMULET_LIFE_BONUS,
+    ARMOR_DEFENSE_BONUS,
+    ARMOR_SPEED_PENALTY,
+    FLASK_ATTACK_BONUS,
+    SWORD_ATTACK_BONUS,
+    SWORD_SPEED_BONUS,
+} from '@common/constants';
 import { Player } from '@common/game';
 import { Coordinate, ItemCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { GameManagerService } from '../game-manager/game-manager.service';
+import { JournalService } from '../journal/journal.service';
 
 @Injectable()
 export class ItemsManagerService {
     @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
+    @Inject(JournalService) private readonly journalService: JournalService;
 
     dropInventory(player: Player, gameId: string): void {
         const game = this.gameCreationService.getGameById(gameId);
@@ -27,6 +36,11 @@ export class ItemsManagerService {
             const item = game.items[itemIndex].category;
             player.inventory.push(item);
             game.items.splice(itemIndex, 1);
+
+            const involvedPlayers = game.players.map((player) => player.name);
+
+            this.journalService.logMessage(gameId, `${player.name}. a ramassé un item !`, involvedPlayers);
+
             if (item === ItemCategory.Sword || item === ItemCategory.Armor) this.activateItem(item, player);
         }
     }
@@ -71,10 +85,10 @@ export class ItemsManagerService {
                 player.specs.speed += ARMOR_SPEED_PENALTY;
                 break;
             case ItemCategory.Flask:
-                player.specs.attack -= 4;
+                player.specs.attack -= FLASK_ATTACK_BONUS;
                 break;
             case ItemCategory.Amulet:
-                player.specs.defense -= 4;
+                player.specs.life -= AMULET_LIFE_BONUS;
         }
     }
 

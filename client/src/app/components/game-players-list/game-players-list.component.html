@@ -7,10 +7,8 @@
             'player-left': !isPlayerActive(player)
         }"
     >
-        <!-- Flèche pour le joueur actif -->
         <div class="turn-arrow" *ngIf="player.name === currentPlayerTurn"><img src="assets/icons/arrow.png" alt="Trophée" class="icon" /></div>
 
-        <!-- Infos joueur -->
         <div class="player-info">
             <span class="player-status">
                 @if (isHostPlayer(player.socketId)) {

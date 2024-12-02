@@ -108,4 +108,16 @@ describe('ImageService', () => {
         expect(service.getPixelatedPlayerImage(Avatar.Avatar12)).toBe('./assets/pixelcharacters/12_pixelated.png');
         expect(service.getPixelatedPlayerImage({} as Avatar)).toBe('');
     });
+
+    it('should get icon image', () => {
+        expect(service.getIconImage('attack')).toBe('./assets/icons/sword.png');
+        expect(service.getIconImage('defense')).toBe('./assets/icons/shield.png');
+        expect(service.getIconImage('health')).toBe('./assets/icons/heart.png');
+        expect(service.getIconImage('speed')).toBe('./assets/icons/speed.png');
+        expect(service.getIconImage('battle')).toBe('./assets/icons/fighting.png');
+        expect(service.getIconImage('action')).toBe('./assets/icons/action.png');
+        expect(service.getIconImage('robot')).toBe('./assets/icons/robot.png');
+        expect(service.getIconImage('host')).toBe('./assets/icons/crown.png');
+        expect(service.getIconImage('invalid')).toBe('');
+    });
 });
