@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { ImageService } from '@app/services/image/image.service';
+import { ProfileType } from '@common/constants';
 import { Player, Specs } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { InventoryModalComponent } from './inventory-modal.component';
@@ -37,6 +38,7 @@ describe('InventoryModalComponent', () => {
             turn: 0,
             visitedTiles: [],
             initialPosition: { x: 0, y: 0 },
+            profile: ProfileType.NORMAL,
         };
 
         component.player = mockPlayer;

@@ -111,7 +111,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForTurn();
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
-
+            this.gameTurnService.listenForPossibleActions();
             this.gameTurnService.listenForCombatConclusion();
             this.gameTurnService.listenForEndOfGame();
             this.combatService.listenCombatStart();
@@ -126,6 +126,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenPlayersLeft();
             this.listenForCurrentPlayerUpdates();
             this.listenForInventoryFull();
+            this.listenForCombatModal();
 
             this.activePlayers = this.gameService.game.players;
 
@@ -230,6 +231,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         );
     }
 
+    listenForCombatModal() {
+        this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
+            this.isCombatModalOpen = isCombatModalOpen;
+            if (!isCombatModalOpen) {
+                this.gameTurnService.clearMoves();
+            }
+        });
+    }
+
     private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
             this.countdown = typeof time === 'string' ? parseInt(time, 10) : time;
@@ -264,7 +274,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.socketService.listen<Player[]>(GameCreationEvents.PlayerLeft).subscribe((players: Player[]) => {
                 this.gameService.game.players = players;
                 this.activePlayers = players.filter((player) => player.isActive);
-                if (this.activePlayers.length <= 1) {
+                const allVirtual = this.activePlayers.length > 0 && this.activePlayers.every((player) => player.socketId.includes('virtualPlayer'));
+                if (this.activePlayers.length <= 1 || allVirtual) {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {

@@ -10,6 +10,7 @@ import { PlayerInfosComponent } from '@app/components/player-infos/player-infos.
 import { CharacterService } from '@app/services/character/character.service';
 import { ImageService } from '@app/services/image/image.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Player } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { ItemCategory } from '@common/map.types';
@@ -44,6 +45,7 @@ export class MockGamePageComponent {
     player: Player = {
         socketId: 'test-socket',
         name: 'Test Player',
+        profile: ProfileType.NORMAL,
         avatar: Avatar.Avatar1,
         isActive: true,
         position: { x: 0, y: 0 },
@@ -64,6 +66,7 @@ export class MockGamePageComponent {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         },
         inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
         turn: 0,

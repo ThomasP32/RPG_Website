@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TIME_LIMIT_DELAY } from '@common/constants';
+import { ProfileType, TIME_LIMIT_DELAY } from '@common/constants';
 import { CombatEvents, CombatStartedData } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -31,12 +31,14 @@ export class CombatService {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         },
         inventory: [],
         position: { x: 0, y: 0 },
         initialPosition: { x: 0, y: 0 },
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     socketSubscription: Subscription = new Subscription();

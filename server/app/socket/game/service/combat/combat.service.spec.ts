@@ -1,5 +1,6 @@
+import { ProfileType } from '@common/constants';
 import { Bonus, Game, Player, Specs } from '@common/game';
-import { ItemCategory, Mode } from '@common/map.types';
+import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Server } from 'socket.io';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { ItemsManagerService } from '../items-manager/items-manager.service';
@@ -51,6 +52,7 @@ describe('ServerCombatService', () => {
         } as Specs,
         position: { x: 0, y: 0 },
         initialPosition: { x: 0, y: 0 },
+        profile: ProfileType.NORMAL,
     } as Player;
 
     const opponent: Player = {
@@ -69,13 +71,37 @@ describe('ServerCombatService', () => {
         } as Specs,
         position: { x: 1, y: 1 },
         initialPosition: { x: 1, y: 1 },
+        profile: ProfileType.NORMAL,
     } as Player;
 
     const game: Game = {
-        id: 'game1',
-        players: [challenger, opponent],
-        mapSize: { x: 5, y: 5 },
-    } as Game;
+        id: 'test-game-id',
+        hostSocketId: 'test-socket',
+        hasStarted: true,
+        currentTurn: 0,
+        mapSize: { x: 10, y: 10 },
+        tiles: [
+            { coordinate: { x: 2, y: 2 }, category: TileCategory.Water },
+            { coordinate: { x: 3, y: 3 }, category: TileCategory.Ice },
+            { coordinate: { x: 4, y: 4 }, category: TileCategory.Wall },
+        ],
+        doorTiles: [
+            { coordinate: { x: 1, y: 2 }, isOpened: false },
+            { coordinate: { x: 2, y: 1 }, isOpened: true },
+        ],
+        startTiles: [{ coordinate: { x: 0, y: 0 } }],
+        items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
+        players: [opponent, challenger],
+        mode: Mode.Classic,
+        nTurns: 0,
+        debug: false,
+        nDoorsManipulated: [],
+        duration: 0,
+        isLocked: true,
+        name: 'game',
+        description: 'game description',
+        imagePreview: 'image-preview',
+    };
 
     it('should create a combat with correct initial player turn based on speed', () => {
         const combat = service.createCombat(game.id, challenger, opponent);
@@ -127,7 +153,7 @@ describe('ServerCombatService', () => {
 
     it('should find the closest available position for a player', () => {
         const closestPosition = service.findClosestAvailablePosition({ x: 0, y: 0 }, game);
-        expect(closestPosition).toEqual({ x: 1, y: 0 });
+        expect(closestPosition).toEqual({ x: 0, y: 1 });
     });
 
     it('should update players in game after combat', () => {

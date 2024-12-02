@@ -13,6 +13,8 @@ import { GameCreationService } from '../../service/game-creation/game-creation.s
 import { GameManagerService } from '../../service/game-manager/game-manager.service';
 import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
 import { JournalService } from '../../service/journal/journal.service';
+import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
+
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
@@ -22,6 +24,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(JournalService) private readonly journalService: JournalService;
+    @Inject(VirtualGameManagerService) private readonly virtualGameManager: VirtualGameManagerService;
 
     constructor(
         private readonly combatService: CombatService,
@@ -44,15 +47,22 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @SubscribeMessage(CombatEvents.StartCombat)
     async startCombat(client: Socket, data: StartCombatData): Promise<void> {
         const game = this.gameCreationService.getGameById(data.gameId);
-        const player = this.gameCreationService.getPlayer(data.gameId, client.id);
         if (game) {
+            const player = game.players.find((player) => player.turn === game.currentTurn);
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
             this.itemManagerService.checkForAmulet(player, data.opponent);
             await client.join(combat.id);
-            const sockets = await this.server.in(data.gameId).fetchSockets();
-            const opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
+            let opponentSocket;
+            if (data.opponent.socketId.includes('virtual')) {
+                opponentSocket = data.opponent.socketId;
+            } else {
+                const sockets = await this.server.in(data.gameId).fetchSockets();
+                opponentSocket = sockets.find((socket) => socket.id === data.opponent.socketId);
+                if (opponentSocket) {
+                    await opponentSocket.join(combat.id);
+                }
+            }
             if (opponentSocket) {
-                opponentSocket.join(combat.id);
                 const combatStartedData: CombatStartedData = {
                     challenger: player,
                     opponent: data.opponent,
@@ -82,12 +92,14 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         if (combat) {
             if (client.id === combat.currentTurnSocketId) {
                 const evadingPlayer: Player = combat.challenger.socketId === client.id ? combat.challenger : combat.opponent;
+                const otherPlayer: Player = combat.challenger.socketId === evadingPlayer.socketId ? combat.opponent : combat.challenger;
                 if (evadingPlayer.specs.evasions === 0) {
                     return;
                 }
                 evadingPlayer.specs.nEvasions++;
                 evadingPlayer.specs.evasions--;
                 const evasionSuccess = Math.random() < 0.4;
+
                 if (evasionSuccess) {
                     const game = this.gameCreationService.getGameById(gameId);
                     this.combatService.updatePlayersInGame(game);
@@ -100,6 +112,10 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.gameCountdownService.resumeCountdown(gameId);
                         this.cleanupCombatRoom(combat.id);
                         this.combatService.deleteCombat(gameId);
+
+                        if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
+                            this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
+                        }
                     }, TIME_LIMIT_DELAY);
                 } else {
                     this.server.to(combat.id).emit(CombatEvents.EvasionFailed, evadingPlayer);
@@ -186,6 +202,32 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             const currentPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.challenger : combat.opponent;
             const otherPlayer = combat.currentTurnSocketId === combat.challenger.socketId ? combat.opponent : combat.challenger;
             this.server.to(otherPlayer.socketId).emit(CombatEvents.PlayerTurnCombat);
+            this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions === 0 ? false : true);
+
+            if (combat.currentTurnSocketId.includes('virtual')) {
+                setTimeout(() => {
+                    const isCombatFinishedByEvasion = this.virtualGameManager.handleVirtualPlayerCombat(currentPlayer, otherPlayer, game.id, combat);
+                    if (otherPlayer.specs.life === 0) {
+                        this.handleCombatLost(otherPlayer, currentPlayer, game.id, combat.id);
+                        this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
+                    } else if (isCombatFinishedByEvasion) {
+                        setTimeout(() => {
+                            const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: currentPlayer };
+                            this.server.to(gameId).emit(CombatEvents.CombatFinishedByEvasion, combatFinishedByEvasionData);
+                            this.gameCountdownService.resumeCountdown(gameId);
+                            this.cleanupCombatRoom(combat.id);
+                            this.combatService.deleteCombat(gameId);
+
+                            if (this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
+                                this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
+                            }
+                        }, TIME_LIMIT_DELAY);
+                    } else {
+                        this.combatCountdownService.resetTimerSubscription(gameId);
+                        this.prepareNextTurn(gameId);
+                    }
+                }, 3000);
+            }
             this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions !== 0);
         }
     }

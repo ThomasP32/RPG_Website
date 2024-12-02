@@ -1,4 +1,4 @@
-import { MapConfig, MapSize } from '@common/constants';
+import { MapConfig, MapSize, ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -36,6 +36,7 @@ describe('GameCreationService', () => {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
 
         player = {
@@ -49,6 +50,7 @@ describe('GameCreationService', () => {
             inventory: [],
             visitedTiles: [],
             turn: 0,
+            profile: ProfileType.NORMAL,
         };
 
         gameRoom = {
@@ -73,7 +75,7 @@ describe('GameCreationService', () => {
             hostSocketId: 'host-id',
             players: [],
             currentTurn: 0,
-            nDoorsManipulated: 0,
+            nDoorsManipulated: [],
 
             duration: 0,
             nTurns: 0,

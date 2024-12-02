@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Player } from '@common/game';
 import { PlayerService } from './player.service';
 
@@ -105,12 +106,14 @@ describe('PlayerService', () => {
                     nEvasions: 0,
                     nLifeTaken: 0,
                     nLifeLost: 0,
+                    nItemsUsed: 0,
                 },
                 inventory: [],
                 position: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
                 initialPosition: { x: 0, y: 0 },
+                profile: ProfileType.NORMAL,
             };
             service.setPlayer(mockPlayer);
             expect(service.player).toEqual(mockPlayer);

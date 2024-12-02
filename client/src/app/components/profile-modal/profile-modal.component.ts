@@ -1,6 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, HALF } from '@common/constants';
+import {
+    BONUS,
+    DEFAULT_ACTIONS,
+    DEFAULT_ATTACK,
+    DEFAULT_DEFENSE,
+    DEFAULT_EVASIONS,
+    DEFAULT_HP,
+    DEFAULT_SPEED,
+    HALF,
+    ProfileType,
+} from '@common/constants';
 import { GameCreationEvents, JoinGameData } from '@common/events/game-creation.events';
 import { Avatar, Bonus, BotName, Player, Specs } from '@common/game';
 
@@ -15,7 +25,8 @@ export class ProfileModalComponent implements OnInit {
     @Input() activePlayers: Player[] = [];
     @Input() gameId: string | null = null;
     @Input() closeProfileModal: () => void;
-    selectedProfile: string;
+    profile: 'aggressive' | 'defensive';
+    selectedProfile: ProfileType;
     virtualPlayer: Player;
 
     constructor(private readonly socketService: SocketService) {
@@ -39,6 +50,7 @@ export class ProfileModalComponent implements OnInit {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const virtualPlayer: Player = {
             name: '',
@@ -51,6 +63,7 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         };
         this.virtualPlayer = virtualPlayer;
     }
@@ -59,8 +72,17 @@ export class ProfileModalComponent implements OnInit {
         this.virtualPlayer.socketId = 'virtualPlayer' + Math.floor(Math.random() * 1000);
     }
 
-    setProfile(profile: string): void {
-        this.selectedProfile = profile;
+    setProfile(profile: 'aggressive' | 'defensive'): void {
+        switch (profile) {
+            case 'aggressive':
+                this.selectedProfile = ProfileType.AGGRESSIVE;
+
+                break;
+            case 'defensive':
+                this.selectedProfile = ProfileType.DEFENSIVE;
+
+                break;
+        }
     }
 
     assignRandomName(): void {
@@ -116,10 +138,11 @@ export class ProfileModalComponent implements OnInit {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const virtualPlayer: Player = {
             name: this.virtualPlayer.name,
-            socketId: this.virtualPlayer.socketId || '',
+            socketId: this.virtualPlayer.socketId,
             isActive: true,
             avatar: this.virtualPlayer.avatar,
             specs: playerSpecs,
@@ -128,6 +151,7 @@ export class ProfileModalComponent implements OnInit {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: this.selectedProfile,
         };
         this.virtualPlayer = virtualPlayer;
     }
