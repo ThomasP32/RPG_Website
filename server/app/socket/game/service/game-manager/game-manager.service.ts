@@ -199,7 +199,7 @@ export class GameManagerService {
         return game.items.some((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
     }
 
-    private getTileWeight(pos: Coordinate, game: Game): number {
+    getTileWeight(pos: Coordinate, game: Game): number {
         for (const tile of game.tiles) {
             if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
                 if (tile.category === TileCategory.Water) return 2;
