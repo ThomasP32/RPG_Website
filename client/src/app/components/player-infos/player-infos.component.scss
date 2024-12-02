@@ -12,6 +12,13 @@
         margin-top: 5px;
     }
 
+    h2 {
+        color: #ffffff;
+        font-size: 1rem;
+        text-align: center;
+        margin: 0;
+    }
+
     h3 {
         flex-grow: 1;
         padding-left: 10px;
@@ -71,7 +78,7 @@
         .stat-bar {
             flex-grow: 1;
             height: 1.7vh;
-            width: 15vw;
+            width: 14vw;
             background-color: #1a1d23;
             border: 1px solid #f39c12;
             overflow: hidden;
@@ -84,6 +91,27 @@
                 transition: width 0.3s ease;
             }
         }
+    }
+}
+
+.dice {
+    display: flex;
+    flex-direction: row;
+    border: 2px solid #b85c38;
+    justify-content: space-evenly;
+    margin-top: 10px;
+    gap: 2px;
+    padding: 2%;
+    width: 27vw;
+    p {
+        color: #ffffff;
+        font-size: 0.8rem;
+        text-align: center;
+        width: 100%;
+    }
+    img {
+        width: 2vw;
+        height: 2vw;
     }
 }
 

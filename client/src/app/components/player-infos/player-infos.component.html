@@ -9,6 +9,7 @@
         </div>
         <div class="stats">
             <div class="stat">
+                <h2>{{ player.specs.life }}</h2>
                 <div class="stat-icon">
                     <img src="assets/icons/heart_icon.png" alt="Vie" />
                 </div>
@@ -17,6 +18,7 @@
                 </div>
             </div>
             <div class="stat">
+                <h2>{{ player.specs.speed }}</h2>
                 <div class="stat-icon">
                     <img src="assets/icons/speed_icon.png" alt="Rapidité" />
                 </div>
@@ -25,6 +27,7 @@
                 </div>
             </div>
             <div class="stat">
+                <h2>{{ player.specs.attack }}</h2>
                 <div class="stat-icon">
                     <img src="assets/icons/sword_icon.png" alt="Attaque" />
                 </div>
@@ -33,6 +36,7 @@
                 </div>
             </div>
             <div class="stat">
+                <h2>{{ player.specs.defense }}</h2>
                 <div class="stat-icon">
                     <img src="assets/icons/shield_icon.png" alt="Défense" />
                 </div>
@@ -42,16 +46,17 @@
             </div>
         </div>
     </div>
-    <!-- <div class="dice-container">
-        <div class="dice-info">
-            <div class="dice">
-                <p>Attaque :</p>
-                <p class="number"></p>
-                <p>Défense : </p>
-                <p class="number">{{ player.specs.actions }}</p>
-            </div>
+</div>
+
+<div class="dice-container">
+    <div class="dice-info">
+        <div class="dice">
+            <p>Attaque</p>
+            <img [src]="imageService.getDiceImage(player.specs.attackBonus)" alt="Dice" />
+            <p>Défense</p>
+            <img [src]="imageService.getDiceImage(player.specs.defenseBonus)" alt="Dice" />
         </div>
-    </div> -->
+    </div>
 </div>
 <div class="inventory">
     <h3>Inventaire</h3>

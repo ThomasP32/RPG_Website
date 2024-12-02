@@ -58,7 +58,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     doorActionAvailable: boolean = false;
 
     dashArray: string = '100';
-    dashOffset: string;
+    dashOffset: string = '60';
 
     currentPlayerTurn: string;
 
@@ -245,6 +245,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.countdown = typeof time === 'string' ? parseInt(time, 10) : time;
             const progress = (this.countdown / TURN_DURATION) * 100;
             this.dashOffset = `${100 - progress}`;
+            this.dashArray = '100';
+            console.log('dashOffset:', this.dashOffset, 'dashArray:', this.dashArray);
             if (this.countdown < 6) {
                 this.triggerPulse();
             }

@@ -3,10 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
+import { ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { Avatar, Bonus, Player } from '@common/game';
 import { DoorTile, ItemCategory, Tile, TileCategory } from '@common/map.types';
-import { of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { ActionsComponentComponent } from './actions-component.component';
 
 const mockPlayer: Player = {
@@ -29,6 +30,7 @@ const mockPlayer: Player = {
         nVictories: 0,
         nDefeats: 0,
         nCombats: 0,
+        nItemsUsed: 0,
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
@@ -36,6 +38,7 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Amulet, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 describe('ActionsComponentComponent', () => {
@@ -46,15 +49,18 @@ describe('ActionsComponentComponent', () => {
     let gameService: GameService;
 
     beforeEach(async () => {
-        gameTurnService = jasmine.createSpyObj('GameTurnService', ['toggleDoor', 'breakWall', 'endTurn', 'listenForPossibleActions'], {
-            possibleOpponents$: of([]),
-            possibleDoors$: of([]),
-            possibleWalls$: of([]),
-            possibleActions: { door: true },
-        });
         socketService = jasmine.createSpyObj('SocketService', ['sendMessage']);
         gameService = { game: { id: 'test-game-id' } } as GameService;
+        const possibleOpponentsSubject = new Subject<Player[]>();
+        const possibleDoorsSubject = new Subject<DoorTile[]>();
+        const possibleWallsSubject = new Subject<Tile[]>();
 
+        gameTurnService = jasmine.createSpyObj('GameTurnService', ['toggleDoor', 'breakWall', 'endTurn']);
+
+        gameTurnService.possibleOpponents$ = possibleOpponentsSubject;
+        gameTurnService.possibleDoors$ = possibleDoorsSubject;
+        gameTurnService.possibleWalls$ = possibleWallsSubject;
+        gameTurnService.possibleActions = { door: true, wall: true, combat: true };
         await TestBed.configureTestingModule({
             imports: [ActionsComponentComponent],
             providers: [
@@ -145,5 +151,80 @@ describe('ActionsComponentComponent', () => {
     it("should return false if it is not this player's turn", () => {
         component.currentPlayerTurn = 'Other Player';
         expect(component.thisPlayerTurn()).toBeFalse();
+    });
+
+    it('should set combatAvailable to true and update possibleOpponents when there are possible opponents and player has actions', () => {
+        const possibleOpponents = [mockPlayer];
+        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+        component.player.specs.actions = 1;
+        fixture.detectChanges();
+
+        expect(component.combatAvailable).toBeTrue();
+        expect(component.possibleOpponents).toEqual(possibleOpponents);
+    });
+
+    it('should set combatAvailable to false and clear possibleOpponents when there are no possible opponents', () => {
+        const possibleOpponents: Player[] = [];
+        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+        fixture.detectChanges();
+
+        expect(component.combatAvailable).toBeFalse();
+        expect(component.possibleOpponents).toEqual([]);
+    });
+
+    it('should set combatAvailable to false and clear possibleOpponents when player has no actions', () => {
+        const possibleOpponents = [mockPlayer];
+        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
+        component.player.specs.actions = 0;
+        fixture.detectChanges();
+
+        expect(component.combatAvailable).toBeFalse();
+        expect(component.possibleOpponents).toEqual([]);
+    });
+
+    it('should set doorActionAvailable to true and update possibleDoors when doors are available', () => {
+        const possibleDoors = [{ coordinate: { x: 0, y: 0 }, isOpened: true } as DoorTile];
+        (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+        fixture.detectChanges();
+
+        expect(component.doorActionAvailable).toBeTrue();
+        expect(component.possibleDoors).toEqual(possibleDoors);
+    });
+
+    it('should set doorActionAvailable to false and clear possibleDoors when no doors are available', () => {
+        const possibleDoors: DoorTile[] = [];
+        (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+        fixture.detectChanges();
+
+        expect(component.doorActionAvailable).toBeFalse();
+        expect(component.possibleDoors).toEqual([]);
+    });
+
+    it('should set doorActionAvailable to false and clear possibleDoors when door action is not available', () => {
+        gameTurnService.possibleActions.door = false;
+        const possibleDoors = [{ coordinate: { x: 0, y: 0 }, isOpened: true } as DoorTile];
+        (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
+        fixture.detectChanges();
+
+        expect(component.doorActionAvailable).toBeFalse();
+        expect(component.possibleDoors).toEqual([]);
+    });
+
+    it('should set breakWallActionAvailable to true and update possibleWalls when walls are available', () => {
+        const possibleWalls = [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall } as Tile];
+        (gameTurnService.possibleWalls$ as Subject<Tile[]>).next(possibleWalls);
+        fixture.detectChanges();
+
+        expect(component.breakWallActionAvailable).toBeTrue();
+        expect(component.possibleWalls).toEqual(possibleWalls);
+    });
+
+    it('should set breakWallActionAvailable to false and clear possibleWalls when no walls are available', () => {
+        const possibleWalls: Tile[] = [];
+        (gameTurnService.possibleWalls$ as Subject<Tile[]>).next(possibleWalls);
+        fixture.detectChanges();
+
+        expect(component.breakWallActionAvailable).toBeFalse();
+        expect(component.possibleWalls).toEqual([]);
     });
 });
