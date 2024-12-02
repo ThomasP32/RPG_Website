@@ -16,22 +16,22 @@ export class GameTurnService {
     socketSubscription: Subscription = new Subscription();
     moves: MovesMap = new Map();
 
-    private playerTurn = new BehaviorSubject<string>('');
+    private readonly playerTurn = new BehaviorSubject<string>('');
     public playerTurn$ = this.playerTurn.asObservable();
 
-    private youFell = new BehaviorSubject<boolean>(false);
+    private readonly youFell = new BehaviorSubject<boolean>(false);
     public youFell$ = this.youFell.asObservable();
 
-    private playerWon = new BehaviorSubject<boolean>(false);
+    private readonly playerWon = new BehaviorSubject<boolean>(false);
     public playerWon$ = this.playerWon.asObservable();
 
-    private possibleOpponents = new BehaviorSubject<Player[]>([]);
+    private readonly possibleOpponents = new BehaviorSubject<Player[]>([]);
     public possibleOpponents$ = this.possibleOpponents.asObservable();
 
-    private possibleDoors = new BehaviorSubject<DoorTile[]>([]);
+    private readonly possibleDoors = new BehaviorSubject<DoorTile[]>([]);
     public possibleDoors$ = this.possibleDoors.asObservable();
 
-    private possibleWalls = new BehaviorSubject<Tile[]>([]);
+    private readonly possibleWalls = new BehaviorSubject<Tile[]>([]);
     public possibleWalls$ = this.possibleWalls.asObservable();
 
     isMoving = false;
@@ -39,9 +39,9 @@ export class GameTurnService {
     possibleActions = { combat: false, door: false, wall: false };
 
     constructor(
-        private gameService: GameService,
-        private playerService: PlayerService,
-        private socketService: SocketService,
+        private readonly gameService: GameService,
+        private readonly playerService: PlayerService,
+        private readonly socketService: SocketService,
     ) {
         this.gameService = gameService;
         this.playerService = playerService;
@@ -131,7 +131,6 @@ export class GameTurnService {
     }
 
     getWalls(): void {
-        this.listenForWallBreaking();
         this.socketService.sendMessage('getAdjacentWalls', this.game.id);
     }
     getMoves(): void {
@@ -243,23 +242,27 @@ export class GameTurnService {
     }
 
     listenForWallBreaking(): void {
-        this.socketService.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
-            if (data.player && data.player.socketId === this.player.socketId) {
-                this.playerService.setPlayer(data.player);
-                this.resumeTurn();
-            }
-            this.gameService.setGame(data.game);
-        });
+        this.socketSubscription.add(
+            this.socketService.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
+                if (data.player && data.player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
+                    this.resumeTurn();
+                }
+                this.gameService.setGame(data.game);
+            }),
+        );
     }
 
     listenForDoorUpdates(): void {
-        this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
-            if (data.player && data.player.socketId === this.player.socketId) {
-                this.playerService.setPlayer(data.player);
-                this.resumeTurn();
-            }
-            this.gameService.setGame(data.game);
-        });
+        this.socketSubscription.add(
+            this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
+                if (data.player && data.player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
+                    this.resumeTurn();
+                }
+                this.gameService.setGame(data.game);
+            }),
+        );
     }
 
     listenForCombatConclusion(): void {
@@ -295,7 +298,7 @@ export class GameTurnService {
         );
     }
 
-    listenForFlagDetentor(): void {
+    listenForFlagHolder(): void {
         this.socketSubscription.add(
             this.socketService.listen<Game>('flagPickedUp').subscribe((game) => {
                 this.gameService.setGame(game);

@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CharacterService } from '@app/services/character/character.service';
 import { ImageService } from '@app/services/image/image.service';
-import { Avatar, Player } from '@common/game';
+import { Player } from '@common/game';
 
 @Component({
     selector: 'app-player-infos',
@@ -10,8 +10,10 @@ import { Avatar, Player } from '@common/game';
     templateUrl: './player-infos.component.html',
     styleUrl: './player-infos.component.scss',
 })
-export class PlayerInfosComponent {
+export class PlayerInfosComponent implements OnInit {
     @Input() player: Player;
+
+    playerPreview: string = '';
     constructor(
         private readonly characterService: CharacterService,
         protected readonly imageService: ImageService,
@@ -20,5 +22,7 @@ export class PlayerInfosComponent {
         this.characterService = characterService;
     }
 
-    playerPreview: string = this.characterService.getAvatarPreview(Avatar.Avatar1);
+    ngOnInit(): void {
+        this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
+    }
 }

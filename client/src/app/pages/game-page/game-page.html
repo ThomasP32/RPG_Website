@@ -30,7 +30,6 @@
     @if(combatAvailable) {
     <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
     }
-
     <div class="game-map-container">
         <app-game-map [loadedMap]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
@@ -43,7 +42,7 @@
 
     <div class="top-container">
         <div class="countdown-endturn-container">
-            <div class="countdown-timer">
+            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
                 <div class="timer-circle">
                     <svg viewBox="0 0 36 36">
                         <circle class="background-circle" cx="18" cy="18" r="16"></circle>

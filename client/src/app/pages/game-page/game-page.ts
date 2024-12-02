@@ -26,7 +26,7 @@ import { GameCreationEvents } from '@common/events/game-creation.events';
 import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
-import { Coordinate, DoorTile, Map } from '@common/map.types';
+import { Coordinate, Map } from '@common/map.types';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -55,15 +55,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
     activePlayers: Player[];
     opponent: Player;
     possibleOpponents: Player[];
-    possibleDoors: DoorTile[];
     doorActionAvailable: boolean = false;
 
-    totalTime: number = 10;
     dashArray: string = '100';
-    dashOffset: string = '100';
+    dashOffset: string;
 
     currentPlayerTurn: string;
-    playerPreview: string;
 
     isYourTurn: boolean = false;
     delayFinished: boolean = true;
@@ -73,11 +70,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     startTurnCountdown: number = 3;
 
     showExitModal: boolean = false;
-    showActionModal = false;
-    showKickedModal = false;
-    showEndGameModal = false;
-    gameOverMessage = false;
-    isCombatModalOpen = false;
+    showKickedModal: boolean = false;
+    showEndGameModal: boolean = false;
+    gameOverMessage: boolean = false;
+    isCombatModalOpen: boolean = false;
     isInventoryModalOpen = false;
 
     youFell: boolean = false;
@@ -115,9 +111,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForTurn();
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
-            this.gameTurnService.listenForPossibleActions();
-            this.gameTurnService.listenForDoorUpdates();
-            this.gameTurnService.listenForWallBreaking();
+
             this.gameTurnService.listenForCombatConclusion();
             this.gameTurnService.listenForEndOfGame();
             this.combatService.listenCombatStart();
@@ -125,7 +119,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.combatService.listenForEvasionInfo();
 
             this.listenForEndOfGame();
-            this.listenForIsCombatModalOpen();
             this.listenForOpponent();
             this.listenForStartTurnDelay();
             this.listenForFalling();
@@ -135,7 +128,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.listenForInventoryFull();
 
             this.activePlayers = this.gameService.game.players;
-            this.playerPreview = this.characterService.getAvatarPreview(this.player.avatar);
 
             if (this.playerService.player.socketId === this.game.hostSocketId) {
                 this.socketService.sendMessage('startGame', this.gameService.game.id);
@@ -169,7 +161,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     areModalsOpen(): boolean {
-        return this.showExitModal || this.showActionModal || this.showKickedModal || this.isCombatModalOpen;
+        return this.showExitModal || this.showKickedModal || this.isCombatModalOpen;
     }
 
     navigateToEndOfGame(): void {
@@ -240,8 +232,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
-            this.countdown = time;
-            this.triggerPulse();
+            this.countdown = typeof time === 'string' ? parseInt(time, 10) : time;
+            const progress = (this.countdown / TURN_DURATION) * 100;
+            this.dashOffset = `${100 - progress}`;
+            if (this.countdown < 6) {
+                this.triggerPulse();
+            }
         });
     }
 
@@ -253,16 +249,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 setTimeout(() => {
                     this.navigateToEndOfGame();
                 }, TIME_REDIRECTION);
-            }
-        });
-    }
-
-    private listenForIsCombatModalOpen() {
-        this.combatService.isCombatModalOpen$.subscribe((isCombatModalOpen) => {
-            this.isCombatModalOpen = isCombatModalOpen;
-            if (isCombatModalOpen) {
-                this.gameTurnService.clearMoves();
-                this.combatAvailable = false;
             }
         });
     }

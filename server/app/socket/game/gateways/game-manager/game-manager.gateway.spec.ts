@@ -54,7 +54,7 @@ describe('GameManagerGateway', () => {
         gateway['server'] = serverStub;
 
         const toStub = {
-            emit: stub() as SinonStub,
+            emit: stub(),
         };
         serverStub.to.returns(toStub as any);
     });

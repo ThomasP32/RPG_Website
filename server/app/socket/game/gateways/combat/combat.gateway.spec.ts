@@ -134,6 +134,12 @@ describe('CombatGateway', () => {
                     },
                 },
                 {
+                    provide: GameManagerService,
+                    useValue: {
+                        updatePlayerActions: jest.fn(),
+                    },
+                },
+                {
                     provide: GameCreationService,
                     useValue: {
                         getGames: jest.fn(),
@@ -149,12 +155,6 @@ describe('CombatGateway', () => {
                     useValue: {
                         initializeServer: jest.fn(),
                         logMessage: jest.fn(),
-                    },
-                },
-                {
-                    provide: GameManagerService,
-                    useValue: {
-                        updatePlayerActions: jest.fn(),
                     },
                 },
                 {

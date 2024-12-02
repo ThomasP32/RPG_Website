@@ -88,7 +88,7 @@ describe('ImageService', () => {
         expect(service.getItemImageByString('sword')).toBe('./assets/items/sword.png');
         expect(service.getItemImageByString('iceskates')).toBe('./assets/items/iceskates.png');
         expect(service.getItemImageByString('wallbreaker')).toBe('./assets/items/wallbreaker.png');
-        expect(service.getItemImageByString('Amulet')).toBe('./assets/items/amulet.png');
+        expect(service.getItemImageByString('amulet')).toBe('./assets/items/amulet.png');
         expect(service.getItemImageByString('random')).toBe('./assets/items/randomitem.png');
         expect(service.getItemImageByString('invalid')).toBe('');
     });
