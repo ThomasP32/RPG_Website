@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CharacterService } from '@app/services/character/character.service';
 import { ImageService } from '@app/services/image/image.service';
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Player } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { PlayerInfosComponent } from './player-infos.component';
@@ -26,6 +27,7 @@ const mockPlayer: Player = {
         nVictories: 0,
         nDefeats: 0,
         nCombats: 0,
+        nItemsUsed: 0,
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
@@ -33,6 +35,7 @@ const mockPlayer: Player = {
     inventory: [ItemCategory.Amulet, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 describe('PlayerInfosComponent', () => {
@@ -42,7 +45,7 @@ describe('PlayerInfosComponent', () => {
 
     beforeEach(async () => {
         const characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview']);
-        const imageServiceSpy = jasmine.createSpyObj('ImageService', ['getItemImage']);
+        const imageServiceSpy = jasmine.createSpyObj('ImageService', ['getItemImage', 'getDiceImage']);
 
         await TestBed.configureTestingModule({
             imports: [PlayerInfosComponent],

@@ -19,7 +19,7 @@
 .game-info {
     position: fixed;
     bottom: 10px;
-    width: 28.2vw;
+    width: 28.5vw;
     height: 35vh;
     border: 2px solid #b85c38;
     display: flex;
@@ -29,7 +29,6 @@
     padding: 10px;
     box-sizing: border-box;
     text-align: left;
-    border-radius: 0 40px 0 0;
     z-index: 10;
     gap: 0.5vw;
 }
@@ -479,7 +478,7 @@ button {
     position: fixed;
     left: 10px;
     bottom: 37vh;
-    width: 28.2vw;
+    width: 28.5vw;
     padding: 0;
 }
 

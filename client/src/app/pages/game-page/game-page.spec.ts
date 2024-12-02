@@ -10,7 +10,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { ProfileType, TIME_LIMIT_DELAY, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { GameCreationEvents } from '@common/events/game-creation.events';
-import { ItemsEvents } from '@common/events/items.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
@@ -132,6 +132,7 @@ describe('GamePageComponent', () => {
                 'listenForCombatConclusion',
                 'toggleDoor',
                 'listenForEndOfGame',
+                'clearMoves',
             ],
             {
                 playerTurn$: playerTurnSubject,
@@ -200,12 +201,6 @@ describe('GamePageComponent', () => {
         expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
-    it('should listen for possible opponents updates', () => {
-        component.ngOnInit();
-        const possibleOpponents: Player[] = [mockPlayer];
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
-        expect(component.possibleOpponents).toEqual(possibleOpponents);
-    });
     it('should trigger pulse on countdown update', () => {
         spyOn(component, 'triggerPulse');
         component.ngOnInit();
@@ -415,16 +410,86 @@ describe('GamePageComponent', () => {
         tick(TIME_LIMIT_DELAY);
         expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
     }));
+    it('should return true if any modal is open', () => {
+        component.showExitModal = true;
+        expect(component.areModalsOpen()).toBeTrue();
 
-    it('should set combatAvailable to false and clear possibleOpponents if no combat is available', () => {
-        component.combatAvailable = true;
-        component.possibleOpponents = [mockPlayer];
+        component.showExitModal = false;
+        component.showKickedModal = true;
+        expect(component.areModalsOpen()).toBeTrue();
 
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next([]);
+        component.showKickedModal = false;
+        component.isCombatModalOpen = true;
+        expect(component.areModalsOpen()).toBeTrue();
+    });
+
+    it('should return false if no modal is open', () => {
+        component.showExitModal = false;
+        component.showKickedModal = false;
+        component.isCombatModalOpen = false;
+        expect(component.areModalsOpen()).toBeFalse();
+    });
+    it('should set isInventoryModalOpen to true when InventoryFull event is received', () => {
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.InventoryFull) {
+                return of(undefined);
+            }
+            return of();
+        });
+
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeTrue();
+    });
+    it('should set isInventoryModalOpen to false and update player and game when ItemDropped event is received', () => {
+        const updatedPlayer: Player = { ...mockPlayer, socketId: 'updated-socket' };
+        const updatedGame: Game = { ...mockGame, id: 'updated-game-id' };
+        const itemDroppedData: ItemDroppedData = { updatedPlayer, updatedGame };
 
         component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.ItemDropped) {
+                return of(itemDroppedData);
+            }
+            return of();
+        });
 
-        expect(component.combatAvailable).toBeFalse();
-        expect(component.possibleOpponents).toEqual([]);
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeFalse();
+        expect(playerService.setPlayer).toHaveBeenCalledWith(updatedPlayer);
+        expect(gameService.setGame).toHaveBeenCalledWith(updatedGame);
+        expect(gameTurnService.resumeTurn).toHaveBeenCalled();
+    });
+
+    it('should not update player if updatedPlayer is not the current player when ItemDropped event is received', () => {
+        const updatedPlayer: Player = { ...mockPlayer, socketId: 'other-socket' };
+        const updatedGame: Game = { ...mockGame, id: 'updated-game-id' };
+        const itemDroppedData: ItemDroppedData = { updatedPlayer, updatedGame };
+
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.ItemDropped) {
+                return of(itemDroppedData);
+            }
+            return of();
+        });
+
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeFalse();
+        expect(playerService.setPlayer).not.toHaveBeenCalled();
+        expect(gameService.setGame).toHaveBeenCalledWith(updatedGame);
+        expect(gameTurnService.resumeTurn).not.toHaveBeenCalled();
+    });
+    it('should set showExitModal to true when onShowExitModalChange is called with true', () => {
+        component.onShowExitModalChange(true);
+        expect(component.showExitModal).toBeTrue();
+    });
+
+    it('should set showExitModal to false when onShowExitModalChange is called with false', () => {
+        component.onShowExitModalChange(false);
+        expect(component.showExitModal).toBeFalse();
     });
 });

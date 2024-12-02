@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Avatar } from '@common/game';
+import { Avatar, Bonus } from '@common/game';
 import { ItemCategory, TileCategory } from '@common/map.types';
 
 @Injectable({
@@ -39,6 +39,17 @@ export class ImageService {
                 return this.getDoorImage(map[rowIndex][colIndex].door.isOpen);
             default:
                 return './assets/tiles/floor.png';
+        }
+    }
+
+    getDiceImage(dice: Bonus): string {
+        switch (dice) {
+            case Bonus.D4:
+                return './assets/icons/d4.png';
+            case Bonus.D6:
+                return './assets/icons/d6.png';
+            default:
+                return '';
         }
     }
 
