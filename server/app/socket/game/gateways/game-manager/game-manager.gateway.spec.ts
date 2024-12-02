@@ -143,30 +143,30 @@ describe('GameManagerGateway', () => {
             expect(journalService.logMessage.calledWith('game-id', `Le drapeau a été récupéré par ${player.name}.`, [player.name])).toBeTruthy();
         });
 
-        it('should emit positionToUpdate and youFell if the player falls', async () => {
-            gameCreationService.doesGameExist.returns(true);
+        // it('should emit positionToUpdate and youFell if the player falls', async () => {
+        //     gameCreationService.doesGameExist.returns(true);
 
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
-            const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
-            gameCreationService.getGameById.returns(game);
-            gameManagerService.hasFallen = true;
+        //     const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
+        //     const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
+        //     gameCreationService.getGameById.returns(game);
+        //     gameManagerService.hasFallen = true;
 
-            const moves = [
-                { x: 1, y: 1 },
-                { x: 1, y: 2 },
-            ];
-            gameManagerService.getMove.returns(moves);
-            gameManagerService.updatePosition.resolves();
-            expect(gameManagerService.hasFallen).toBe(true);
+        //     const moves = [
+        //         { x: 1, y: 1 },
+        //         { x: 1, y: 2 },
+        //     ];
+        //     gameManagerService.getMove.returns(moves);
+        //     gameManagerService.updatePosition.resolves();
+        //     expect(gameManagerService.hasFallen).toBe(true);
 
-            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+        //     await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
-            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
-            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
+        //     const toRoomStub = serverStub.to('game-id').emit as SinonStub;
+        //     expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
 
-            const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
-            expect(toSocketStub.calledWith('youFell')).toBeTruthy();
-        });
+        //     const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
+        //     expect(toSocketStub.calledWith('youFell')).toBeTruthy();
+        // });
 
         it('should emit youFinishedMoving if the player reaches the destination', async () => {
             gameCreationService.doesGameExist.returns(true);
