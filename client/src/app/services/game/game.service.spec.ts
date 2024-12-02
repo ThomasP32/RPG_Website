@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { ProfileType } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, GameCtf, Player, Specs } from '@common/game';
 import { Map, Mode } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('GameService', () => {
     let service: GameService;
@@ -26,6 +27,7 @@ describe('GameService', () => {
         turn: 0,
         visitedTiles: [],
         initialPosition: { x: 0, y: 0 },
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {
@@ -127,7 +129,7 @@ describe('GameService', () => {
                 players: [mockPlayer],
                 hostSocketId: '',
                 currentTurn: 0,
-                nDoorsManipulated: 0,
+                nDoorsManipulated: [],
                 duration: 0,
                 nTurns: 0,
                 debug: false,
@@ -157,13 +159,13 @@ describe('GameService', () => {
                 players: [mockPlayer],
                 hostSocketId: '',
                 currentTurn: 0,
-                nDoorsManipulated: 0,
+                nDoorsManipulated: [],
                 duration: 0,
                 nTurns: 0,
                 debug: false,
                 isLocked: false,
                 hasStarted: false,
-                nPlayersCtf: 0,
+                nPlayersCtf: [],
                 mode: Mode.Ctf,
             };
 

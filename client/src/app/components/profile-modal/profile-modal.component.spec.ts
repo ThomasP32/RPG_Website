@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { BONUS, DEFAULT_HP, DEFAULT_SPEED } from '@common/constants';
+import { BONUS, DEFAULT_HP, DEFAULT_SPEED, ProfileType } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus } from '@common/game';
 import { ProfileModalComponent } from './profile-modal.component';
-import { GameCreationEvents } from '@common/events/game-creation.events';
 
 describe('ProfileModalComponent', () => {
     let component: ProfileModalComponent;
@@ -38,7 +38,7 @@ describe('ProfileModalComponent', () => {
     });
 
     it('should set selected profile', () => {
-        const profile = 'testProfile';
+        const profile = 'aggressive';
         component.setProfile(profile);
         expect(component.selectedProfile).toBe(profile);
     });
@@ -56,6 +56,7 @@ describe('ProfileModalComponent', () => {
                 initialPosition: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             },
         ];
         component.assignRandomName();
@@ -76,6 +77,7 @@ describe('ProfileModalComponent', () => {
                 initialPosition: { x: 0, y: 0 },
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             },
         ];
         component.assignRandomAvatar();
@@ -133,7 +135,10 @@ describe('ProfileModalComponent', () => {
         expect(component.assignRandomAttackOrDefenseBonus).toHaveBeenCalled();
         expect(component.createVirtualSocketId).toHaveBeenCalled();
         expect(component.createVirtualPlayer).toHaveBeenCalled();
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.JoinGame, { player: component.virtualPlayer, gameId: component.gameId });
+        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.JoinGame, {
+            player: component.virtualPlayer,
+            gameId: component.gameId,
+        });
         expect(component.closeProfileModal).toHaveBeenCalled();
     });
 });

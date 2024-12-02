@@ -1,3 +1,4 @@
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { interval, Subscription } from 'rxjs';
@@ -38,10 +39,12 @@ describe('CombatCountdownService', () => {
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         },
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {
@@ -65,7 +68,7 @@ describe('CombatCountdownService', () => {
         mode: Mode.Classic,
         nTurns: 0,
         debug: false,
-        nDoorsManipulated: 0,
+        nDoorsManipulated: [],
         duration: 0,
         isLocked: true,
         name: 'game',

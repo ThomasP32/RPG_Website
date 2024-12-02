@@ -17,6 +17,7 @@ export class GameManagerService {
             this.updatePlayerPosition(player, path, game);
         }
     }
+
     updatePlayerPosition(player: Player, path: Coordinate[], game: Game): void {
         path.forEach((position) => {
             player.specs.movePoints -= this.getTileWeight(position, game);
@@ -313,7 +314,9 @@ export class GameManagerService {
     }
 
     isGameResumable(gameId: string): boolean {
-        return !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive);
+        return (
+            this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
+        );
     }
 
     checkForWinnerCtf(player: Player, gameId: string): boolean {

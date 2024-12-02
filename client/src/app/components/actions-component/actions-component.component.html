@@ -41,7 +41,7 @@
 
         <div
             class="action-button"
-            [class.disabled]="currentPlayerTurn !== player.name || !thisPlayerTurn"
+            [class.disabled]="!thisPlayerTurn"
             (mouseenter)="showDescription('Finir le tour')"
             (mouseleave)="hideDescription()"
             (click)="endTurn()"

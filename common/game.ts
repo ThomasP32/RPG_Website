@@ -1,4 +1,5 @@
 import { Coordinate, ItemCategory, Map, Mode } from '@common/map.types';
+import { ProfileType } from './constants';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -49,6 +50,7 @@ export interface Specs {
     nEvasions: number;
     nLifeTaken: number;
     nLifeLost: number;
+    nItemsUsed: number;
 }
 
 export interface Player {
@@ -62,6 +64,7 @@ export interface Player {
     initialPosition: Coordinate;
     turn: number;
     visitedTiles: Coordinate[];
+    profile: ProfileType;
 }
 
 export interface GameClassic extends Map {
@@ -69,7 +72,7 @@ export interface GameClassic extends Map {
     hostSocketId: string;
     players: Player[];
     currentTurn: number;
-    nDoorsManipulated: number;
+    nDoorsManipulated: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;
@@ -79,7 +82,7 @@ export interface GameClassic extends Map {
 
 export interface GameCtf extends GameClassic {
     mode: Mode.Ctf;
-    nPlayersCtf: number;
+    nPlayersCtf: Player[];
 }
 
 export type Game = GameClassic | GameCtf;

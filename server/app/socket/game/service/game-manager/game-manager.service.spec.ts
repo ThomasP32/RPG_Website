@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -20,6 +21,7 @@ let specs: Specs = {
     nEvasions: 0,
     nLifeTaken: 0,
     nLifeLost: 0,
+    nItemsUsed: 0,
 };
 
 let player: Player = {
@@ -33,6 +35,7 @@ let player: Player = {
     inventory: [],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 let game2: Game = {
@@ -71,7 +74,7 @@ let game2: Game = {
     players: [player],
     currentTurn: 0,
     nTurns: 0,
-    nDoorsManipulated: 0,
+    nDoorsManipulated: [],
     duration: 0,
     debug: false,
     mode: Mode.Classic,
@@ -263,6 +266,7 @@ describe('GameManagerService', () => {
                 nEvasions: 0,
                 nLifeTaken: 0,
                 nLifeLost: 0,
+                nItemsUsed: 0,
             };
 
             player = {
@@ -276,6 +280,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             adjacentPlayer = {
@@ -289,6 +294,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             nonAdjacentPlayer = {
@@ -302,6 +308,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             game2 = {
@@ -318,7 +325,7 @@ describe('GameManagerService', () => {
                 players: [player, adjacentPlayer, nonAdjacentPlayer],
                 currentTurn: 0,
                 nTurns: 0,
-                nDoorsManipulated: 0,
+                nDoorsManipulated: [],
                 duration: 0,
                 debug: false,
                 mode: Mode.Classic,
@@ -359,6 +366,7 @@ describe('GameManagerService', () => {
                 inventory: [],
                 turn: 0,
                 visitedTiles: [],
+                profile: ProfileType.NORMAL,
             };
 
             game2.players.push(anotherAdjacentPlayer);

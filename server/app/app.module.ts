@@ -18,6 +18,7 @@ import { CombatCountdownService } from './socket/game/service/countdown/combat/c
 import { GameCountdownService } from './socket/game/service/countdown/game/game-countdown.service';
 import { GameManagerService } from './socket/game/service/game-manager/game-manager.service';
 import { ItemsManagerService } from './socket/game/service/items-manager/items-manager.service';
+import { VirtualGameManagerService } from './socket/game/service/virtual-game-manager/virtual-game-manager.service';
 
 @Module({
     // decorateur qui permet d'indique que la classe regroupe controleur, service, etc.
@@ -49,6 +50,7 @@ import { ItemsManagerService } from './socket/game/service/items-manager/items-m
         JournalService,
         GameCountdownService,
         CombatCountdownService,
+        VirtualGameManagerService,
         ItemsManagerService,
     ],
 })

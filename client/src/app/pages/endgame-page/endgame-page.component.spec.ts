@@ -7,6 +7,7 @@ import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
+import { ProfileType } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { EndgamePageComponent } from './endgame-page.component';
@@ -39,12 +40,14 @@ const mockPlayer: Player = {
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
+        nItemsUsed: 0,
     },
     inventory: [],
     position: { x: 0, y: 0 },
     initialPosition: { x: 0, y: 0 },
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 const mockGame: Game = {
@@ -68,7 +71,7 @@ const mockGame: Game = {
     mode: Mode.Classic,
     nTurns: 0,
     debug: false,
-    nDoorsManipulated: 0,
+    nDoorsManipulated: [],
     duration: 0,
     isLocked: true,
     name: 'game',

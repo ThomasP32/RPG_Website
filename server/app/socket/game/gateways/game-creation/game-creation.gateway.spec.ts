@@ -1,5 +1,6 @@
 import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { ProfileType } from '@common/constants';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
@@ -33,6 +34,7 @@ describe('GameGateway', () => {
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
+        nItemsUsed: 0,
     };
     let player: Player = {
         socketId: 'player-1',
@@ -45,6 +47,7 @@ describe('GameGateway', () => {
         inventory: [],
         turn: 0,
         visitedTiles: [],
+        profile: ProfileType.NORMAL,
     };
 
     let gameRoom: Game = {
@@ -68,7 +71,7 @@ describe('GameGateway', () => {
         hostSocketId: 'host-id',
         players: [player],
         currentTurn: 0,
-        nDoorsManipulated: 0,
+        nDoorsManipulated: [],
         duration: 0,
         nTurns: 0,
         debug: false,

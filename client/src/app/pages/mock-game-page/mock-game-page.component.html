@@ -35,11 +35,7 @@
         <app-game-map> </app-game-map>
     </div>
 
-    <app-game-players-list
-        [players]="game.players"
-        [hostSocketId]="game.hostSocketId"
-        [currentPlayerTurn]="currentPlayerTurn"
-    ></app-game-players-list>
+    <app-game-players-list [hostSocketId]="game.hostSocketId" [currentPlayerTurn]="currentPlayerTurn"></app-game-players-list>
 
     <div class="top-container">
         <div class="countdown-endturn-container">
