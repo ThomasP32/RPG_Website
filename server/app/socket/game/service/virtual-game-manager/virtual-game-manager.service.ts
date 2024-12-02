@@ -37,7 +37,7 @@ export class VirtualGameManagerService extends EventEmitter {
     @Inject(GameCountdownService) private readonly gameCountdownService: GameCountdownService;
     @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
     server: Server;
-    private hasFallen: boolean = false;
+    hasFallen: boolean = false;
 
     setServer(server: Server): void {
         this.server = server;
