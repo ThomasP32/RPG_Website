@@ -6,8 +6,6 @@ import { JournalService } from '@app/socket/game/service/journal/journal.service
 import { VirtualGameManagerService } from '@app/socket/game/service/virtual-game-manager/virtual-game-manager.service';
 import {
     DEFAULT_ACTIONS,
-    ICE_ATTACK_PENALTY,
-    ICE_DEFENSE_PENALTY,
     INVENTORY_SIZE,
     TIME_FOR_POSITION_UPDATE,
     TURN_DURATION,
@@ -18,7 +16,7 @@ import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, ItemCategory } from '@common/map.types';
+import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -186,8 +184,8 @@ export class GameManagerGateway implements OnGatewayInit {
 
         if (activePlayer.socketId.includes('virtualPlayer')) {
             const delay = Math.floor(Math.random() * VIRTUAL_PLAYER_DELAY) + VIRTUAL_DELAY_CONSTANT;
-            setTimeout(() => {
-                this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
+            setTimeout(async () => {
+                await this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
                 this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
             }, delay);
         } else {
@@ -209,21 +207,6 @@ export class GameManagerGateway implements OnGatewayInit {
             });
     }
 
-    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
-        const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
-        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
-        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
-            player.specs.attack -= ICE_ATTACK_PENALTY;
-            player.specs.defense -= ICE_DEFENSE_PENALTY;
-            wasOnIceTile = true;
-        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
-            player.specs.attack += ICE_ATTACK_PENALTY;
-            player.specs.defense += ICE_DEFENSE_PENALTY;
-            wasOnIceTile = false;
-        }
-        return wasOnIceTile;
-    }
-
     async movePlayer(moves: Coordinate[], game: Game, wasOnIceTile: boolean, player: Player): Promise<boolean> {
         for (const move of moves) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
@@ -234,7 +217,7 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
                 }
             }
-            wasOnIceTile = this.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
+            wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
             this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {

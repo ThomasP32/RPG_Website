@@ -179,6 +179,7 @@ describe('GameManagerGateway', () => {
 
         afterEach(() => {
             startTurnSpy.restore();
+            jest.clearAllTimers();
         });
 
         it('should return without calling startTurn if player socketId does not match client id', () => {
@@ -262,6 +263,15 @@ describe('GameManagerGateway', () => {
     });
 
     describe('startTurn', () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+        afterEach(() => {
+            jest.clearAllTimers();
+        });
+        afterAll(() => {
+            jest.useRealTimers();
+        });
         it('should emit yourTurn to the active player and playerTurn to others', () => {
             const activePlayer: Player = {
                 socketId: 'active-player-id',
@@ -389,6 +399,7 @@ describe('GameManagerGateway', () => {
 
         afterEach(() => {
             startTurnSpy.restore();
+            jest.clearAllTimers();
         });
 
         it('should call startTurn with the given gameId', () => {
@@ -436,74 +447,6 @@ describe('GameManagerGateway', () => {
         });
     });
 
-    describe('adaptSpecsForIceTileMove', () => {
-        let player: Player;
-        let gameId: string;
-
-        beforeEach(() => {
-            player = {
-                socketId: 'player-1',
-                name: 'Player 1',
-                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
-                position: { x: 0, y: 0 },
-                inventory: [],
-            } as Player;
-            gameId = 'game-1';
-        });
-
-        it('should decrease attack and defense by 2 when moving onto an ice tile without skates', () => {
-            gameManagerService.onIceTile.returns(true);
-
-            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
-
-            expect(player.specs.attack).toBe(8);
-            expect(player.specs.defense).toBe(8);
-            expect(wasOnIceTile).toBe(true);
-        });
-
-        it('should increase attack and defense by 2 when moving off an ice tile without skates', () => {
-            gameManagerService.onIceTile.returns(false);
-
-            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, true);
-
-            expect(player.specs.attack).toBe(12);
-            expect(player.specs.defense).toBe(12);
-            expect(wasOnIceTile).toBe(false);
-        });
-
-        it('should not change attack and defense when moving onto an ice tile with skates', () => {
-            player.inventory.push(ItemCategory.IceSkates);
-            gameManagerService.onIceTile.returns(true);
-
-            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
-
-            expect(player.specs.attack).toBe(10);
-            expect(player.specs.defense).toBe(10);
-            expect(wasOnIceTile).toBe(false);
-        });
-
-        it('should not change attack and defense when moving off an ice tile with skates', () => {
-            player.inventory.push(ItemCategory.IceSkates);
-            gameManagerService.onIceTile.returns(false);
-
-            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
-
-            expect(player.specs.attack).toBe(10);
-            expect(player.specs.defense).toBe(10);
-            expect(wasOnIceTile).toBe(false);
-        });
-
-        it('should not change attack and defense when staying on the same type of tile', () => {
-            gameManagerService.onIceTile.returns(false);
-
-            const wasOnIceTile = gateway.adaptSpecsForIceTileMove(player, gameId, false);
-
-            expect(player.specs.attack).toBe(10);
-            expect(player.specs.defense).toBe(10);
-            expect(wasOnIceTile).toBe(false);
-        });
-    });
-
     describe('getCombats', () => {
         it('should emit an empty array if no adjacent players are found', () => {
             const gameId = 'test-game-id';
@@ -535,6 +478,7 @@ describe('GameManagerGateway', () => {
 
         afterEach(() => {
             startTurnSpy.restore();
+            jest.clearAllTimers();
         });
 
         it('should set up the timeout listener on gameCountdownService once', () => {
@@ -565,7 +509,9 @@ describe('GameManagerGateway', () => {
 
         afterEach(() => {
             startTurnSpy.restore();
+            jest.clearAllTimers();
         });
+
         it('should reset turn counter if the player is inactive', () => {
             const game = {
                 id: 'game-id',
@@ -740,7 +686,7 @@ describe('GameManagerGateway', () => {
                 socketId: 'active-player-id',
                 turn: 0,
                 isActive: true,
-                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor, ItemCategory.Sword], // Plus de 2 items
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor, ItemCategory.Sword],
                 name: 'ActivePlayer',
                 specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
             } as Player;
@@ -754,17 +700,85 @@ describe('GameManagerGateway', () => {
             const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
             expect(toActivePlayerStub.calledWith(ItemsEvents.InventoryFull)).toBeTruthy();
         });
+    });
 
-        it('should adapt specs for ice tile move', async () => {
-            gameManagerService.updatePosition.resolves();
-            itemsManagerService.onItem.returns(false);
-            gameManagerService.checkForWinnerCtf.returns(false);
-            gameManagerService.onIceTile.returns(true);
-
-            await gateway.movePlayer(moves, game, false, player);
-
-            expect(player.specs.attack).toBe(8);
-            expect(player.specs.defense).toBe(8);
+    describe('getMove - Player Falling Scenario', () => {
+        beforeEach(() => {
+            Object.defineProperty(socket, 'id', {
+                value: 'virtualPlayer-1',
+                writable: false,
+            });
         });
+
+        it('should emit youFell to the client and virtualPlayerFinishedMoving if the player has fallen', async () => {
+            gameCreationService.doesGameExist.returns(true);
+
+            const player: Player = {
+                socketId: 'virtualPlayer-1',
+                position: { x: 1, y: 1 },
+                name: 'Virtual Player',
+                inventory: [ItemCategory.Amulet],
+            } as Player;
+
+            const game: Game = {
+                players: [player],
+                id: 'game-id',
+                hostSocketId: 'host-1',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.getMove.returns([{ x: 1, y: 2 }]);
+            gameManagerService.hasFallen = true;
+
+            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+
+            expect(serverStub.to.calledWith(socket.id)).toBeTruthy();
+            const toClientStub = serverStub.to(socket.id).emit as SinonStub;
+            expect(toClientStub.calledWith('youFell')).toBeTruthy();
+
+            expect(serverStub.to.calledWith(game.id)).toBeTruthy();
+            const toRoomStub = serverStub.to(game.id).emit as SinonStub;
+            expect(toRoomStub.calledWith('virtualPlayerFinishedMoving', game.id)).toBeTruthy();
+
+            expect(gameManagerService.hasFallen).toBe(false);
+        });
+    });
+
+    it('should not emit virtualPlayerFinishedMoving if the player is not a virtual player', async () => {
+        gameCreationService.doesGameExist.returns(true);
+
+        Object.defineProperty(socket, 'id', {
+            value: 'realPlayer-1',
+            writable: false,
+        });
+
+        const player: Player = {
+            socketId: 'realPlayer-1',
+            position: { x: 1, y: 1 },
+            name: 'Real Player',
+            inventory: [ItemCategory.Amulet],
+        } as Player;
+
+        const game: Game = {
+            players: [player],
+            id: 'game-id',
+            hostSocketId: 'host-1',
+        } as Game;
+
+        gameCreationService.getGameById.returns(game);
+        gameManagerService.getMove.returns([{ x: 1, y: 2 }]);
+        gameManagerService.hasFallen = true;
+
+        await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+
+        expect(serverStub.to.calledWith(socket.id)).toBeTruthy();
+        const toClientStub = serverStub.to(socket.id).emit as SinonStub;
+        expect(toClientStub.calledWith('youFell')).toBeTruthy();
+
+        expect(serverStub.to.calledWith(game.id)).toBeTruthy();
+        const toRoomStub = serverStub.to(game.id).emit as SinonStub;
+        expect(toRoomStub.calledWith('virtualPlayerFinishedMoving')).toBeFalsy();
+
+        expect(gameManagerService.hasFallen).toBe(false);
     });
 });

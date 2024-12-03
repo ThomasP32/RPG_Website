@@ -1,6 +1,5 @@
 import { Combat } from '@common/combat';
 import {
-    BONUS_REDUCTION,
     CONTINUE_ODDS,
     COUNTDOWN_COMBAT_DURATION,
     EVASION_SUCCESS_RATE,
@@ -43,12 +42,12 @@ export class VirtualGameManagerService extends EventEmitter {
         this.server = server;
     }
 
-    executeVirtualPlayerBehavior(player: Player, game: Game): void {
+    async executeVirtualPlayerBehavior(player: Player, game: Game): Promise<void> {
         this.checkAndToggleDoor(player, game);
         if (player.profile === ProfileType.AGGRESSIVE) {
-            this.executeAggressiveBehavior(player, game);
+            await this.executeAggressiveBehavior(player, game);
         } else if (player.profile === ProfileType.DEFENSIVE) {
-            this.executeDefensiveBehavior(player, game);
+            await this.executeDefensiveBehavior(player, game);
         }
     }
 
@@ -97,7 +96,7 @@ export class VirtualGameManagerService extends EventEmitter {
                     this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
                 }
             }
-            wasOnIceTile = this.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
+            wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
             this.server.to(gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
@@ -105,20 +104,6 @@ export class VirtualGameManagerService extends EventEmitter {
             }
         }
         player.position = path[path.length - MINIMUM_MOVES];
-    }
-
-    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
-        const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
-        if (isOnIceTile && !wasOnIceTile) {
-            player.specs.attack -= BONUS_REDUCTION;
-            player.specs.defense -= BONUS_REDUCTION;
-            wasOnIceTile = true;
-        } else if (!isOnIceTile && wasOnIceTile) {
-            player.specs.attack += BONUS_REDUCTION;
-            player.specs.defense += BONUS_REDUCTION;
-            wasOnIceTile = false;
-        }
-        return wasOnIceTile;
     }
 
     async executeAggressiveBehavior(activePlayer: Player, game: Game): Promise<void> {
@@ -129,13 +114,13 @@ export class VirtualGameManagerService extends EventEmitter {
         const sword = visibleItems.filter((item) => item.category === 'sword')[0];
         const wasOnIceTile = this.gameManagerService.onIceTile(activePlayer, game.id) ? true : false;
 
-        if (visiblePlayers.length > 0) {
+        if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
             await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else if (sword) {
             await this.moveToTargetItem(activePlayer, visibleItems, wasOnIceTile, game);
             this.itemsManagerService.pickUpItem(sword.coordinate, game.id, activePlayer);
             activePlayer.specs.movePoints > 0
-                ? this.executeAggressiveBehavior(activePlayer, game)
+                ? await this.executeAggressiveBehavior(activePlayer, game)
                 : this.emit('virtualPlayerFinishedMoving', game.id);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
@@ -143,7 +128,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
                     ? this.emit('virtualPlayerFinishedMoving', game.id)
                     : Math.random() < CONTINUE_ODDS
-                    ? this.executeAggressiveBehavior(activePlayer, game)
+                    ? await this.executeAggressiveBehavior(activePlayer, game)
                     : this.emit('virtualPlayerFinishedMoving', game.id));
         }
     }
@@ -159,7 +144,7 @@ export class VirtualGameManagerService extends EventEmitter {
         if (armor) {
             await this.moveToTargetItem(activePlayer, visibleItems, wasOnIceTile, game);
             this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
-            activePlayer.specs.movePoints > 0 ? this.executeDefensiveBehavior(activePlayer, game) : this.emit('virtualPlayerFinishedMoving', game.id);
+            activePlayer.specs.movePoints > 0 ? await this.executeDefensiveBehavior(activePlayer, game) : this.emit('virtualPlayerFinishedMoving', game.id);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
             await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else {
@@ -168,7 +153,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
                     ? this.emit('virtualPlayerFinishedMoving', game.id)
                     : Math.random() < CONTINUE_ODDS
-                    ? this.executeDefensiveBehavior(activePlayer, game)
+                    ? await this.executeDefensiveBehavior(activePlayer, game)
                     : this.emit('virtualPlayerFinishedMoving', game.id));
         }
     }

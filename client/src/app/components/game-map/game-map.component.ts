@@ -144,7 +144,10 @@ export class GameMapComponent implements OnInit, OnChanges {
         if (terrainDescription) {
             return terrainDescription;
         }
-
+        const itemDescription = this.getItemDescription(position);
+        if (itemDescription) {
+            return itemDescription;
+        }
         const doorDescription = this.getDoorDescription(position);
         if (doorDescription) {
             return doorDescription;
@@ -156,6 +159,30 @@ export class GameMapComponent implements OnInit, OnChanges {
         }
 
         return 'Un déplacement sur une tuile de terrain nécessite 1 point de mouvement.';
+    }
+
+    private getItemDescription(position: Coordinate): string | null {
+        for (const item of this.loadedMap.items) {
+            if (item.coordinate.x === position.x && item.coordinate.y === position.y) {
+                switch (item.category) {
+                    case ItemCategory.Amulet:
+                        return "Amulet";
+                    case ItemCategory.Armor:
+                        return "Armure";
+                    case ItemCategory.Flag:
+                        return "Le drapeau";
+                    case ItemCategory.IceSkates:
+                        return "Les patins";
+                    case ItemCategory.Flask:
+                        return 'Le';
+                    case ItemCategory.Sword:
+                        return "L'épée";
+                    case ItemCategory.WallBreaker:
+                        return "Le brise-mur";
+                }
+            }
+        }
+        return null;
     }
 
     private getNormalTileDescription(position: Coordinate): string | null {
