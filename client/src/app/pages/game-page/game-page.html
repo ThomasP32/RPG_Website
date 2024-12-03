@@ -1,5 +1,5 @@
-@if(game && player){@if(!delayFinished) {
-<div class="popup-overlay">
+@if(!delayFinished) {
+<div class="popup-tour-overlay">
     <div class="turn-indicator">
         <h3>C'est au tour de {{currentPlayerTurn}}</h3>
         <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{startTurnCountdown}}</span>
@@ -23,7 +23,7 @@
             </div>
             <div class="info-item">
                 <p>Nombre de joueurs :</p>
-                <span>{{ 10 }}</span>
+                <span>{{ game.players.length}}</span>
             </div>
             <div class="info-item">
                 <p>Joueur Actif :</p>
@@ -141,4 +141,4 @@
         <app-inventory-modal [player]="player" [gameId]="game.id"> </app-inventory-modal>
     </div>
 </div>
-} }
+}
