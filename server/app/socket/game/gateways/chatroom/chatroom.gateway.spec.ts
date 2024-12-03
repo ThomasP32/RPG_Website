@@ -1,4 +1,4 @@
-import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
+import { ChatroomService } from '@app/services/chatroom/chatroom.service';
 import { Message } from '@common/message';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance, stub } from 'sinon';

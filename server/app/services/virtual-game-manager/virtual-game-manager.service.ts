@@ -144,7 +144,9 @@ export class VirtualGameManagerService extends EventEmitter {
         if (armor) {
             await this.moveToTargetItem(activePlayer, visibleItems, wasOnIceTile, game);
             this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
-            activePlayer.specs.movePoints > 0 ? await this.executeDefensiveBehavior(activePlayer, game) : this.emit('virtualPlayerFinishedMoving', game.id);
+            activePlayer.specs.movePoints > 0
+                ? await this.executeDefensiveBehavior(activePlayer, game)
+                : this.emit('virtualPlayerFinishedMoving', game.id);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
             await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else {

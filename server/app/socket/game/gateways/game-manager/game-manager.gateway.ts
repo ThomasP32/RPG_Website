@@ -1,9 +1,9 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
-import { GameCountdownService } from '@app/socket/game/service/countdown/game/game-countdown.service';
-import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
-import { JournalService } from '@app/socket/game/service/journal/journal.service';
-import { VirtualGameManagerService } from '@app/socket/game/service/virtual-game-manager/virtual-game-manager.service';
+import { GameCountdownService } from '@app/services/countdown/game/game-countdown.service';
+import { GameCreationService } from '@app/services/game-creation/game-creation.service';
+import { GameManagerService } from '@app/services/game-manager/game-manager.service';
+import { JournalService } from '@app/services/journal/journal.service';
+import { VirtualGameManagerService } from '@app/services/virtual-game-manager/virtual-game-manager.service';
 import {
     DEFAULT_ACTIONS,
     INVENTORY_SIZE,
@@ -20,7 +20,7 @@ import { Coordinate, Tile } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
+import { ItemsManagerService } from '../../../../services/items-manager/items-manager.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameManagerGateway implements OnGatewayInit {

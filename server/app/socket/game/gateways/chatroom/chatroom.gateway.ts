@@ -1,9 +1,9 @@
-import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
+import { ChatroomService } from '@app/services/chatroom/chatroom.service';
+import { ChatEvents } from '@common/events/chat.events';
 import { Message } from '@common/message';
 import { Inject } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import {ChatEvents} from '@common/events/chat.events'
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class ChatRoomGateway {
