@@ -68,7 +68,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     opponent: data.opponent,
                 };
                 this.server.to(combat.id).emit(CombatEvents.CombatStarted, combatStartedData);
-                this.gameManagerService.updatePlayerActions(game.id, client.id);
+                this.gameManagerService.updatePlayerActions(data.gameId, client.id);
                 const involvedPlayers = [player.name];
                 this.journalService.logMessage(data.gameId, `${player.name} a commencé un combat contre ${data.opponent.name}.`, involvedPlayers);
 
