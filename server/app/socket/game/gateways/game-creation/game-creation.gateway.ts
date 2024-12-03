@@ -1,10 +1,10 @@
-import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
+import { GameCreationService } from '@app/services/game-creation/game-creation.service';
 import { GameCreationEvents, JoinGameData, KickPlayerData, ToggleGameLockStateData } from '@common/events/game-creation.events';
 import { Game } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { JournalService } from '../../service/journal/journal.service';
+import { JournalService } from '../../../../services/journal/journal.service';
 
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
 export class GameGateway {

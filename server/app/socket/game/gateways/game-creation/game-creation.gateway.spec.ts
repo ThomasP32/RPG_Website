@@ -1,5 +1,5 @@
-import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { JournalService } from '@app/socket/game/service/journal/journal.service';
+import { GameCreationService } from '@app/services/game-creation/game-creation.service';
+import { JournalService } from '@app/services/journal/journal.service';
 import { ProfileType } from '@common/constants';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';

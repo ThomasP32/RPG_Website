@@ -894,5 +894,4 @@ describe('VirtualGameManagerService', () => {
     afterEach(() => {
         service.removeAllListeners();
     });
-    
 });
