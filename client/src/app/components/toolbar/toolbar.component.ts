@@ -29,10 +29,10 @@ export class ToolbarComponent implements OnInit {
     itemsUsable: boolean = false;
 
     constructor(
-        protected mapService: MapService,
-        protected mapCounterService: MapCounterService,
-        protected imageService: ImageService,
-        protected tileService: TileService,
+        protected readonly mapService: MapService,
+        protected readonly mapCounterService: MapCounterService,
+        protected readonly imageService: ImageService,
+        protected readonly tileService: TileService,
     ) {
         this.mapService = mapService;
         this.mapCounterService = mapCounterService;

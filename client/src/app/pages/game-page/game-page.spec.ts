@@ -111,7 +111,7 @@ describe('GamePageComponent', () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
         const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer', 'setPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
-        const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
+        const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect', 'isSocketAlive']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
             countdown$: new Subject<number>(),
         });
@@ -168,7 +168,7 @@ describe('GamePageComponent', () => {
         socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
-
+        socketService.isSocketAlive.and.returnValue(true);
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
                 case GameCreationEvents.PlayerLeft:

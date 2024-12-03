@@ -77,7 +77,8 @@ describe('WaitingRoomPageComponent', () => {
         gameInitialized = new Subject<Game>();
         playerKicked$ = new Subject<void>();
 
-        SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect']);
+        SocketServiceSpy = jasmine.createSpyObj('SocketService', ['sendMessage', 'listen', 'disconnect', 'isSocketAlive']);
+        SocketServiceSpy.isSocketAlive.and.returnValue(true);
 
         SocketServiceSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             if (eventName === 'gameStarted') {
@@ -195,6 +196,7 @@ describe('WaitingRoomPageComponent', () => {
     });
 
     it('should set isHost to true if route url contains "host"', () => {
+        SocketServiceSpy.isSocketAlive.and.returnValue(false);
         component.ngOnInit();
         expect(component.isHost).toBeTrue();
     });

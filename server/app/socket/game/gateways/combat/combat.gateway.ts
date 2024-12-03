@@ -106,7 +106,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                     this.server.to(combat.id).emit(CombatEvents.EvasionSuccess, evadingPlayer);
                     this.journalService.logMessage(gameId, `Fin de combat. ${evadingPlayer.name} s'est évadé.`, [evadingPlayer.name]);
                     this.combatCountdownService.deleteCountdown(gameId);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: evadingPlayer };
                         this.server.to(gameId).emit(CombatEvents.CombatFinishedByEvasion, combatFinishedByEvasionData);
                         this.gameCountdownService.resumeCountdown(gameId);
@@ -114,7 +114,8 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatService.deleteCombat(gameId);
 
                         if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
-                            this.server.to(gameId).emit('virtualPlayerCanResumeTurn');
+                            await this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
+
                         }
                     }, TIME_LIMIT_DELAY);
                 } else {
@@ -189,9 +190,11 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     prepareNextTurn(gameId: string) {
-        this.combatService.updateTurn(gameId);
-        this.combatCountdownService.resetTimerSubscription(gameId);
-        this.startCombatTurns(gameId);
+        if (this.combatService.getCombatByGameId(gameId)) {
+            this.combatService.updateTurn(gameId);
+            this.combatCountdownService.resetTimerSubscription(gameId);
+            this.startCombatTurns(gameId);
+        }
     }
 
     startCombatTurns(gameId: string): void {
@@ -211,7 +214,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.handleCombatLost(otherPlayer, currentPlayer, game.id, combat.id);
                         this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                     } else if (isCombatFinishedByEvasion) {
-                        setTimeout(() => {
+                        setTimeout(async() => {
                             const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: currentPlayer };
                             this.server.to(gameId).emit(CombatEvents.CombatFinishedByEvasion, combatFinishedByEvasionData);
                             this.gameCountdownService.resumeCountdown(gameId);
@@ -219,7 +222,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                             this.combatService.deleteCombat(gameId);
 
                             if (this.gameCreationService.getGameById(gameId).currentTurn === currentPlayer.turn) {
-                                this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
+                                await this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                             }
                         }, TIME_LIMIT_DELAY);
                     } else {
