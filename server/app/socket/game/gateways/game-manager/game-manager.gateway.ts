@@ -225,9 +225,9 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
                     if (player.inventory.length > INVENTORY_SIZE) {
                         const coordinates = player.position;
-                        this.itemsManagerService.dropItem(player.inventory[2], game.id, player, coordinates);
+                        this.itemsManagerService.dropItem(player.inventory[INVENTORY_SIZE], game.id, player, coordinates);
                         const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
-                        this.server.to(player.socketId).emit(ItemsEvents.ItemDropped, itemDroppedData);
+                        this.server.to(game.id).emit(ItemsEvents.ItemDropped, itemDroppedData);
                     }
                 }
             });

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { GameInfosService } from '@app/services/game-infos.service';
 import { ImageService } from '@app/services/image/image.service';
+import { RIGHT_CLICK, TOOLTIP_DIRECTION_CHANGE } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { Avatar, Game } from '@common/game';
 import { Cell } from '@common/map-cell';
@@ -138,15 +139,15 @@ export class GameMapComponent implements OnInit, OnChanges {
         if (event.button === 2) {
             event.preventDefault();
             this.tileDescription = this.GameInfosService.getTileDescription(position, this.loadedMap);
-            this.tooltipX = event.pageX + 10;
-            this.tooltipY = event.pageY + 10;
+            this.tooltipX = event.pageX + TOOLTIP_DIRECTION_CHANGE;
+            this.tooltipY = event.pageY + TOOLTIP_DIRECTION_CHANGE;
             this.explanationIsVisible = true;
         }
     }
 
     @HostListener('window:mouseup', ['$event'])
     onRightClickRelease(event: MouseEvent) {
-        if (event.button === 2) {
+        if (event.button === RIGHT_CLICK) {
             this.explanationIsVisible = false;
             this.tileDescription = '';
         }

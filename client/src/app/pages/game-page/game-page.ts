@@ -18,7 +18,7 @@ import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TIME_DASH_OFFSET, TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
+import { COUNTDOWN_PULSE, MAX_CHAR, TIME_DASH_OFFSET, TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { ChatEvents } from '@common/events/chat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
@@ -107,7 +107,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     ngOnInit() {
         if (!this.socketService.isSocketAlive()) {
             this.ngOnDestroy();
-            this.navigateToMain();
+            this.leaveGame();
             return;
         }
         if (this.player && this.game) {
@@ -159,7 +159,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.activeView = view;
     }
 
-    navigateToMain(): void {
+    leaveGame(): void {
+        this.showExitModal = false;
         this.playerService.resetPlayer();
         this.characterService.resetCharacterAvailability();
         this.socketService.disconnect();
@@ -172,14 +173,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     navigateToEndOfGame(): void {
         this.router.navigate(['/end-game']);
-    }
-
-    confirmExit(): void {
-        this.socketService.disconnect();
-        this.navigateToMain();
-        this.showExitModal = false;
-        this.characterService.resetCharacterAvailability();
-        this.playerService.resetPlayer();
     }
 
     openExitConfirmationModal(): void {
@@ -248,10 +241,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
             this.countdown = time;
-            const timeLeft = typeof time === 'string' ? parseInt(time, 10) : time;
+            const timeLeft = typeof time === 'string' ? parseInt(time, MAX_CHAR) : time;
             const progress = (timeLeft / TURN_DURATION) * TIME_DASH_OFFSET;
             this.dashOffset = `${TIME_DASH_OFFSET - progress}`;
-            if (timeLeft < 6) {
+            if (timeLeft < COUNTDOWN_PULSE) {
                 this.triggerPulse();
             }
         });
@@ -285,7 +278,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.showExitModal = false;
                     this.showKickedModal = true;
                     setTimeout(() => {
-                        this.navigateToMain();
+                        this.leaveGame();
                     }, TIME_LIMIT_DELAY);
                 }
             }),
