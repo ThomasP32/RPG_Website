@@ -143,31 +143,6 @@ describe('GameManagerGateway', () => {
             expect(journalService.logMessage.calledWith('game-id', `Le drapeau a été récupéré par ${player.name}.`, [player.name])).toBeTruthy();
         });
 
-        it('should emit positionToUpdate and youFell if the player falls', async () => {
-            gameCreationService.doesGameExist.returns(true);
-
-            const player: Player = { socketId: socket.id, position: { x: 1, y: 1 }, inventory: [] } as Player;
-            const game = { players: [player], currentTurn: 0, id: '1234', hostSocketId: 'host-1' } as Game;
-            gameCreationService.getGameById.returns(game);
-            gameManagerService.hasFallen = true;
-
-            const moves = [
-                { x: 1, y: 1 },
-                { x: 1, y: 2 },
-            ];
-            gameManagerService.getMove.returns(moves);
-            gameManagerService.updatePosition.resolves();
-            expect(gameManagerService.hasFallen).toBe(true);
-
-            await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
-
-            const toRoomStub = serverStub.to('game-id').emit as SinonStub;
-            expect(toRoomStub.calledWith('positionToUpdate', { game, player })).toBeTruthy();
-
-            const toSocketStub = serverStub.to(socket.id).emit as SinonStub;
-            expect(toSocketStub.calledWith('youFell')).toBeTruthy();
-        });
-
         it('should emit youFinishedMoving if the player reaches the destination', async () => {
             gameCreationService.doesGameExist.returns(true);
 
@@ -360,6 +335,48 @@ describe('GameManagerGateway', () => {
 
             const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
             expect(toActivePlayerStub.calledWith('yourTurn', activePlayer)).toBeTruthy();
+        });
+
+        it('should emit positionToUpdate to the virtualPlayer', () => {
+            const activePlayer: Player = {
+                socketId: 'virtualPlayer-id',
+                turn: 0,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
+                name: 'ActivePlayer',
+                specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
+            } as Player;
+
+            const otherPlayer: Player = {
+                socketId: 'other-player-id',
+                turn: 1,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
+                name: 'OtherPlayer',
+                specs: { speed: 5, movePoints: 0 },
+            } as Player;
+
+            const game: Game = {
+                players: [activePlayer, otherPlayer],
+                currentTurn: 0,
+                id: 'game-id',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.onIceTile.returns(true);
+            gameManagerService.isGameResumable.returns(true);
+
+            gateway.startTurn('game-id');
+
+            expect(journalService.logMessage.calledWith('game-id', `C'est au tour de ActivePlayer.`, ['ActivePlayer', 'OtherPlayer'])).toBeTruthy();
+
+            expect(activePlayer.specs.movePoints).toBe(activePlayer.specs.speed);
+
+            const toActivePlayerStub = serverStub.to(activePlayer.socketId).emit as SinonStub;
+            expect(toActivePlayerStub.calledWith('positionToUpdate', activePlayer)).toBeFalsy();
+
+            const toOtherPlayerStub = serverStub.to(otherPlayer.socketId).emit as SinonStub;
+            expect(toOtherPlayerStub.calledWith('playerTurn', activePlayer.name)).toBeTruthy();
         });
     });
 

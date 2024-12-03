@@ -1,5 +1,5 @@
 import { Combat } from '@common/combat';
-import { TIME_LIMIT_DELAY } from '@common/constants';
+import { EVASION_SUCCESS_RATE, TIME_LIMIT_DELAY } from '@common/constants';
 import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData, CombatStartedData, StartCombatData } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Game, Player } from '@common/game';
@@ -98,7 +98,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 }
                 evadingPlayer.specs.nEvasions++;
                 evadingPlayer.specs.evasions--;
-                const evasionSuccess = Math.random() < 0.4;
+                const evasionSuccess = Math.random() < EVASION_SUCCESS_RATE;
 
                 if (evasionSuccess) {
                     const game = this.gameCreationService.getGameById(gameId);
@@ -114,7 +114,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatService.deleteCombat(gameId);
 
                         if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
-                            this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
+                            this.server.to(gameId).emit('virtualPlayerCanResumeTurn');
                         }
                     }, TIME_LIMIT_DELAY);
                 } else {
@@ -226,7 +226,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.combatCountdownService.resetTimerSubscription(gameId);
                         this.prepareNextTurn(gameId);
                     }
-                }, 3000);
+                }, TIME_LIMIT_DELAY);
             }
             this.combatCountdownService.startTurnCounter(game, currentPlayer.specs.evasions !== 0);
         }
