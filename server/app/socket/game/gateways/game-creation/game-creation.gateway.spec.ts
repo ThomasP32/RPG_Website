@@ -204,7 +204,6 @@ describe('GameGateway', () => {
             const newPlayer: Player = { name: 'Player2', socketId: socket.id, isActive: true } as Player;
             const updatedGame: Game = { ...gameRoom, players: [...gameRoom.players, newPlayer] };
 
-            // Mock methods to simulate a full game
             gameCreationService.doesGameExist.returns(true);
             gameCreationService.getGameById.returns(gameRoom);
             gameCreationService.addPlayerToGame.returns(updatedGame);

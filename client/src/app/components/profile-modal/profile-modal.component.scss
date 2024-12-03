@@ -5,7 +5,8 @@
 }
 
 .modal-title {
-    font-size: 16px;
+    font-size: 20px;
+    font-family: 'Press Start 2P', cursive;
     font-weight: bold;
     margin-bottom: 20px;
 }
@@ -18,7 +19,8 @@
 
 .profile-button {
     padding: 10px 30px;
-    font-size: 22px;
+    font-size: 17px;
+    font-family: 'Press Start 2P', cursive;
     border: none;
     cursor: pointer;
     background-color: rgb(162, 81, 81);
@@ -36,12 +38,13 @@
 
 .create-player-button {
     padding: 12px 30px;
-    font-size: 20px;
+    font-size: 17px;
     border: none;
     cursor: pointer;
     background-color: rgb(106, 151, 106);
     color: white;
     transition: background-color 0.3s;
+    font-family: 'Press Start 2P', cursive;
 }
 
 .create-player-button:hover {

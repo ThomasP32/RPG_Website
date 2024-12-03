@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
+import { GameInfosService } from '@app/services/game-infos.service';
 import { ImageService } from '@app/services/image/image.service';
 import { MovesMap } from '@common/directions';
 import { Avatar, Game } from '@common/game';
@@ -25,8 +26,12 @@ export class GameMapComponent implements OnInit, OnChanges {
     tooltipX: number = 0;
     tooltipY: number = 0;
 
-    constructor(private readonly imageService: ImageService) {
+    constructor(
+        private readonly imageService: ImageService,
+        private readonly GameInfosService: GameInfosService,
+    ) {
         this.imageService = imageService;
+        this.GameInfosService = GameInfosService;
     }
 
     onTileClick(position: Coordinate) {
@@ -132,96 +137,11 @@ export class GameMapComponent implements OnInit, OnChanges {
     onRightClickTile(event: MouseEvent, position: Coordinate) {
         if (event.button === 2) {
             event.preventDefault();
-            this.tileDescription = this.getTileDescription(position);
+            this.tileDescription = this.GameInfosService.getTileDescription(position, this.loadedMap);
             this.tooltipX = event.pageX + 10;
             this.tooltipY = event.pageY + 10;
             this.explanationIsVisible = true;
         }
-    }
-
-    private getTileDescription(position: Coordinate): string {
-        const terrainDescription = this.getNormalTileDescription(position);
-        if (terrainDescription) {
-            return terrainDescription;
-        }
-        const itemDescription = this.getItemDescription(position);
-        if (itemDescription) {
-            return itemDescription;
-        }
-        const doorDescription = this.getDoorDescription(position);
-        if (doorDescription) {
-            return doorDescription;
-        }
-
-        const playerDescription = this.getPlayerDescription(position);
-        if (playerDescription) {
-            return playerDescription;
-        }
-
-        return 'Un déplacement sur une tuile de terrain nécessite 1 point de mouvement.';
-    }
-
-    private getItemDescription(position: Coordinate): string | null {
-        for (const item of this.loadedMap.items) {
-            if (item.coordinate.x === position.x && item.coordinate.y === position.y) {
-                switch (item.category) {
-                    case ItemCategory.Amulet:
-                        return "Amulet";
-                    case ItemCategory.Armor:
-                        return "Armure";
-                    case ItemCategory.Flag:
-                        return "Le drapeau";
-                    case ItemCategory.IceSkates:
-                        return "Les patins";
-                    case ItemCategory.Flask:
-                        return 'Le';
-                    case ItemCategory.Sword:
-                        return "L'épée";
-                    case ItemCategory.WallBreaker:
-                        return "Le brise-mur";
-                }
-            }
-        }
-        return null;
-    }
-
-    private getNormalTileDescription(position: Coordinate): string | null {
-        for (const tile of this.loadedMap.tiles) {
-            if (tile.coordinate.x === position.x && tile.coordinate.y === position.y) {
-                switch (tile.category) {
-                    case TileCategory.Water:
-                        return "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.";
-                    case TileCategory.Ice:
-                        return "Un déplacement sur une tuile de glace ne nécessite aucun point de mouvement, mais a un risque de chute qui s'élève à 10%.";
-                    case TileCategory.Wall:
-                        return "Aucun déplacement n'est possible sur ou à travers un mur.";
-                }
-            }
-        }
-        return null;
-    }
-
-    private getDoorDescription(position: Coordinate): string | null {
-        for (const doorTile of this.loadedMap.doorTiles) {
-            if (doorTile.coordinate.x === position.x && doorTile.coordinate.y === position.y) {
-                if (!doorTile.isOpened) {
-                    return 'Une porte fermée ne peut être franchie, mais peut être ouverte par une action.';
-                }
-                if (doorTile.isOpened) {
-                    return 'Une porte ouverte peut être franchie, mais peut être fermée par une action.';
-                }
-            }
-        }
-        return null;
-    }
-
-    private getPlayerDescription(position: Coordinate): string | null {
-        for (const player of this.loadedMap.players) {
-            if (player.position.x === position.x && player.position.y === position.y) {
-                return `nom du joueur: ${player.name}`;
-            }
-        }
-        return null;
     }
 
     @HostListener('window:mouseup', ['$event'])

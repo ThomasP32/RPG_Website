@@ -1,15 +1,14 @@
 <div class="chat-container" [class.retracted]="isChatRetracted" [class.waiting-room-chat]="isWaitingRoom" [class.game-page-chat]="isGamePage">
     @if (isWaitingRoom) {
-        <div class="chat-header" (click)="toggleChat()">
-            <strong>Clavardage</strong>
-            <span class="toggle-icon">
-                <i [ngClass]="isChatRetracted ? 'fas fa-comments' : 'fas fa-comment-dots'"></i>
-            </span>
-        </div>
-        }
-    @if (!isChatRetracted) {
-    <section>
-        <strong>{{ playerName }}</strong>
+    <div class="chat-header" (click)="toggleChat()">
+        <strong>Clavardage</strong>
+        <span class="toggle-icon">
+            <i [ngClass]="isChatRetracted ? 'fas fa-comments' : 'fas fa-comment-dots'"></i>
+        </span>
+    </div>
+    } @if (!isChatRetracted) {
+    <section class="chat-section">
+        <strong class="player-name">{{ playerName }}</strong>
         <div id="messageArea" class="message-area">
             <ul id="messageList">
                 @for (message of messages; track message) {
@@ -33,7 +32,7 @@
                 maxlength="200"
                 type="text"
             />
-            <button class="send-message-button" (click)="sendMessage()">Envoyer</button>
+            <div class="send-message-button" (click)="sendMessage()"><img src="assets/icons/arrow.png" alt="Trophée" class="icon" /></div>
         </div>
     </section>
     }

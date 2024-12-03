@@ -57,7 +57,7 @@ describe('PlayerService', () => {
             expect(player.name).toBe('Test Player');
             expect(player.socketId).toBe('12345');
             expect(player.avatar).toBe(Avatar.Avatar2);
-            expect(player.specs.life).toBe(6); // life bonus
+            expect(player.specs.life).toBe(6);
             expect(player.specs.speed).toBe(4);
             expect(player.specs.attackBonus).toBe(Bonus.D6);
             expect(player.specs.defenseBonus).toBe(Bonus.D4);

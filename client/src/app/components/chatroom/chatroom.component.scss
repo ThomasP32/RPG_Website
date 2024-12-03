@@ -1,22 +1,23 @@
 .chat-container {
-    right: 3px;
-    color: white;
-    top: 14%;
-    overflow-y: auto;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    background-color: #1c242c;
     transition:
         transform 0.3s ease,
         max-height 0.3s ease;
+}
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 31vh;
 }
 
 .chat-container.retracted {
     transform: translateY(calc(100vh - 50px));
     max-height: 50px;
     overflow: hidden;
-    transform: translateY(25%);
 }
 
 .waiting-room-chat {
@@ -33,24 +34,22 @@
 }
 
 .game-page-chat {
-    width: 330px;
-    max-height: 250px;
-    background-color: #1c242c;
-    border: 2px solid #202020;
-    box-sizing: border-box;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 75vh;
     display: flex;
     flex-direction: column;
-    font-family: 'Press Start 2P', sans-serif;
 }
 
 .game-page-chat .chat-container.retracted {
-    max-height: 50px;
     overflow: hidden;
     transform: translateY(0);
 }
 
 .game-page-chat #messageArea {
-    max-height: 80px;
+    max-height: 40vh;
     margin-top: 8px;
 }
 
@@ -60,8 +59,19 @@
     color: white;
     padding: 10px;
     border-bottom: 1px solid #202020;
-    background-color: #1c242c;
     text-align: center;
+}
+
+.player-name {
+    width: 26.2vw;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 1vw;
+    color: white;
+    box-sizing: border-box;
+    border-bottom: 2px solid #b85c38;
+    text-align: center;
+    z-index: 30;
 }
 
 .toggle-icon {
@@ -75,16 +85,20 @@
 }
 
 .message-area {
+    flex: 1;
+    margin-top: 50px;
+    margin-bottom: 50px;
     overflow-y: auto;
-    margin-bottom: 15px;
     word-wrap: break-word;
     white-space: pre-wrap;
+    box-sizing: border-box;
 }
 
 #messageList {
     color: white;
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 li {
@@ -102,30 +116,38 @@ li {
 }
 
 .input-container {
+    bottom: 11px;
     display: flex;
+    width: 27vw;
+    height: 4vh;
     align-items: center;
-    padding: 10px;
-    width: 100%;
+    justify-content: space-evenly;
+    border-top: 1px solid #202020;
+    z-index: 10;
 }
 
 input#messageInput {
-    width: 70%;
-    padding: 5px;
+    flex: 1;
+    height: 4vh;
+    border: 2px solid #202020;
+    background-color: #2c3e50;
+    color: white;
+    font-size: 0.8rem;
     box-sizing: border-box;
 }
-
 .send-message-button {
-    background-color: #2c3e50;
-    border: 3px solid #202020;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: white;
-    padding: 10px 10px;
+    padding-left: 10px;
+    padding-right: 10px;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 8px;
-    font-family: 'Press Start 2P', sans-serif;
     transition: background-color 0.4s;
+    font-size: 1.2em;
 }
 
-.send-message-button:hover {
-    background-color: #34495e;
+.icon {
+    width: 30px;
+    height: 30px;
 }

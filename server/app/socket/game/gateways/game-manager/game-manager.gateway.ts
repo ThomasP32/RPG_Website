@@ -16,7 +16,7 @@ import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
-import { Coordinate } from '@common/map.types';
+import { Coordinate, Tile } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -102,11 +102,29 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(data.gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const doorTile = game.doorTiles.find((door) => door.coordinate.x === data.door.coordinate.x && door.coordinate.y === data.door.coordinate.y);
-
-        this.gameManagerService.updatePlayerActions(data.gameId, client.id);
+        this.gameManagerService.updatePlayerActions(game.id, player.socketId);
         doorTile.isOpened = !doorTile.isOpened;
         game.nDoorsManipulated.push(doorTile.coordinate);
         this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
+    }
+
+    @SubscribeMessage('breakWall')
+    breakWall(client: Socket, data: { gameId: string; wall: Tile }): void {
+        const game = this.gameCreationService.getGameById(data.gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        const wallTiles = this.gameManagerService.getAdjacentWalls(player, game.id);
+
+        wallTiles.forEach((wallTile) => {
+            const index = game.tiles.findIndex((tile) => tile.coordinate.x === wallTile.coordinate.x && tile.coordinate.y === wallTile.coordinate.y);
+
+            if (index !== -1) {
+                game.tiles.splice(index, 1);
+            }
+        });
+        this.gameManagerService.updatePlayerActions(game.id, player.socketId);
+        const involvedPlayers = game.players.map((player) => player.name);
+        this.journalService.logMessage(data.gameId, `${player.name}. a brisé un mur !`, involvedPlayers);
+        this.server.to(data.gameId).emit('wallBroken', { game: game, player: player });
     }
 
     @SubscribeMessage('getCombats')
@@ -123,6 +141,14 @@ export class GameManagerGateway implements OnGatewayInit {
         const player = game.players.find((player) => player.socketId === client.id);
         const adjacentDoors = this.gameManagerService.getAdjacentDoors(player, gameId);
         this.server.to(client.id).emit('yourDoors', adjacentDoors);
+    }
+
+    @SubscribeMessage('getAdjacentWalls')
+    getAdjacentWalls(client: Socket, gameId: string): void {
+        const game = this.gameCreationService.getGameById(gameId);
+        const player = game.players.find((player) => player.socketId === client.id);
+        const adjacentWalls = this.gameManagerService.getAdjacentWalls(player, gameId);
+        this.server.to(client.id).emit('yourWalls', adjacentWalls);
     }
 
     @SubscribeMessage(ItemsEvents.dropItem)

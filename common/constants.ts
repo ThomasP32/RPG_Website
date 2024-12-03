@@ -57,6 +57,8 @@ export const TIME_PULSE: number = 500;
 
 export const TIME_FOR_POSITION_UPDATE: number = 150;
 
+export const TIME_DASH_OFFSET: number = 100;
+
 export const HALF = 0.5;
 
 export const ALL_ITEMS: ItemCategory[] = [
@@ -104,9 +106,13 @@ export const SWORD_ATTACK_BONUS: number = 4;
 
 export const SWORD_SPEED_BONUS: number = 2;
 
-export const ARMOR_DEFENSE_BONUS: number = 5;
+export const ARMOR_DEFENSE_BONUS: number = 4;
 
 export const ARMOR_SPEED_PENALTY: number = 1;
+
+export const FLASK_ATTACK_BONUS: number = 4;
+
+export const AMULET_LIFE_BONUS: number = 2;
 
 export const ICE_ATTACK_PENALTY: number = 2;
 
