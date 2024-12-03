@@ -1,0 +1,27 @@
+<div class="popup-overlay">
+    <div class="door-selector-container">
+        <button class="close-button" (click)="closeModal()">X</button>
+        <div class="header">Choisis ta porte</div>
+        <div class="door-selector">
+            <div class="map-row" *ngFor="let row of surroundingMap; let rowIndex = index; trackBy: rowByIndex">
+                <div
+                    class="map-cell"
+                    [class.highlight]="isDoor(cell.alternateCoordinates)"
+                    [class.door-cell]="isDoor(cell.alternateCoordinates)"
+                    *ngFor="let cell of row; let colIndex = index; trackBy: cellByIndex"
+                    (click)="onDoorClick(cell.alternateCoordinates)"
+                    (contextmenu)="$event.preventDefault()"
+                >
+                    @if(cell.tileType) {
+                    <img [src]="getTileImage(cell.tileType, cell.alternateCoordinates.x, cell.alternateCoordinates.y)" alt="Tile" class="grid-tile" />
+                    } @if(cell.item) {
+                    <img [src]="getItemImage(cell.item)" alt="Item" class="grid-item" />
+                    } @if(cell.isStartingPoint) {
+                    <img [src]="getStartingPointImage()" alt="Starting-Point" class="grid-starting-points" />
+                    } @if(cell.player) {
+                    <img [src]="getAvatarImage(cell.player.avatar)" alt="Player" class="grid-players" />}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

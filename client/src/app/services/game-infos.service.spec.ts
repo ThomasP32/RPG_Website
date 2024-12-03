@@ -43,12 +43,12 @@ describe('GameInfosService', () => {
         const position: Coordinate = { x: 1, y: 1 };
         const loadedMap: Game = {
             tiles: [],
-            items: [{ coordinate: position, category: ItemCategory.Sword }],
+            items: [{ coordinate: position, category: ItemCategory.WallBreaker }],
             doorTiles: [],
             players: [],
         } as unknown as Game;
         const description = service.getTileDescription(position, loadedMap);
-        expect(description).toBe(GameDescriptions.Sword);
+        expect(description).toBe(GameDescriptions.WallBreaker);
     });
 
     it('should return correct door description', () => {

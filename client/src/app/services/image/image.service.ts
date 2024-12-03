@@ -27,7 +27,7 @@ export class ImageService {
         return isOpen ? './assets/tiles/door_opened.jpg' : './assets/tiles/door_closed.jpg';
     }
 
-    getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number, map: any[][]): string {
+    getTileImage(tileValue: TileCategory): string {
         switch (tileValue) {
             case 'wall':
                 return './assets/tiles/wall.png';
@@ -35,8 +35,6 @@ export class ImageService {
                 return './assets/tiles/ice1.jpg';
             case 'water':
                 return './assets/tiles/water.png';
-            case 'door':
-                return this.getDoorImage(map[rowIndex][colIndex].door.isOpen);
             default:
                 return './assets/tiles/floor.png';
         }
