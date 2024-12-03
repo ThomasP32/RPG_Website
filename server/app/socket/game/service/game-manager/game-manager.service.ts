@@ -4,6 +4,7 @@ import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
+import { ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY } from '@common/constants';
 
 @Injectable()
 export class GameManagerService {
@@ -266,6 +267,21 @@ export class GameManagerService {
         return adjacentDoors;
     }
 
+    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
+        const isOnIceTile = this.onIceTile(player, gameId);
+        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
+            player.specs.attack -= ICE_ATTACK_PENALTY;
+            player.specs.defense -= ICE_DEFENSE_PENALTY;
+            wasOnIceTile = true;
+        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
+            player.specs.attack += ICE_ATTACK_PENALTY;
+            player.specs.defense += ICE_DEFENSE_PENALTY;
+            wasOnIceTile = false;
+        }
+        return wasOnIceTile;
+    }
+    
     getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
         const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
 
