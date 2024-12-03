@@ -209,21 +209,6 @@ export class GameManagerGateway implements OnGatewayInit {
             });
     }
 
-    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
-        const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
-        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
-        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
-            player.specs.attack -= ICE_ATTACK_PENALTY;
-            player.specs.defense -= ICE_DEFENSE_PENALTY;
-            wasOnIceTile = true;
-        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
-            player.specs.attack += ICE_ATTACK_PENALTY;
-            player.specs.defense += ICE_DEFENSE_PENALTY;
-            wasOnIceTile = false;
-        }
-        return wasOnIceTile;
-    }
-
     async movePlayer(moves: Coordinate[], game: Game, wasOnIceTile: boolean, player: Player): Promise<boolean> {
         for (const move of moves) {
             this.gameManagerService.updatePosition(game.id, player.socketId, [move]);
@@ -234,7 +219,7 @@ export class GameManagerGateway implements OnGatewayInit {
                     this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
                 }
             }
-            wasOnIceTile = this.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
+            wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
             this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {

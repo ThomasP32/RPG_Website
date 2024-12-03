@@ -97,7 +97,7 @@ export class VirtualGameManagerService extends EventEmitter {
                     this.server.to(player.socketId).emit(ItemsEvents.InventoryFull);
                 }
             }
-            wasOnIceTile = this.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
+            wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
             this.server.to(gameId).emit('positionToUpdate', { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
@@ -105,20 +105,6 @@ export class VirtualGameManagerService extends EventEmitter {
             }
         }
         player.position = path[path.length - MINIMUM_MOVES];
-    }
-
-    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
-        const isOnIceTile = this.gameManagerService.onIceTile(player, gameId);
-        if (isOnIceTile && !wasOnIceTile) {
-            player.specs.attack -= BONUS_REDUCTION;
-            player.specs.defense -= BONUS_REDUCTION;
-            wasOnIceTile = true;
-        } else if (!isOnIceTile && wasOnIceTile) {
-            player.specs.attack += BONUS_REDUCTION;
-            player.specs.defense += BONUS_REDUCTION;
-            wasOnIceTile = false;
-        }
-        return wasOnIceTile;
     }
 
     async executeAggressiveBehavior(activePlayer: Player, game: Game): Promise<void> {
