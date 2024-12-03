@@ -3,7 +3,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsComponentComponent } from '@app/components/actions-component/actions-component.component';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
-import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
 import { CombatModalComponent } from '@app/components/combat-modal/combat-modal.component';
 import { GameMapComponent } from '@app/components/game-map/game-map.component';
 import { GamePlayersListComponent } from '@app/components/game-players-list/game-players-list.component';
@@ -19,7 +18,7 @@ import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
+import { TIME_DASH_OFFSET, TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { ChatEvents } from '@common/events/chat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
@@ -37,7 +36,6 @@ import { Subscription } from 'rxjs';
         GameMapComponent,
         ChatroomComponent,
         GamePlayersListComponent,
-        CombatListComponent,
         CombatModalComponent,
         JournalComponent,
         ActionsComponentComponent,
@@ -57,8 +55,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     possibleOpponents: Player[];
     doorActionAvailable: boolean = false;
 
-    dashArray: string = '100';
-    dashOffset: string = '60';
+    dashArray: string = `${TIME_DASH_OFFSET}`;
+    dashOffset: string = `${TIME_DASH_OFFSET}`;
 
     currentPlayerTurn: string;
 
@@ -112,6 +110,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.gameTurnService.listenForPlayerMove();
             this.gameTurnService.listenMoves();
             this.gameTurnService.listenForPossibleActions();
+            this.gameTurnService.listenForDoorUpdates();
+            this.gameTurnService.listenForWallBreaking();
             this.gameTurnService.listenForCombatConclusion();
             this.gameTurnService.listenForEndOfGame();
             this.combatService.listenCombatStart();
@@ -243,10 +243,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
             this.countdown = typeof time === 'string' ? parseInt(time, 10) : time;
-            const progress = (this.countdown / TURN_DURATION) * 100;
-            this.dashOffset = `${100 - progress}`;
-            this.dashArray = '100';
-            console.log('dashOffset:', this.dashOffset, 'dashArray:', this.dashArray);
+            const progress = (this.countdown / TURN_DURATION) * TIME_DASH_OFFSET;
+            this.dashOffset = `${TIME_DASH_OFFSET - progress}`;
             if (this.countdown < 6) {
                 this.triggerPulse();
             }

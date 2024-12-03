@@ -318,7 +318,8 @@ export class GameManagerService {
 
     isGameResumable(gameId: string): boolean {
         return (
-            this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
+            this.gameCreationService.getGameById(gameId) &&
+            !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive && !player.socketId.includes('virtual'))
         );
     }
 

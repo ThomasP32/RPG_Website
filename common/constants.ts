@@ -50,6 +50,8 @@ export const TIME_PULSE: number = 500;
 
 export const TIME_FOR_POSITION_UPDATE: number = 150;
 
+export const TIME_DASH_OFFSET: number = 100;
+
 export const HALF = 0.5;
 
 export const ALL_ITEMS: ItemCategory[] = [

@@ -24,7 +24,7 @@ const mockPlayer: Player = {
         attack: 10,
         defense: 10,
         movePoints: 5,
-        actions: 2,
+        actions: 0,
         attackBonus: Bonus.D4,
         defenseBonus: Bonus.D6,
         nVictories: 0,
@@ -154,9 +154,11 @@ describe('ActionsComponentComponent', () => {
     });
 
     it('should set combatAvailable to true and update possibleOpponents when there are possible opponents and player has actions', () => {
+        component.player = mockPlayer;
+        component.player.specs.actions = 1;
         const possibleOpponents = [mockPlayer];
         (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
-        component.player.specs.actions = 1;
+
         fixture.detectChanges();
 
         expect(component.combatAvailable).toBeTrue();
@@ -174,8 +176,8 @@ describe('ActionsComponentComponent', () => {
 
     it('should set combatAvailable to false and clear possibleOpponents when player has no actions', () => {
         const possibleOpponents = [mockPlayer];
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
         component.player.specs.actions = 0;
+        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
         fixture.detectChanges();
 
         expect(component.combatAvailable).toBeFalse();
@@ -227,4 +229,39 @@ describe('ActionsComponentComponent', () => {
         expect(component.breakWallActionAvailable).toBeFalse();
         expect(component.possibleWalls).toEqual([]);
     });
+    // it('should set showCombatModal to the new value when onShowCombatModalChange is called', () => {
+    //     component.onShowCombatModalChange(true);
+    //     expect(component.showCombatModal).toBeTrue();
+
+    //     component.onShowCombatModalChange(false);
+    //     expect(component.showCombatModal).toBeFalse();
+    // });
+
+    // it('should set actionDescription when showDescription is called', () => {
+    //     component.showDescription('Test Description');
+    //     expect(component.actionDescription).toBe('Test Description');
+    // });
+
+    // it('should set actionDescription to null when hideDescription is called', () => {
+    //     component.hideDescription();
+    //     expect(component.actionDescription).toBeNull();
+    // });
+
+    // it('should call listenForPossibleOpponents on ngOnInit', () => {
+    //     spyOn(component as any, 'listenForPossibleOpponents');
+    //     component.ngOnInit();
+    //     expect(component['listenForPossibleOpponents']).toHaveBeenCalled();
+    // });
+
+    // it('should call listenForDoorOpening on ngOnInit', () => {
+    //     spyOn(component as any, 'listenForDoorOpening');
+    //     component.ngOnInit();
+    //     expect(component['listenForDoorOpening']).toHaveBeenCalled();
+    // });
+
+    // it('should call listenForWallBreaking on ngOnInit', () => {
+    //     spyOn(component as any, 'listenForWallBreaking');
+    //     component.ngOnInit();
+    //     expect(component['listenForWallBreaking']).toHaveBeenCalled();
+    // });
 });
