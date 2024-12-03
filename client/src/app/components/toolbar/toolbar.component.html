@@ -103,7 +103,7 @@
                         [draggable]="mapCounterService.randomItemCounter > 0 && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Random)"
                     />
-                    <span class="description">Une boîte mystère contenant un objet aléatoire. Ouvrez-la pour découvrir une surprise !</span>
+                    <span class="description">{{ GameDescriptions.Random }}</span>
                     <span class="counter" draggable="false">{{ mapCounterService.randomItemCounter }}</span>
                 </div>
             </div>

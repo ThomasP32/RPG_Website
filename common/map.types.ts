@@ -36,6 +36,7 @@ export enum GameDescriptions {
     Sword = "Lame d'Agilité : +4 en attaque et +2 en vitesse. Parfait pour un combat rapide et décisif.",
     WallBreaker = 'Destructeur de Murs : Détruit instantanément tous les murs adjacents. Ouvrez votre chemin avec style.',
     Flask = 'Potion de Résurrection : Lorsque vous tombez à 2 vies en combat, gagnez un boost de +4 en attaque pour un dernier effort héroïque.',
+    Random = 'Une boîte mystère contenant un objet aléatoire. Qui sait ce que vous trouverez ?',
 
     WaterTile = "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.",
     IceTile = "Un déplacement sur une tuile de glace ne nécessite aucun point de mouvement, mais a un risque de chute qui s'élève à 10%.",
