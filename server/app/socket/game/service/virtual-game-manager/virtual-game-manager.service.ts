@@ -1,6 +1,5 @@
 import { Combat } from '@common/combat';
 import {
-    BONUS_REDUCTION,
     CONTINUE_ODDS,
     COUNTDOWN_COMBAT_DURATION,
     EVASION_SUCCESS_RATE,

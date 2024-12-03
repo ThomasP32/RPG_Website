@@ -6,8 +6,6 @@ import { JournalService } from '@app/socket/game/service/journal/journal.service
 import { VirtualGameManagerService } from '@app/socket/game/service/virtual-game-manager/virtual-game-manager.service';
 import {
     DEFAULT_ACTIONS,
-    ICE_ATTACK_PENALTY,
-    ICE_DEFENSE_PENALTY,
     INVENTORY_SIZE,
     TIME_FOR_POSITION_UPDATE,
     TURN_DURATION,
@@ -18,7 +16,7 @@ import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, ItemCategory } from '@common/map.types';
+import { Coordinate } from '@common/map.types';
 import { Inject } from '@nestjs/common';
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
