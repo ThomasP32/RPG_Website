@@ -1,98 +1,34 @@
-@if(player && game) {@if(!delayFinished) {
-<div class="disable-interactions"></div>
-<div class="turn-indicator">
-    <h3>C'est au tour de {{currentPlayerTurn}} dans</h3>
-    <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{startTurnCountdown}}</span>
+@if(player && game){@if(!delayFinished) {
+<div class="popup-tour-overlay">
+    <div class="turn-indicator">
+        <h3>C'est au tour de {{currentPlayerTurn}}</h3>
+        <span class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">{{startTurnCountdown}}</span>
+    </div>
 </div>
+
 } @if(youFell) {
-<div class="disable-interactions"></div>
-<div class="turn-indicator"><h3>Vous êtes tombé, votre tour est fini.</h3></div>
+<div class="popup-overlay">
+    <div class="turn-indicator"><h3>Vous êtes tombé, votre tour est fini.</h3></div>
+</div>
+
 }
 <div class="game-page-container">
     <div class="game-info-panel">
+        <app-player-infos [player]="player"></app-player-infos>
         <div class="game-info">
             <h2>Informations de la partie</h2>
-            <p>Taille de la carte : {{ game.mapSize.x }} x {{ game.mapSize.y}}</p>
-            <p>Nombre de joueurs : {{ activePlayers.length }}</p>
-            <p>Joueur actif : {{ currentPlayerTurn }}</p>
-        </div>
-
-        <div class="player-info">
-            <div class="player-info-header">
-                <img [src]="playerPreview || 'assets/default-avatar.png'" alt="Avatar du joueur" class="player-avatar" />
-                <h3>Informations de {{ player.name }}</h3>
+            <div class="info-item">
+                <p>Taille de la carte :</p>
+                <span>{{ mapConversionService.convertNumberToString(game.mapSize.x) }}</span>
             </div>
-
-            <div class="stats">
-                <div class="stat">
-                    <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{ player.specs.life }} PV </label>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(player.specs.life / 10) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat">
-                    <label class="stat-label" data-title="Correspond aux points de mouvement par tour d’un personnage."
-                        >Rapidité : {{ player.specs.speed }} PTS</label
-                    >
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat">
-                    <label class="stat-label" data-title="Représente la force avec laquelle une attaque est faite sur l’adversaire."
-                        >Attaque : {{player.specs.attack }} PTS</label
-                    >
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(player.specs.attack / 10) * 100"></div>
-                    </div>
-                </div>
-                <div class="stat">
-                    <label class="stat-label" data-title="Représente la capacité à bloquer l’attaque d’un adversaire."
-                        >Défense : {{ player.specs.defense }} PTS</label
-                    >
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
-                    </div>
-                </div>
-
-                <p>Dé d'attaque = {{ player.specs.attackBonus }}</p>
-                <p>Dé de défense = {{ player.specs.defenseBonus }}</p>
-                <p>Mouvements restants : {{ player.specs.movePoints }}</p>
-                <p>Actions restantes : {{ player.specs.actions }}</p>
+            <div class="info-item">
+                <p>Nombre de joueurs :</p>
+                <span>{{ game.players.length}}</span>
             </div>
-
-            <div class="inventory">
-                <h3>Inventaire</h3>
-                <div class="inventory-container">
-                    <div class="inventory-slot">
-                        @if(player.inventory[0]) {
-                        <img [src]="imageService.getItemImage(player.inventory[0])" [alt]="player.inventory[0]" class="item-image" />
-                        } @else {
-                        <div class="empty-slot">Vide</div>
-                        }
-                    </div>
-                    <div class="inventory-slot">
-                        @if(player.inventory[1]) {
-                        <img [src]="imageService.getItemImage(player.inventory[1])" [alt]="player.inventory[1]" class="item-image" />
-                        } @else {
-                        <div class="empty-slot">Vide</div>
-                        }
-                    </div>
-                </div>
+            <div class="info-item">
+                <p>Joueur Actif :</p>
+                <span>{{ currentPlayerTurn }}</span>
             </div>
-        </div>
-    </div>
-
-    <div class="top-container">
-        <div class="countdown-endturn-container">
-            <div class="countdown-container">
-                <h2>Temps restant</h2>
-                <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
-                    <h3>{{ countdown }}</h3>
-                </div>
-                <h2>secondes</h2>
-            </div>
-            <button class="end" [disabled]="areModalsOpen()" (click)="endTurn()">Fin du tour</button>
         </div>
     </div>
 
@@ -100,39 +36,58 @@
         <app-game-map [loadedMap]="game" [moves]="moves" [isYourTurn]="isYourTurn" (tileClicked)="onTileClickToMove($event)"> </app-game-map>
     </div>
 
-    <div class="bottom-container">
-        <button (click)="openExitConfirmationModal()">Quitter la partie</button>
-    </div>
+    <app-game-players-list
+        [players]="game.players"
+        [hostSocketId]="game.hostSocketId"
+        [currentPlayerTurn]="currentPlayerTurn"
+    ></app-game-players-list>
 
-    <div class="right-panel">
-        <div class="player-list">
-            <app-game-players-list
-                [players]="game.players"
-                [hostSocketId]="game.hostSocketId"
-                [currentPlayerTurn]="currentPlayerTurn"
-            ></app-game-players-list>
-        </div>
-
-        <div class="action-buttons">
-            <button [disabled]="areModalsOpen()" (click)="toggleDoor()">{{actionMessage}}</button>
-        </div>
-        @if(combatAvailable) {
-        <app-combat-list class="combat-list" [possibleOpponents]="possibleOpponents"></app-combat-list>
-        }
-        <div class="toggle-container">
-            <div class="toggle">
-                <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
-                <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
+    <div class="top-container">
+        <div class="countdown-endturn-container">
+            <div class="countdown-timer" [ngClass]="{ 'pulse': isPulsing }">
+                <div class="timer-circle">
+                    <svg viewBox="0 0 36 36">
+                        <circle class="background-circle" cx="18" cy="18" r="16"></circle>
+                        <circle
+                            class="progress-circle"
+                            cx="18"
+                            cy="18"
+                            r="16"
+                            [style.stroke-dashoffset]="dashOffset"
+                            [style.stroke-dasharray]="dashArray"
+                        ></circle>
+                    </svg>
+                    <div class="timer-text">
+                        <h3>{{ countdown }}</h3>
+                    </div>
+                </div>
             </div>
         </div>
-
+    </div>
+    <div class="bottom-right-container">
+        <div class="toggle-container">
+            <button [class.active]="activeView === GamePageActiveView.Chat" (click)="toggleView(GamePageActiveView.Chat)">Clavardage</button>
+            <button [class.active]="activeView === GamePageActiveView.Journal" (click)="toggleView(GamePageActiveView.Journal)">Journal</button>
+        </div>
         <div class="chat-and-journal-container">
-            <div class="game-page-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
+            <div class="game-chat" [class.hidden]="activeView !== GamePageActiveView.Chat">
                 <app-chatroom [playerName]="player.name" [gameId]="game.id"></app-chatroom>
             </div>
-
             <div class="journal" [class.hidden]="activeView !== GamePageActiveView.Journal">
                 <app-journal [player]="player"></app-journal>
+            </div>
+        </div>
+    </div>
+    <div class="actions-container">
+        <app-actions-component
+            [player]="player"
+            [currentPlayerTurn]="currentPlayerTurn"
+            (showExitModalChange)="onShowExitModalChange($event)"
+        ></app-actions-component>
+        <div class="actions-info">
+            <div class="actions">
+                <p>Actions restantes: {{ player.specs.actions }}</p>
+                <p>Mouvements restants: {{ player.specs.movePoints }}</p>
             </div>
         </div>
     </div>
@@ -140,41 +95,49 @@
 
 @if(showExitModal) {
 <div class="open-exit-confirmation-modal">
-    <div class="modal">
-        <h2>Confirmer la sortie</h2>
-        <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
-        <button class="modal-button" (click)="confirmExit()">Oui</button>
-        <button class="modal-button" (click)="closeExitModal()">Non</button>
+    <div class="popup-overlay">
+        <div class="modal">
+            <h2>Confirmer la sortie</h2>
+            <p>Êtes-vous sûr de vouloir quitter la partie ?</p>
+            <div class="modal-button-container">
+                <button class="modal-button" (click)="confirmExit()">Oui</button>
+                <button class="modal-button" (click)="closeExitModal()">Non</button>
+            </div>
+        </div>
     </div>
 </div>
 } @if(showKickedModal) {
 <div class="game-finished-modal">
-    <div class="modal">
-        <h2>Tous les joueurs ont abandonné.</h2>
-        <p>La partie est finie, vous serez redirigé.</p>
+    <div class="popup-overlay">
+        <div class="modal">
+            <h2>Tous les joueurs ont abandonné.</h2>
+            <p>La partie est finie, vous serez redirigé.</p>
+        </div>
     </div>
 </div>
 } @if(showEndGameModal) {
 <div class="game-finished-modal">
-    <div class="modal">
-        @if(game.mode === 'ctf') {
-        <h2>Un joueur a capturé le drapeau.</h2>
-        <p>La partie est finie, vous serez redirigé.</p>
-        } @else {
-        <h2>Un joueur a gagné 3 combats.</h2>
-        <p>La partie est finie, vous serez redirigé.</p>
-        }
+    <div class="popup-overlay">
+        <div class="modal">
+            @if(game.mode === 'ctf') {
+            <h2>{{currentPlayerTurn}} a capturé le drapeau.</h2>
+            <p>La partie est finie, vous serez redirigé.</p>
+            } @else {
+            <h2>{{currentPlayerTurn}} a gagné 3 combats.</h2>
+            <p>La partie est finie, vous serez redirigé.</p>
+            }
+        </div>
     </div>
 </div>
 } @if(isCombatModalOpen){
 <div class="combat-modal">
-    <div>
+    <div class="popup-overlay">
         <app-combat-modal [player]="player" [opponent]="opponent"> </app-combat-modal>
     </div>
 </div>
 } @if(isInventoryModalOpen) {
 <div class="inventory-modal">
-    <div>
+    <div class="popup-overlay">
         <app-inventory-modal [player]="player" [gameId]="game.id"> </app-inventory-modal>
     </div>
 </div>

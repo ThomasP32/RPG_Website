@@ -88,7 +88,7 @@ describe('ImageService', () => {
         expect(service.getItemImageByString('sword')).toBe('./assets/items/sword.png');
         expect(service.getItemImageByString('iceskates')).toBe('./assets/items/iceskates.png');
         expect(service.getItemImageByString('wallbreaker')).toBe('./assets/items/wallbreaker.png');
-        expect(service.getItemImageByString('Amulet')).toBe('./assets/items/amulet.png');
+        expect(service.getItemImageByString('amulet')).toBe('./assets/items/amulet.png');
         expect(service.getItemImageByString('random')).toBe('./assets/items/randomitem.png');
         expect(service.getItemImageByString('invalid')).toBe('');
     });
@@ -107,5 +107,20 @@ describe('ImageService', () => {
         expect(service.getPixelatedPlayerImage(Avatar.Avatar11)).toBe('./assets/pixelcharacters/11_pixelated.png');
         expect(service.getPixelatedPlayerImage(Avatar.Avatar12)).toBe('./assets/pixelcharacters/12_pixelated.png');
         expect(service.getPixelatedPlayerImage({} as Avatar)).toBe('');
+    });
+    it('should get icon image', () => {
+        expect(service.getIconImage('attack')).toBe('./assets/icons/sword_icon.png');
+        expect(service.getIconImage('defense')).toBe('./assets/icons/shield_icon.png');
+        expect(service.getIconImage('health')).toBe('./assets/icons/heart_icon.png');
+        expect(service.getIconImage('speed')).toBe('./assets/icons/speed_icon.png');
+        expect(service.getIconImage('battle')).toBe('./assets/icons/fighting.png');
+        expect(service.getIconImage('action')).toBe('./assets/icons/action.png');
+        expect(service.getIconImage('robot')).toBe('./assets/icons/robot.png');
+        expect(service.getIconImage('host')).toBe('./assets/icons/crown.png');
+        expect(service.getIconImage('door')).toBe('./assets/icons/door.png');
+        expect(service.getIconImage('wallbreaker')).toBe('./assets/items/wallbreaker.png');
+        expect(service.getIconImage('endturn')).toBe('./assets/icons/endturn_icon.png');
+        expect(service.getIconImage('quit')).toBe('./assets/icons/quit_icon.png');
+        expect(service.getIconImage('invalid')).toBe('');
     });
 });

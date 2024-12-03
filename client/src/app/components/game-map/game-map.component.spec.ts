@@ -123,11 +123,28 @@ describe('GameMapComponent', () => {
             const event = new MouseEvent('contextmenu', { button: 2 });
 
             const itemDescriptions: { position: Coordinate; expectedDescription: string }[] = [
-                { position: { x: 0, y: 1 }, expectedDescription: 'Armure' },
-                { position: { x: 0, y: 2 }, expectedDescription: 'Amulet' },
-                { position: { x: 0, y: 3 }, expectedDescription: 'Le drapeau' },
-                { position: { x: 0, y: 4 }, expectedDescription: 'Le' },
-                { position: { x: 0, y: 5 }, expectedDescription: 'Les patins' },
+                {
+                    position: { x: 0, y: 1 },
+                    expectedDescription: 'Armure Renforcée : +4 en défense, mais réduit votre vitesse de 1. Conçue pour les stratèges prudents.',
+                },
+                {
+                    position: { x: 0, y: 2 },
+                    expectedDescription:
+                        "Amulette de Résilience : Augmente votre vitalité de 4 lorsque vous affrontez un adversaire avec plus d'attaque.",
+                },
+                {
+                    position: { x: 0, y: 3 },
+                    expectedDescription: 'Drapeau de Victoire : Capturez-le et ramenez-le à votre point de départ pour triompher.',
+                },
+                {
+                    position: { x: 0, y: 4 },
+                    expectedDescription:
+                        'Potion de Résurrection : Lorsque vous tombez à 2 vies en combat, gagnez un boost de +4 en attaque pour un dernier effort héroïque.',
+                },
+                {
+                    position: { x: 0, y: 5 },
+                    expectedDescription: 'Patins Stabilisateurs : Immunisé aux chutes et pénalités sur glace. Glissez avec maîtrise.',
+                },
             ];
 
             for (const { position, expectedDescription } of itemDescriptions) {

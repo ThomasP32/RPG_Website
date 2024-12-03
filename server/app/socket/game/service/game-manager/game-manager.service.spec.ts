@@ -2,7 +2,7 @@ import { GameCreationService } from '@app/socket/game/service/game-creation/game
 import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
 import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 
 let specs: Specs = {
@@ -563,32 +563,6 @@ describe('GameManagerService', () => {
         });
     });
 
-    describe('updatePlayerActions', () => {
-        it('should decrement player actions if the player exists', () => {
-            const playerSocketId = 'player-1';
-            const initialActions = game2.players[0].specs.actions;
-
-            gameManagerService.updatePlayerActions('game-1', playerSocketId);
-
-            expect(game2.players[0].specs.actions).toBe(initialActions - 1);
-        });
-
-        it('should not throw an error if the player does not exist', () => {
-            const nonExistentSocketId = 'nonexistent-socket-id';
-            expect(() => {
-                gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
-            }).not.toThrow();
-        });
-
-        it('should not decrement actions if the player does not exist', () => {
-            const nonExistentSocketId = 'nonexistent-socket-id';
-            const initialActions = game2.players[0].specs.actions;
-
-            gameManagerService.updatePlayerActions('game-1', nonExistentSocketId);
-
-            expect(game2.players[0].specs.actions).toBe(initialActions);
-        });
-    });
     describe('getFirstFreePosition', () => {
         it('should return the first free position adjacent to the start position', () => {
             const start: Coordinate = { x: 5, y: 5 };
@@ -639,6 +613,68 @@ describe('GameManagerService', () => {
             const freePosition = gameManagerService.getFirstFreePosition(start, game);
 
             expect(freePosition).not.toEqual({ x: 5, y: 4 });
+        });
+    });
+    describe('updatePlayerActions', () => {
+        it('should decrement the player actions by 1', () => {
+            const currentPlayer = game2.players[0];
+            currentPlayer.specs.actions = 3;
+            gameManagerService.updatePlayerActions('game-1', currentPlayer.socketId);
+
+            expect(currentPlayer.specs.actions).toEqual(2);
+        });
+
+        it('should not change actions if the player is not found', () => {
+            const initialActions = game2.players[0].specs.actions;
+            gameManagerService.updatePlayerActions('game-1', 'Nonexistent Player');
+
+            expect(game2.players[0].specs.actions).toEqual(initialActions);
+        });
+    });
+    describe('getAdjacentWalls', () => {
+        it('should return adjacent walls when they are next to the player', () => {
+            const wallTile: Tile = { coordinate: { x: 4, y: 5 }, category: TileCategory.Wall };
+            game2.tiles = [wallTile];
+            player.position = { x: 4, y: 4 };
+
+            const adjacentWalls = gameManagerService.getAdjacentWalls(player, game2.id);
+
+            expect(adjacentWalls).toHaveLength(1);
+            expect(adjacentWalls[0]).toEqual(wallTile);
+        });
+
+        it('should return an empty array if there are no adjacent walls', () => {
+            const wallTile: Tile = { coordinate: { x: 6, y: 6 }, category: TileCategory.Wall };
+            game2.tiles = [wallTile];
+            player.position = { x: 4, y: 4 };
+
+            const adjacentWalls = gameManagerService.getAdjacentWalls(player, game2.id);
+
+            expect(adjacentWalls).toEqual([]);
+        });
+
+        it('should not return walls that are not adjacent to the player', () => {
+            game2.tiles = [
+                { coordinate: { x: 2, y: 2 }, category: TileCategory.Wall },
+                { coordinate: { x: 7, y: 7 }, category: TileCategory.Wall },
+            ];
+            player.position = { x: 5, y: 5 };
+
+            const adjacentWalls = gameManagerService.getAdjacentWalls(player, game2.id);
+
+            expect(adjacentWalls).toEqual([]);
+        });
+
+        it('should not return walls that have adjacent doors', () => {
+            const wallTile: Tile = { coordinate: { x: 4, y: 5 }, category: TileCategory.Wall };
+            const doorTile: DoorTile = { coordinate: { x: 4, y: 6 }, isOpened: false };
+            game2.tiles = [wallTile];
+            game2.doorTiles = [doorTile];
+            player.position = { x: 4, y: 4 };
+
+            const adjacentWalls = gameManagerService.getAdjacentWalls(player, game2.id);
+
+            expect(adjacentWalls).toEqual([]);
         });
     });
 });

@@ -4,7 +4,7 @@ import { ImageService } from '@app/services/image/image.service';
 import { MapCounterService } from '@app/services/map-counter/map-counter.service';
 import { MapService } from '@app/services/map/map.service';
 import { TileService } from '@app/services/tile/tile.service';
-import { ItemCategory, Mode } from '@common/map.types';
+import { GameDescriptions, ItemCategory, Mode } from '@common/map.types';
 
 @Component({
     selector: 'app-toolbar',
@@ -15,6 +15,7 @@ import { ItemCategory, Mode } from '@common/map.types';
 })
 export class ToolbarComponent implements OnInit {
     protected ItemCategory = ItemCategory;
+    protected GameDescriptions = GameDescriptions;
     selectedTile: string;
 
     @Output() tileSelected = new EventEmitter<string>();
@@ -29,10 +30,10 @@ export class ToolbarComponent implements OnInit {
     itemsUsable: boolean = false;
 
     constructor(
-        protected mapService: MapService,
-        protected mapCounterService: MapCounterService,
-        protected imageService: ImageService,
-        protected tileService: TileService,
+        protected readonly mapService: MapService,
+        protected readonly mapCounterService: MapCounterService,
+        protected readonly imageService: ImageService,
+        protected readonly tileService: TileService,
     ) {
         this.mapService = mapService;
         this.mapCounterService = mapCounterService;

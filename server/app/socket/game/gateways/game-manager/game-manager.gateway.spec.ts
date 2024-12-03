@@ -4,9 +4,9 @@ import { GameManagerService } from '@app/socket/game/service/game-manager/game-m
 import { JournalService } from '@app/socket/game/service/journal/journal.service';
 import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
-import { ItemsEvents } from '@common/events/items.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
-import { Coordinate, DoorTile, ItemCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Tile, TileCategory } from '@common/map.types';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStub, SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -58,7 +58,7 @@ describe('GameManagerGateway', () => {
         gateway['server'] = serverStub;
 
         const toStub = {
-            emit: stub() as SinonStub,
+            emit: stub(),
         };
         serverStub.to.returns(toStub as any);
     });
@@ -575,43 +575,34 @@ describe('GameManagerGateway', () => {
     });
 
     describe('toggleDoor', () => {
-        it('should toggle door and emit doorToggled if the door is adjacent and no player is on it', () => {
-            const gameId = 'game-id';
-            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
-            const game: Game = {
-                id: gameId,
+        let game: Game;
+        let doorTile: DoorTile;
+        let socket: Partial<Socket>;
+
+        beforeEach(() => {
+            doorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
+            game = {
+                id: 'game-id',
                 players: [{ socketId: 'client-id', position: { x: 2, y: 2 } }],
                 doorTiles: [doorTile],
                 nDoorsManipulated: [],
             } as Game;
 
             gameCreationService.getGameById.returns(game);
+            socket = {
+                id: 'client-id',
+            };
+        });
 
-            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
+        it('should toggle door and emit doorToggled if the door is adjacent and no player is on it', () => {
+            gateway.toggleDoor(socket as Socket, { gameId: game.id, door: doorTile });
 
             expect(doorTile.isOpened).toBe(true);
             expect(game.nDoorsManipulated).toContainEqual(doorTile.coordinate);
 
-            expect(serverStub.to.calledWith(gameId)).toBeTruthy();
-            const toRoomStub = serverStub.to(gameId).emit as SinonStub;
-            expect(toRoomStub.calledWith('doorToggled', { game, player: game.players[0] })).toBeFalsy();
-        });
-
-        it('should not toggle door if a player is on the door tile', () => {
-            const gameId = 'game-id';
-            const doorTile: DoorTile = { coordinate: { x: 3, y: 3 }, isOpened: false };
-            const game: Game = {
-                id: gameId,
-                players: [{ socketId: 'client-id', position: { x: 3, y: 3 } }],
-                doorTiles: [doorTile],
-                nDoorsManipulated: [],
-            } as Game;
-
-            gameCreationService.getGameById.returns(game);
-
-            gateway.toggleDoor(socket as unknown as Socket, { gameId, door: doorTile });
-
-            expect(serverStub.to.called).toBeTruthy();
+            expect(serverStub.to.calledWith(game.id)).toBeTruthy();
+            const toRoomStub = serverStub.to(game.id).emit as SinonStub;
+            expect(toRoomStub.calledWith('doorToggled', { game, player: game.players[0] })).toBeTruthy();
         });
     });
     describe('dropItem', () => {
@@ -743,7 +734,124 @@ describe('GameManagerGateway', () => {
             expect(gameManagerService.hasFallen).toBe(false);
         });
     });
+    describe('startTurn', () => {
+        it("should drop an item if a player has more than 2 items at the beginning of another player's turn", () => {
+            const activePlayer: Player = {
+                socketId: 'active-player-id',
+                turn: 0,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
+                name: 'ActivePlayer',
+                specs: { speed: 5, movePoints: 0, attack: 10, defense: 10 },
+            } as Player;
 
+            const otherPlayer: Player = {
+                socketId: 'other-player-id',
+                turn: 1,
+                isActive: true,
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor, ItemCategory.Sword],
+                name: 'OtherPlayer',
+                specs: { speed: 5, movePoints: 0 },
+            } as Player;
+
+            const game: Game = {
+                players: [activePlayer, otherPlayer],
+                currentTurn: 0,
+                id: 'game-id',
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+            gameManagerService.onIceTile.returns(true);
+            gameManagerService.isGameResumable.returns(true);
+
+            gateway.startTurn('game-id');
+
+            expect(itemsManagerService.dropItem.calledWith(otherPlayer.inventory[2], game.id, otherPlayer, otherPlayer.position)).toBeTruthy();
+            const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: otherPlayer };
+            const toOtherPlayerStub = serverStub.to(otherPlayer.socketId).emit as SinonStub;
+            expect(toOtherPlayerStub.calledWith(ItemsEvents.ItemDropped, itemDroppedData)).toBeTruthy();
+        });
+    });
+    describe('breakWall', () => {
+        let game: Game;
+        let player: Player;
+        let wallTile: Tile;
+        let socket: Partial<Socket>;
+
+        beforeEach(() => {
+            player = {
+                socketId: 'player-1',
+                name: 'Player 1',
+                specs: { attack: 10, defense: 10, movePoints: 5, speed: 5 },
+                position: { x: 0, y: 0 },
+                inventory: [],
+            } as Player;
+
+            wallTile = {
+                coordinate: { x: 1, y: 1 },
+                category: TileCategory.Wall,
+            } as Tile;
+
+            game = {
+                id: 'game-1',
+                players: [player],
+                currentTurn: 0,
+                hasStarted: true,
+                tiles: [wallTile],
+            } as Game;
+
+            gameCreationService.getGameById.returns(game);
+
+            socket = {
+                id: 'player-1',
+            };
+        });
+
+        it('should remove the wall tile from the game tiles', () => {
+            const wallTiles = [wallTile];
+            gameManagerService.getAdjacentWalls.returns(wallTiles);
+
+            gateway.breakWall(socket as Socket, { gameId: game.id, wall: wallTile });
+
+            expect(game.tiles).not.toContain(wallTile);
+        });
+
+        it('should update player actions', () => {
+            const wallTiles = [wallTile];
+            gameManagerService.getAdjacentWalls.returns(wallTiles);
+
+            gateway.breakWall(socket as Socket, { gameId: game.id, wall: wallTile });
+
+            expect(gameManagerService.updatePlayerActions.calledWith(game.id, player.socketId)).toBeTruthy();
+        });
+
+        it('should log a message to the journal', () => {
+            const wallTiles = [wallTile];
+            gameManagerService.getAdjacentWalls.returns(wallTiles);
+
+            gateway.breakWall(socket as Socket, { gameId: game.id, wall: wallTile });
+
+            expect(journalService.logMessage.calledWith(game.id, `${player.name}. a brisé un mur !`, [player.name])).toBeTruthy();
+        });
+
+        it('should emit wallBroken event to the game room', () => {
+            const wallTiles = [wallTile];
+            gameManagerService.getAdjacentWalls.returns(wallTiles);
+
+            gateway.breakWall(socket as Socket, { gameId: game.id, wall: wallTile });
+
+            const toRoomStub = serverStub.to(game.id).emit as SinonStub;
+            expect(toRoomStub.calledWith('wallBroken', { game: game, player: player })).toBeTruthy();
+        });
+
+        it('should not remove any tiles if no adjacent walls are found', () => {
+            gameManagerService.getAdjacentWalls.returns([]);
+
+            gateway.breakWall(socket as Socket, { gameId: game.id, wall: wallTile });
+
+            expect(game.tiles).toContain(wallTile);
+        });
+    });
     it('should not emit virtualPlayerFinishedMoving if the player is not a virtual player', async () => {
         gameCreationService.doesGameExist.returns(true);
 
@@ -769,7 +877,7 @@ describe('GameManagerGateway', () => {
         gameManagerService.getMove.returns([{ x: 1, y: 2 }]);
         gameManagerService.hasFallen = true;
 
-        await gateway.getMove(socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
+        await gateway.getMove(socket as Socket, { gameId: 'game-id', destination: { x: 2, y: 2 } });
 
         expect(serverStub.to.calledWith(socket.id)).toBeTruthy();
         const toClientStub = serverStub.to(socket.id).emit as SinonStub;

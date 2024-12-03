@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Avatar } from '@common/game';
+import { Avatar, Bonus } from '@common/game';
 import { ItemCategory, TileCategory } from '@common/map.types';
 
 @Injectable({
@@ -42,6 +42,17 @@ export class ImageService {
         }
     }
 
+    getDiceImage(dice: Bonus): string {
+        switch (dice) {
+            case Bonus.D4:
+                return './assets/icons/d4.png';
+            case Bonus.D6:
+                return './assets/icons/d6.png';
+            default:
+                return '';
+        }
+    }
+
     getItemImage(item: ItemCategory): string {
         switch (item) {
             case ItemCategory.Armor:
@@ -75,7 +86,7 @@ export class ImageService {
                 return './assets/items/wallbreaker.png';
             case 'flask':
                 return './assets/items/flask.png';
-            case 'Amulet':
+            case 'amulet':
                 return './assets/items/amulet.png';
             case 'iceskates':
                 return './assets/items/iceskates.png';
@@ -147,6 +158,37 @@ export class ImageService {
                 return './assets/pixelcharacters/11_pixelated.png';
             case Avatar.Avatar12:
                 return './assets/pixelcharacters/12_pixelated.png';
+            default:
+                return '';
+        }
+    }
+
+    getIconImage(icon: string): string {
+        switch (icon) {
+            case 'attack':
+                return './assets/icons/sword_icon.png';
+            case 'defense':
+                return './assets/icons/shield_icon.png';
+            case 'health':
+                return './assets/icons/heart_icon.png';
+            case 'speed':
+                return './assets/icons/speed_icon.png';
+            case 'battle':
+                return './assets/icons/fighting.png';
+            case 'action':
+                return './assets/icons/action.png';
+            case 'robot':
+                return './assets/icons/robot.png';
+            case 'host':
+                return './assets/icons/crown.png';
+            case 'door':
+                return './assets/icons/door.png';
+            case 'wallbreaker':
+                return './assets/items/wallbreaker.png';
+            case 'endturn':
+                return './assets/icons/endturn_icon.png';
+            case 'quit':
+                return './assets/icons/quit_icon.png';
             default:
                 return '';
         }

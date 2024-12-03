@@ -90,7 +90,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
                 if (playerAttacked.socketId === this.opponent.socketId) {
                     this.combatMessage = `${playerAttacked.name} a survécu à votre attaque`;
                 } else {
-                    this.combatMessage = `Vous a survécu à une attaque`;
+                    this.combatMessage = `Vous avez survécu à une attaque`;
                 }
             }),
         );

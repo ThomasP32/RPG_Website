@@ -1,0 +1,79 @@
+<div class="player-container">
+    <div class="player">
+        <img [src]="playerPreview" alt="Avatar du joueur" class="player-avatar" />
+    </div>
+
+    <div class="player-infos">
+        <div class="player-name">
+            <h3>{{ player.name }}</h3>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <h2>{{ player.specs.life }}</h2>
+                <div class="stat-icon">
+                    <img [src]="imageService.getIconImage('health')" alt="Vie" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.life / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <h2>{{ player.specs.speed }}</h2>
+                <div class="stat-icon">
+                    <img [src]="imageService.getIconImage('speed')" alt="Rapidité" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <h2>{{ player.specs.attack }}</h2>
+                <div class="stat-icon">
+                    <img [src]="imageService.getIconImage('attack')" alt="Attaque" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.attack / 10) * 100"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <h2>{{ player.specs.defense }}</h2>
+                <div class="stat-icon">
+                    <img [src]="imageService.getIconImage('defense')" alt="Défense" />
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dice-container">
+    <div class="dice-info">
+        <div class="dice">
+            <p>Attaque</p>
+            <img [src]="imageService.getDiceImage(player.specs.attackBonus)" alt="Dice" />
+            <p>Défense</p>
+            <img [src]="imageService.getDiceImage(player.specs.defenseBonus)" alt="Dice" />
+        </div>
+    </div>
+</div>
+<div class="inventory">
+    <h3>Inventaire</h3>
+    <div class="inventory-container">
+        <div class="inventory-slot">
+            @if(player.inventory[0]) {
+            <img [src]="imageService.getItemImage(player.inventory[0])" [alt]="player.inventory[0]" class="item-image" />
+            } @else {
+            <div class="empty-slot">Vide</div>
+            }
+        </div>
+        <div class="inventory-slot">
+            @if(player.inventory[1]) {
+            <img [src]="imageService.getItemImage(player.inventory[1])" [alt]="player.inventory[1]" class="item-image" />
+            } @else {
+            <div class="empty-slot">Vide</div>
+            }
+        </div>
+    </div>
+</div>

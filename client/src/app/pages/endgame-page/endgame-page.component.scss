@@ -8,7 +8,7 @@
     gap: 20px;
     padding: 10px 10px 0 10px;
     height: calc(100vh - 10px);
-    background-color: #1a1f24;
+    background-image: url('../../../assets/backgrounds/backgroundcombat.png');
     color: #ffffff;
     min-width: 1200px;
 }
@@ -16,8 +16,9 @@
 .stats-container {
     grid-area: stats;
     overflow-x: auto;
-    background-color: #2a3038;
-    border-radius: 8px;
+    background-color: rgba(28, 36, 44, 0.8);
+
+    border: 1px solid #f39c12;
     padding: 10px;
     min-height: 400px;
 }
@@ -31,8 +32,9 @@
 
 .global-stats-container {
     grid-area: global-stats;
-    background-color: #2a3038;
-    border-radius: 8px;
+    background-color: rgba(28, 36, 44, 0.8);
+
+    border: 1px solid #f39c12;
     padding: 10px;
     max-height: 200px;
 }
@@ -93,9 +95,10 @@ tr:hover {
 }
 
 .chatroom-container {
-    background-color: #2a3038;
+    background-color: rgba(28, 36, 44, 0.8);
+
     grid-area: chat;
-    border-radius: 8px;
+    border: 1px solid #f39c12;
     padding: 10px;
     height: calc(100vh - 60px);
     overflow: hidden;
