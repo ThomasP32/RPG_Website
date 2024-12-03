@@ -1,6 +1,7 @@
 import { Combat } from '@common/combat';
-import { ProfileType } from '@common/constants';
+import { INVENTORY_SIZE, ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item, ItemCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -45,6 +46,7 @@ describe('VirtualGameManagerService', () => {
                         getAdjacentPlayers: jest.fn(),
                         getMove: jest.fn(),
                         updatePlayerActions: jest.fn(),
+                        getTileWeight: jest.fn(),
                     },
                 },
                 {
@@ -82,6 +84,7 @@ describe('VirtualGameManagerService', () => {
                     provide: ItemsManagerService,
                     useValue: {
                         pickUpItem: jest.fn(),
+                        onItem: jest.fn(),
                     },
                 },
             ],
@@ -105,8 +108,8 @@ describe('VirtualGameManagerService', () => {
 
     describe('executeVirtualPlayerBehavior', () => {
         it('should execute aggressive behavior for aggressive profile', () => {
-            const player: Player = { profile: ProfileType.AGGRESSIVE } as Player;
-            const game: Game = {} as Game;
+            const player: Player = { profile: ProfileType.AGGRESSIVE, position: { x: 1, y: 1 } } as Player;
+            const game: Game = { doorTiles: [] } as Game;
             jest.spyOn(service, 'executeAggressiveBehavior').mockImplementation();
 
             service.executeVirtualPlayerBehavior(player, game);
@@ -115,8 +118,8 @@ describe('VirtualGameManagerService', () => {
         });
 
         it('should execute defensive behavior for defensive profile', () => {
-            const player: Player = { profile: ProfileType.DEFENSIVE } as Player;
-            const game: Game = {} as Game;
+            const player: Player = { profile: ProfileType.DEFENSIVE, position: { x: 1, y: 1 } } as Player;
+            const game: Game = { doorTiles: [] } as Game;
             jest.spyOn(service, 'executeDefensiveBehavior').mockImplementation();
 
             service.executeVirtualPlayerBehavior(player, game);
@@ -127,7 +130,7 @@ describe('VirtualGameManagerService', () => {
 
     describe('calculateVirtualPlayerPath', () => {
         it('should return an empty array if only one possible move', () => {
-            const player: Player = {} as Player;
+            const player: Player = { inventory: [ItemCategory.Armor] } as Player;
             const game: Game = { id: 'gameId' } as Game;
             jest.spyOn(gameManagerService, 'getMoves').mockReturnValue([['move1', { path: [], weight: 1 }]]);
 
@@ -137,7 +140,7 @@ describe('VirtualGameManagerService', () => {
         });
 
         it('should return a random path from possible moves', () => {
-            const player: Player = {} as Player;
+            const player: Player = { inventory: [ItemCategory.Armor] } as Player;
             const game: Game = { id: 'gameId' } as Game;
             const possibleMoves: [string, { path: Coordinate[]; weight: number }][] = [
                 ['move1', { path: [{ x: 1, y: 1 }], weight: 1 }],
@@ -767,6 +770,140 @@ describe('VirtualGameManagerService', () => {
                 expect(server.to).toHaveBeenCalledWith(combat.opponent.socketId);
                 expect(combatCountdownService.startTurnCounter).toHaveBeenCalledWith(game, true);
             });
+        });
+    });
+    describe('checkAndToggleDoor', () => {
+        it('should toggle door state and emit events if adjacent door is found', () => {
+            const player: Player = { socketId: 'socketId', position: { x: 1, y: 1 }, name: 'player' } as Player;
+            const game: Game = {
+                id: 'gameId',
+                doorTiles: [{ coordinate: { x: 2, y: 1 }, isOpened: false }],
+                players: [player],
+            } as Game;
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue([{ x: 2, y: 1 }]);
+            jest.spyOn(Math, 'random').mockReturnValue(0);
+            jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
+            jest.spyOn(journalService, 'logMessage').mockImplementation();
+
+            service.checkAndToggleDoor(player, game);
+
+            expect(game.doorTiles[0].isOpened).toBe(true);
+            expect(server.to).toHaveBeenCalledWith(game.id);
+            expect(server.to(game.id).emit).toHaveBeenCalledWith('doorToggled', { game, player });
+            expect(journalService.logMessage).toHaveBeenCalledWith(game.id, 'Une porte a été ouverte par player.', ['player']);
+        });
+
+        it('should not toggle door state if no adjacent door is found', () => {
+            const player: Player = { socketId: 'socketId', position: { x: 1, y: 1 }, name: 'player' } as Player;
+            const game: Game = {
+                id: 'gameId',
+                doorTiles: [{ coordinate: { x: 3, y: 3 }, isOpened: false }],
+                players: [player],
+            } as Game;
+            jest.spyOn(service, 'getAdjacentTiles').mockReturnValue([{ x: 2, y: 1 }]);
+            jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
+            jest.spyOn(journalService, 'logMessage').mockImplementation();
+
+            service.checkAndToggleDoor(player, game);
+
+            expect(game.doorTiles[0].isOpened).toBe(false);
+            expect(server.to).not.toHaveBeenCalled();
+            expect(journalService.logMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('startCombat', () => {
+        it('should start regular combat if both players are virtual', async () => {
+            const combat = {
+                id: 'combatId',
+                challenger: { socketId: 'virtual1' },
+                opponent: { socketId: 'virtual2' },
+            } as Combat;
+            const game: Game = { id: 'gameId' } as Game;
+            jest.spyOn(service, 'startRegularCombat').mockImplementation();
+
+            const result = await service.startCombat(combat, game);
+
+            expect(service.startRegularCombat).toHaveBeenCalledWith(combat, game);
+            expect(result).toBe(true);
+        });
+
+        it('should start regular combat if opponent socket is found', async () => {
+            const combat = {
+                id: 'combatId',
+                challenger: { socketId: 'challengerSocketId' },
+                opponent: { socketId: 'opponentSocketId' },
+            } as Combat;
+            const game: Game = { id: 'gameId' } as Game;
+            const opponentSocket = { id: 'opponentSocketId', join: jest.fn() };
+            jest.spyOn(server, 'in').mockReturnValue({
+                fetchSockets: jest.fn().mockResolvedValue([opponentSocket]),
+            } as any);
+            jest.spyOn(service, 'startRegularCombat').mockImplementation();
+
+            const result = await service.startCombat(combat, game);
+
+            expect(opponentSocket.join).toHaveBeenCalledWith(combat.id);
+            expect(service.startRegularCombat).toHaveBeenCalledWith(combat, game);
+            expect(result).toBe(true);
+        });
+
+        it('should return false if opponent socket is not found', async () => {
+            const combat = {
+                id: 'combatId',
+                challenger: { socketId: 'challengerSocketId' },
+                opponent: { socketId: 'opponentSocketId' },
+            } as Combat;
+            const game: Game = { id: 'gameId' } as Game;
+            jest.spyOn(server, 'in').mockReturnValue({
+                fetchSockets: jest.fn().mockResolvedValue([]),
+            } as any);
+
+            const result = await service.startCombat(combat, game);
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('updatePosition', () => {
+        it('should pick up item and emit InventoryFull if inventory exceeds size', async () => {
+            const player: Player = { socketId: 'socketId', position: { x: 0, y: 0 }, inventory: [] } as Player;
+            const path: Coordinate[] = [{ x: 1, y: 1 }];
+            const gameId = 'gameId';
+            const game: Game = { id: gameId } as Game;
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
+            jest.spyOn(gameManagerService, 'updatePosition').mockImplementation();
+            jest.spyOn(itemsManagerService, 'onItem').mockReturnValue(true);
+            jest.spyOn(itemsManagerService, 'pickUpItem').mockImplementation();
+            jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
+
+            player.inventory.length = INVENTORY_SIZE + 1;
+
+            await service.updatePosition(player, path, gameId, false);
+
+            expect(itemsManagerService.pickUpItem).toHaveBeenCalledWith(path[0], gameId, player);
+            expect(server.to).toHaveBeenCalledWith(player.socketId);
+            expect(server.to(player.socketId).emit).toHaveBeenCalledWith(ItemsEvents.InventoryFull);
+        });
+
+        it('should pick up item and not emit InventoryFull if inventory does not exceed size', async () => {
+            const player: Player = { socketId: 'socketId', position: { x: 0, y: 0 }, inventory: [] } as Player;
+            const path: Coordinate[] = [{ x: 1, y: 1 }];
+            const gameId = 'gameId';
+            const game: Game = { id: gameId } as Game;
+            jest.spyOn(gameCreationService, 'getGameById').mockReturnValue(game);
+            jest.spyOn(gameManagerService, 'updatePosition').mockImplementation();
+            jest.spyOn(itemsManagerService, 'onItem').mockReturnValue(true);
+            jest.spyOn(itemsManagerService, 'pickUpItem').mockImplementation();
+            jest.spyOn(server, 'to').mockReturnValue({ emit: jest.fn() } as any);
+
+            player.inventory.length = INVENTORY_SIZE - 1;
+
+            await service.updatePosition(player, path, gameId, false);
+
+            expect(itemsManagerService.pickUpItem).toHaveBeenCalledWith(path[0], gameId, player);
+            expect(server.to).not.toHaveBeenCalledWith(player.socketId);
+            expect(server.to(player.socketId).emit).not.toHaveBeenCalledWith(ItemsEvents.InventoryFull);
         });
     });
 });

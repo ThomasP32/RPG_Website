@@ -1,4 +1,5 @@
 import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
+import { COUNTDOWN_INTERVAL, DELAY } from '@common/constants';
 import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
@@ -31,9 +32,9 @@ export class GameCountdownService extends EventEmitter {
             this.resetTimerSubscription(game.id);
             countdown.remaining = countdown.duration;
 
-            let delay = 3;
+            let delay = DELAY;
 
-            countdown.timerSubscription = interval(1000).subscribe(() => {
+            countdown.timerSubscription = interval(COUNTDOWN_INTERVAL).subscribe(() => {
                 if (delay >= 0) {
                     this.server.to(game.id).emit('delay', delay);
 
@@ -59,7 +60,7 @@ export class GameCountdownService extends EventEmitter {
         const countdown = this.countdowns.get(id);
         this.resetTimerSubscription(id);
 
-        countdown.timerSubscription = interval(1000).subscribe(() => {
+        countdown.timerSubscription = interval(COUNTDOWN_INTERVAL).subscribe(() => {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
                 this.emit('timeout', id);

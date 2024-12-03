@@ -83,6 +83,20 @@ export class ProfileModalComponent implements OnInit {
 
                 break;
         }
+        this.highlightSelectedProfileButton();
+    }
+
+    highlightSelectedProfileButton(): void {
+        const profileButtons = document.querySelectorAll('.profile-button');
+        profileButtons.forEach((btn) => btn.classList.remove('profile-button--active'));
+
+        if (this.selectedProfile === ProfileType.AGGRESSIVE) {
+            const aggressiveButton = document.querySelector('.profile-button--aggressive');
+            aggressiveButton?.classList.add('profile-button--active');
+        } else if (this.selectedProfile === ProfileType.DEFENSIVE) {
+            const defensiveButton = document.querySelector('.profile-button--defensive');
+            defensiveButton?.classList.add('profile-button--active');
+        }
     }
 
     assignRandomName(): void {
