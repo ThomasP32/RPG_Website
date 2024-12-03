@@ -108,22 +108,22 @@ describe('VirtualGameManagerService', () => {
     });
 
     describe('executeVirtualPlayerBehavior', () => {
-        it('should execute aggressive behavior for aggressive profile', () => {
+        it('should execute aggressive behavior for aggressive profile', async () => {
             const player: Player = { profile: ProfileType.AGGRESSIVE, position: { x: 1, y: 1 } } as Player;
             const game: Game = { doorTiles: [] } as Game;
             jest.spyOn(service, 'executeAggressiveBehavior').mockImplementation();
 
-            service.executeVirtualPlayerBehavior(player, game);
+            await service.executeVirtualPlayerBehavior(player, game);
 
             expect(service.executeAggressiveBehavior).toHaveBeenCalledWith(player, game);
         });
 
-        it('should execute defensive behavior for defensive profile', () => {
+        it('should execute defensive behavior for defensive profile', async () => {
             const player: Player = { profile: ProfileType.DEFENSIVE, position: { x: 1, y: 1 } } as Player;
             const game: Game = { doorTiles: [] } as Game;
             jest.spyOn(service, 'executeDefensiveBehavior').mockImplementation();
 
-            service.executeVirtualPlayerBehavior(player, game);
+            await service.executeVirtualPlayerBehavior(player, game);
 
             expect(service.executeDefensiveBehavior).toHaveBeenCalledWith(player, game);
         });

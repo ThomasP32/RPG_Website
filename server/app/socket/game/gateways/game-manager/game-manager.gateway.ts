@@ -184,8 +184,8 @@ export class GameManagerGateway implements OnGatewayInit {
 
         if (activePlayer.socketId.includes('virtualPlayer')) {
             const delay = Math.floor(Math.random() * VIRTUAL_PLAYER_DELAY) + VIRTUAL_DELAY_CONSTANT;
-            setTimeout(() => {
-                this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
+            setTimeout(async () => {
+                await this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
                 this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
             }, delay);
         } else {
