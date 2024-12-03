@@ -45,7 +45,7 @@ describe('PlayerInfosComponent', () => {
 
     beforeEach(async () => {
         const characterServiceSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview']);
-        const imageServiceSpy = jasmine.createSpyObj('ImageService', ['getItemImage', 'getDiceImage']);
+        const imageServiceSpy = jasmine.createSpyObj('ImageService', ['getItemImage', 'getDiceImage', 'getIconImage']);
 
         await TestBed.configureTestingModule({
             imports: [PlayerInfosComponent],

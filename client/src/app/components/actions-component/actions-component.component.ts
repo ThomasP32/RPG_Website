@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
+import { ImageService } from '@app/services/image/image.service';
 import { CombatEvents, StartCombatData } from '@common/events/combat.events';
 import { Player } from '@common/game';
 import { DoorTile, Tile } from '@common/map.types';
@@ -39,10 +40,12 @@ export class ActionsComponentComponent implements OnInit {
         protected readonly gameTurnService: GameTurnService,
         private readonly socketService: SocketService,
         private readonly gameService: GameService,
+        protected readonly imageService: ImageService,
     ) {
         this.gameTurnService = gameTurnService;
         this.socketService = socketService;
         this.gameService = gameService;
+        this.imageService = imageService;
     }
 
     ngOnInit(): void {

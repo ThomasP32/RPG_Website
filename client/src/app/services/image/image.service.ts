@@ -166,13 +166,13 @@ export class ImageService {
     getIconImage(icon: string): string {
         switch (icon) {
             case 'attack':
-                return './assets/icons/sword.png';
+                return './assets/icons/sword_icon.png';
             case 'defense':
-                return './assets/icons/shield.png';
+                return './assets/icons/shield_icon.png';
             case 'health':
-                return './assets/icons/heart.png';
+                return './assets/icons/heart_icon.png';
             case 'speed':
-                return './assets/icons/speed.png';
+                return './assets/icons/speed_icon.png';
             case 'battle':
                 return './assets/icons/fighting.png';
             case 'action':
@@ -181,6 +181,14 @@ export class ImageService {
                 return './assets/icons/robot.png';
             case 'host':
                 return './assets/icons/crown.png';
+            case 'door':
+                return './assets/icons/door.png';
+            case 'wallbreaker':
+                return './assets/items/wallbreaker.png';
+            case 'endturn':
+                return './assets/icons/endturn_icon.png';
+            case 'quit':
+                return './assets/icons/quit_icon.png';
             default:
                 return '';
         }

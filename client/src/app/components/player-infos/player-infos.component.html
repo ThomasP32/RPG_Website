@@ -11,7 +11,7 @@
             <div class="stat">
                 <h2>{{ player.specs.life }}</h2>
                 <div class="stat-icon">
-                    <img src="assets/icons/heart_icon.png" alt="Vie" />
+                    <img [src]="imageService.getIconImage('health')" alt="Vie" />
                 </div>
                 <div class="stat-bar">
                     <div class="stat-bar-fill" [style.width.%]="(player.specs.life / 10) * 100"></div>
@@ -20,7 +20,7 @@
             <div class="stat">
                 <h2>{{ player.specs.speed }}</h2>
                 <div class="stat-icon">
-                    <img src="assets/icons/speed_icon.png" alt="Rapidité" />
+                    <img [src]="imageService.getIconImage('speed')" alt="Rapidité" />
                 </div>
                 <div class="stat-bar">
                     <div class="stat-bar-fill" [style.width.%]="(player.specs.speed / 10) * 100"></div>
@@ -29,7 +29,7 @@
             <div class="stat">
                 <h2>{{ player.specs.attack }}</h2>
                 <div class="stat-icon">
-                    <img src="assets/icons/sword_icon.png" alt="Attaque" />
+                    <img [src]="imageService.getIconImage('attack')" alt="Attaque" />
                 </div>
                 <div class="stat-bar">
                     <div class="stat-bar-fill" [style.width.%]="(player.specs.attack / 10) * 100"></div>
@@ -38,7 +38,7 @@
             <div class="stat">
                 <h2>{{ player.specs.defense }}</h2>
                 <div class="stat-icon">
-                    <img src="assets/icons/shield_icon.png" alt="Défense" />
+                    <img [src]="imageService.getIconImage('defense')" alt="Défense" />
                 </div>
                 <div class="stat-bar">
                     <div class="stat-bar-fill" [style.width.%]="(player.specs.defense / 10) * 100"></div>
