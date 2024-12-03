@@ -216,12 +216,6 @@ describe('GamePageComponent', () => {
         expect(component.isPulsing).toBeFalse();
     }));
 
-    it('should navigate to main menu on confirm exit', () => {
-        spyOn(component, 'navigateToMain');
-        component.confirmExit();
-        expect(component.navigateToMain).toHaveBeenCalled();
-    });
-
     it('should start game if player is host', () => {
         playerService.player.socketId = 'hostSocketId';
         gameService.game.hostSocketId = 'hostSocketId';
@@ -275,7 +269,7 @@ describe('GamePageComponent', () => {
     });
 
     it('should confirm exit and perform required actions', () => {
-        component.confirmExit();
+        component.leaveGame();
 
         expect(socketService.disconnect).toHaveBeenCalled();
         expect(characterService.resetCharacterAvailability).toHaveBeenCalled();

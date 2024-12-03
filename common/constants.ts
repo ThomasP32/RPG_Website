@@ -59,7 +59,17 @@ export const TIME_FOR_POSITION_UPDATE: number = 150;
 
 export const TIME_DASH_OFFSET: number = 100;
 
+export const COUNTDOWN_PULSE: number = 6;
+
 export const HALF = 0.5;
+
+export const PERCENTAGE: number = 100;
+
+export const MINUTE: number = 60;
+
+export const TOOLTIP_DIRECTION_CHANGE: number = 10;
+
+export const RIGHT_CLICK: number = 2;
 
 export const ALL_ITEMS: ItemCategory[] = [
     ItemCategory.Armor,
@@ -86,22 +96,6 @@ export const DEFAULT_EVASIONS: number = 2;
 
 export const DEFAULT_ACTIONS: number = 1;
 
-export const BONUS: number = 2;
-
-export const TURN_DURATION = 30;
-
-export const DELAY: number = 3;
-
-export const PERCENTAGE: number = 100;
-
-export const MINUTE: number = 60;
-
-export const MAX_CHAR: number = 2;
-
-export const COUNTDOWN_NOEVASION_DURATION: number = 3;
-
-export const COUNTDOWN_COMBAT_DURATION: number = 5;
-
 export const SWORD_ATTACK_BONUS: number = 4;
 
 export const SWORD_SPEED_BONUS: number = 2;
@@ -118,9 +112,21 @@ export const ICE_ATTACK_PENALTY: number = 2;
 
 export const ICE_DEFENSE_PENALTY: number = 2;
 
-export const EVASION_SUCCESS_RATE: number = 0.4;
-
 export const INVENTORY_SIZE: number = 2;
+
+export const BONUS: number = 2;
+
+export const TURN_DURATION = 30;
+
+export const DELAY: number = 3;
+
+export const MAX_CHAR: number = 2;
+
+export const COUNTDOWN_NOEVASION_DURATION: number = 3;
+
+export const COUNTDOWN_COMBAT_DURATION: number = 5;
+
+export const EVASION_SUCCESS_RATE: number = 0.4;
 
 export const DEFENDING_PLAYER_LIFE: number = 2;
 

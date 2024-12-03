@@ -151,7 +151,7 @@ export class GameGateway {
             }
         }
         if (game.players.some((player) => player.socketId === client.id)) {
-            game = this.gameCreationService.handlePlayerLeaving(client, game.id);
+            game = this.gameCreationService.handlePlayerLeaving(client, gameId);
             client.leave(gameId);
             client.leave(gameId + '-combat');
             this.server.to(game.id).emit(GameCreationEvents.PlayerLeft, game.players);

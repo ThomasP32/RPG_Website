@@ -58,7 +58,7 @@ export class ItemsManagerService {
             const item = player.inventory[itemIndex];
             player.inventory.splice(itemIndex, 1);
             game.items.push({ coordinate: coordinates, category: item });
-            this.desactivateItem(item, player);
+            if (item === ItemCategory.Sword || item === ItemCategory.Armor) this.activateItem(item, player);
         }
     }
 

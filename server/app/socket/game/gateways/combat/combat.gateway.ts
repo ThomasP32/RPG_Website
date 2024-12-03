@@ -2,6 +2,7 @@ import { Combat } from '@common/combat';
 import { EVASION_SUCCESS_RATE, TIME_LIMIT_DELAY } from '@common/constants';
 import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData, CombatStartedData, StartCombatData } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
 import { Inject } from '@nestjs/common';
 import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -20,7 +21,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
-    @Inject(ItemsManagerService) private readonly itemManagerService: ItemsManagerService;
+    @Inject(ItemsManagerService) private readonly itemsManagerService: ItemsManagerService;
     @Inject(GameCreationService) private readonly gameCreationService: GameCreationService;
     @Inject(GameManagerService) private readonly gameManagerService: GameManagerService;
     @Inject(JournalService) private readonly journalService: JournalService;
@@ -50,7 +51,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         if (game) {
             const player = game.players.find((player) => player.turn === game.currentTurn);
             const combat = this.combatService.createCombat(data.gameId, player, data.opponent);
-            this.itemManagerService.checkForAmulet(player, data.opponent);
+            this.itemsManagerService.checkForAmulet(player, data.opponent);
             await client.join(combat.id);
             let opponentSocket;
             if (data.opponent.socketId.includes('virtual')) {
@@ -115,7 +116,6 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
 
                         if (otherPlayer.socketId.includes('virtual') && game.currentTurn === otherPlayer.turn) {
                             await this.virtualGameManager.executeVirtualPlayerBehavior(otherPlayer, game);
-
                         }
                     }, TIME_LIMIT_DELAY);
                 } else {
@@ -162,7 +162,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         const game = this.gameCreationService.getGameById(gameId);
         this.combatService.combatWinStatsUpdate(attackingPlayer, gameId);
 
-        this.itemManagerService.dropInventory(defendingPlayer, gameId);
+        this.itemsManagerService.dropInventory(defendingPlayer, gameId);
         this.combatService.sendBackToInitPos(defendingPlayer, game);
         this.combatService.updatePlayersInGame(game);
 
@@ -214,7 +214,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                         this.handleCombatLost(otherPlayer, currentPlayer, game.id, combat.id);
                         this.virtualGameManager.executeVirtualPlayerBehavior(currentPlayer, game);
                     } else if (isCombatFinishedByEvasion) {
-                        setTimeout(async() => {
+                        setTimeout(async () => {
                             const combatFinishedByEvasionData: CombatFinishedByEvasionData = { updatedGame: game, evadingPlayer: currentPlayer };
                             this.server.to(gameId).emit(CombatEvents.CombatFinishedByEvasion, combatFinishedByEvasionData);
                             this.gameCountdownService.resumeCountdown(gameId);
@@ -273,6 +273,11 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.server.to(updatedGame.id).emit(GameCreationEvents.PlayerLeft, updatedGame.players);
 
         if (updatedGame.hasStarted) {
+            if (player.inventory && player.inventory.length > 0) {
+                this.itemsManagerService.dropInventory(player, updatedGame.id);
+                const itemDroppedData: ItemDroppedData = { updatedGame: game, updatedPlayer: player };
+                this.server.to(game.id).emit(ItemsEvents.ItemDropped, itemDroppedData);
+            }
             this.journalService.logMessage(game.id, `${player.name} a abandonné la partie.`, [player.name]);
 
             const combat = this.combatService.getCombatByGameId(updatedGame.id);

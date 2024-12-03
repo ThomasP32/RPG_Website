@@ -2,7 +2,9 @@ import { Combat } from '@common/combat';
 import { ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 import { CombatService } from '../../service/combat/combat.service';
@@ -786,6 +788,54 @@ describe('CombatGateway', () => {
 
                 gateway.handleDisconnect(mockSocket);
                 jest.runAllTimers();
+
+                expect(gameCountdownService.emit).toHaveBeenCalledWith('timeout', mockGame.id);
+            });
+            it('should emit "dropItem" if there is no active combat and the disconnected player’s turn matches the current game turn and his inventory is not empty', () => {
+                jest.useFakeTimers();
+
+                const mockGame = {
+                    id: 'game-id',
+                    hasStarted: true,
+                    currentTurn: mockCombat.challenger.turn,
+                    players: [
+                        {
+                            socketId: mockCombat.challenger.socketId,
+                            turn: mockCombat.challenger.turn,
+                            name: mockCombat.challenger.name,
+                            specs: mockCombat.challenger.specs,
+                            inventory: [ItemCategory.Amulet, ItemCategory.Sword],
+                        } as Player,
+                        {
+                            socketId: mockCombat.opponent.socketId,
+                            turn: mockCombat.opponent.turn,
+                            name: mockCombat.opponent.name,
+                            specs: mockCombat.opponent.specs,
+                            inventory: [ItemCategory.Flag],
+                        } as Player,
+                    ],
+                } as Game;
+
+                serverCombatService.getCombatByGameId.mockReturnValue(undefined);
+                gameCreationService.getGames.mockReturnValue([mockGame]);
+                gameCreationService.handlePlayerLeaving.mockReturnValue(mockGame);
+
+                gateway.handleDisconnect(mockSocket);
+                jest.runAllTimers();
+
+                expect(mockServer.to(mockGame.id).emit).toHaveBeenCalledWith(GameCreationEvents.PlayerLeft, mockGame.players);
+
+                // Update the expectation to match the emitted data structure
+                expect(mockServer.to(mockGame.id).emit).toHaveBeenCalledWith(ItemsEvents.ItemDropped, {
+                    updatedGame: mockGame,
+                    updatedPlayer: {
+                        socketId: mockCombat.challenger.socketId,
+                        turn: mockCombat.challenger.turn,
+                        name: mockCombat.challenger.name,
+                        specs: mockCombat.challenger.specs,
+                        inventory: [ItemCategory.Amulet, ItemCategory.Sword],
+                    },
+                });
 
                 expect(gameCountdownService.emit).toHaveBeenCalledWith('timeout', mockGame.id);
             });
