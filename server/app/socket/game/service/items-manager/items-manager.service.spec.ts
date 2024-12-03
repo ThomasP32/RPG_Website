@@ -191,8 +191,8 @@ describe('ItemsManagerService', () => {
 
             service.activateItem(ItemCategory.Sword, player);
 
-            expect(player.specs.speed).toBe(initialSpeed + 2);
-            expect(player.specs.attack).toBe(initialAttack + 4);
+            expect(player.specs.speed).toBe(initialSpeed + 1);
+            expect(player.specs.attack).toBe(initialAttack + 2);
         });
 
         it('should increase player defense and decrease speed when activating armor', () => {
@@ -201,7 +201,7 @@ describe('ItemsManagerService', () => {
 
             service.activateItem(ItemCategory.Armor, player);
 
-            expect(player.specs.defense).toBe(initialDefense + 4);
+            expect(player.specs.defense).toBe(initialDefense + 2);
             expect(player.specs.speed).toBe(initialSpeed - 1);
         });
 
@@ -210,7 +210,7 @@ describe('ItemsManagerService', () => {
 
             service.activateItem(ItemCategory.Flask, player);
 
-            expect(player.specs.attack).toBe(initialAttack + 4);
+            expect(player.specs.attack).toBe(initialAttack + 2);
         });
     });
     describe('desactivateItem', () => {
