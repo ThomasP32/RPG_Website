@@ -31,6 +31,7 @@ export class WaitingRoomParameters {
         return 9999;
     }
 }
+
 export enum tableColumns {
     COMBAT_COLUMN = 4,
     EVASION_COLUMN = 5,
@@ -45,6 +46,12 @@ export enum tableColumns {
 export const TIME_LIMIT_DELAY: number = 3000;
 
 export const TIME_REDIRECTION: number = 5000;
+
+export const VIRTUAL_PLAYER_DELAY: number = 6000;
+
+export const VIRTUAL_DELAY_CONSTANT: number = 5000;
+
+export const COUNTDOWN_INTERVAL: number = 1000;
 
 export const TIME_PULSE: number = 500;
 
@@ -62,21 +69,28 @@ export const ALL_ITEMS: ItemCategory[] = [
     ItemCategory.WallBreaker,
     ItemCategory.Amulet,
 ];
-export const DEFAULT_HP = 4;
 
-export const DEFAULT_SPEED = 4;
+export const DEFAULT_HP: number = 4;
 
-export const DEFAULT_ATTACK = 4;
+export const DEFAULT_SPEED: number = 4;
 
-export const DEFAULT_DEFENSE = 4;
+export const DEFAULT_ATTACK: number = 4;
 
-export const DEFAULT_EVASIONS = 2;
+export const DEFAULT_DEFENSE: number = 4;
 
-export const DEFAULT_ACTIONS = 1;
+export const MAXIMUM_BONUS: number = 6;
 
-export const BONUS = 2;
+export const MINIMUM_BONUS: number = 4;
+
+export const DEFAULT_EVASIONS: number = 2;
+
+export const DEFAULT_ACTIONS: number = 1;
+
+export const BONUS: number = 2;
 
 export const TURN_DURATION = 30;
+
+export const DELAY: number = 3;
 
 export const PERCENTAGE: number = 100;
 
@@ -103,3 +117,21 @@ export const AMULET_LIFE_BONUS: number = 2;
 export const ICE_ATTACK_PENALTY: number = 2;
 
 export const ICE_DEFENSE_PENALTY: number = 2;
+
+export const EVASION_SUCCESS_RATE: number = 0.4;
+
+export const INVENTORY_SIZE: number = 2;
+
+export const DEFENDING_PLAYER_LIFE: number = 2;
+
+export const ROLL_DICE_CONSTANT: number = 1;
+
+export const SUFFIX_INCREMENT: number = 1;
+
+export const SUFFIX_VALUE: number = 10;
+
+export const BONUS_REDUCTION: number = 2;
+
+export const MINIMUM_MOVES: number = 1;
+
+export const CONTINUE_ODDS: number = 0.4;
