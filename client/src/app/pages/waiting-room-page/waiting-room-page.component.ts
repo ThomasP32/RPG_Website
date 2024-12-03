@@ -66,6 +66,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     showProfileModal: boolean = false;
 
     async ngOnInit(): Promise<void> {
+        if (!this.socketService.isSocketAlive()) {
+            this.ngOnDestroy();
+            this.characterService.resetCharacterAvailability();
+            this.socketService.disconnect();
+            this.router.navigate(['/main-menu']);
+            return;
+        }
         const player = this.playerService.player;
         this.playerPreview = this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;

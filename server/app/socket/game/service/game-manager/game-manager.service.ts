@@ -1,4 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
+import { ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
@@ -288,6 +289,20 @@ export class GameManagerService {
         });
 
         return adjacentWalls;
+    }
+    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
+        const isOnIceTile = this.onIceTile(player, gameId);
+        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
+            player.specs.attack -= ICE_ATTACK_PENALTY;
+            player.specs.defense -= ICE_DEFENSE_PENALTY;
+            wasOnIceTile = true;
+        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
+            player.specs.attack += ICE_ATTACK_PENALTY;
+            player.specs.defense += ICE_DEFENSE_PENALTY;
+            wasOnIceTile = false;
+        }
+        return wasOnIceTile;
     }
 
     getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {

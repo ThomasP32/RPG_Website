@@ -106,7 +106,7 @@ export const SWORD_ATTACK_BONUS: number = 4;
 
 export const SWORD_SPEED_BONUS: number = 2;
 
-export const ARMOR_DEFENSE_BONUS: number = 5;
+export const ARMOR_DEFENSE_BONUS: number = 4;
 
 export const ARMOR_SPEED_PENALTY: number = 1;
 
