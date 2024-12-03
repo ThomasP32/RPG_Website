@@ -11,7 +11,7 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { ProfileType, WaitingRoomParameters } from '@common/constants';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
-import { ItemCategory, Mode } from '@common/map.types';
+import { DetailedMap, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 
 const mockPlayer: Player = {
@@ -61,6 +61,20 @@ describe('WaitingRoomPageComponent', () => {
     let gameInitialized: Subject<Game>;
     let playerKicked$: Subject<void>;
 
+    const mockMap: DetailedMap = {
+        _id: '1',
+        name: 'Test Map',
+        mapSize: { x: 2, y: 2 },
+        tiles: [{ coordinate: { x: 0, y: 0 }, category: TileCategory.Wall }],
+        doorTiles: [{ coordinate: { x: 1, y: 1 }, isOpened: true }],
+        startTiles: [{ coordinate: { x: 0, y: 1 } }],
+        items: [{ coordinate: { x: 1, y: 0 }, category: ItemCategory.Flag }],
+        mode: Mode.Ctf,
+        lastModified: new Date(),
+        description: '',
+        imagePreview: '',
+        isVisible: true,
+    };
     beforeEach(async () => {
         RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/join' });
         playerServiceSpy = jasmine.createSpyObj('PlayerService', ['getPlayer', 'setPlayer', 'resetPlayer']);
@@ -169,6 +183,11 @@ describe('WaitingRoomPageComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('should initialize the game when the gameStarted event is received', () => {
+        component.createNewGame(mockMap.name);
+        expect(gameServiceSpy.createNewGame).toHaveBeenCalled();
+    });
+
     it('should generate a random number within the specified range', () => {
         const minCode = 1000;
         const maxCode = 9999;
@@ -197,6 +216,12 @@ describe('WaitingRoomPageComponent', () => {
 
     it('should set isHost to true if route url contains "host"', () => {
         SocketServiceSpy.isSocketAlive.and.returnValue(false);
+        component.ngOnInit();
+        expect(component.isHost).toBeTrue();
+    });
+
+    it('should set isHost to false if route url does not contain "host"', () => {
+        RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/waiting-room' });
         component.ngOnInit();
         expect(component.isHost).toBeTrue();
     });
@@ -344,6 +369,14 @@ describe('WaitingRoomPageComponent', () => {
     it('should set showProfileModal to false when closeProfileModal is called', () => {
         component.closeProfileModal();
         expect(component.showProfileModal).toBeFalse();
+    });
+
+    it('should handle playerKicked event correctly', () => {
+        playerKicked$.next();
+
+        fixture.detectChanges();
+
+        expect(RouterSpy.navigate).not.toHaveBeenCalled();
     });
 
     afterEach(() => {
