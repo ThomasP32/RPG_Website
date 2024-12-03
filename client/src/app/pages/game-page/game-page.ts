@@ -242,10 +242,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     private listenForCountDown() {
         this.countDownService.countdown$.subscribe((time) => {
-            this.countdown = typeof time === 'string' ? parseInt(time, 10) : time;
-            const progress = (this.countdown / TURN_DURATION) * TIME_DASH_OFFSET;
+            this.countdown = time;
+            const timeLeft = typeof time === 'string' ? parseInt(time, 10) : time;
+            const progress = (timeLeft / TURN_DURATION) * TIME_DASH_OFFSET;
             this.dashOffset = `${TIME_DASH_OFFSET - progress}`;
-            if (this.countdown < 6) {
+            if (timeLeft < 6) {
                 this.triggerPulse();
             }
         });

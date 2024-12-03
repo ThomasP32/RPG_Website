@@ -677,7 +677,7 @@ describe('GameTurnService', () => {
             service.listenForEndOfGame();
 
             service.playerWon$.subscribe((playerWon) => {
-                if (playerWon === true) {
+                if (playerWon) {
                     expect(playerWon).toBeTrue();
                     done();
                 }
