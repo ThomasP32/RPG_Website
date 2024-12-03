@@ -30,6 +30,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -47,6 +48,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -66,6 +68,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -85,6 +88,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                     item: ItemCategory.Armor,
                 },
             ],
@@ -105,6 +109,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                     item: ItemCategory.Armor,
                 },
             ],
@@ -116,6 +121,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -134,6 +140,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                     item: ItemCategory.Armor,
                 },
             ],
@@ -145,6 +152,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -162,6 +170,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
             [
@@ -172,6 +181,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -195,6 +205,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -218,6 +229,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -238,6 +250,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                     item: ItemCategory.Flag,
                 },
             ],
@@ -258,6 +271,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -276,6 +290,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -295,6 +310,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -313,6 +329,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -331,6 +348,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -351,6 +369,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -371,6 +390,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];

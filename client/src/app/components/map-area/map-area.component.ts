@@ -93,6 +93,7 @@ export class MapAreaComponent implements OnInit {
                     isHovered: false,
                     isOccupied: false,
                     isStartingPoint: false,
+                    alternateCoordinates: { x: i, y: j },
                 });
             }
             this.map.push(row);
@@ -232,7 +233,9 @@ export class MapAreaComponent implements OnInit {
     }
 
     getTileImage(tileType: TileCategory, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileType, rowIndex, colIndex, this.map);
+        if (tileType === TileCategory.Door) {
+            return this.imageService.getDoorImage(this.map[rowIndex][colIndex].door.isOpen);
+        } else return this.imageService.getTileImage(tileType);
     }
 
     getItemImage(item: ItemCategory): string {
@@ -278,5 +281,4 @@ export class MapAreaComponent implements OnInit {
             this.map[item.coordinate.x][item.coordinate.y].item = item.category;
         });
     }
-
 }

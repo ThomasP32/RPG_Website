@@ -16,6 +16,7 @@ describe('GameMapComponent', () => {
             'getPlayerImage',
             'getStartingPointImage',
             'getPixelatedPlayerImage',
+            'getDoorImage',
         ]);
         await TestBed.configureTestingModule({
             imports: [GameMapComponent],
@@ -218,7 +219,7 @@ describe('GameMapComponent', () => {
         it('should get tile image from image service', () => {
             imageServiceSpy.getTileImage.and.returnValue('tile-image');
             const image = component.getTileImage(TileCategory.Floor, 1, 1);
-            expect(imageServiceSpy.getTileImage).toHaveBeenCalledWith(TileCategory.Floor, 1, 1, component.map);
+            expect(imageServiceSpy.getTileImage).toHaveBeenCalledWith(TileCategory.Floor);
             expect(image).toBe('tile-image');
         });
     });

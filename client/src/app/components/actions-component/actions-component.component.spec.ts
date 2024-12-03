@@ -122,7 +122,7 @@ describe('ActionsComponentComponent', () => {
             { coordinate: { x: 1, y: 1 }, isOpened: true } as DoorTile,
         ];
         component.toggleDoor();
-        expect(component.showDoorModal).toBeTrue();
+        expect(component.showDoorSelector).toBeTrue();
     });
 
     it('should break wall when wall action is available', () => {
