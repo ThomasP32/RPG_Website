@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { Avatar } from '@common/game';
-import { Cell } from '@common/map-cell';
 import { ItemCategory, TileCategory } from '@common/map.types';
 import { ImageService } from './image.service';
 
@@ -27,34 +26,10 @@ describe('ImageService', () => {
     });
 
     it('should get tile image', () => {
-        const mockMap: Cell[][] = [
-            [
-                {
-                    tileType: TileCategory.Door,
-                    door: { isOpen: true, isDoor: true },
-                    coordinate: { x: 0, y: 0 },
-                    isStartingPoint: false,
-                    isOccupied: false,
-                    isHovered: false,
-                },
-            ],
-            [
-                {
-                    tileType: TileCategory.Door,
-                    door: { isOpen: false, isDoor: true },
-                    coordinate: { x: 1, y: 0 },
-                    isStartingPoint: false,
-                    isOccupied: false,
-                    isHovered: false,
-                },
-            ],
-        ];
-        expect(service.getTileImage(TileCategory.Door, 0, 0, mockMap)).toBe('./assets/tiles/door_opened.jpg');
-        expect(service.getTileImage(TileCategory.Door, 1, 0, mockMap)).toBe('./assets/tiles/door_closed.jpg');
-        expect(service.getTileImage(TileCategory.Wall, 0, 0, mockMap)).toBe('./assets/tiles/wall.png');
-        expect(service.getTileImage(TileCategory.Ice, 0, 0, mockMap)).toBe('./assets/tiles/ice1.jpg');
-        expect(service.getTileImage(TileCategory.Water, 0, 0, mockMap)).toBe('./assets/tiles/water.png');
-        expect(service.getTileImage(TileCategory.Floor, 0, 0, mockMap)).toBe('./assets/tiles/floor.png');
+        expect(service.getTileImage(TileCategory.Wall)).toBe('./assets/tiles/wall.png');
+        expect(service.getTileImage(TileCategory.Ice)).toBe('./assets/tiles/ice1.jpg');
+        expect(service.getTileImage(TileCategory.Water)).toBe('./assets/tiles/water.png');
+        expect(service.getTileImage(TileCategory.Floor)).toBe('./assets/tiles/floor.png');
     });
 
     it('should get item image', () => {

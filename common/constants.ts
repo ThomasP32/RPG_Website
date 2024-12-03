@@ -71,6 +71,8 @@ export const TOOLTIP_DIRECTION_CHANGE: number = 10;
 
 export const RIGHT_CLICK: number = 2;
 
+export const ALTERNATIVE_COORDINATES: number = 2;
+
 export const ALL_ITEMS: ItemCategory[] = [
     ItemCategory.Armor,
     ItemCategory.Flask,

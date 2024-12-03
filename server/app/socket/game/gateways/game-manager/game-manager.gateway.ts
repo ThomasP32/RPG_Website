@@ -105,6 +105,9 @@ export class GameManagerGateway implements OnGatewayInit {
         this.gameManagerService.updatePlayerActions(game.id, player.socketId);
         doorTile.isOpened = !doorTile.isOpened;
         game.nDoorsManipulated.push(doorTile.coordinate);
+        const action = doorTile.isOpened ? 'ouverte' : 'fermée';
+        const involvedPlayers = game.players.map((player) => player.name);
+        this.journalService.logMessage(data.gameId, `Une porte a été ${action} par ${player.name}.`, involvedPlayers);
         this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
     }
 
@@ -195,7 +198,6 @@ export class GameManagerGateway implements OnGatewayInit {
         }
         const activePlayer = game.players.find((player) => player.turn === game.currentTurn);
         const involvedPlayers = game.players.map((player) => player.name);
-
         if (!activePlayer?.isActive) {
             game.currentTurn++;
             this.startTurn(gameId);

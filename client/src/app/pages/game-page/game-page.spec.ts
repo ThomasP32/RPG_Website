@@ -487,4 +487,14 @@ describe('GamePageComponent', () => {
         component.onShowExitModalChange(false);
         expect(component.showExitModal).toBeFalse();
     });
+    it('should call leaveGame and ngOnDestroy if socket is not alive', () => {
+        spyOn(component, 'leaveGame');
+        spyOn(component, 'ngOnDestroy');
+        socketService.isSocketAlive.and.returnValue(false);
+
+        component.ngOnInit();
+
+        expect(component.ngOnDestroy).toHaveBeenCalled();
+        expect(component.leaveGame).toHaveBeenCalled();
+    });
 });
