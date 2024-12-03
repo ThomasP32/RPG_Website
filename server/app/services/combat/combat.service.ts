@@ -1,15 +1,13 @@
 import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat, RollResult } from '@common/combat';
-import { DEFAULT_EVASIONS, DEFENDING_PLAYER_LIFE, ROLL_DICE_CONSTANT } from '@common/constants';
+import { DEFAULT_EVASIONS, DEFENDING_PLAYER_LIFE, N_WIN_VICTORIES, ROLL_DICE_CONSTANT } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { N_WIN_VICTORIES } from '../../../../../constants/constants';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { ItemsManagerService } from '../items-manager/items-manager.service';
-
 @Injectable()
 export class CombatService {
     private combatRooms: Record<string, Combat> = {};

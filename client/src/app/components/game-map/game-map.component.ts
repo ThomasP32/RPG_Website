@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { GameDataService } from '@app/services/game-data.service';
-import { GameInfosService } from '@app/services/game-infos.service';
+import { GameDataService } from '@app/services/game-data/game-data.service';
+import { GameInfosService } from '@app/services/game-infos/game-infos.service';
 import { ImageService } from '@app/services/image/image.service';
 import { ALTERNATIVE_COORDINATES, RIGHT_CLICK, TOOLTIP_DIRECTION_CHANGE } from '@common/constants';
 import { MovesMap } from '@common/directions';
