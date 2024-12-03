@@ -3,9 +3,6 @@ import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { Routes, provideRouter, withHashLocation } from '@angular/router';
-import { ActionsComponentComponent } from '@app/components/actions-component/actions-component.component';
-import { CombatListComponent } from '@app/components/combat-list/combat-list.component';
-import { PlayerInfosComponent } from '@app/components/player-infos/player-infos.component';
 import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { CharacterFormPageComponent } from '@app/pages/character-form-page/character-form-page.component';
@@ -36,9 +33,6 @@ const routes: Routes = [
     { path: ':gameId/waiting-room/player', component: WaitingRoomPageComponent },
     { path: 'join-game/:gameId/waiting-room', component: WaitingRoomPageComponent },
     { path: 'game/:gameId/:mapName', component: GamePageComponent },
-    { path: 'combat', component: CombatListComponent },
-    { path: 'players-info', component: PlayerInfosComponent },
-    { path: 'actions', component: ActionsComponentComponent },
     { path: '**', redirectTo: '/main-menu' },
 ];
 
