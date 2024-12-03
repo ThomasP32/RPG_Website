@@ -49,9 +49,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.Armor) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Armor)"
                     />
-                    <span class="description" draggable="false"
-                        >Armure Renforcée : +4 en défense, mais réduit votre vitesse de 1. Conçue pour les stratèges prudents.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.Armor }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Sword) || mapCounterService.itemsCounter === 0">
                     <img
@@ -60,9 +58,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.Sword) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Sword)"
                     />
-                    <span class="description" draggable="false"
-                        >Lame d'Agilité : +4 en attaque et +2 en vitesse. Parfait pour un combat rapide et décisif.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.Sword }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.IceSkates) || mapCounterService.itemsCounter === 0">
                     <img
@@ -71,9 +67,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.IceSkates) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.IceSkates)"
                     />
-                    <span class="description" draggable="false"
-                        >Patins Stabilisateurs : Immunisé aux chutes et pénalités sur glace. Glissez avec maîtrise.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.IceSkates }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.WallBreaker) || mapCounterService.itemsCounter === 0">
                     <img
@@ -82,9 +76,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.WallBreaker) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.WallBreaker)"
                     />
-                    <span class="description" draggable="false"
-                        >Destructeur de Murs : Détruit instantanément tous les murs adjacents. Ouvrez votre chemin avec style.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.WallBreaker }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Amulet) || mapCounterService.itemsCounter === 0">
                     <img
@@ -93,9 +85,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.Amulet) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Amulet)"
                     />
-                    <span class="description" draggable="false"
-                        >Amulette de Résilience : Augmente votre vitalité de 4 lorsque vous affrontez un adversaire avec plus d'attaque.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.Amulet }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.isItemUsed(ItemCategory.Flask) || mapCounterService.itemsCounter === 0">
                     <img
@@ -104,10 +94,7 @@
                         [draggable]="!mapCounterService.isItemUsed(ItemCategory.Flask) && mapCounterService.itemsCounter > 0"
                         (dragstart)="startDrag($event, ItemCategory.Flask)"
                     />
-                    <span class="description" draggable="false"
-                        >Potion de Résurrection : Lorsque vous tombez à 2 vies en combat, gagnez un boost de +4 en attaque pour un dernier effort
-                        héroïque.</span
-                    >
+                    <span class="description" draggable="false">{{ GameDescriptions.Flask }}</span>
                 </div>
                 <div class="item" [class.disabled]="mapCounterService.randomItemCounter === 0 || mapCounterService.itemsCounter === 0">
                     <img
