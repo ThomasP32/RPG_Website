@@ -1,4 +1,5 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
+import { ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
@@ -266,6 +267,21 @@ export class GameManagerService {
         return adjacentDoors;
     }
 
+    adaptSpecsForIceTileMove(player: Player, gameId: string, wasOnIceTile: boolean) {
+        const isOnIceTile = this.onIceTile(player, gameId);
+        const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
+        if (isOnIceTile && !wasOnIceTile && !hasSkates) {
+            player.specs.attack -= ICE_ATTACK_PENALTY;
+            player.specs.defense -= ICE_DEFENSE_PENALTY;
+            wasOnIceTile = true;
+        } else if (!isOnIceTile && wasOnIceTile && !hasSkates) {
+            player.specs.attack += ICE_ATTACK_PENALTY;
+            player.specs.defense += ICE_DEFENSE_PENALTY;
+            wasOnIceTile = false;
+        }
+        return wasOnIceTile;
+    }
+
     getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
         const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
 
@@ -292,7 +308,8 @@ export class GameManagerService {
 
     isGameResumable(gameId: string): boolean {
         return (
-            this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
+            this.gameCreationService.getGameById(gameId) &&
+            !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive && !player.socketId.includes('virtual'))
         );
     }
 

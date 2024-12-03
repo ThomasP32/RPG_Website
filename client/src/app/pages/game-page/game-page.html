@@ -1,4 +1,4 @@
-@if(!delayFinished) {
+@if(player && game) {@if(!delayFinished) {
 <div class="disable-interactions"></div>
 <div class="turn-indicator">
     <h3>C'est au tour de {{currentPlayerTurn}} dans</h3>
@@ -178,4 +178,4 @@
         <app-inventory-modal [player]="player" [gameId]="game.id"> </app-inventory-modal>
     </div>
 </div>
-}
+}}
