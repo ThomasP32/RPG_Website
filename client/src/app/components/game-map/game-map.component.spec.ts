@@ -39,8 +39,14 @@ describe('GameMapComponent', () => {
                 { coordinate: { x: 2, y: 1 }, isOpened: true },
             ],
             startTiles: [{ coordinate: { x: 0, y: 0 } }],
-            items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
-            players: [{ position: { x: 2, y: 2 }, avatar: Avatar.Avatar1 } as Player],
+            items: [
+                { coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor },
+                { coordinate: { x: 0, y: 2 }, category: ItemCategory.Amulet },
+                { coordinate: { x: 0, y: 3 }, category: ItemCategory.Flag },
+                { coordinate: { x: 0, y: 4 }, category: ItemCategory.Flask },
+                { coordinate: { x: 0, y: 5 }, category: ItemCategory.IceSkates },
+            ],
+            players: [{ name: 'joueur', position: { x: 8, y: 8 }, avatar: Avatar.Avatar1 } as Player],
         } as Game;
 
         component.moves = new Map<string, { path: Coordinate[]; weight: number }>();
@@ -111,6 +117,33 @@ describe('GameMapComponent', () => {
 
             component.onRightClickTile(event, wallTile);
             expect(component.tileDescription).toBe("Aucun déplacement n'est possible sur ou à travers un mur.");
+        });
+
+        it('should display item description on right-click for different item categories', () => {
+            const event = new MouseEvent('contextmenu', { button: 2 });
+
+            const itemDescriptions: { position: Coordinate; expectedDescription: string }[] = [
+                { position: { x: 0, y: 1 }, expectedDescription: 'Armure' },
+                { position: { x: 0, y: 2 }, expectedDescription: 'Amulet' },
+                { position: { x: 0, y: 3 }, expectedDescription: 'Le drapeau' },
+                { position: { x: 0, y: 4 }, expectedDescription: 'Le' },
+                { position: { x: 0, y: 5 }, expectedDescription: 'Les patins' },
+            ];
+
+            for (const { position, expectedDescription } of itemDescriptions) {
+                component.onRightClickTile(event, position);
+                expect(component.tileDescription).toBe(expectedDescription);
+                expect(component.explanationIsVisible).toBeTrue();
+            }
+        });
+
+        it('should display correct descriptions on right-click for players', () => {
+            const event = new MouseEvent('contextmenu', { button: 2 });
+
+            const playerTile = { x: 8, y: 8 };
+
+            component.onRightClickTile(event, playerTile);
+            expect(component.tileDescription).toBe('nom du joueur: joueur');
         });
 
         it('should display correct description for a closed door tile on right-click', () => {

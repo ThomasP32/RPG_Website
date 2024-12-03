@@ -1,10 +1,10 @@
 import { DoorTile } from '@app/http/model/schemas/map/tiles.schema';
+import { ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS, MovesMap } from '@common/directions';
 import { Game, Player } from '@common/game';
 import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameCreationService } from '../game-creation/game-creation.service';
-import { ICE_ATTACK_PENALTY, ICE_DEFENSE_PENALTY } from '@common/constants';
 
 @Injectable()
 export class GameManagerService {
@@ -281,7 +281,7 @@ export class GameManagerService {
         }
         return wasOnIceTile;
     }
-    
+
     getFirstFreePosition(start: Coordinate, game: Game): Coordinate | null {
         const allDirections = [...DIRECTIONS, ...CORNER_DIRECTIONS];
 
@@ -308,7 +308,8 @@ export class GameManagerService {
 
     isGameResumable(gameId: string): boolean {
         return (
-            this.gameCreationService.getGameById(gameId) && !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive)
+            this.gameCreationService.getGameById(gameId) &&
+            !!this.gameCreationService.getGameById(gameId).players.find((player) => player.isActive && !player.socketId.includes('virtual'))
         );
     }
 

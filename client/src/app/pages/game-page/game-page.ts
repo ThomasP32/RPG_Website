@@ -102,6 +102,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        if (!this.socketService.isSocketAlive()) {
+            this.ngOnDestroy();
+            this.navigateToMain();
+            return;
+        }
         if (this.player && this.game) {
             this.gameTurnService.listenForTurn();
             this.gameTurnService.listenForPlayerMove();
