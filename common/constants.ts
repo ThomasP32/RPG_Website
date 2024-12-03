@@ -96,15 +96,15 @@ export const DEFAULT_EVASIONS: number = 2;
 
 export const DEFAULT_ACTIONS: number = 1;
 
-export const SWORD_ATTACK_BONUS: number = 4;
+export const SWORD_ATTACK_BONUS: number = 2;
 
-export const SWORD_SPEED_BONUS: number = 2;
+export const SWORD_SPEED_BONUS: number = 1;
 
-export const ARMOR_DEFENSE_BONUS: number = 4;
+export const ARMOR_DEFENSE_BONUS: number = 2;
 
 export const ARMOR_SPEED_PENALTY: number = 1;
 
-export const FLASK_ATTACK_BONUS: number = 4;
+export const FLASK_ATTACK_BONUS: number = 2;
 
 export const AMULET_LIFE_BONUS: number = 2;
 
