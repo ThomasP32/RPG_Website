@@ -1,5 +1,5 @@
-import { GameCreationService } from '@app/socket/game/service/game-creation/game-creation.service';
-import { GameManagerService } from '@app/socket/game/service/game-manager/game-manager.service';
+import { GameCreationService } from '@app/services/game-creation/game-creation.service';
+import { GameManagerService } from '@app/services/game-manager/game-manager.service';
 import { ProfileType } from '@common/constants';
 import { Avatar, Bonus, Game, Player, Specs } from '@common/game';
 import { Coordinate, DoorTile, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
@@ -421,60 +421,60 @@ describe('GameManagerService', () => {
 
     describe('adaptSpecsForIceTileMove', () => {
         let wasOnIceTile: boolean;
-    
+
         beforeEach(() => {
             wasOnIceTile = false;
             player.specs = { ...specs };
         });
-    
+
         it('should not apply penalties when moving onto an ice tile with skates', () => {
-            player.position = { x: 4, y: 7 }; 
-            player.inventory = [ItemCategory.IceSkates]; 
-    
+            player.position = { x: 4, y: 7 };
+            player.inventory = [ItemCategory.IceSkates];
+
             wasOnIceTile = gameManagerService.adaptSpecsForIceTileMove(player, game2.id, wasOnIceTile);
-    
+
             expect(player.specs.attack).toBe(specs.attack);
             expect(player.specs.defense).toBe(specs.defense);
-            expect(wasOnIceTile).toBe(false); 
+            expect(wasOnIceTile).toBe(false);
         });
-    
+
         it('should not remove penalties when moving off an ice tile with skates', () => {
-            player.position = { x: 5, y: 5 }; 
-            player.inventory = [ItemCategory.IceSkates]; 
+            player.position = { x: 5, y: 5 };
+            player.inventory = [ItemCategory.IceSkates];
             wasOnIceTile = true;
-    
+
             wasOnIceTile = gameManagerService.adaptSpecsForIceTileMove(player, game2.id, wasOnIceTile);
-    
-            expect(player.specs.attack).toBe(specs.attack);
-            expect(player.specs.defense).toBe(specs.defense);
-            expect(wasOnIceTile).toBe(true); 
-        });
-    
-        it('should do nothing if staying on the same ice tile', () => {
-            player.position = { x: 4, y: 7 }; 
-            player.inventory = []; 
-            wasOnIceTile = true;
-    
-            wasOnIceTile = gameManagerService.adaptSpecsForIceTileMove(player, game2.id, wasOnIceTile);
-    
+
             expect(player.specs.attack).toBe(specs.attack);
             expect(player.specs.defense).toBe(specs.defense);
             expect(wasOnIceTile).toBe(true);
         });
-    
-        it('should do nothing if staying on a non-ice tile', () => {
-            player.position = { x: 5, y: 5 }; 
-            player.inventory = []; 
-            wasOnIceTile = false;
-    
+
+        it('should do nothing if staying on the same ice tile', () => {
+            player.position = { x: 4, y: 7 };
+            player.inventory = [];
+            wasOnIceTile = true;
+
             wasOnIceTile = gameManagerService.adaptSpecsForIceTileMove(player, game2.id, wasOnIceTile);
-    
+
+            expect(player.specs.attack).toBe(specs.attack);
+            expect(player.specs.defense).toBe(specs.defense);
+            expect(wasOnIceTile).toBe(true);
+        });
+
+        it('should do nothing if staying on a non-ice tile', () => {
+            player.position = { x: 5, y: 5 };
+            player.inventory = [];
+            wasOnIceTile = false;
+
+            wasOnIceTile = gameManagerService.adaptSpecsForIceTileMove(player, game2.id, wasOnIceTile);
+
             expect(player.specs.attack).toBe(specs.attack);
             expect(player.specs.defense).toBe(specs.defense);
             expect(wasOnIceTile).toBe(false);
         });
     });
-    
+
     describe('isGameResumable', () => {
         it('should return true if there is at least one active player', () => {
             game2.players[0].isActive = true;

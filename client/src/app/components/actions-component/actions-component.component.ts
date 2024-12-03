@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
-import { GameDataService } from '@app/services/game-data.service';
+import { GameDataService } from '@app/services/game-data/game-data.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';

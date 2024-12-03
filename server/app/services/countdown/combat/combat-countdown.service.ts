@@ -1,4 +1,4 @@
-import { Countdown } from '@app/socket/game/service/countdown/counter-interface';
+import { Countdown } from '@app/services/countdown/counter-interface';
 import { COUNTDOWN_COMBAT_DURATION, COUNTDOWN_INTERVAL, COUNTDOWN_NOEVASION_DURATION } from '@common/constants';
 import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';

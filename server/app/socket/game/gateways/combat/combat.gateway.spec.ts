@@ -1,3 +1,4 @@
+import { CombatService } from '@app/services/combat/combat.service';
 import { Combat } from '@common/combat';
 import { ProfileType } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
@@ -7,14 +8,13 @@ import { Avatar, Bonus, Game, Player } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
-import { CombatService } from '../../service/combat/combat.service';
-import { CombatCountdownService } from '../../service/countdown/combat/combat-countdown.service';
-import { GameCountdownService } from '../../service/countdown/game/game-countdown.service';
-import { GameCreationService } from '../../service/game-creation/game-creation.service';
-import { GameManagerService } from '../../service/game-manager/game-manager.service';
-import { ItemsManagerService } from '../../service/items-manager/items-manager.service';
-import { JournalService } from '../../service/journal/journal.service';
-import { VirtualGameManagerService } from '../../service/virtual-game-manager/virtual-game-manager.service';
+import { CombatCountdownService } from '../../../../services/countdown/combat/combat-countdown.service';
+import { GameCountdownService } from '../../../../services/countdown/game/game-countdown.service';
+import { GameCreationService } from '../../../../services/game-creation/game-creation.service';
+import { GameManagerService } from '../../../../services/game-manager/game-manager.service';
+import { ItemsManagerService } from '../../../../services/items-manager/items-manager.service';
+import { JournalService } from '../../../../services/journal/journal.service';
+import { VirtualGameManagerService } from '../../../../services/virtual-game-manager/virtual-game-manager.service';
 import { CombatGateway } from './combat.gateway';
 
 describe('CombatGateway', () => {
