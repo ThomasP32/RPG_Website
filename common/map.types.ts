@@ -29,13 +29,13 @@ export enum ItemCategory {
 }
 
 export enum GameDescriptions {
-    Amulet = "Amulette de Résilience : Augmente votre vitalité de 4 lorsque vous affrontez un adversaire avec plus d'attaque.",
-    Armor = 'Armure Renforcée : +4 en défense, mais réduit votre vitesse de 1. Conçue pour les stratèges prudents.',
+    Amulet = "Amulette de Résilience : Augmente votre vitalité de 2 lorsque vous affrontez un adversaire avec plus d'attaque que vous.",
+    Armor = 'Armure Renforcée : +2 en défense, mais réduit votre vitesse de 1. Conçue pour les stratèges prudents.',
     Flag = 'Drapeau de Victoire : Capturez-le et ramenez-le à votre point de départ pour triompher.',
     IceSkates = 'Patins Stabilisateurs : Immunisé aux chutes et pénalités sur glace. Glissez avec maîtrise.',
-    Sword = "Lame d'Agilité : +4 en attaque et +2 en vitesse. Parfait pour un combat rapide et décisif.",
+    Sword = "Lame d'Agilité : +2 en attaque et +1 en vitesse. Parfait pour un combat rapide et décisif.",
     WallBreaker = 'Destructeur de Murs : Détruit instantanément tous les murs adjacents. Ouvrez votre chemin avec style.',
-    Flask = 'Potion de Résurrection : Lorsque vous tombez à 2 vies en combat, gagnez un boost de +4 en attaque pour un dernier effort héroïque.',
+    Flask = 'Potion de Résurrection : Lorsque vous tombez à 2 vies en combat, gagnez un boost de +2 en attaque pour un dernier effort héroïque.',
     Random = 'Une boîte mystère contenant un objet aléatoire. Qui sait ce que vous trouverez ?',
 
     WaterTile = "Un déplacement sur une tuile d'eau nécessite 2 points de mouvements.",
