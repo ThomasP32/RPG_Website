@@ -12,7 +12,8 @@
 .actions {
     display: flex;
     flex-direction: row;
-    width: 25vw;
+    max-width: 28vw;
+    gap: 1vw;
     align-items: center;
     justify-content: space-between;
 }

@@ -1,5 +1,19 @@
 <div class="action-bar">
     <div class="actions">
+        @if(isWallBreakerAvailable()) {
+        <div
+            class="action-button"
+            [class.disabled]="possibleWalls.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
+            (mouseenter)="showDescription('Détruire un Mur')"
+            (mouseleave)="hideDescription()"
+            (click)="breakWall()"
+        >
+            @if(actionDescription === 'Détruire un Mur') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('wallbreaker')" alt="Mur" />
+        </div>
+        }
         <div
             class="action-button"
             [class.disabled]="possibleOpponents.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
@@ -24,19 +38,6 @@
             <div class="tooltip">{{ actionDescription }}</div>
             }
             <img [src]="imageService.getIconImage('door')" alt="Porte" />
-        </div>
-
-        <div
-            class="action-button"
-            [class.disabled]="possibleWalls.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
-            (mouseenter)="showDescription('Détruire un Mur')"
-            (mouseleave)="hideDescription()"
-            (click)="breakWall()"
-        >
-            @if(actionDescription === 'Détruire un Mur') {
-            <div class="tooltip">{{ actionDescription }}</div>
-            }
-            <img [src]="imageService.getIconImage('wallbreaker')" alt="Mur" />
         </div>
 
         <div

@@ -6,7 +6,7 @@ import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { CombatEvents, StartCombatData } from '@common/events/combat.events';
 import { Player } from '@common/game';
-import { DoorTile, Tile } from '@common/map.types';
+import { DoorTile, ItemCategory, Tile } from '@common/map.types';
 import { CombatListComponent } from '../combat-list/combat-list.component';
 
 @Component({
@@ -128,6 +128,10 @@ export class ActionsComponentComponent implements OnInit {
                 this.possibleWalls = [];
             }
         });
+    }
+
+    isWallBreakerAvailable(): boolean {
+        return this.player.inventory.includes(ItemCategory.WallBreaker);
     }
 
     thisPlayerTurn(): boolean {
