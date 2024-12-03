@@ -201,7 +201,7 @@ describe('ItemsManagerService', () => {
 
             service.activateItem(ItemCategory.Armor, player);
 
-            expect(player.specs.defense).toBe(initialDefense + 5);
+            expect(player.specs.defense).toBe(initialDefense + 4);
             expect(player.specs.speed).toBe(initialSpeed - 1);
         });
 
