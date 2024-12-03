@@ -15,4 +15,5 @@ export interface Cell {
     tileType: TileCategory;
     isOccupied: boolean;
     isHovered: boolean;
+    alternateCoordinates: Coordinate;
 }

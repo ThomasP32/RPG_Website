@@ -210,6 +210,7 @@ describe('MapAreaComponent', () => {
                         door: { isOpen: false, isDoor: false },
                         isStartingPoint: false,
                         isOccupied: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                     {
                         tileType: TileCategory.Door,
@@ -218,6 +219,7 @@ describe('MapAreaComponent', () => {
                         coordinate: { x: 0, y: 1 },
                         isStartingPoint: false,
                         isOccupied: false,
+                        alternateCoordinates: { x: 0, y: 1 },
                     },
                 ],
                 [
@@ -364,6 +366,7 @@ describe('MapAreaComponent', () => {
                 door: { isOpen: false, isDoor: false },
                 isStartingPoint: false,
                 isOccupied: false,
+                alternateCoordinates: { x: 0, y: 0 },
             };
             component.map = [[cell]];
 
