@@ -1,6 +1,6 @@
 import { ProfileType } from '@common/constants';
 import { Bonus, Game, Player, Specs } from '@common/game';
-import { ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Server } from 'socket.io';
 import { GameCreationService } from '../game-creation/game-creation.service';
 import { ItemsManagerService } from '../items-manager/items-manager.service';
@@ -367,5 +367,51 @@ describe('ServerCombatService', () => {
             expect(mockServer.to).toHaveBeenCalledWith('combat-room');
             expect(mockServer.to('combat-room').emit).toHaveBeenCalledWith('testEvent', { key: 'value' });
         });
+    });
+
+    it('should delete the combat for a given gameId', () => {
+        service.createCombat(game.id, challenger, opponent);
+        expect(service.getCombatByGameId(game.id)).toBeDefined();
+
+        service.deleteCombat(game.id);
+        expect(service.getCombatByGameId(game.id)).toBeUndefined();
+    });
+
+    it('should return false if the position is occupied by a wall tile', () => {
+        const pos: Coordinate = { x: 4, y: 4 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(false);
+    });
+
+    it('should return false if the position is occupied by a closed door', () => {
+        const pos: Coordinate = { x: 1, y: 2 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(false);
+    });
+
+    it('should return true if the position is occupied by an opened door', () => {
+        const pos: Coordinate = { x: 2, y: 1 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(true);
+    });
+
+    it('should return false if the position is occupied by an active player', () => {
+        const activePlayer = { ...challenger, isActive: true, position: { x: 0, y: 0 } };
+        game.players.push(activePlayer);
+        const pos: Coordinate = { x: 0, y: 0 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(false);
+    });
+
+    it('should return false if the position is occupied by an item', () => {
+        const pos: Coordinate = { x: 0, y: 1 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(false);
+    });
+
+    it('should return true if the position is not occupied by any obstacle', () => {
+        const pos: Coordinate = { x: 5, y: 5 };
+        const result = service.isReachableTile(pos, game);
+        expect(result).toBe(true);
     });
 });

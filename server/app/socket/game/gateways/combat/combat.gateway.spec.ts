@@ -26,6 +26,7 @@ describe('CombatGateway', () => {
     let mockSocket: jest.Mocked<Socket>;
     let mockOpponentSocket: jest.Mocked<Socket>;
     let journalService: jest.Mocked<JournalService>;
+    let virtualGameManager: jest.Mocked<VirtualGameManagerService>;
 
     const mockCombat: Combat = {
         id: 'game-id-combat',
@@ -195,6 +196,7 @@ describe('CombatGateway', () => {
         gameCreationService = module.get(GameCreationService);
         gameManagerService = module.get(GameManagerService);
         journalService = module.get(JournalService);
+        virtualGameManager = module.get(VirtualGameManagerService);
 
         mockSocket = {
             id: 'socket-id',
@@ -612,6 +614,37 @@ describe('CombatGateway', () => {
                 gateway.startCombatTurns('game-id');
 
                 expect(combatCountdownService.startTurnCounter).toHaveBeenCalledWith(mockGame, false);
+            });
+
+            it('should handle virtual player combat and emit CombatFinishedByEvasion if evasion is successful', () => {
+                const mockGame = { id: 'game-id', currentTurn: 0, players: [mockCombat.challenger, mockCombat.opponent] } as Game;
+                mockCombat.currentTurnSocketId = 'game-id';
+                gameCreationService.getGameById.mockReturnValue(mockGame);
+                serverCombatService.getCombatByGameId.mockReturnValue(mockCombat);
+                virtualGameManager.handleVirtualPlayerCombat.mockReturnValue(true);
+
+                gateway.startCombatTurns('game-id');
+
+                expect(mockServer.to).toHaveBeenCalled();
+                expect(mockServer.to('game-id').emit).toHaveBeenCalled();
+            });
+
+            it('should handle virtual player combat and prepare for next turn if evasion is not successful', () => {
+                const mockGame = { id: 'game-id', currentTurn: 0, players: [mockCombat.challenger, mockCombat.opponent] } as Game;
+                mockCombat.currentTurnSocketId = 'virtual-socket-id';
+                gameCreationService.getGameById.mockReturnValue(mockGame);
+                serverCombatService.getCombatByGameId.mockReturnValue(mockCombat);
+                virtualGameManager.handleVirtualPlayerCombat.mockReturnValue(false);
+                mockCombat.opponent.specs.life = 1;
+
+                const prepareNextTurnSpy = jest.spyOn(gateway, 'prepareNextTurn');
+
+                gateway.startCombatTurns('game-id');
+
+                expect(mockServer.to).toHaveBeenCalled();
+                expect(mockServer.to('game-id').emit).toHaveBeenCalled();
+
+                prepareNextTurnSpy.mockRestore();
             });
         });
 

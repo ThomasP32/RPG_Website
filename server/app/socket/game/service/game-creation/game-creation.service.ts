@@ -1,4 +1,4 @@
-import { ALL_ITEMS, MapConfig, MapSize } from '@common/constants';
+import { ALL_ITEMS, BONUS_REDUCTION, HALF, MapConfig, MapSize, SUFFIX_INCREMENT, SUFFIX_VALUE } from '@common/constants';
 import { Game, Player } from '@common/game';
 import { ItemCategory, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
@@ -52,7 +52,7 @@ export class GameCreationService {
         matchingPlayers.forEach((existingPlayer) => {
             const match = existingPlayer.name.match(new RegExp(`^${baseName}-(\\d+)$`));
             if (match) {
-                const suffix = parseInt(match[1], 10);
+                const suffix = parseInt(match[1], SUFFIX_VALUE);
                 maxSuffix = Math.max(maxSuffix, suffix);
             } else if (existingPlayer.name === baseName) {
                 maxSuffix = Math.max(maxSuffix, 1);
@@ -60,7 +60,7 @@ export class GameCreationService {
         });
 
         if (matchingPlayers.length > 0) {
-            player.name = `${baseName}-${maxSuffix + 1}`;
+            player.name = `${baseName}-${maxSuffix + SUFFIX_INCREMENT}`;
         }
 
         this.gameRooms[gameId].players.push(player);
@@ -117,7 +117,7 @@ export class GameCreationService {
         const game = this.getGameById(gameId);
         const updatedPlayers = game.players.sort((player1, player2) => {
             const speedDifference = player2.specs.speed - player1.specs.speed;
-            return speedDifference === 0 ? Math.random() - 0.5 : speedDifference;
+            return speedDifference === 0 ? Math.random() - HALF : speedDifference;
         });
         updatedPlayers.forEach((player, index) => {
             player.turn = index;
@@ -147,8 +147,8 @@ export class GameCreationService {
                         tile.category === TileCategory.Ice,
                 )
             ) {
-                player.specs.attack -= 2;
-                player.specs.defense -= 2;
+                player.specs.attack -= BONUS_REDUCTION;
+                player.specs.defense -= BONUS_REDUCTION;
             }
             startTilesLeft.splice(randomIndex, 1);
         });

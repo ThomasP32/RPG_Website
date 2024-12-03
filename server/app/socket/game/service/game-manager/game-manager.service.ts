@@ -202,7 +202,7 @@ export class GameManagerService {
         return game.items.some((item) => item.coordinate.x === pos.x && item.coordinate.y === pos.y);
     }
 
-    private getTileWeight(pos: Coordinate, game: Game): number {
+    getTileWeight(pos: Coordinate, game: Game): number {
         for (const tile of game.tiles) {
             if (tile.coordinate.x === pos.x && tile.coordinate.y === pos.y) {
                 if (tile.category === TileCategory.Water) return 2;
@@ -227,21 +227,22 @@ export class GameManagerService {
     getAdjacentPlayers(player: Player, gameId: string): Player[] {
         const game = this.gameCreationService.getGameById(gameId);
         const adjacentPlayers: Player[] = [];
-
-        game.players.forEach((otherPlayer) => {
-            if (otherPlayer.isActive) {
-                if (otherPlayer.socketId !== player.socketId) {
-                    const isAdjacent = DIRECTIONS.some(
-                        (direction) =>
-                            otherPlayer.position.x === player.position.x + direction.x && otherPlayer.position.y === player.position.y + direction.y,
-                    );
-                    if (isAdjacent) {
-                        adjacentPlayers.push(otherPlayer);
+        if (game?.players) {
+            game.players.forEach((otherPlayer) => {
+                if (otherPlayer.isActive) {
+                    if (otherPlayer.socketId !== player.socketId) {
+                        const isAdjacent = DIRECTIONS.some(
+                            (direction) =>
+                                otherPlayer.position.x === player.position.x + direction.x &&
+                                otherPlayer.position.y === player.position.y + direction.y,
+                        );
+                        if (isAdjacent) {
+                            adjacentPlayers.push(otherPlayer);
+                        }
                     }
                 }
-            }
-        });
-
+            });
+        }
         return adjacentPlayers;
     }
 
