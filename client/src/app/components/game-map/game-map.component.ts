@@ -29,10 +29,10 @@ export class GameMapComponent implements OnInit, OnChanges {
 
     constructor(
         private readonly imageService: ImageService,
-        private readonly GameInfosService: GameInfosService,
+        private readonly gameInfosService: GameInfosService,
     ) {
         this.imageService = imageService;
-        this.GameInfosService = GameInfosService;
+        this.gameInfosService = gameInfosService;
     }
 
     onTileClick(position: Coordinate) {
@@ -138,7 +138,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     onRightClickTile(event: MouseEvent, position: Coordinate) {
         if (event.button === 2) {
             event.preventDefault();
-            this.tileDescription = this.GameInfosService.getTileDescription(position, this.loadedMap);
+            this.tileDescription = this.gameInfosService.getTileDescription(position, this.loadedMap);
             this.tooltipX = event.pageX + TOOLTIP_DIRECTION_CHANGE;
             this.tooltipY = event.pageY + TOOLTIP_DIRECTION_CHANGE;
             this.explanationIsVisible = true;
