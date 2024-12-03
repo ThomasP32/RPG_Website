@@ -29,7 +29,7 @@ export enum ItemCategory {
 }
 
 export enum GameDescriptions {
-    Amulet = "Amulette de Résilience : Augmente votre vitalité de 2 lorsque vous affrontez un adversaire avec plus d'attaque que vous.",
+    Amulet = "Amulette de Résilience : Augmente votre vitalité de 2 lorsque vous affrontez un adversaire avec plus d'attaque.",
     Armor = 'Armure Renforcée : +2 en défense, mais réduit votre vitesse de 1. Conçue pour les stratèges prudents.',
     Flag = 'Drapeau de Victoire : Capturez-le et ramenez-le à votre point de départ pour triompher.',
     IceSkates = 'Patins Stabilisateurs : Immunisé aux chutes et pénalités sur glace. Glissez avec maîtrise.',
