@@ -109,7 +109,7 @@ describe('GamePageComponent', () => {
         });
 
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer'], { player: mockPlayer });
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer', 'setPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
         const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
@@ -133,6 +133,7 @@ describe('GamePageComponent', () => {
                 'toggleDoor',
                 'listenForEndOfGame',
                 'clearMoves',
+                'resumeTurn',
             ],
             {
                 playerTurn$: playerTurnSubject,
@@ -443,14 +444,14 @@ describe('GamePageComponent', () => {
         expect(component.isInventoryModalOpen).toBeTrue();
     });
     it('should set isInventoryModalOpen to false and update player and game when ItemDropped event is received', () => {
-        const updatedPlayer: Player = { ...mockPlayer, socketId: 'updated-socket' };
-        const updatedGame: Game = { ...mockGame, id: 'updated-game-id' };
-        const itemDroppedData: ItemDroppedData = { updatedPlayer, updatedGame };
+        const mockData: ItemDroppedData = {
+            updatedPlayer: { ...mockPlayer, inventory: [ItemCategory.Armor, ItemCategory.Amulet] },
+            updatedGame: { ...mockGame, items: [] },
+        };
 
-        component.ngOnInit();
         (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
             if (eventName === ItemsEvents.ItemDropped) {
-                return of(itemDroppedData);
+                return of(mockData);
             }
             return of();
         });
@@ -458,8 +459,8 @@ describe('GamePageComponent', () => {
         component.listenForInventoryFull();
 
         expect(component.isInventoryModalOpen).toBeFalse();
-        expect(playerService.setPlayer).toHaveBeenCalledWith(updatedPlayer);
-        expect(gameService.setGame).toHaveBeenCalledWith(updatedGame);
+        expect(playerService.setPlayer).toHaveBeenCalledWith(mockData.updatedPlayer);
+        expect(gameService.setGame).toHaveBeenCalledWith(mockData.updatedGame);
         expect(gameTurnService.resumeTurn).toHaveBeenCalled();
     });
 

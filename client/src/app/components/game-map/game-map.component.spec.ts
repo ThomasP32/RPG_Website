@@ -190,4 +190,17 @@ describe('GameMapComponent', () => {
             expect(component.tileDescription).toBe('');
         });
     });
+    describe('#getPlayerDescription', () => {
+        it('should return player description if player is at the given position', () => {
+            const position: Coordinate = { x: 2, y: 2 };
+            const description = component['getPlayerDescription'](position);
+            expect(description).toBe('nom du joueur: undefined');
+        });
+
+        it('should return null if no player is at the given position', () => {
+            const position: Coordinate = { x: 5, y: 5 };
+            const description = component['getPlayerDescription'](position);
+            expect(description).toBeNull();
+        });
+    });
 });

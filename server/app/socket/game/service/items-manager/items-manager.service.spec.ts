@@ -241,6 +241,14 @@ describe('ItemsManagerService', () => {
 
             expect(player.specs.attack).toBe(specs.attack);
         });
+
+        it('should decrease player attack when deactivating an amulet', () => {
+            player.specs.life += 4;
+
+            service.desactivateItem(ItemCategory.Amulet, player);
+
+            expect(player.specs.life).toBe(specs.life);
+        });
     });
     describe('checkForAmulet', () => {
         it('should activate amulet for challenger if challenger has amulet and opponent has more life', () => {

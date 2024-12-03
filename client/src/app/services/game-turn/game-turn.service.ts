@@ -239,7 +239,7 @@ export class GameTurnService {
         this.socketSubscription.add(
             this.socketService.listen<Tile[]>('yourWalls').subscribe((possibleWalls) => {
                 if (possibleWalls.length === 0) {
-                    this.possibleActions.door = false;
+                    this.possibleActions.wall = false;
                 }
                 this.possibleWalls.next(possibleWalls);
                 this.getMoves();

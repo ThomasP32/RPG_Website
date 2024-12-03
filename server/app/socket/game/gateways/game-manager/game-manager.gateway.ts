@@ -186,7 +186,6 @@ export class GameManagerGateway implements OnGatewayInit {
 
         if (!activePlayer?.isActive) {
             game.currentTurn++;
-            console.log('current turn', game.currentTurn);
             this.startTurn(gameId);
             return;
         }

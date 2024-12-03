@@ -73,10 +73,10 @@ export class ItemsManagerService {
                 player.specs.speed -= ARMOR_SPEED_PENALTY;
                 break;
             case ItemCategory.Flask:
-                player.specs.attack += 4;
+                player.specs.attack += FLASK_ATTACK_BONUS;
                 break;
             case ItemCategory.Amulet:
-                player.specs.defense += 4;
+                player.specs.life += AMULET_LIFE_BONUS;
         }
     }
 

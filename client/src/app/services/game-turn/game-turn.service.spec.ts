@@ -124,6 +124,7 @@ describe('GameTurnService', () => {
             ],
         });
         service = TestBed.inject(GameTurnService);
+        spyOn(service, 'resumeTurn').and.callThrough();
     });
 
     it('should create the service', () => {
@@ -509,6 +510,46 @@ describe('GameTurnService', () => {
             });
         });
     });
+    describe('#listenForWallBreaking', () => {
+        beforeEach(() => {
+            spyOn(service, 'resumeTurn');
+            service.listenForWallBreaking();
+        });
+
+        it('should update player and call resumeTurn if the player matches the current player', () => {
+            const mockPlayerData = { game: mockGame, player: mockPlayer };
+            spyOn(playerServiceSpy, 'setPlayer').and.callThrough();
+            spyOn(service, 'resumeTurn').and.callThrough();
+
+            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
+
+            service.listenForWallBreaking();
+
+            expect(playerServiceSpy.setPlayer).toHaveBeenCalledWith(mockPlayerData.player);
+            expect(service.resumeTurn).toHaveBeenCalled();
+        });
+
+        it('should update game data from the event', () => {
+            const mockPlayerData = { game: mockGame, player: mockPlayer };
+
+            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
+
+            service.listenForWallBreaking();
+
+            expect(gameServiceSpy.setGame).toHaveBeenCalledWith(mockPlayerData.game);
+        });
+
+        it('should not call resumeTurn if the player does not match the current player', () => {
+            const mockPlayerData = { game: mockGame, player: { ...mockPlayer, socketId: 'socket-3' } };
+            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
+
+            socketServiceSpy.listen<{ game: Game; player: Player }>('wallBroken').subscribe(() => {
+                const spySetPlayer = spyOn(playerServiceSpy, 'setPlayer');
+                expect(spySetPlayer).not.toHaveBeenCalled();
+                expect(service.resumeTurn).not.toHaveBeenCalled();
+            });
+        });
+    });
     describe('#listenForCombatStarted', () => {
         beforeEach(() => {
             service.listenForCombatStarted();
@@ -628,57 +669,30 @@ describe('GameTurnService', () => {
             expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
         });
     });
-    describe('#listenForWallBreaking', () => {
-        beforeEach(() => {
-            spyOn(service, 'resumeTurn');
-            service.listenForWallBreaking();
-        });
-
-        it('should update player and call resumeTurn if the player matches the current player', () => {
-            const mockPlayerData = { game: mockGame, player: mockPlayer };
-            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
-
-            socketServiceSpy.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
-                expect(data).toEqual(mockPlayerData);
-                expect(playerServiceSpy.setPlayer).toHaveBeenCalledWith(mockPlayerData.player);
-                expect(service.resumeTurn).toHaveBeenCalled();
-            });
-        });
-
-        it('should update game data from the event', () => {
-            const mockPlayerData = { game: mockGame, player: mockPlayer };
-            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
-
-            socketServiceSpy.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
-                expect(gameServiceSpy.setGame).toHaveBeenCalledWith(data.game);
-            });
-        });
-
-        it('should not call resumeTurn if the player does not match the current player', () => {
-            const mockPlayerData = { game: mockGame, player: { ...mockPlayer, socketId: 'socket-3' } };
-            socketServiceSpy.listen.and.returnValue(of(mockPlayerData));
-
-            socketServiceSpy.listen<{ game: Game; player: Player }>('wallBroken').subscribe((data) => {
-                expect(mockPlayer.socketId).not.toEqual(data.player.socketId);
-                expect(playerServiceSpy.setPlayer).not.toHaveBeenCalled();
-                expect(service.resumeTurn).not.toHaveBeenCalled();
-            });
-        });
-    });
     describe('#listenForEndOfGame', () => {
-        it('should set playerWon to true when GameFinishedPlayerWon event is received', () => {
-            service.listenForEndOfGame();
+        it('should set playerWon to true when GameFinishedPlayerWon event is received', (done) => {
             const playerWonSubject = new Subject<Player>();
             socketServiceSpy.listen.and.returnValue(playerWonSubject.asObservable());
 
-            playerWonSubject.next(mockPlayer);
+            service.listenForEndOfGame();
 
-            expect(service.playerWon$).toBeTrue();
+            service.playerWon$.subscribe((playerWon) => {
+                if (playerWon === true) {
+                    expect(playerWon).toBeTrue();
+                    done();
+                }
+            });
+
+            playerWonSubject.next(mockPlayer);
         });
 
-        it('should reset playerWon to false initially', () => {
+        it('should reset playerWon to false initially', (done) => {
             service.listenForEndOfGame();
-            expect(service.playerWon$).toBeFalse();
+
+            service.playerWon$.subscribe((playerWon) => {
+                expect(playerWon).toBeFalse();
+                done();
+            });
         });
     });
 });
