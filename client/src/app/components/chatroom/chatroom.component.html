@@ -20,9 +20,13 @@
                 @for (message of messages; track message) {
                 <li>
                     @if (message.author) {
-                    <strong class="author">{{ message.author }}:</strong>
-                    {{ message.text }}
-                    <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss' }}</span>
+                    <div class="author">
+                        <strong>{{ message.author }}</strong>
+                    </div>
+                    <div class="message">{{ message.text }}</div>
+                    <div class="timestamp">
+                        <span>{{ message.timestamp | date: 'HH:mm:ss' }}</span>
+                    </div>
                     }
                 </li>
                 }
