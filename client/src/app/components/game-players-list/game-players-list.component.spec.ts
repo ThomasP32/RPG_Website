@@ -1,8 +1,9 @@
+import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CharacterService } from '@app/services/character/character.service';
 import { Avatar, Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
 import { GamePlayersListComponent } from './game-players-list.component';
-import { CommonModule } from '@angular/common';
 
 describe('GamePlayersListComponent', () => {
     let component: GamePlayersListComponent;
@@ -23,8 +24,22 @@ describe('GamePlayersListComponent', () => {
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
 
         component.players = [
-            { turn: 2, isActive: true, socketId: '123', avatar: {}, specs: { nVictories: 0 } } as Player,
-            { turn: 1, isActive: false, socketId: '456', avatar: {}, specs: { nVictories: 0 } } as Player,
+            {
+                turn: 2,
+                isActive: true,
+                socketId: '123',
+                avatar: {},
+                specs: { nVictories: 0 },
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
+            } as Player,
+            {
+                turn: 1,
+                isActive: false,
+                socketId: '456',
+                avatar: {},
+                specs: { nVictories: 0 },
+                inventory: [ItemCategory.WallBreaker, ItemCategory.Armor],
+            } as Player,
         ];
         fixture.detectChanges();
     });
@@ -52,9 +67,13 @@ describe('GamePlayersListComponent', () => {
         expect(component.isHostPlayer('456')).toBe(false);
     });
 
-    it('should call sortPlayersByTurn on ngOnChanges', () => {
-        const spySortPlayers = spyOn(component, 'sortPlayersByTurn');
-        component.ngOnChanges();
-        expect(spySortPlayers).toHaveBeenCalled();
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

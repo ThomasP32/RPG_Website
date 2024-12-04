@@ -61,31 +61,11 @@ describe('HomePageComponent', () => {
         expect(developersElement.textContent).toContain(component.developers.join(', '));
     });
 
-    it('should return the socket ID when socket is connected', () => {
-        component.socketService.socket = { id: 'socket123' } as any;
-        expect(component.socketId).toBe('socket123');
-    });
-
-    it('should return an empty string when socket is not connected', () => {
-        component.socketService.socket = { id: null } as any;
-        expect(component.socketId).toBe('');
-    });
-
     it('should call connect method on ngOnInit', () => {
         spyOn(component, 'connect');
         component.ngOnInit();
         expect(component.connect).toHaveBeenCalled();
     });
-
-    // it('should establish a socket connection if not alive', () => {
-    //     component.connect();
-    //     expect(component.socketService.connect).toHaveBeenCalled();
-    // });
-
-    // it('should not establish a socket connection if already alive', () => {
-    //     component.connect();
-    //     expect(component.socketService.connect).not.toHaveBeenCalled();
-    // });
 
     it('should navigate to the create game view when navigateToCreateGame is called', () => {
         const routerSpy = spyOn(component['router'], 'navigate');

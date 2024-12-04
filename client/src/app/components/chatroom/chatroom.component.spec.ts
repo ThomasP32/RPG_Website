@@ -25,7 +25,7 @@ describe('ChatroomComponent', () => {
 
         fixture = TestBed.createComponent(ChatroomComponent);
         component = fixture.componentInstance;
-        component.player = { name: 'user1' };
+        component.playerName = 'user1';
         component.gameId = '1234';
         fixture.detectChanges();
     });
@@ -64,9 +64,7 @@ describe('ChatroomComponent', () => {
     it('should initialize and join room with previous messages', () => {
         const previousMessages = [{ text: 'Hello', author: 'user2', timestamp: new Date(), gameId: '1234' }];
         socketServiceSpy.listen.and.returnValue(of(previousMessages));
-
         component.ngOnInit();
-        expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('joinRoom', component.gameId);
         expect(component.messages).toEqual(previousMessages);
     });
 
@@ -76,7 +74,7 @@ describe('ChatroomComponent', () => {
         expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('message', {
             roomName: component.gameId,
             message: jasmine.objectContaining({
-                author: component.player.name,
+                author: component.playerName,
                 text: 'Test message',
                 timestamp: jasmine.any(Date),
             }),

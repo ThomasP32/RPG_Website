@@ -1,4 +1,5 @@
-import { Coordinate, ItemCategory, Map } from '@common/map.types';
+import { Coordinate, ItemCategory, Map, Mode } from '@common/map.types';
+import { ProfileType } from './constants';
 
 export enum Avatar {
     Avatar1 = 1,
@@ -13,6 +14,19 @@ export enum Avatar {
     Avatar10 = 10,
     Avatar11 = 11,
     Avatar12 = 12,
+}
+
+export enum BotName {
+    Bot1 = 'AlphaBot',
+    Bot2 = 'RoboWarrior',
+    Bot3 = 'CyberHawk',
+    Bot4 = 'SteelFist',
+    Bot5 = 'MechaMage',
+    Bot6 = 'IronClad',
+    Bot7 = 'TechNinja',
+    Bot8 = 'ShadowBot',
+    Bot9 = 'RoboKnight',
+    Bot10 = 'CyberAssassin',
 }
 
 export enum Bonus {
@@ -36,6 +50,7 @@ export interface Specs {
     nEvasions: number;
     nLifeTaken: number;
     nLifeLost: number;
+    nItemsUsed: number;
 }
 
 export interface Player {
@@ -49,14 +64,15 @@ export interface Player {
     initialPosition: Coordinate;
     turn: number;
     visitedTiles: Coordinate[];
+    profile: ProfileType;
 }
 
-export interface Game extends Map {
+export interface GameClassic extends Map {
     id: string;
     hostSocketId: string;
     players: Player[];
     currentTurn: number;
-    nDoorsManipulated: number;
+    nDoorsManipulated: Coordinate[];
     duration: number;
     nTurns: number;
     debug: boolean;
@@ -64,6 +80,9 @@ export interface Game extends Map {
     hasStarted: boolean;
 }
 
-export interface GameCtf extends Game {
-    nPlayersCtf: number;
+export interface GameCtf extends GameClassic {
+    mode: Mode.Ctf;
+    nPlayersCtf: Player[];
 }
+
+export type Game = GameClassic | GameCtf;

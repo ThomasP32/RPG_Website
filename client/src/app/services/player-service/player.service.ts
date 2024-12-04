@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { BONUS, DEFAULT_ACTIONS, DEFAULT_ATTACK, DEFAULT_DEFENSE, DEFAULT_EVASIONS, DEFAULT_HP, DEFAULT_SPEED, ProfileType } from '@common/constants';
 import { Avatar, Bonus, Player, Specs } from '@common/game';
-
-const defaultHp = 4;
-const defaultSpeed = 4;
-const defaultAttack = 4;
-const defaultDefense = 4;
 
 @Injectable({
     providedIn: 'root',
@@ -27,14 +23,15 @@ export class PlayerService {
             attackBonus: this.player.specs.attackBonus,
             defenseBonus: this.player.specs.defenseBonus,
             movePoints: this.player.specs.speed,
-            evasions: 2,
-            actions: 1,
+            evasions: DEFAULT_EVASIONS,
+            actions: DEFAULT_ACTIONS,
             nVictories: 0,
             nDefeats: 0,
             nCombats: 0,
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const player: Player = {
             name: this.player.name,
@@ -47,12 +44,9 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         };
         this.player = player;
-    }
-
-    getPlayer(): Player {
-        return this.player;
     }
 
     setPlayer(player: Player): void {
@@ -69,11 +63,11 @@ export class PlayerService {
 
     assignBonus(type: 'life' | 'speed'): void {
         if (type === 'life') {
-            this.player.specs.life += 2;
-            this.player.specs.speed = defaultSpeed;
+            this.player.specs.life = DEFAULT_HP + BONUS;
+            this.player.specs.speed = DEFAULT_SPEED;
         } else if (type === 'speed') {
-            this.player.specs.speed += 2;
-            this.player.specs.life = defaultHp;
+            this.player.specs.speed = DEFAULT_SPEED + BONUS;
+            this.player.specs.life = DEFAULT_HP;
         }
     }
 
@@ -89,21 +83,22 @@ export class PlayerService {
 
     resetPlayer(): void {
         const playerSpecs: Specs = {
-            life: defaultHp,
-            speed: defaultSpeed,
-            attack: defaultAttack,
-            defense: defaultDefense,
+            life: DEFAULT_HP,
+            speed: DEFAULT_SPEED,
+            attack: DEFAULT_ATTACK,
+            defense: DEFAULT_DEFENSE,
             attackBonus: Bonus.D6,
             defenseBonus: Bonus.D4,
-            evasions: 2,
+            evasions: DEFAULT_EVASIONS,
             movePoints: 0,
-            actions: 1,
+            actions: DEFAULT_ACTIONS,
             nVictories: 0,
             nDefeats: 0,
             nCombats: 0,
             nEvasions: 0,
             nLifeTaken: 0,
             nLifeLost: 0,
+            nItemsUsed: 0,
         };
         const player: Player = {
             name: '',
@@ -116,6 +111,7 @@ export class PlayerService {
             initialPosition: { x: 0, y: 0 },
             turn: 0,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         };
         this.player = player;
     }

@@ -1,6 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { MovesMap } from '@app/interfaces/moves';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CountdownService } from '@app/services/countdown/game/countdown.service';
@@ -8,10 +7,14 @@ import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { JournalService } from '@app/services/journal/journal.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { TURN_DURATION } from '@common/constants';
+import { ProfileType, TIME_LIMIT_DELAY, TURN_DURATION } from '@common/constants';
+import { MovesMap } from '@common/directions';
+import { GameCreationEvents } from '@common/events/game-creation.events';
+import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Avatar, Bonus, Game, Player } from '@common/game';
+import { GamePageActiveView } from '@common/game-page';
 import { JournalEntry } from '@common/journal-entry';
-import { Coordinate, DoorTile, ItemCategory, Mode, TileCategory } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Mode, Tile, TileCategory } from '@common/map.types';
 import { Observable, of, Subject } from 'rxjs';
 import { GamePageComponent } from './game-page';
 
@@ -38,10 +41,12 @@ const mockPlayer: Player = {
         nEvasions: 0,
         nLifeTaken: 0,
         nLifeLost: 0,
+        nItemsUsed: 0,
     },
-    inventory: [],
+    inventory: [ItemCategory.Amulet, ItemCategory.Armor],
     turn: 0,
     visitedTiles: [],
+    profile: ProfileType.NORMAL,
 };
 
 const mockGame: Game = {
@@ -60,12 +65,12 @@ const mockGame: Game = {
         { coordinate: { x: 2, y: 1 }, isOpened: true },
     ],
     startTiles: [{ coordinate: { x: 0, y: 0 } }],
-    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Hat }],
+    items: [{ coordinate: { x: 0, y: 1 }, category: ItemCategory.Armor }],
     players: [mockPlayer],
     mode: Mode.Classic,
     nTurns: 0,
     debug: false,
-    nDoorsManipulated: 0,
+    nDoorsManipulated: [],
     duration: 0,
     isLocked: true,
     name: 'game',
@@ -96,13 +101,17 @@ describe('GamePageComponent', () => {
         const possibleOpponentsSubject = new Subject<Player[]>();
         const delaySubject = new Subject<number>();
         const possibleDoorsSubject = new Subject<DoorTile[]>();
+        const possibleWallssSubject = new Subject<Tile[]>();
         const playerWonSubject = new Subject<boolean>();
 
-        const gameSpy = jasmine.createSpyObj('GameService', ['game'], { game$: new Subject<Game>() });
+        const gameSpy = jasmine.createSpyObj('GameService', ['setGame'], {
+            game: mockGame,
+        });
+
         const routerSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/game-page' });
-        const playerSpy = jasmine.createSpyObj('PlayerService', ['player', 'resetPlayer'], { player$: new Subject<Player>() });
+        const playerSpy = jasmine.createSpyObj('PlayerService', ['resetPlayer', 'setPlayer'], { player: mockPlayer });
         const characterSpy = jasmine.createSpyObj('CharacterService', ['getAvatarPreview', 'resetCharacterAvailability']);
-        const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect']);
+        const socketSpy = jasmine.createSpyObj('SocketService', ['listen', 'sendMessage', 'disconnect', 'isSocketAlive']);
         const countdownSpy = jasmine.createSpyObj('CountdownService', [], {
             countdown$: new Subject<number>(),
         });
@@ -116,12 +125,15 @@ describe('GamePageComponent', () => {
                 'listenForPlayerMove',
                 'listenMoves',
                 'endGame',
-                'listenForPossibleCombats',
+                'listenForPossibleActions',
                 'getMoves',
-                'listenForDoors',
                 'listenForDoorUpdates',
+                'listenForWallBreaking',
                 'listenForCombatConclusion',
                 'toggleDoor',
+                'listenForEndOfGame',
+                'clearMoves',
+                'resumeTurn',
             ],
             {
                 playerTurn$: playerTurnSubject,
@@ -130,6 +142,7 @@ describe('GamePageComponent', () => {
                 possibleOpponents$: possibleOpponentsSubject,
                 moves: mockMoves,
                 possibleDoors$: possibleDoorsSubject,
+                possibleWalls$: possibleWallssSubject,
                 actionsDone: { door: false },
             },
         );
@@ -148,9 +161,6 @@ describe('GamePageComponent', () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(GamePageComponent);
-        component = fixture.componentInstance;
-
         router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
         characterService = TestBed.inject(CharacterService) as jasmine.SpyObj<CharacterService>;
         gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
@@ -158,13 +168,10 @@ describe('GamePageComponent', () => {
         socketService = TestBed.inject(SocketService) as jasmine.SpyObj<SocketService>;
         countdownService = TestBed.inject(CountdownService) as jasmine.SpyObj<CountdownService>;
         gameTurnService = TestBed.inject(GameTurnService) as jasmine.SpyObj<GameTurnService>;
-
-        gameSpy.game = mockGame;
-        playerSpy.player = mockPlayer;
-
+        socketService.isSocketAlive.and.returnValue(true);
         socketSpy.listen.and.callFake(<T>(eventName: string): Observable<T> => {
             switch (eventName) {
-                case 'playerLeft':
+                case GameCreationEvents.PlayerLeft:
                     return playerLeftSubject.asObservable() as Observable<T>;
                 case 'delay':
                     return delaySubject.asObservable() as Observable<T>;
@@ -172,6 +179,9 @@ describe('GamePageComponent', () => {
                     return of();
             }
         });
+
+        fixture = TestBed.createComponent(GamePageComponent);
+        component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
@@ -179,48 +189,23 @@ describe('GamePageComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should toggle view to journal', () => {
-        component.toggleView('journal');
-        expect(component.activeView).toBe('journal');
+        component.toggleView(GamePageActiveView.Journal);
+        expect(component.activeView).toBe(GamePageActiveView.Journal);
     });
 
     it('should toggle view to chat', () => {
-        component.toggleView('chat');
-        expect(component.activeView).toBe('chat');
+        component.toggleView(GamePageActiveView.Chat);
+        expect(component.activeView).toBe(GamePageActiveView.Chat);
     });
-
-    it('should initialize player preview on init', () => {
-        component.ngOnInit();
-        expect(characterService.getAvatarPreview).toHaveBeenCalledWith(mockPlayer.avatar);
-        expect(component.playerPreview).toBe(characterService.getAvatarPreview(mockPlayer.avatar));
-    });
-
-    it('should navigate to main menu on navigateToMain', () => {
-        component.navigateToMain();
-        expect(socketService.disconnect).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
     it('should navigate to end of game on navigateToEndOfGame', () => {
         component.navigateToEndOfGame();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+        expect(router.navigate).toHaveBeenCalledWith(['/end-game']);
     });
 
-    it('should unsubscribe from socketSubscription on destroy', () => {
-        spyOn(component.socketSubscription, 'unsubscribe');
-        component.ngOnDestroy();
-        expect(component.socketSubscription.unsubscribe).toHaveBeenCalled();
-    });
-
-    it('should listen for possible opponents updates', () => {
-        component.ngOnInit();
-        const possibleOpponents: Player[] = [mockPlayer];
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next(possibleOpponents);
-        expect(component.possibleOpponents).toEqual(possibleOpponents);
-    });
     it('should trigger pulse on countdown update', () => {
         spyOn(component, 'triggerPulse');
         component.ngOnInit();
-        (countdownService.countdown$ as Subject<number>).next(10);
+        (countdownService.countdown$ as Subject<number>).next(4);
         expect(component.triggerPulse).toHaveBeenCalled();
     });
 
@@ -229,48 +214,6 @@ describe('GamePageComponent', () => {
         expect(component.isPulsing).toBeTrue();
         tick(500);
         expect(component.isPulsing).toBeFalse();
-    }));
-
-    it('should initialize game turn and combat listeners on init', () => {
-        spyOn(component, 'listenForFalling').and.callThrough();
-        spyOn(component, 'listenForCountDown').and.callThrough();
-        spyOn(component, 'listenPlayersLeft').and.callThrough();
-        spyOn(component, 'listenForCurrentPlayerUpdates').and.callThrough();
-        spyOn(component, 'listenForStartTurnDelay').and.callThrough();
-        spyOn(component, 'listenForOpponent').and.callThrough();
-        spyOn(component, 'listenForIsCombatModalOpen').and.callThrough();
-
-        component.ngOnInit();
-
-        expect(gameTurnService.listenForTurn).toHaveBeenCalled();
-        expect(gameTurnService.listenForPlayerMove).toHaveBeenCalled();
-        expect(gameTurnService.listenMoves).toHaveBeenCalled();
-        expect(component.listenForFalling).toHaveBeenCalled();
-        expect(component.listenForCountDown).toHaveBeenCalled();
-        expect(component.listenPlayersLeft).toHaveBeenCalled();
-        expect(component.listenForCurrentPlayerUpdates).toHaveBeenCalled();
-        expect(component.listenForStartTurnDelay).toHaveBeenCalled();
-        expect(component.listenForOpponent).toHaveBeenCalled();
-        expect(component.listenForIsCombatModalOpen).toHaveBeenCalled();
-    });
-
-    it('should navigate to main menu on confirm exit', () => {
-        spyOn(component, 'navigateToMain');
-        component.confirmExit();
-        expect(component.navigateToMain).toHaveBeenCalled();
-    });
-
-    it('should update active players when player leaves', fakeAsync(() => {
-        const mockPlayers = [
-            { isActive: true, position: { x: 0, y: 1 } },
-            { isActive: false, position: { x: 1, y: 0 } },
-        ] as unknown as Player;
-        socketService.listen.and.returnValue(of(mockPlayers));
-
-        component.listenPlayersLeft();
-        expect(component.activePlayers.length).toBe(1);
-        tick(3000);
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
     }));
 
     it('should start game if player is host', () => {
@@ -314,13 +257,6 @@ describe('GamePageComponent', () => {
         expect(component.countdown).toBe(10);
     });
 
-    it('should call gameTurnService endTurn on endTurn', () => {
-        component.endTurn();
-        component.navigateToEndOfGame();
-        expect(gameTurnService.endTurn).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
-    });
-
     it('should open the exit confirmation modal', () => {
         component.openExitConfirmationModal();
         expect(component.showExitModal).toBeTrue();
@@ -333,7 +269,7 @@ describe('GamePageComponent', () => {
     });
 
     it('should confirm exit and perform required actions', () => {
-        component.confirmExit();
+        component.leaveGame();
 
         expect(socketService.disconnect).toHaveBeenCalled();
         expect(characterService.resetCharacterAvailability).toHaveBeenCalled();
@@ -346,10 +282,10 @@ describe('GamePageComponent', () => {
 
     it('should listen for game over updates and set gameOverMessage', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
-        component.listenForGameOver();
+        component.ngOnInit();
         (gameTurnService.playerWon$ as Subject<boolean>).next(true);
 
-        expect(component.gameOverMessage).toBe(true);
+        expect(component.showEndGameModal).toBe(true);
 
         tick(5000);
 
@@ -358,7 +294,7 @@ describe('GamePageComponent', () => {
 
     it('should not call navigateToEndOfGame if game is not over', fakeAsync(() => {
         spyOn(component, 'navigateToEndOfGame');
-        component.listenForGameOver();
+        component.ngOnInit();
         (gameTurnService.playerWon$ as Subject<boolean>).next(false);
 
         expect(component.gameOverMessage).toBe(false);
@@ -398,95 +334,167 @@ describe('GamePageComponent', () => {
 
         expect(gameTurnService.movePlayer).toHaveBeenCalledWith(position);
     });
-
-    describe('#listenForDoorOpening', () => {
-        beforeEach(() => {
-            component.listenForDoorOpening();
+    it('should set isInventoryModalOpen to true when InventoryFull event is received', () => {
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.InventoryFull) {
+                return of(undefined);
+            }
+            return of();
         });
 
-        it('should set doorActionAvailable to true and update actionMessage to "Fermer la porte" if first door is opened', () => {
-            const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
-            gameTurnService.actionsDone.door = false;
+        component.listenForInventoryFull();
 
-            (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
-
-            expect(component.doorActionAvailable).toBeTrue();
-            expect(component.possibleDoors).toEqual(possibleDoors);
-            expect(component.actionMessage).toBe('Fermer la porte');
-        });
-
-        it('should set doorActionAvailable to true and update actionMessage to "Ouvrir la porte" if first door is closed', () => {
-            const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
-            gameTurnService.actionsDone.door = false;
-
-            (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
-
-            expect(component.doorActionAvailable).toBeTrue();
-            expect(component.possibleDoors).toEqual(possibleDoors);
-            expect(component.actionMessage).toBe('Ouvrir la porte');
-        });
-
-        it('should set doorActionAvailable to false and reset actionMessage if actionsDone.door is true', () => {
-            gameTurnService.actionsDone.door = true;
-
-            component.listenForDoorOpening();
-
-            const possibleDoors: DoorTile[] = [{ coordinate: { x: 1, y: 1 }, isOpened: false }];
-            (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
-
-            expect(component.doorActionAvailable).toBeFalse();
-            expect(component.possibleDoors).toEqual([]);
-            expect(component.actionMessage).toBe('Actions possibles');
-        });
-
-        it('should set doorActionAvailable to false and reset actionMessage if no doors are available', () => {
-            const possibleDoors: DoorTile[] = [];
-            gameTurnService.actionsDone.door = false;
-
-            (gameTurnService.possibleDoors$ as Subject<DoorTile[]>).next(possibleDoors);
-
-            expect(component.doorActionAvailable).toBeFalse();
-            expect(component.possibleDoors).toEqual([]);
-            expect(component.actionMessage).toBe('Actions possibles');
-        });
+        expect(component.isInventoryModalOpen).toBeTrue();
     });
 
-    it('should set showActionModal to true when openActionModal is called', () => {
-        component.showActionModal = false;
+    it('should update active players and show kicked modal when player leaves', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'player1' },
+            { ...mockPlayer, isActive: false, socketId: 'player2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
 
-        component.openActionModal();
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(1);
+        expect(component.showKickedModal).toBeTrue();
+        tick(TIME_LIMIT_DELAY);
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
 
-        expect(component.showActionModal).toBeTrue();
+    it('should update active players and not show kicked modal when there are still active players', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'player1' },
+            { ...mockPlayer, isActive: true, socketId: 'player2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
+
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(2);
+        expect(component.showKickedModal).toBeFalse();
+    }));
+
+    it('should update active players and show kicked modal when all active players are virtual', fakeAsync(() => {
+        const mockPlayers: Player[] = [
+            { ...mockPlayer, isActive: true, socketId: 'virtualPlayer1' },
+            { ...mockPlayer, isActive: true, socketId: 'virtualPlayer2' },
+        ];
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === GameCreationEvents.PlayerLeft) {
+                return of(mockPlayers);
+            }
+            return of();
+        });
+
+        component.listenPlayersLeft();
+        expect(component.activePlayers.length).toBe(2);
+        expect(component.showKickedModal).toBeTrue();
+        tick(TIME_LIMIT_DELAY);
+        expect(router.navigate).toHaveBeenCalledWith(['/main-menu']);
+    }));
+    it('should return true if any modal is open', () => {
+        component.showExitModal = true;
+        expect(component.areModalsOpen()).toBeTrue();
+
+        component.showExitModal = false;
+        component.showKickedModal = true;
+        expect(component.areModalsOpen()).toBeTrue();
+
+        component.showKickedModal = false;
+        component.isCombatModalOpen = true;
+        expect(component.areModalsOpen()).toBeTrue();
     });
 
-    it('should set combatAvailable to false and clear possibleOpponents if no combat is available', () => {
-        component.combatAvailable = true;
-        component.possibleOpponents = [mockPlayer];
+    it('should return false if no modal is open', () => {
+        component.showExitModal = false;
+        component.showKickedModal = false;
+        component.isCombatModalOpen = false;
+        expect(component.areModalsOpen()).toBeFalse();
+    });
+    it('should set isInventoryModalOpen to true when InventoryFull event is received', () => {
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.InventoryFull) {
+                return of(undefined);
+            }
+            return of();
+        });
 
-        gameTurnService.actionsDone.combat = true;
-        (gameTurnService.possibleOpponents$ as Subject<Player[]>).next([]);
+        component.listenForInventoryFull();
 
-        component.listenForPossibleOpponents();
+        expect(component.isInventoryModalOpen).toBeTrue();
+    });
+    it('should set isInventoryModalOpen to false and update player and game when ItemDropped event is received', () => {
+        const mockData: ItemDroppedData = {
+            updatedPlayer: { ...mockPlayer, inventory: [ItemCategory.Armor, ItemCategory.Amulet] },
+            updatedGame: { ...mockGame, items: [] },
+        };
 
-        expect(component.combatAvailable).toBeFalse();
-        expect(component.possibleOpponents).toEqual([]);
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.ItemDropped) {
+                return of(mockData);
+            }
+            return of();
+        });
+
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeFalse();
+        expect(playerService.setPlayer).toHaveBeenCalledWith(mockData.updatedPlayer);
+        expect(gameService.setGame).toHaveBeenCalledWith(mockData.updatedGame);
+        expect(gameTurnService.resumeTurn).toHaveBeenCalled();
     });
 
-    it('should call gameTurnService.toggleDoor with the first possible door when doorActionAvailable is true', () => {
-        component.doorActionAvailable = true;
-        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
+    it('should not update player if updatedPlayer is not the current player when ItemDropped event is received', () => {
+        const updatedPlayer: Player = { ...mockPlayer, socketId: 'other-socket' };
+        const updatedGame: Game = { ...mockGame, id: 'updated-game-id' };
+        const itemDroppedData: ItemDroppedData = { updatedPlayer, updatedGame };
 
-        component.toggleDoor();
+        component.ngOnInit();
+        (socketService.listen as jasmine.Spy).and.callFake((eventName: string) => {
+            if (eventName === ItemsEvents.ItemDropped) {
+                return of(itemDroppedData);
+            }
+            return of();
+        });
 
-        expect(gameTurnService.toggleDoor).toHaveBeenCalledWith(component.possibleDoors[0]);
+        component.listenForInventoryFull();
+
+        expect(component.isInventoryModalOpen).toBeFalse();
+        expect(playerService.setPlayer).not.toHaveBeenCalled();
+        expect(gameService.setGame).toHaveBeenCalledWith(updatedGame);
+        expect(gameTurnService.resumeTurn).not.toHaveBeenCalled();
+    });
+    it('should set showExitModal to true when onShowExitModalChange is called with true', () => {
+        component.onShowExitModalChange(true);
+        expect(component.showExitModal).toBeTrue();
     });
 
-    it('should not call gameTurnService.toggleDoor when doorActionAvailable is false', () => {
-        component.doorActionAvailable = false;
-        component.possibleDoors = [{ coordinate: { x: 1, y: 1 }, isOpened: true }];
+    it('should set showExitModal to false when onShowExitModalChange is called with false', () => {
+        component.onShowExitModalChange(false);
+        expect(component.showExitModal).toBeFalse();
+    });
+    it('should call leaveGame and ngOnDestroy if socket is not alive', () => {
+        spyOn(component, 'leaveGame');
+        spyOn(component, 'ngOnDestroy');
+        socketService.isSocketAlive.and.returnValue(false);
 
-        component.toggleDoor();
+        component.ngOnInit();
 
-        expect(gameTurnService.toggleDoor).not.toHaveBeenCalled();
+        expect(component.ngOnDestroy).toHaveBeenCalled();
+        expect(component.leaveGame).toHaveBeenCalled();
     });
 });

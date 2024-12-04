@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatroomComponent } from '@app/components/chatroom/chatroom.component';
 import { PlayersListComponent } from '@app/components/players-list/players-list.component';
+import { ProfileModalComponent } from '@app/components/profile-modal/profile-modal.component';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
@@ -10,14 +11,16 @@ import { GameService } from '@app/services/game/game.service';
 import { MapConversionService } from '@app/services/map-conversion/map-conversion.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY, WaitingRoomParameters } from '@common/constants';
-import { Game, Player } from '@common/game';
-import { Map } from '@common/map.types';
+import { ChatEvents } from '@common/events/chat.events';
+import { GameCreationEvents, ToggleGameLockStateData } from '@common/events/game-creation.events';
+import { Game, GameCtf, Player } from '@common/game';
+import { Map, Mode } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-waiting-room-page',
     standalone: true,
-    imports: [CommonModule, PlayersListComponent, ChatroomComponent],
+    imports: [CommonModule, PlayersListComponent, ChatroomComponent, ProfileModalComponent],
     templateUrl: './waiting-room-page.component.html',
     styleUrls: ['./waiting-room-page.component.scss'],
 })
@@ -25,14 +28,14 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayersListComponent, { static: false }) appPlayersListComponent!: PlayersListComponent;
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private gameService: GameService,
-        private characterService: CharacterService,
-        private playerService: PlayerService,
-        private socketService: SocketService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private mapConversionService: MapConversionService,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly gameService: GameService,
+        private readonly characterService: CharacterService,
+        private readonly playerService: PlayerService,
+        private readonly socketService: SocketService,
+        private readonly route: ActivatedRoute,
+        private readonly router: Router,
+        private readonly mapConversionService: MapConversionService,
     ) {
         this.communicationMapService = communicationMapService;
         this.gameService = gameService;
@@ -60,10 +63,18 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     dialogBoxMessage: string;
     numberOfPlayers: number;
     maxPlayers: number;
+    showProfileModal: boolean = false;
 
     async ngOnInit(): Promise<void> {
-        const player = this.playerService.getPlayer();
-        this.playerPreview = await this.characterService.getAvatarPreview(player.avatar);
+        if (!this.socketService.isSocketAlive()) {
+            this.ngOnDestroy();
+            this.characterService.resetCharacterAvailability();
+            this.socketService.disconnect();
+            this.router.navigate(['/main-menu']);
+            return;
+        }
+        const player = this.playerService.player;
+        this.playerPreview = this.characterService.getAvatarPreview(player.avatar);
         this.playerName = player.name;
 
         this.listenToSocketMessages();
@@ -74,11 +85,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-
-            this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
         }
-        this.socketService.sendMessage('getGameData', this.waitingRoomCode);
-        this.socketService.sendMessage('getPlayers', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.GetGameData, this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.waitingRoomCode);
+        this.socketService.sendMessage(ChatEvents.JoinChatRoom, this.waitingRoomCode);
     }
 
     generateRandomNumber(): void {
@@ -93,24 +103,17 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
 
     async createNewGame(mapName: string): Promise<void> {
         const map: Map = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${mapName}`));
-        const newGame: Game = {
-            ...map,
-            id: this.waitingRoomCode,
-            players: [this.player],
-            hostSocketId: '',
-            currentTurn: 0,
-            nDoorsManipulated: 0,
-            duration: 0,
-            nTurns: 0,
-            debug: false,
-            isLocked: false,
-            hasStarted: false,
-        };
-        this.socketService.sendMessage('createGame', newGame);
+        let newGame: Game | GameCtf;
+        if (map.mode === Mode.Ctf) {
+            newGame = this.gameService.createNewCtfGame(map, this.waitingRoomCode);
+        } else {
+            newGame = this.gameService.createNewGame(map, this.waitingRoomCode);
+        }
+        this.socketService.sendMessage(GameCreationEvents.CreateGame, newGame);
     }
 
     exitGame(): void {
-        this.socketService.sendMessage('leaveGame', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.LeaveGame, this.waitingRoomCode);
         this.characterService.resetCharacterAvailability();
         this.socketService.disconnect();
         this.router.navigate(['/main-menu']);
@@ -126,13 +129,13 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     }
 
     startGame(): void {
-        this.socketService.sendMessage('initializeGame', this.waitingRoomCode);
+        this.socketService.sendMessage(GameCreationEvents.InitializeGame, this.waitingRoomCode);
     }
 
     listenToSocketMessages(): void {
         if (!this.isHost) {
             this.socketSubscription.add(
-                this.socketService.listen('gameClosed').subscribe(() => {
+                this.socketService.listen(GameCreationEvents.GameClosed).subscribe(() => {
                     this.dialogBoxMessage = "L'hôte de la partie a quitté.";
                     this.showExitModal = true;
                     setTimeout(() => {
@@ -141,57 +144,65 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
                 }),
             );
             this.socketSubscription.add(
-                this.socketService.listen<{ isLocked: boolean }>('gameLockToggled').subscribe((data) => {
-                    this.isGameLocked = data.isLocked;
+                this.socketService.listen<boolean>(GameCreationEvents.GameLockToggled).subscribe((isLocked) => {
+                    this.isGameLocked = isLocked;
                 }),
             );
         }
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game }>('gameInitialized').subscribe((data) => {
-                this.gameService.setGame(data.game);
+            this.socketService.listen<Game>(GameCreationEvents.GameInitialized).subscribe((game) => {
+                this.gameService.setGame(game);
+                game.players.forEach((player) => {
+                    if (player.socketId === this.player.socketId) {
+                        this.playerService.setPlayer(player);
+                    }
+                });
                 this.gameInitialized = true;
                 this.navigateToGamePage();
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.CurrentPlayers).subscribe((players: Player[]) => {
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game; name: string; size: number }>('currentGameData').subscribe((data) => {
-                if (this.isHost) {
-                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
-                } else {
-                    this.mapName = data.name;
-                    this.maxPlayers = this.mapConversionService.getMaxPlayers(data.size);
+            this.socketService.listen<Game>(GameCreationEvents.CurrentGame).subscribe((game) => {
+                if (game && game.mapSize) {
+                    if (this.isHost) {
+                        this.maxPlayers = this.mapConversionService.getMaxPlayers(game.mapSize.x);
+                    } else {
+                        this.mapName = game.name;
+                        this.maxPlayers = this.mapConversionService.getMaxPlayers(game.mapSize.x);
+                    }
                 }
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerJoined').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.PlayerJoined).subscribe((players: Player[]) => {
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
 
                 if (this.isHost) {
-                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketService.sendMessage(GameCreationEvents.IfStartable, this.waitingRoomCode);
                     this.socketSubscription.add(
-                        this.socketService.listen('isStartable').subscribe(() => {
+                        this.socketService.listen(GameCreationEvents.IsStartable).subscribe(() => {
                             this.isStartable = true;
                         }),
                     );
                 }
                 if (this.numberOfPlayers === this.maxPlayers) {
-                    this.socketService.sendMessage('toggleGameLockState', { isLocked: true, gameId: this.waitingRoomCode });
+                    const toggleGameLockStateData: ToggleGameLockStateData = { isLocked: true, gameId: this.waitingRoomCode };
+                    this.socketService.sendMessage(GameCreationEvents.ToggleGameLockState, toggleGameLockStateData);
                 }
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('playerKicked').subscribe(() => {
+            this.socketService.listen(GameCreationEvents.PlayerKicked).subscribe(() => {
                 this.dialogBoxMessage = 'Vous avez été exclu';
                 this.showExitModal = true;
                 setTimeout(() => {
@@ -203,10 +214,10 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('playerLeft').subscribe((players: Player[]) => {
+            this.socketService.listen<Player[]>(GameCreationEvents.PlayerLeft).subscribe((players: Player[]) => {
                 if (this.isHost) {
                     this.isStartable = false;
-                    this.socketService.sendMessage('ifStartable', this.waitingRoomCode);
+                    this.socketService.sendMessage(GameCreationEvents.IfStartable, this.waitingRoomCode);
                 }
                 this.activePlayers = players;
                 this.numberOfPlayers = players.length;
@@ -214,7 +225,7 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('isStartable').subscribe(() => {
+            this.socketService.listen(GameCreationEvents.IsStartable).subscribe(() => {
                 this.isStartable = true;
             }),
         );
@@ -223,24 +234,34 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
     toggleHover(state: boolean): void {
         this.hover = state;
     }
+
     toggleGameLockState(): void {
         this.isGameLocked = !this.isGameLocked;
-        this.socketService.sendMessage('toggleGameLockState', { isLocked: this.isGameLocked, gameId: this.waitingRoomCode });
+        const toggleGameLockStateData: ToggleGameLockStateData = { isLocked: this.isGameLocked, gameId: this.waitingRoomCode };
+        this.socketService.sendMessage(GameCreationEvents.ToggleGameLockState, toggleGameLockStateData);
     }
 
     isGameMaxed(): boolean {
         return this.numberOfPlayers === this.maxPlayers;
     }
 
-    ngOnDestroy(): void {
-        if (this.socketSubscription) {
-            this.socketSubscription.unsubscribe();
-        }
-    }
-
     navigateToGamePage() {
         this.router.navigate([`/game/${this.waitingRoomCode}/${this.mapName}`], {
             state: { player: this.player, gameId: this.waitingRoomCode },
         });
+    }
+
+    openProfileModal(): void {
+        this.showProfileModal = true;
+    }
+
+    closeProfileModal(): void {
+        this.showProfileModal = false;
+    }
+
+    ngOnDestroy(): void {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
     }
 }
