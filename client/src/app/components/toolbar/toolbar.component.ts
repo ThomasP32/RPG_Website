@@ -96,11 +96,15 @@ export class ToolbarComponent implements OnInit {
     }
 
     onDrop(event: DragEvent) {
-        if (event.dataTransfer?.getData('isStartingPoint') === 'true') {
-            this.mapService.removeStartingPoint(true);
-            this.selectedTile = '';
-            event.preventDefault();
+        const data = event.dataTransfer?.getData('draggingObject');
+        if (data) {
+            const draggingObject: ItemCategory = JSON.parse(data) as ItemCategory;
+            if (draggingObject === ItemCategory.StartingPoint) {
+                this.mapService.removeStartingPoint(true);
+                this.selectedTile = '';
+            }
         }
+        event.preventDefault();
     }
 
     placeStartingPoint() {

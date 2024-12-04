@@ -38,7 +38,7 @@ describe('MapAreaComponent', () => {
             'initializeCounters',
             'loadMapCounters',
         ]);
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage']);
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['getTileImage', 'getItemImage', 'getStartingPointImage', 'getDoorImage']);
         screenshotServiceSpy = jasmine.createSpyObj('ScreenShotService', ['captureAndConvert']);
         routerSpy = jasmine.createSpyObj('Router', ['url']);
 
@@ -122,7 +122,7 @@ describe('MapAreaComponent', () => {
                 items: [],
                 startTiles: new Array(startTilesLength),
             };
-            mapCounterServiceSpy.startingPointCounter = 5;
+            mapCounterServiceSpy.startingPointCounter = 2;
 
             component.initializeEditionMode();
 
@@ -140,6 +140,16 @@ describe('MapAreaComponent', () => {
     });
 
     describe('Map management', () => {
+        it('should reset the map to default tile when mode is truthy', () => {
+            component.map = [[{ tileType: TileCategory.Wall, isHovered: false } as Cell, { tileType: TileCategory.Door, isHovered: false } as Cell]];
+            component.resetMapToDefault();
+
+            expect(component.map[0][0].tileType).toBe(component.defaultTile);
+            expect(component.map[0][1].tileType).toBe(component.defaultTile);
+
+            expect(component.map[0][0].item).toBeUndefined();
+            expect(component.map[0][1].item).toBeUndefined();
+        });
         it('should reset the map to default tile when mode is truthy', () => {
             component.map = [[{ tileType: TileCategory.Wall, isHovered: false } as Cell, { tileType: TileCategory.Door, isHovered: false } as Cell]];
             component.resetMapToDefault();
@@ -574,6 +584,183 @@ describe('MapAreaComponent', () => {
 
             expect(tileServiceSpy.setStartingPoint).not.toHaveBeenCalled();
             expect(event.preventDefault).toHaveBeenCalled();
+        });
+    });
+    describe('onDrop', () => {
+        let event: DragEvent;
+        let rowIndex: number;
+        let colIndex: number;
+
+        beforeEach(() => {
+            event = new DragEvent('drop');
+            rowIndex = 0;
+            colIndex = 0;
+            spyOn(event, 'preventDefault');
+        });
+
+        it('should prevent default if target tile is a wall', () => {
+            component.map = [[{ tileType: TileCategory.Wall, isStartingPoint: false, door: { isDoor: false } } as Cell]];
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.StartingPoint)),
+                },
+            });
+
+            component.onDrop(event, rowIndex, colIndex);
+
+            expect(tileServiceSpy.setStartingPoint).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should set starting point if dragging object is StartingPoint', () => {
+            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false, door: { isDoor: false } } as Cell]];
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.StartingPoint)),
+                },
+            });
+
+            component.onDrop(event, rowIndex, colIndex);
+
+            expect(tileServiceSpy.setStartingPoint).toHaveBeenCalledWith(component.map, rowIndex, colIndex);
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should set item if dragging object is not StartingPoint', () => {
+            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false, door: { isDoor: false } } as Cell]];
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.Armor)),
+                },
+            });
+
+            component.onDrop(event, rowIndex, colIndex);
+
+            expect(tileServiceSpy.setItem).toHaveBeenCalledWith(component.map, ItemCategory.Armor, { rowIndex, colIndex });
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should prevent default if target tile is a door', () => {
+            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: false, door: { isDoor: true } } as Cell]];
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.StartingPoint)),
+                },
+            });
+
+            component.onDrop(event, rowIndex, colIndex);
+
+            expect(tileServiceSpy.setStartingPoint).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should prevent default if target tile is already a starting point', () => {
+            component.map = [[{ tileType: TileCategory.Floor, isStartingPoint: true, door: { isDoor: false } } as Cell]];
+            Object.defineProperty(event, 'dataTransfer', {
+                value: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.StartingPoint)),
+                },
+            });
+
+            component.onDrop(event, rowIndex, colIndex);
+
+            expect(tileServiceSpy.setStartingPoint).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should move item if currentDraggedItem is not null', () => {
+            const mockDragEvent = {
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: jasmine.createSpy('getData').and.returnValue(JSON.stringify(ItemCategory.Armor)),
+                },
+            } as any as DragEvent;
+
+            component.currentDraggedItem = { rowIndex: 1, colIndex: 1 };
+            component.map = [
+                [{ tileType: TileCategory.Floor, isStartingPoint: false, door: { isDoor: false } } as Cell],
+                [{ tileType: TileCategory.Floor, isStartingPoint: false, door: { isDoor: false } } as Cell],
+            ];
+
+            component.onDrop(mockDragEvent, 0, 0);
+
+            expect(tileServiceSpy.moveItem).toHaveBeenCalledWith(component.map, { rowIndex: 1, colIndex: 1 }, { rowIndex: 0, colIndex: 0 });
+
+            expect(component.currentDraggedItem).toBeNull();
+            expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        });
+    });
+    describe('getTileImage', () => {
+        it('should return door image when tile type is Door and door is open', () => {
+            const rowIndex = 0;
+            const colIndex = 0;
+            component.map = [
+                [
+                    {
+                        tileType: TileCategory.Door,
+                        door: { isOpen: true, isDoor: true },
+                    } as Cell,
+                ],
+            ];
+
+            const result = component.getTileImage(TileCategory.Door, rowIndex, colIndex);
+            expect(imageServiceSpy.getDoorImage).toHaveBeenCalledWith(true);
+            expect(result).toBe(imageServiceSpy.getDoorImage(true));
+        });
+
+        it('should return door image when tile type is Door and door is closed', () => {
+            const rowIndex = 0;
+            const colIndex = 0;
+            component.map = [
+                [
+                    {
+                        tileType: TileCategory.Door,
+                        door: { isOpen: false, isDoor: true },
+                    } as Cell,
+                ],
+            ];
+
+            const result = component.getTileImage(TileCategory.Door, rowIndex, colIndex);
+            expect(imageServiceSpy.getDoorImage).toHaveBeenCalledWith(false);
+            expect(result).toBe(imageServiceSpy.getDoorImage(false));
+        });
+    });
+    describe('resetMapToDefault', () => {
+        it('should reset the map to default tile and initialize counters when in creation mode', () => {
+            spyOn(component, 'isCreationMode').and.returnValue(true);
+
+            component.map = [
+                [{ tileType: TileCategory.Wall, item: ItemCategory.Armor, isStartingPoint: true } as Cell],
+                [{ tileType: TileCategory.Door, item: ItemCategory.Sword, isStartingPoint: false } as Cell],
+            ];
+
+            component.resetMapToDefault();
+
+            component.map.forEach((row) => {
+                row.forEach((cell) => {
+                    expect(cell.tileType).toBe(component.defaultTile);
+                    expect(cell.item).toBeUndefined();
+                    expect(cell.isStartingPoint).toBeFalse();
+                });
+            });
+
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x, 'classic');
+        });
+
+        it('should reset the map to default tile and load map counters when not in creation mode', () => {
+            spyOn(component, 'isCreationMode').and.returnValue(false);
+            spyOn(component, 'loadMap');
+
+            component.map = [
+                [{ tileType: TileCategory.Wall, item: ItemCategory.Armor, isStartingPoint: true } as Cell],
+                [{ tileType: TileCategory.Door, item: ItemCategory.Sword, isStartingPoint: false } as Cell],
+            ];
+
+            component.resetMapToDefault();
+
+            expect(mapCounterServiceSpy.initializeCounters).toHaveBeenCalledWith(mapServiceSpy.map.mapSize.x, mapServiceSpy.map.mode);
+            expect(mapCounterServiceSpy.loadMapCounters).toHaveBeenCalledWith(mapServiceSpy.map);
+            expect(component.loadMap).toHaveBeenCalledWith(mapServiceSpy.map);
         });
     });
 });

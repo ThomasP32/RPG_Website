@@ -76,7 +76,7 @@ export class MapAreaComponent implements OnInit {
 
     initializeEditionMode() {
         this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
-        this.updateMapCounters();
+        this.mapCounterService.loadMapCounters(this.mapService.map);
         this.loadMap(this.mapService.map);
     }
 
@@ -98,11 +98,6 @@ export class MapAreaComponent implements OnInit {
             }
             this.map.push(row);
         }
-    }
-
-    updateMapCounters() {
-        this.mapCounterService.startingPointCounter -= this.mapService.map.startTiles.length;
-        this.mapCounterService.loadMapCounters(this.mapService.map.items);
     }
 
     selectTile(tile: string) {
@@ -136,7 +131,7 @@ export class MapAreaComponent implements OnInit {
         const targetElement = event.target as HTMLElement;
 
         if (targetElement.tagName === 'IMG') {
-            const tileElement = targetElement.closest('.grid-item');
+            const tileElement = targetElement.closest('.grid-item, .grid-starting-point');
             if (!tileElement) {
                 event.preventDefault();
             }
@@ -168,7 +163,7 @@ export class MapAreaComponent implements OnInit {
             this.currentDraggedItem = { rowIndex, colIndex };
             event.dataTransfer?.setData('draggingObject', JSON.stringify(cell.item));
         } else {
-            event.preventDefault;
+            event.preventDefault();
         }
     }
 
@@ -181,11 +176,15 @@ export class MapAreaComponent implements OnInit {
         const data = event.dataTransfer?.getData('draggingObject');
         if (data) {
             const draggingObject: ItemCategory = JSON.parse(data) as ItemCategory;
-            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint || targetTile.door.isDoor) {
+            if (targetTile.tileType === TileCategory.Wall || targetTile.isStartingPoint || targetTile.door.isDoor || targetTile.item) {
                 event.preventDefault();
                 return;
             }
             if (this.currentDraggedItem) {
+                if (draggingObject == ItemCategory.StartingPoint) {
+                    this.tileService.setStartingPoint(this.map, rowIndex, colIndex);
+                    this.tileService.removeStartingPoint(this.map, this.currentDraggedItem.rowIndex, this.currentDraggedItem.colIndex);
+                }
                 this.tileService.moveItem(this.map, this.currentDraggedItem, { rowIndex, colIndex });
                 this.currentDraggedItem = null;
             } else {
@@ -211,7 +210,7 @@ export class MapAreaComponent implements OnInit {
     }
 
     resetMapToDefault() {
-        if (this.route.snapshot.params['mode']) {
+        if (this.isCreationMode()) {
             for (let i = 0; i < this.map.length; i++) {
                 for (let j = 0; j < this.map[i].length; j++) {
                     this.map[i][j].tileType = this.defaultTile;
@@ -223,7 +222,7 @@ export class MapAreaComponent implements OnInit {
             this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, mode);
         } else {
             this.mapCounterService.initializeCounters(this.mapService.map.mapSize.x, this.mapService.map.mode);
-            this.updateMapCounters();
+            this.mapCounterService.loadMapCounters(this.mapService.map);
             this.loadMap(this.mapService.map);
         }
     }
