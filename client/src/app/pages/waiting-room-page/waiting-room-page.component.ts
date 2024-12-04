@@ -85,7 +85,6 @@ export class WaitingRoomPageComponent implements OnInit, OnDestroy {
             await this.createNewGame(this.mapName);
         } else {
             this.waitingRoomCode = this.route.snapshot.params['gameId'];
-            this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.waitingRoomCode);
         }
         this.socketService.sendMessage(GameCreationEvents.GetGameData, this.waitingRoomCode);
         this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.waitingRoomCode);

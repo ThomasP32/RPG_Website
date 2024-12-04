@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Item, ItemCategory } from '@common/map.types';
+import { ItemCategory, Map, Mode } from '@common/map.types';
 import { MapConversionService } from '../map-conversion/map-conversion.service';
 import { MapCounterService } from './map-counter.service';
 
@@ -37,21 +37,6 @@ describe('MapCounterService', () => {
         expect(service.startingPointCounter).toBe(4);
         expect(service.itemsCounter).toBe(10);
         expect(service.items).toContain(ItemCategory.Flag);
-    });
-
-    it('should load map counters correctly', () => {
-        service.itemsCounter = 3;
-        service.randomItemCounter = 0;
-        service.items = [ItemCategory.Armor, ItemCategory.IceSkates, ItemCategory.Sword];
-        const usedItems: Item[] = [
-            { category: ItemCategory.Armor, coordinate: { x: 1, y: 3 } },
-            { category: ItemCategory.Random, coordinate: { x: 3, y: 1 } },
-        ];
-
-        service.loadMapCounters(usedItems);
-
-        expect(service.items).not.toContain(ItemCategory.Armor);
-        expect(service.itemsCounter).toBe(1);
     });
 
     it('should set available items correctly', () => {
@@ -101,5 +86,87 @@ describe('MapCounterService', () => {
         expect(service.items).toContain(ItemCategory.Random);
         expect(service.itemsCounter).toBe(2);
         expect(service.randomItemCounter).toBe(1);
+    });
+    it('should load map counters correctly for a given map', () => {
+        const map: Map = {
+            items: [
+                { category: ItemCategory.Armor, coordinate: { x: 1, y: 1 } },
+                { category: ItemCategory.Random, coordinate: { x: 2, y: 2 } },
+            ],
+            startTiles: [{ coordinate: { x: 0, y: 0 } }, { coordinate: { x: 1, y: 1 } }],
+            mode: Mode.Ctf,
+        } as unknown as Map;
+
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates, ItemCategory.Random];
+        service.startingPointCounter = 2;
+        service.itemsCounter = 2;
+        service.randomItemCounter = 2;
+
+        service.loadMapCounters(map);
+
+        expect(service.items).toEqual([ItemCategory.IceSkates]);
+        expect(service.startingPointCounter).toBe(0);
+        expect(service.itemsCounter).toBe(1);
+        expect(service.randomItemCounter).toBe(1);
+    });
+
+    it('should handle empty map correctly', () => {
+        const map: Map = {
+            items: [],
+            startTiles: [],
+            mode: Mode.Ctf,
+        } as unknown as Map;
+
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates];
+        service.startingPointCounter = 2;
+        service.itemsCounter = 2;
+        service.randomItemCounter = 0;
+
+        service.loadMapCounters(map);
+
+        expect(service.items).toEqual([ItemCategory.Armor, ItemCategory.IceSkates]);
+        expect(service.startingPointCounter).toBe(2);
+        expect(service.itemsCounter).toBe(3); // +1 for ctf mode
+        expect(service.randomItemCounter).toBe(0);
+    });
+
+    it('should handle map with no starting points correctly', () => {
+        const map: Map = {
+            items: [{ category: ItemCategory.Armor, coordinate: { x: 1, y: 1 } }],
+            startTiles: [],
+            mode: Mode.Ctf,
+        } as unknown as Map;
+
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates];
+        service.startingPointCounter = 2;
+        service.itemsCounter = 2;
+        service.randomItemCounter = 0;
+
+        service.loadMapCounters(map);
+
+        expect(service.items).toEqual([ItemCategory.IceSkates]);
+        expect(service.startingPointCounter).toBe(2);
+        expect(service.itemsCounter).toBe(2);
+        expect(service.randomItemCounter).toBe(0);
+    });
+
+    it('should handle map with no items correctly', () => {
+        const map: Map = {
+            items: [],
+            startTiles: [{ coordinate: { x: 0, y: 0 } }],
+            mode: Mode.Ctf,
+        } as unknown as Map;
+
+        service.items = [ItemCategory.Armor, ItemCategory.IceSkates];
+        service.startingPointCounter = 2;
+        service.itemsCounter = 2;
+        service.randomItemCounter = 0;
+
+        service.loadMapCounters(map);
+
+        expect(service.items).toEqual([ItemCategory.Armor, ItemCategory.IceSkates]);
+        expect(service.startingPointCounter).toBe(1);
+        expect(service.itemsCounter).toBe(3);
+        expect(service.randomItemCounter).toBe(0);
     });
 });
