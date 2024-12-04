@@ -195,35 +195,6 @@ describe('ToolbarComponent', () => {
 
         expect(mapCounterServiceSpy.startingPointCounter).toBe(5);
     });
-    it('should handle onDrop event and remove starting point if isStartingPoint is true', () => {
-        const mockDragEvent = {
-            dataTransfer: {
-                getData: jasmine.createSpy('getData').and.returnValue('true'),
-            },
-            preventDefault: jasmine.createSpy('preventDefault'),
-        } as any as DragEvent;
-
-        component.onDrop(mockDragEvent);
-
-        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
-        expect(mapServiceSpy.removeStartingPoint).toHaveBeenCalledWith(true);
-        expect(component.selectedTile).toBe('');
-    });
-
-    it('should handle onDrop event and do nothing if isStartingPoint is false', () => {
-        const mockDragEvent = {
-            dataTransfer: {
-                getData: jasmine.createSpy('getData').and.returnValue('false'),
-            },
-            preventDefault: jasmine.createSpy('preventDefault'),
-        } as any as DragEvent;
-
-        component.onDrop(mockDragEvent);
-
-        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
-        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
-        expect(component.selectedTile).not.toBe('');
-    });
     it('should call preventDefault on allowDrop event', () => {
         const mockDragEvent = {
             preventDefault: jasmine.createSpy('preventDefault'),
@@ -241,7 +212,7 @@ describe('ToolbarComponent', () => {
 
         component.onDrop(mockDragEvent);
 
-        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
         expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
     });
 
@@ -255,7 +226,71 @@ describe('ToolbarComponent', () => {
 
         component.onDrop(mockDragEvent);
 
-        expect(mockDragEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+    });
+    it('should handle onDrop event and remove starting point if isStartingPoint is true', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue('"startingPoint"'),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).toHaveBeenCalledWith(true);
+        expect(component.selectedTile).toBe('');
+    });
+
+    it('should handle onDrop event and do nothing if isStartingPoint is false', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue('""'),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+    });
+
+    it('should call preventDefault on allowDrop event', () => {
+        const mockDragEvent = {
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.allowDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should do nothing if dataTransfer is null in onDrop', () => {
+        const mockDragEvent = {
+            dataTransfer: null,
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
+        expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if getData returns undefined in onDrop', () => {
+        const mockDragEvent = {
+            dataTransfer: {
+                getData: jasmine.createSpy('getData').and.returnValue(undefined),
+            },
+            preventDefault: jasmine.createSpy('preventDefault'),
+        } as any as DragEvent;
+
+        component.onDrop(mockDragEvent);
+
+        expect(mockDragEvent.preventDefault).toHaveBeenCalled();
         expect(mapServiceSpy.removeStartingPoint).not.toHaveBeenCalled();
     });
 });
