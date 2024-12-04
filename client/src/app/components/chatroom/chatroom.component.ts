@@ -23,6 +23,7 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     isChatRetracted: boolean = false;
     isWaitingRoom: boolean;
     isGamePage: boolean;
+    isEndGame: boolean;
 
     constructor(
         public readonly socketService: SocketService,
@@ -36,6 +37,7 @@ export class ChatroomComponent implements OnInit, OnDestroy {
         const currentUrl = this.router.url;
         this.isWaitingRoom = currentUrl.includes('/waiting-room');
         this.isGamePage = currentUrl.includes('/game-page');
+        this.isEndGame = currentUrl.includes('/end-game');
         this.messageSubscription = this.socketService.listen<Message[]>(ChatEvents.PreviousMessages).subscribe((messages: Message[]) => {
             this.messages = messages;
             this.scrollToBottom();
