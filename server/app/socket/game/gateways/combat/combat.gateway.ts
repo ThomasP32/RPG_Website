@@ -2,6 +2,7 @@ import { CombatService } from '@app/services/combat/combat.service';
 import { Combat } from '@common/combat';
 import { EVASION_SUCCESS_RATE, TIME_LIMIT_DELAY } from '@common/constants';
 import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData, CombatStartedData, StartCombatData } from '@common/events/combat.events';
+import { CountdownEvents } from '@common/events/countdown.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
 import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
@@ -182,7 +183,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
                 this.gameCountdownService.resumeCountdown(gameId);
                 this.server.to(attackingPlayer.socketId).emit(CombatEvents.ResumeTurnAfterCombatWin);
             } else {
-                this.gameCountdownService.emit('timeout', gameId);
+                this.gameCountdownService.emit(CountdownEvents.Timeout, gameId);
             }
             this.combatService.deleteCombat(game.id);
             this.cleanupCombatRoom(combatId);
@@ -284,7 +285,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             if (combat) {
                 this.handleCombatDisconnection(client, updatedGame, combat);
             } else if (game.currentTurn === player.turn) {
-                this.gameCountdownService.emit('timeout', game.id);
+                this.gameCountdownService.emit(CountdownEvents.Timeout, game.id);
             }
         }
     }
@@ -311,7 +312,7 @@ export class CombatGateway implements OnGatewayInit, OnGatewayDisconnect {
             if (updatedGame.currentTurn === winner.turn) {
                 this.gameCountdownService.resumeCountdown(updatedGame.id);
             } else {
-                this.gameCountdownService.emit('timeout', updatedGame.id);
+                this.gameCountdownService.emit(CountdownEvents.Timeout, updatedGame.id);
             }
 
             this.cleanupCombatRoom(combat.id);

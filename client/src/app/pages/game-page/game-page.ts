@@ -21,7 +21,9 @@ import { PlayerService } from '@app/services/player-service/player.service';
 import { COUNTDOWN_PULSE, MAX_CHAR, TIME_DASH_OFFSET, TIME_LIMIT_DELAY, TIME_PULSE, TIME_REDIRECTION, TURN_DURATION } from '@common/constants';
 import { MovesMap } from '@common/directions';
 import { ChatEvents } from '@common/events/chat.events';
+import { CountdownEvents } from '@common/events/countdown.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { GameManagerEvents } from '@common/events/game-manager.events';
 import { ItemDroppedData, ItemsEvents } from '@common/events/items.events';
 import { Game, Player, Specs } from '@common/game';
 import { GamePageActiveView } from '@common/game-page';
@@ -136,7 +138,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.activePlayers = this.gameService.game.players;
 
             if (this.playerService.player.socketId === this.game.hostSocketId) {
-                this.socketService.sendMessage('startGame', this.gameService.game.id);
+                this.socketService.sendMessage(GameManagerEvents.StartGame, this.gameService.game.id);
             }
 
             this.socketService.sendMessage(ChatEvents.JoinChatRoom, this.game.id);
@@ -287,7 +289,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     listenForStartTurnDelay() {
         this.socketSubscription.add(
-            this.socketService.listen<number>('delay').subscribe((delay) => {
+            this.socketService.listen<number>(CountdownEvents.Delay).subscribe((delay) => {
                 this.startTurnCountdown = delay;
                 if (delay === 0) {
                     this.startTurnCountdown = 3;

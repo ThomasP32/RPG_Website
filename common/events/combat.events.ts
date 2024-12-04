@@ -4,8 +4,10 @@ export enum CombatEvents {
     StartCombat = 'startCombat',
     Attack = 'attack',
     StartEvasion = 'startEvasion',
+    CurrentPlayer = 'currentPlayer',
 
     CombatStarted = 'combatStarted',
+    GetCombats = 'getCombats',
     CombatStartedSignal = 'combatStartedSignal',
     YouStartedCombat = 'YouStartedCombat',
 
@@ -15,6 +17,7 @@ export enum CombatEvents {
 
     DiceRolled = 'diceRolled',
     AttackFailure = 'attackFailure',
+    AttackSuccess = 'attackSuccess',
 
     CombatFinished = 'combatFinished',
     CombatFinishedNormally = 'combatFinishedNormally',
