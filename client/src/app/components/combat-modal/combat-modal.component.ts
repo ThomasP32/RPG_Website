@@ -73,7 +73,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForAttacks(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('attackSuccess').subscribe((playerAttacked) => {
+            this.socketService.listen<Player>(CombatEvents.AttackSuccess).subscribe((playerAttacked) => {
                 if (playerAttacked.socketId === this.opponent.socketId) this.opponent = playerAttacked;
                 else if (playerAttacked.socketId === this.player.socketId) this.player = playerAttacked;
 
@@ -98,7 +98,7 @@ export class CombatModalComponent implements OnInit, OnDestroy {
 
     listenForOpponent(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('currentPlayer').subscribe((player: Player) => {
+            this.socketService.listen<Player>(CombatEvents.CurrentPlayer).subscribe((player: Player) => {
                 this.opponent = player;
             }),
         );

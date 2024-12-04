@@ -6,6 +6,10 @@ export enum ItemsEvents {
 
     InventoryFull = 'inventoryFull',
     ItemDropped = 'itemDropped',
+    BreakWall = 'breakWall',
+    WallBroken = 'wallBroken',
+    DoorToggled = 'doorToggled',
+    ToggleDoor = 'toggleDoor',
 }
 
 export interface DropItemData {
