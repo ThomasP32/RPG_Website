@@ -54,7 +54,7 @@ describe('GameTurnService', () => {
         position: { x: 0, y: 0 },
         initialPosition: { x: 0, y: 0 },
         specs: mockSpecs,
-        inventory: [],
+        inventory: [ItemCategory.WallBreaker],
         turn: 0,
         visitedTiles: [],
         profile: ProfileType.NORMAL,

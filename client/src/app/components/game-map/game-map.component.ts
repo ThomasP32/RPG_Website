@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { GameInfosService } from '@app/services/game-infos.service';
+import { GameDataService } from '@app/services/game-data/game-data.service';
+import { GameInfosService } from '@app/services/game-infos/game-infos.service';
 import { ImageService } from '@app/services/image/image.service';
-import { RIGHT_CLICK, TOOLTIP_DIRECTION_CHANGE } from '@common/constants';
+import { ALTERNATIVE_COORDINATES, RIGHT_CLICK, TOOLTIP_DIRECTION_CHANGE } from '@common/constants';
 import { MovesMap } from '@common/directions';
-import { Avatar, Game } from '@common/game';
+import { Avatar, Game, Player } from '@common/game';
 import { Cell } from '@common/map-cell';
 import { Coordinate, ItemCategory, TileCategory } from '@common/map.types';
 
@@ -17,6 +18,7 @@ import { Coordinate, ItemCategory, TileCategory } from '@common/map.types';
 })
 export class GameMapComponent implements OnInit, OnChanges {
     @Input() loadedMap: Game;
+    @Input() player: Player;
     @Input() moves: MovesMap;
     @Output() tileClicked = new EventEmitter<Coordinate>();
     @Input() isYourTurn: boolean;
@@ -30,9 +32,11 @@ export class GameMapComponent implements OnInit, OnChanges {
     constructor(
         private readonly imageService: ImageService,
         private readonly gameInfosService: GameInfosService,
+        private readonly gameDataService: GameDataService,
     ) {
-        this.imageService = imageService;
         this.gameInfosService = gameInfosService;
+        this.gameDataService = gameDataService;
+        this.imageService = imageService;
     }
 
     onTileClick(position: Coordinate) {
@@ -49,6 +53,7 @@ export class GameMapComponent implements OnInit, OnChanges {
     ngOnChanges() {
         this.clearPreview();
         this.loadMap(this.loadedMap);
+        this.updateSurroundingMap(this.player);
     }
 
     onTileHover(position: Coordinate) {
@@ -104,13 +109,16 @@ export class GameMapComponent implements OnInit, OnChanges {
                     isHovered: false,
                     isOccupied: false,
                     isStartingPoint: false,
+                    alternateCoordinates: { x: i, y: j },
                 });
             }
             this.map.push(row);
         }
     }
-    getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number): string {
-        return this.imageService.getTileImage(tileValue, rowIndex, colIndex, this.map);
+    getTileImage(tileType: TileCategory, rowIndex: number, colIndex: number): string {
+        if (tileType === TileCategory.Door) {
+            return this.imageService.getDoorImage(this.map[rowIndex][colIndex].door.isOpen);
+        } else return this.imageService.getTileImage(tileType);
     }
 
     getStartingPointImage(): string {
@@ -159,5 +167,51 @@ export class GameMapComponent implements OnInit, OnChanges {
 
     cellByIndex(index: number) {
         return index;
+    }
+    getSurroundingMap(player: Player): Cell[][] {
+        const range = ALTERNATIVE_COORDINATES;
+        const surroundingCells: Cell[][] = [];
+
+        for (let dx = -range; dx <= range; dx++) {
+            for (let dy = -range; dy <= range; dy++) {
+                const x = player.position.x + dx;
+                const y = player.position.y + dy;
+                if (!surroundingCells[dx + range]) surroundingCells[dx + range] = [];
+
+                if (x >= 0 && x < this.map.length && y >= 0 && y < this.map[0].length) {
+                    const originalCell = this.map[x][y];
+                    const alternateCoordinates = { x: dx + range, y: dy + range };
+
+                    const door =
+                        originalCell.tileType === TileCategory.Door
+                            ? { isDoor: true, isOpen: originalCell.door?.isOpen || false }
+                            : { isDoor: false, isOpen: false };
+
+                    const cell = {
+                        ...originalCell,
+                        door,
+                        alternateCoordinates,
+                    };
+
+                    surroundingCells[dx + range][dy + range] = cell;
+                } else {
+                    surroundingCells[dx + range][dy + range] = {
+                        tileType: TileCategory.Floor,
+                        door: { isDoor: false, isOpen: false },
+                        isHovered: false,
+                        isOccupied: false,
+                        isStartingPoint: false,
+                        coordinate: { x, y },
+                        alternateCoordinates: { x: dx + range, y: dy + range },
+                    } as Cell;
+                }
+            }
+        }
+
+        return surroundingCells;
+    }
+    updateSurroundingMap(player: Player) {
+        const surroundingMap = this.getSurroundingMap(player);
+        this.gameDataService.setSurroundingMap(surroundingMap);
     }
 }
