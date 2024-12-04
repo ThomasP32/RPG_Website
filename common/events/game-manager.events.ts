@@ -1,3 +1,16 @@
 export enum GameManagerEvents {
-    
+    StartGame = 'startGame',
+    PositionToUpdate = 'positionToUpdate',
+    YouFinishedMoving = 'youFinishedMoving',
+    YouFell = 'youFell',
+    MoveVirtualPlayer = 'moveVirtualPlayer',
+    YourCombats = 'yourCombats',
+    YourDoors = 'yourDoors',
+    YourWalls = 'yourWalls',
+    FlagPickup = 'flagPickedUp',
+    PlayerPossibleMoves = 'playerPossibleMoves',
+    GetAdjacentDoors = 'getAdjacentDoors',
+    GetAdjacentWalls = 'getAdjacentWalls',
+    GetMovements = 'getMovements',
+    MoveToPosition = 'moveToPosition',
 }

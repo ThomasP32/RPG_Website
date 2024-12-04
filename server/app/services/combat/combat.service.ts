@@ -2,6 +2,7 @@ import { Coordinate } from '@app/http/model/schemas/map/coordinate.schema';
 import { Combat, RollResult } from '@common/combat';
 import { DEFAULT_EVASIONS, DEFENDING_PLAYER_LIFE, N_WIN_VICTORIES, ROLL_DICE_CONSTANT } from '@common/constants';
 import { CORNER_DIRECTIONS, DIRECTIONS } from '@common/directions';
+import { CombatEvents } from '@common/events/combat.events';
 import { Game, Player } from '@common/game';
 import { ItemCategory, Mode, TileCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
@@ -76,7 +77,7 @@ export class CombatService {
         if (defendingPlayer.inventory.includes(ItemCategory.Flask) && defendingPlayer.specs.life === DEFENDING_PLAYER_LIFE) {
             this.itemManagerService.activateItem(ItemCategory.Flask, defendingPlayer);
         }
-        this.server.to(combatId).emit('attackSuccess', defendingPlayer);
+        this.server.to(combatId).emit(CombatEvents.AttackSuccess, defendingPlayer);
     }
 
     updateTurn(gameId: string): void {

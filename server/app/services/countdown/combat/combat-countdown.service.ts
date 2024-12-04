@@ -1,5 +1,6 @@
 import { Countdown } from '@app/services/countdown/counter-interface';
 import { COUNTDOWN_COMBAT_DURATION, COUNTDOWN_INTERVAL, COUNTDOWN_NOEVASION_DURATION } from '@common/constants';
+import { CountdownEvents } from '@common/events/countdown.events';
 import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
@@ -40,10 +41,10 @@ export class CombatCountdownService extends EventEmitter {
         countdown.timerSubscription = interval(COUNTDOWN_INTERVAL).subscribe(() => {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
-                this.emit('timeout', game.id);
+                this.emit(CountdownEvents.Timeout, game.id);
             } else {
                 game.duration++;
-                this.server.to(game.id).emit('combatSecondPassed', value);
+                this.server.to(game.id).emit(CountdownEvents.CombatSecondPassed, value);
             }
         });
     }

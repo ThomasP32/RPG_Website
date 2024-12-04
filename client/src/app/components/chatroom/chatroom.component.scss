@@ -14,6 +14,24 @@
     height: 31vh;
 }
 
+.waiting-room-chat .chat-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 93vh;
+}
+
+.endgame-chat .chat-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 93vh;
+}
+
 .chat-container.retracted {
     transform: translateY(calc(100vh - 50px));
     max-height: 50px;
@@ -22,15 +40,29 @@
 
 .waiting-room-chat {
     position: fixed;
-    height: 100%;
-    width: 330px;
-    max-height: 75vh;
-    background-color: #1c242c;
+    height: 100vh;
+    right: 0;
+    width: 24vw;
+    background: linear-gradient(135deg, #3b3f46 30%, #282c34 100%);
+    border: 2px solid #b5651d;
 }
 
 .waiting-room-chat #messageArea {
-    max-height: 420px;
+    flex: 1;
+    overflow-y: auto;
+    height: 100%;
     margin-top: 8px;
+}
+
+.waiting-room-chat .input-container {
+    bottom: 11px;
+    display: flex;
+    width: 23vw;
+    height: 4vh;
+    padding-left: 2%;
+    align-items: center;
+    justify-content: space-evenly;
+    z-index: 10;
 }
 
 .game-page-chat {
@@ -53,13 +85,85 @@
     margin-top: 8px;
 }
 
+.waiting-room-chat .player-name {
+    width: 23vw;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 1vw;
+    color: white;
+    box-sizing: border-box;
+    border-bottom: 2px solid #b85c38;
+    text-align: center;
+    z-index: 30;
+}
+
+.waiting-room-chat .chat-container.retracted {
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.waiting-room-chat #messageArea {
+    max-height: 100%;
+    margin-top: 8px;
+}
+
+.message-area {
+    flex: 1;
+    width: 100%;
+    padding-left: 4px;
+
+    overflow-y: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    box-sizing: border-box;
+}
+
+.endgame-chat {
+    display: flex;
+    flex-direction: column;
+}
+
+.endgame-chat .chat-container.retracted {
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.endgame-chat .input-container {
+    bottom: 11px;
+    display: flex;
+    width: 15vw;
+    height: 4vh;
+    align-items: center;
+    justify-content: space-evenly;
+    border-top: 1px solid #202020;
+    z-index: 10;
+}
+.endgame-chat #messageInput {
+    margin-top: auto;
+}
+.endgame-chat #messageArea {
+    margin-top: 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
 .chat-header {
     font-size: 1.2em;
     font-weight: bold;
     color: white;
     padding: 10px;
-    border-bottom: 1px solid #202020;
     text-align: center;
+    cursor: pointer;
+}
+
+.waiting-room-chat .chat-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    padding: 10px;
+    background: none;
+    text-align: center;
+    cursor: pointer;
 }
 
 .player-name {
@@ -86,8 +190,9 @@
 
 .message-area {
     flex: 1;
-    margin-top: 50px;
-    margin-bottom: 50px;
+    width: 100%;
+    padding-left: 4px;
+
     overflow-y: auto;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -101,15 +206,14 @@
     margin: 0;
 }
 
-li {
-    margin: 10px 0;
-}
-
 .author {
-    font-weight: 900;
+    font-weight: 0.8rem;
     color: white;
 }
-
+.message {
+    font-size: 0.9rem;
+    color: white;
+}
 .timestamp {
     font-size: 0.8em;
     color: grey;
@@ -122,7 +226,6 @@ li {
     height: 4vh;
     align-items: center;
     justify-content: space-evenly;
-    border-top: 1px solid #202020;
     z-index: 10;
 }
 
@@ -135,6 +238,17 @@ input#messageInput {
     font-size: 0.8rem;
     box-sizing: border-box;
 }
+
+.waiting-room-chat #messageInput {
+    flex: 1;
+    height: 4vh;
+    border: 2px solid #202020;
+    background-color: #2c3e50;
+    color: white;
+    font-size: 0.8rem;
+    box-sizing: border-box;
+}
+
 .send-message-button {
     display: flex;
     align-items: center;

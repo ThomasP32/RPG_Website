@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    background-color: #1c242c;
+    background-image: url('../../../assets/backgrounds/backgroundcombat.png');
     color: #e6e6e6;
     height: 100vh;
     overflow: hidden;
@@ -368,4 +368,10 @@
 
 .modal-button:hover {
     background-color: #3b3f46;
+}
+.waiting-room-chat {
+    position: fixed;
+    right: 0;
+    height: 100%;
+    width: 24vw;
 }
