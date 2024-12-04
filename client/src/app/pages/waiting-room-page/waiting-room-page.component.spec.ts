@@ -381,8 +381,6 @@ describe('WaitingRoomPageComponent', () => {
     it('should navigate to main menu if socket is not alive', async () => {
         SocketServiceSpy.isSocketAlive.and.returnValue(false);
         spyOn(component, 'ngOnDestroy').and.callThrough();
-        spyOn(SocketServiceSpy, 'disconnect').and.callThrough();
-        spyOn(RouterSpy, 'navigate').and.callThrough();
 
         await component.ngOnInit();
 
