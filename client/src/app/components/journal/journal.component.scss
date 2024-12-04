@@ -42,10 +42,14 @@
 
 .journal-body {
     flex: 1;
-    overflow-y: auto;
     word-wrap: break-word;
     white-space: pre-wrap;
-    padding: 10px;
+    width: 100%;
+    height: 100%;
+    padding-left: 3%;
+    padding-right: 3%;
+    padding-top: 1px;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -57,10 +61,13 @@
 }
 
 #journalList li {
-    margin: 10px 0;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 3px;
 }
 
 .timestamp {
-    font-size: 0.8em;
+    font-size: 0.7em;
     color: grey;
 }

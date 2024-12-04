@@ -169,6 +169,9 @@ export class ProfileModalComponent implements OnInit {
         };
         this.virtualPlayer = virtualPlayer;
     }
+    closeModal(): void {
+        this.closeProfileModal();
+    }
 
     onSubmit(): void {
         this.assignRandomName();

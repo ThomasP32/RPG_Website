@@ -1,5 +1,7 @@
 import { Countdown } from '@app/services/countdown/counter-interface';
 import { COUNTDOWN_INTERVAL, DELAY } from '@common/constants';
+import { CountdownEvents } from '@common/events/countdown.events';
+import { GameTurnEvents } from '@common/events/game-turn.events';
 import { Game } from '@common/game';
 import { Injectable } from '@nestjs/common';
 import { interval } from 'rxjs';
@@ -36,20 +38,20 @@ export class GameCountdownService extends EventEmitter {
 
             countdown.timerSubscription = interval(COUNTDOWN_INTERVAL).subscribe(() => {
                 if (delay >= 0) {
-                    this.server.to(game.id).emit('delay', delay);
+                    this.server.to(game.id).emit(CountdownEvents.Delay, delay);
 
                     if (delay === 0) {
-                        this.server.to(game.id).emit('startTurn');
+                        this.server.to(game.id).emit(GameTurnEvents.StartTurn);
                     }
 
                     delay--;
                 } else {
                     if (countdown.remaining > 0) {
-                        this.server.to(game.id).emit('secondPassed', countdown.remaining);
+                        this.server.to(game.id).emit(CountdownEvents.SecondPassed, countdown.remaining);
                         countdown.remaining--;
                         game.duration++;
                     } else {
-                        this.emit('timeout', game.id);
+                        this.emit(CountdownEvents.Timeout, game.id);
                     }
                 }
             });
@@ -63,9 +65,9 @@ export class GameCountdownService extends EventEmitter {
         countdown.timerSubscription = interval(COUNTDOWN_INTERVAL).subscribe(() => {
             const value = countdown.remaining;
             if (countdown.remaining-- === 0) {
-                this.emit('timeout', id);
+                this.emit(CountdownEvents.Timeout, id);
             } else {
-                this.server.to(id).emit('secondPassed', value);
+                this.server.to(id).emit(CountdownEvents.SecondPassed, value);
             }
         });
     }
@@ -74,7 +76,7 @@ export class GameCountdownService extends EventEmitter {
         const countdown = this.countdowns.get(id);
         if (countdown) {
             this.resetTimerSubscription(id);
-            this.server.to(id).emit('pausedCountDown', countdown.remaining);
+            this.server.to(id).emit(CountdownEvents.PauseCountDown, countdown.remaining);
         }
     }
 

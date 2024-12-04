@@ -5,5 +5,5 @@ export enum JournalEvents {
 export interface Entry {
     message: string;
     timestamp: Date;
-    playersInvolved: String[];
+    playersInvolved: string[];
 }

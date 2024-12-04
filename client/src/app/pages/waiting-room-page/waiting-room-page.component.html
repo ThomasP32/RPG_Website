@@ -83,6 +83,7 @@
         </div>
         @if(player) {
         <div class="waiting-room-chat">
+            <div></div>
             <app-chatroom [playerName]="player.name" [gameId]="waitingRoomCode"></app-chatroom>
         </div>
         } @if(showExitModal) {
