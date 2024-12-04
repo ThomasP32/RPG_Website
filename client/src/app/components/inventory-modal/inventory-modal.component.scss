@@ -1,0 +1,108 @@
+.inventory-interface {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #c0c0c0;
+    font-family: 'Press Start 2P', cursive;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30vw;
+    max-width: 1000px;
+    height: 32vh;
+    max-height: 520px;
+    padding: 10px;
+    background-color: #1c242c;
+    border: 5px solid #202020;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+}
+
+h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    text-align: center;
+    padding-left: 10px;
+}
+
+h2 {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    justify-content: center;
+    font-size: 1rem;
+    color: #aa3d3d;
+}
+
+.inventory {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 10px;
+    gap: 5px;
+    width: 90%;
+    flex-direction: row;
+}
+
+.inventory-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-slot {
+    width: 8vw;
+    background-color: #444;
+    border: 2px solid #202020;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-size: 12px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+}
+
+.item-image {
+    max-width: 60%;
+    max-height: 60%;
+    padding: 1vw;
+}
+
+button {
+    width: 100%;
+    max-width: 250px;
+    padding: 12px;
+    font-size: 12px;
+    font-family: 'Press Start 2P', sans-serif;
+    color: #ffffff;
+    background-color: #2c3e50;
+    border: 2px solid #202020;
+    box-shadow: 0px 4px 0px #000;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #3b3b3b;
+    color: #f39c12;
+    box-shadow: 0px 4px 0px #b85c38;
+    border: 2px solid #b85c38;
+}
+
+button:hover + .inventory-slot {
+    background-color: #3b3b3b;
+    color: #f39c12;
+    border: 2px solid #b85c38;
+}
+
+button:active {
+    box-shadow: none;
+    transform: translateY(4px);
+}
+
+button:active + .inventory-slot {
+    box-shadow: none;
+    transform: translateY(4px);
+}

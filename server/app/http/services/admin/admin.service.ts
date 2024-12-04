@@ -5,7 +5,7 @@ import { ItemDto, TileDto } from '@app/http/model/dto/map/tiles.dto';
 import { MapDocument } from '@app/http/model/schemas/map/map.schema';
 import { HALF, MapConfig, MapSize } from '@common/constants';
 import { DIRECTIONS } from '@common/directions';
-import { Coordinate, DetailedMap, Map, TileCategory } from '@common/map.types';
+import { Coordinate, DetailedMap, ItemCategory, Map, Mode, TileCategory } from '@common/map.types';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -30,7 +30,7 @@ export class AdminService {
     async verifyMap(mapDto: MapDto): Promise<void> {
         if (!(await this.isUnique(mapDto.name))) {
             throw new ConflictException('Un jeu avec ce nom existe déjà');
-        } else if (this.isOutOfBounds(mapDto.startTiles, mapDto.tiles, mapDto.doorTiles, mapDto.items, mapDto.mapSize)) {
+        } else if (this.isOutOfBounds(mapDto)) {
             throw new ForbiddenException("Tous les éléments doivent être à l'intérieur de la carte");
         } else if (!this.isBelowHalf(mapDto.doorTiles, mapDto.tiles, mapDto.mapSize)) {
             throw new ForbiddenException('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
@@ -42,6 +42,12 @@ export class AdminService {
             throw new ForbiddenException(
                 'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
             );
+        } else if (!this.areItemsPlaced(mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException(
+                'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte',
+            );
+        } else if (!this.isFlagPlaced(mapDto.items, mapDto.mode)) {
+            throw new ForbiddenException('Le drapeau doit être placé pour un jeu en mode CTF.');
         }
     }
 
@@ -57,10 +63,10 @@ export class AdminService {
     async deleteMap(mapId: string): Promise<void> {
         try {
             const objectId = new Types.ObjectId(mapId);
-            const res = await this.mapModel.deleteOne({
+            const response = await this.mapModel.deleteOne({
                 _id: objectId,
             });
-            if (res.deletedCount === 0) {
+            if (response.deletedCount === 0) {
                 throw new NotFoundException("Le jeu n'a pas été trouvé");
             }
         } catch (err) {
@@ -104,7 +110,7 @@ export class AdminService {
         });
         if (existingMap) {
             throw new ConflictException('Un jeu avec ce nom existe déjà');
-        } else if (this.isOutOfBounds(mapDto.startTiles, mapDto.tiles, mapDto.doorTiles, mapDto.items, mapDto.mapSize)) {
+        } else if (this.isOutOfBounds(mapDto)) {
             throw new ForbiddenException("Tous les éléments doivent être à l'intérieur de la carte");
         } else if (!this.isBelowHalf(mapDto.doorTiles, mapDto.tiles, mapDto.mapSize)) {
             throw new ForbiddenException('La surface de jeu doit contenir plus de 50% de tuiles de terrain');
@@ -116,6 +122,12 @@ export class AdminService {
             throw new ForbiddenException(
                 'Les tuiles de départ doivent toutes être placées (2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
             );
+        } else if (!this.areItemsPlaced(mapDto.items, mapDto.mapSize)) {
+            throw new ForbiddenException(
+                'Des items sont manquants (au moins 2 pour une petite carte, 4 pour une moyenne carte et 6 pour une grande carte)',
+            );
+        } else if (!this.isFlagPlaced(mapDto.items, mapDto.mode)) {
+            throw new ForbiddenException('Le drapeau doit être placé pour un jeu en mode CTF.');
         }
     }
 
@@ -186,11 +198,11 @@ export class AdminService {
         return coordinate.x >= mapSize.x || coordinate.y >= mapSize.y || coordinate.x < 0 || coordinate.y < 0;
     }
 
-    private isOutOfBounds(startTiles: StartTileDto[], tiles: TileDto[], doors: DoorTileDto[], items: ItemDto[], mapSize: CoordinateDto): boolean {
-        const tileOutOfBounds = tiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
-        const startTileOutOfBounds = startTiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
-        const doorTileOutOfBounds = doors.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, mapSize));
-        const itemOutOfBounds = items.some((item) => this.isCoordinateOutOfBounds(item.coordinate, mapSize));
+    private isOutOfBounds(map: MapDto): boolean {
+        const tileOutOfBounds = map.tiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, map.mapSize));
+        const startTileOutOfBounds = map.startTiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, map.mapSize));
+        const doorTileOutOfBounds = map.doorTiles.some((tile) => this.isCoordinateOutOfBounds(tile.coordinate, map.mapSize));
+        const itemOutOfBounds = map.items.some((item) => this.isCoordinateOutOfBounds(item.coordinate, map.mapSize));
 
         return tileOutOfBounds || startTileOutOfBounds || doorTileOutOfBounds || itemOutOfBounds;
     }
@@ -241,13 +253,24 @@ export class AdminService {
     }
 
     private areStartTilePlaced(startTiles: StartTileDto[], mapSize: CoordinateDto): boolean {
-        if (mapSize.x === MapConfig[MapSize.SMALL].size && startTiles.length === MapConfig[MapSize.SMALL].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.MEDIUM].size && startTiles.length === MapConfig[MapSize.MEDIUM].nbItems) {
-            return true;
-        } else if (mapSize.x === MapConfig[MapSize.LARGE].size && startTiles.length === MapConfig[MapSize.LARGE].nbItems) {
+        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && startTiles.length === MapConfig[MapSize.SMALL].nbItems;
+        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && startTiles.length === MapConfig[MapSize.MEDIUM].nbItems;
+        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && startTiles.length === MapConfig[MapSize.LARGE].nbItems;
+        return isSmallMapTilesPlaced || isMediumMapTilesPlaced || isLargeMapTilesPlaced;
+    }
+
+    private areItemsPlaced(items: ItemDto[], mapSize: CoordinateDto): boolean {
+        const isSmallMapTilesPlaced = mapSize.x === MapConfig[MapSize.SMALL].size && items.length >= MapConfig[MapSize.SMALL].nbItems;
+        const isMediumMapTilesPlaced = mapSize.x === MapConfig[MapSize.MEDIUM].size && items.length >= MapConfig[MapSize.MEDIUM].nbItems;
+        const isLargeMapTilesPlaced = mapSize.x === MapConfig[MapSize.LARGE].size && items.length >= MapConfig[MapSize.LARGE].nbItems;
+        return isSmallMapTilesPlaced || isMediumMapTilesPlaced || isLargeMapTilesPlaced;
+    }
+
+    private isFlagPlaced(items: ItemDto[], mode: Mode): boolean {
+        if (mode === Mode.Ctf) {
+            return items.some((item) => item.category === ItemCategory.Flag);
+        } else {
             return true;
         }
-        return false;
     }
 }

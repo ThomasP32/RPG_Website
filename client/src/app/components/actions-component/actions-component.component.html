@@ -1,0 +1,82 @@
+<div class="action-bar">
+    <div class="actions">
+        @if(isWallBreakerAvailable()) {
+        <div
+            class="action-button"
+            [class.disabled]="possibleWalls.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
+            (mouseenter)="showDescription('Détruire un Mur')"
+            (mouseleave)="hideDescription()"
+            (click)="breakWall()"
+        >
+            @if(actionDescription === 'Détruire un Mur') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('wallbreaker')" alt="Mur" />
+        </div>
+        }
+        <div
+            class="action-button"
+            [class.disabled]="possibleOpponents.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
+            (mouseenter)="showDescription('Combattre')"
+            (mouseleave)="hideDescription()"
+            (click)="fight()"
+        >
+            @if(actionDescription === 'Combattre') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('battle')" alt="Combat" />
+        </div>
+
+        <div
+            class="action-button"
+            [class.disabled]="possibleDoors.length === 0 || player.specs.actions === 0 || !thisPlayerTurn"
+            (mouseenter)="showDescription('Ouvrir/Fermer une Porte')"
+            (mouseleave)="hideDescription()"
+            (click)="toggleDoor()"
+        >
+            @if(actionDescription === 'Ouvrir/Fermer une Porte') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('door')" alt="Porte" />
+        </div>
+
+        <div
+            class="action-button"
+            [class.disabled]="!thisPlayerTurn"
+            (mouseenter)="showDescription('Finir le tour')"
+            (mouseleave)="hideDescription()"
+            (click)="endTurn()"
+        >
+            @if(actionDescription === 'Finir le tour') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('endturn')" alt="Finir le tour" />
+        </div>
+
+        <div
+            class="action-button"
+            (mouseenter)="showDescription('Quitter la partie')"
+            (mouseleave)="hideDescription()"
+            (click)="openExitConfirmationModal()"
+        >
+            @if(actionDescription === 'Quitter la partie') {
+            <div class="tooltip">{{ actionDescription }}</div>
+            }
+            <img [src]="imageService.getIconImage('quit')" alt="Quitter la partie" />
+        </div>
+    </div>
+</div>
+@if(showCombatModal && thisPlayerTurn()) {
+<app-combat-list
+    class="combat-list"
+    [possibleOpponents]="possibleOpponents"
+    (showCombatModalChange)="onShowCombatModalChange($event)"
+></app-combat-list>
+} @if(showDoorSelector&& thisPlayerTurn()) {
+<app-door-selector
+    [surroundingMap]="surroundingMap"
+    [possibleDoors]="possibleDoors"
+    [playerPosition]="player.position"
+    (showDoorSelectorChange)="onShowDoorSelectorChange($event)"
+></app-door-selector>
+}

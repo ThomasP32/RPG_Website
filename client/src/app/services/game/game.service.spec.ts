@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { PlayerService } from '@app/services/player-service/player.service';
-import { Game, Player, Specs } from '@common/game';
+import { ProfileType } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
+import { Game, GameCtf, Player, Specs } from '@common/game';
+import { Map, Mode } from '@common/map.types';
 import { of, Subject } from 'rxjs';
 import { GameService } from './game.service';
 
@@ -24,6 +27,7 @@ describe('GameService', () => {
         turn: 0,
         visitedTiles: [],
         initialPosition: { x: 0, y: 0 },
+        profile: ProfileType.NORMAL,
     };
 
     const mockGame: Game = {
@@ -43,9 +47,9 @@ describe('GameService', () => {
 
         socketServiceMock.listen.and.callFake((eventName: string) => {
             switch (eventName) {
-                case 'currentGame':
+                case GameCreationEvents.CurrentGame:
                     return currentGameSubject.asObservable();
-                case 'currentPlayers':
+                case GameCreationEvents.CurrentPlayers:
                     return currentPlayersSubject.asObservable();
                 default:
                     return of({});
@@ -105,6 +109,68 @@ describe('GameService', () => {
             currentPlayersSubject.next([]);
 
             expect(console.error).toHaveBeenCalledWith('Failed to load players or no players available');
+        });
+    });
+
+    describe('#createNewGame', () => {
+        it('should create a new game with the given map and gameId', () => {
+            const mockMap = {
+                mapSize: { x: 10, y: 10 },
+                tiles: [],
+                items: [],
+                startTiles: [],
+                doorTiles: [],
+            } as unknown as Map;
+
+            const gameId = 'game-id-123';
+            const expectedGame: Game = {
+                ...mockMap,
+                id: gameId,
+                players: [mockPlayer],
+                hostSocketId: '',
+                currentTurn: 0,
+                nDoorsManipulated: [],
+                duration: 0,
+                nTurns: 0,
+                debug: false,
+                isLocked: false,
+                hasStarted: false,
+            };
+
+            const result = service.createNewGame(mockMap, gameId);
+            expect(result).toEqual(expectedGame);
+        });
+    });
+
+    describe('#createNewCtfGame', () => {
+        it('should create a new CTF game with the given map and gameId', () => {
+            const mockMap = {
+                mapSize: { x: 10, y: 10 },
+                tiles: [],
+                items: [],
+                startTiles: [],
+                doorTiles: [],
+            } as unknown as Map;
+
+            const gameId = 'ctf-game-id-123';
+            const expectedGame: GameCtf = {
+                ...mockMap,
+                id: gameId,
+                players: [mockPlayer],
+                hostSocketId: '',
+                currentTurn: 0,
+                nDoorsManipulated: [],
+                duration: 0,
+                nTurns: 0,
+                debug: false,
+                isLocked: false,
+                hasStarted: false,
+                nPlayersCtf: [],
+                mode: Mode.Ctf,
+            };
+
+            const result = service.createNewCtfGame(mockMap, gameId);
+            expect(result).toEqual(expectedGame);
         });
     });
 });

@@ -8,7 +8,8 @@ import { SocketService } from '@app/services/communication-socket/communication-
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_REDIRECTION } from '@common/constants';
-import { Bonus, Player } from '@common/game';
+import { GameCreationEvents, JoinGameData } from '@common/events/game-creation.events';
+import { Bonus, Game, Player } from '@common/game';
 import { Map } from '@common/map.types';
 import { firstValueFrom, Subscription } from 'rxjs';
 
@@ -29,7 +30,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     lifeOrSpeedBonus: 'life' | 'speed';
     attackOrDefenseBonus: 'attack' | 'defense';
 
-    characters: Character[] = [];
     selectedCharacter: Character;
     currentIndex: number;
 
@@ -40,27 +40,20 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     gameLockedModal: boolean = false;
     isJoiningGame: boolean = false;
 
-    showErrorMessage: {
-        selectionError: boolean;
-        characterNameError: boolean;
-        bonusError: boolean;
-        diceError: boolean;
-    } = {
-        selectionError: false,
-        characterNameError: false,
-        bonusError: false,
-        diceError: false,
-    };
+    showSelectionError: boolean = false;
+    showCharacterNameError: boolean = false;
+    showBonusError: boolean = false;
+    showDiceError: boolean = false;
 
     showGameStartedModal: boolean = false;
 
     constructor(
-        private communicationMapService: CommunicationMapService,
-        private socketService: SocketService,
-        private playerService: PlayerService,
-        private characterService: CharacterService,
-        private router: Router,
-        private route: ActivatedRoute,
+        private readonly communicationMapService: CommunicationMapService,
+        private readonly socketService: SocketService,
+        private readonly playerService: PlayerService,
+        private readonly characterService: CharacterService,
+        private readonly router: Router,
+        private readonly route: ActivatedRoute,
     ) {
         this.communicationMapService = communicationMapService;
         this.socketService = socketService;
@@ -74,17 +67,15 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.playerService.resetPlayer();
         this.name = this.playerService.player.name || 'Choisis ton nom';
 
-        this.characterService.getCharacters().subscribe((characters) => {
-            this.characters = characters;
-            this.selectedCharacter = this.characters[0];
-            this.currentIndex = 0;
-        });
+        this.selectedCharacter = this.characters[0];
+        this.currentIndex = 0;
 
         if (!this.router.url.includes('create-game')) {
-            this.listenToSocketMessages();
+            this.listenToGameStatus();
+            this.listenToPlayerJoin();
             this.isJoiningGame = true;
             this.gameId = this.route.snapshot.params['gameId'];
-            this.socketService.sendMessage('getPlayers', this.gameId);
+            this.socketService.sendMessage(GameCreationEvents.GetPlayers, this.gameId);
         } else {
             this.mapName = this.route.snapshot.params['mapName'];
         }
@@ -114,9 +105,43 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         return this.playerService.player.specs.defenseBonus;
     }
 
-    listenToSocketMessages(): void {
+    get characters(): Character[] {
+        return this.characterService.characters;
+    }
+
+    listenToGameStatus(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('currentPlayers').subscribe((players: Player[]) => {
+            this.socketService.listen<string>(GameCreationEvents.GameLocked).subscribe(() => {
+                this.gameLockedModal = true;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Game>(GameCreationEvents.GameCreated).subscribe((game) => {
+                this.gameId = game.id;
+            }),
+        );
+
+        this.socketSubscription.add(
+            this.socketService.listen<string>(GameCreationEvents.GameAlreadyStarted).subscribe(() => {
+                this.showGameStartedModal = true;
+                setTimeout(() => {
+                    this.characterService.resetCharacterAvailability();
+                    this.router.navigate(['/main-menu']);
+                }, TIME_REDIRECTION);
+            }),
+        );
+    }
+
+    listenToPlayerJoin(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>(GameCreationEvents.YouJoined).subscribe((updatedPlayer: Player) => {
+                this.playerService.setPlayer(updatedPlayer);
+                this.router.navigate([`${this.gameId}/waiting-room/player`]);
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<Player[]>(GameCreationEvents.CurrentPlayers).subscribe((players: Player[]) => {
                 this.characters.forEach((character) => {
                     character.isAvailable = true;
                     if (players.some((player) => player.avatar === character.id)) {
@@ -133,35 +158,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameLocked').subscribe(() => {
-                this.gameLockedModal = true;
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<Player>('youJoined').subscribe((updatedPlayer: Player) => {
-                this.playerService.setPlayer(updatedPlayer);
-                this.router.navigate([`${this.gameId}/waiting-room/player`]);
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ gameId: string }>('gameCreated').subscribe((data) => {
-                this.gameId = data.gameId;
-            }),
-        );
-
-        this.socketSubscription.add(
-            this.socketService.listen<{ reason: string }>('gameAlreadyStarted').subscribe(() => {
-                this.showGameStartedModal = true;
-                setTimeout(() => {
-                    this.characterService.resetCharacterAvailability();
-                    this.router.navigate(['/main-menu']);
-                }, TIME_REDIRECTION);
             }),
         );
     }
@@ -187,11 +183,13 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.selectedCharacter = this.characters[this.currentIndex];
     }
 
-    addBonus() {
+    addBonus(bonusType: 'life' | 'speed'): void {
+        this.lifeOrSpeedBonus = bonusType;
         this.playerService.assignBonus(this.lifeOrSpeedBonus);
     }
 
-    assignDice() {
+    assignDice(bonusType: 'attack' | 'defense'): void {
+        this.attackOrDefenseBonus = bonusType;
         this.playerService.assignDice(this.attackOrDefenseBonus);
     }
 
@@ -211,7 +209,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
             this.name = '';
         }
 
-        this.nameInput.nativeElement.focus();
+        setTimeout(() => {
+            this.nameInput.nativeElement.focus();
+        });
     }
 
     stopEditing(): void {
@@ -236,7 +236,7 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                 try {
                     const chosenMap = await firstValueFrom(this.communicationMapService.basicGet<Map>(`map/${this.mapName}`));
                     if (!chosenMap) {
-                        this.showErrorMessage.selectionError = true;
+                        this.showSelectionError = true;
                         setTimeout(() => {
                             this.router.navigate(['/create-game']);
                         }, TIME_REDIRECTION);
@@ -244,13 +244,14 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
                         this.router.navigate([`${this.mapName}/waiting-room/host`]);
                     }
                 } catch (error) {
-                    this.showErrorMessage.selectionError = true;
+                    this.showSelectionError = true;
                     setTimeout(() => {
                         this.router.navigate(['/create-game']);
                     }, TIME_REDIRECTION);
                 }
             } else {
-                this.socketService.sendMessage('joinGame', { player: this.playerService.player, gameId: this.gameId });
+                const joinGameData: JoinGameData = { player: this.playerService.player, gameId: this.gameId! };
+                this.socketService.sendMessage(GameCreationEvents.JoinGame, joinGameData);
             }
         }
     }
@@ -264,25 +265,23 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
     }
 
     verifyErrors(): boolean {
-        this.showErrorMessage = {
-            selectionError: false,
-            characterNameError: false,
-            bonusError: false,
-            diceError: false,
-        };
+        this.showSelectionError = false;
+        this.showCharacterNameError = false;
+        this.showBonusError = false;
+        this.showDiceError = false;
 
         if (this.name === 'Choisis un nom' || this.playerService.player.name === '') {
-            this.showErrorMessage.characterNameError = true;
+            this.showCharacterNameError = true;
             return false;
         }
 
         if (!this.lifeOrSpeedBonus) {
-            this.showErrorMessage.bonusError = true;
+            this.showBonusError = true;
             return false;
         }
 
         if (!this.attackOrDefenseBonus) {
-            this.showErrorMessage.diceError = true;
+            this.showDiceError = true;
             return false;
         }
         return true;
@@ -293,9 +292,6 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         this.characterService.resetCharacterAvailability();
         this.router.navigate(['/main-menu']);
     }
-    ngOnDestroy(): void {
-        this.socketSubscription.unsubscribe();
-    }
 
     @HostListener('window:keydown', ['$event'])
     handleKeyDown(event: KeyboardEvent): void {
@@ -304,5 +300,9 @@ export class CharacterFormPageComponent implements OnInit, OnDestroy {
         } else if (event.key === 'ArrowRight') {
             this.nextCharacter();
         }
+    }
+
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }

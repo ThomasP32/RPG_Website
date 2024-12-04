@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Avatar } from '@common/game';
+import { Avatar, Bonus } from '@common/game';
 import { ItemCategory, TileCategory } from '@common/map.types';
 
 @Injectable({
@@ -24,14 +24,10 @@ export class ImageService {
     }
 
     getDoorImage(isOpen: boolean): string {
-        if (isOpen) {
-            return './assets/tiles/door_opened.jpg';
-        } else {
-            return './assets/tiles/door_closed.jpg';
-        }
+        return isOpen ? './assets/tiles/door_opened.jpg' : './assets/tiles/door_closed.jpg';
     }
 
-    getTileImage(tileValue: TileCategory, rowIndex: number, colIndex: number, map: any[][]): string {
+    getTileImage(tileValue: TileCategory): string {
         switch (tileValue) {
             case 'wall':
                 return './assets/tiles/wall.png';
@@ -39,29 +35,40 @@ export class ImageService {
                 return './assets/tiles/ice1.jpg';
             case 'water':
                 return './assets/tiles/water.png';
-            case 'door':
-                return this.getDoorImage(map[rowIndex][colIndex].door.isOpen);
             default:
                 return './assets/tiles/floor.png';
         }
     }
 
+    getDiceImage(dice: Bonus): string {
+        switch (dice) {
+            case Bonus.D4:
+                return './assets/icons/d4.png';
+            case Bonus.D6:
+                return './assets/icons/d6.png';
+            default:
+                return '';
+        }
+    }
+
     getItemImage(item: ItemCategory): string {
         switch (item) {
-            case ItemCategory.Vest:
-                return './assets/items/vest.png';
-            case ItemCategory.Mask:
-                return './assets/items/mask.png';
-            case ItemCategory.Jar:
-                return './assets/items/jar.png';
-            case ItemCategory.Acidgun:
-                return './assets/items/acidgun.png';
-            case ItemCategory.Key:
-                return './assets/items/keysilver.png';
-            case ItemCategory.Hat:
-                return './assets/items/hat.png';
+            case ItemCategory.Armor:
+                return './assets/items/armor.png';
+            case ItemCategory.Sword:
+                return './assets/items/sword.png';
+            case ItemCategory.IceSkates:
+                return './assets/items/iceskates.png';
+            case ItemCategory.WallBreaker:
+                return './assets/items/wallbreaker.png';
+            case ItemCategory.Amulet:
+                return './assets/items/amulet.png';
+            case ItemCategory.Flask:
+                return './assets/items/flask.png';
             case ItemCategory.Random:
-                return './assets/items/randomchest.png';
+                return './assets/items/randomitem.png';
+            case ItemCategory.Flag:
+                return './assets/items/flag.png';
             default:
                 return '';
         }
@@ -69,20 +76,20 @@ export class ImageService {
 
     getItemImageByString(item: string): string {
         switch (item) {
-            case 'vest':
-                return './assets/items/vest.png';
-            case 'mask':
-                return './assets/items/mask.png';
-            case 'jar':
-                return './assets/items/jar.png';
-            case 'acidgun':
-                return './assets/items/acidgun.png';
-            case 'key':
-                return './assets/items/keysilver.png';
-            case 'hat':
-                return './assets/items/hat.png';
+            case 'armor':
+                return './assets/items/armor.png';
+            case 'sword':
+                return './assets/items/sword.png';
+            case 'wallbreaker':
+                return './assets/items/wallbreaker.png';
+            case 'flask':
+                return './assets/items/flask.png';
+            case 'amulet':
+                return './assets/items/amulet.png';
+            case 'iceskates':
+                return './assets/items/iceskates.png';
             case 'random':
-                return './assets/items/randomchest.png';
+                return './assets/items/randomitem.png';
             default:
                 return '';
         }
@@ -126,29 +133,60 @@ export class ImageService {
     getPixelatedPlayerImage(avatar: Avatar): string {
         switch (avatar) {
             case Avatar.Avatar1:
-                return './assets/pixelcharacters/1.png';
+                return './assets/pixelcharacters/1_pixelated.png';
             case Avatar.Avatar2:
-                return './assets/pixelcharacters/2.png';
+                return './assets/pixelcharacters/2_pixelated.png';
             case Avatar.Avatar3:
-                return './assets/pixelcharacters/3.png';
+                return './assets/pixelcharacters/3_pixelated.png';
             case Avatar.Avatar4:
-                return './assets/pixelcharacters/4.png';
+                return './assets/pixelcharacters/4_pixelated.png';
             case Avatar.Avatar5:
-                return './assets/pixelcharacters/5.png';
+                return './assets/pixelcharacters/5_pixelated.png';
             case Avatar.Avatar6:
-                return './assets/pixelcharacters/6.png';
+                return './assets/pixelcharacters/6_pixelated.png';
             case Avatar.Avatar7:
-                return './assets/pixelcharacters/7.png';
+                return './assets/pixelcharacters/7_pixelated.png';
             case Avatar.Avatar8:
-                return './assets/pixelcharacters/8.png';
+                return './assets/pixelcharacters/8_pixelated.png';
             case Avatar.Avatar9:
-                return './assets/pixelcharacters/9.png';
+                return './assets/pixelcharacters/9_pixelated.png';
             case Avatar.Avatar10:
-                return './assets/pixelcharacters/10.png';
+                return './assets/pixelcharacters/10_pixelated.png';
             case Avatar.Avatar11:
-                return './assets/pixelcharacters/11.png';
+                return './assets/pixelcharacters/11_pixelated.png';
             case Avatar.Avatar12:
-                return './assets/pixelcharacters/12.png';
+                return './assets/pixelcharacters/12_pixelated.png';
+            default:
+                return '';
+        }
+    }
+
+    getIconImage(icon: string): string {
+        switch (icon) {
+            case 'attack':
+                return './assets/icons/sword_icon.png';
+            case 'defense':
+                return './assets/icons/shield_icon.png';
+            case 'health':
+                return './assets/icons/heart_icon.png';
+            case 'speed':
+                return './assets/icons/speed_icon.png';
+            case 'battle':
+                return './assets/icons/fighting.png';
+            case 'action':
+                return './assets/icons/action.png';
+            case 'robot':
+                return './assets/icons/robot.png';
+            case 'host':
+                return './assets/icons/crown.png';
+            case 'door':
+                return './assets/icons/door.png';
+            case 'wallbreaker':
+                return './assets/items/wallbreaker.png';
+            case 'endturn':
+                return './assets/icons/endturn_icon.png';
+            case 'quit':
+                return './assets/icons/quit_icon.png';
             default:
                 return '';
         }

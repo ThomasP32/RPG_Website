@@ -1,13 +1,16 @@
 <div class="players-list">
-    @for (player of players ; track player) {
+    @for (player of players ; track player.socketId) {
     <div class="player" (mouseover)="hoveredPlayerId = player.socketId; checkHostPlayerId()" (mouseleave)="hoveredPlayerId = null">
         <div class="avatar-container">
             <img [src]="getAvatarPreview(player.avatar)" alt="{{ player.name }}" class="avatar" />
         </div>
         <span class="player-name">{{ player.name }}</span>
-        @if(isHost && player.socketId !== hostPlayerId && hoveredPlayerId === player.socketId){
+        @if (isVirtualPlayerSocketId(player.socketId)) {
+        <span class="virtual-player-icon"> <img src="assets/icons/robot.png" alt="Bot" class="icon" /></span>
+        } @if(isHost && player.socketId !== hostPlayerId && hoveredPlayerId === player.socketId){
         <button (click)="kickPlayer(player.socketId)" class="kick-button">exclure</button>
         }
     </div>
-    }
+    } @if(isHost && !isGameMaxed && !isGameLocked) {
+    <button (click)="openProfileModal()" class="add-player-btn">+</button> }
 </div>

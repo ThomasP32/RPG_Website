@@ -253,6 +253,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
                 [
@@ -263,6 +264,7 @@ describe('MapService', () => {
                         coordinate: { x: 1, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 1, y: 0 },
                     },
                 ],
             ];
@@ -283,6 +285,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
                 [
@@ -293,6 +296,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];
@@ -311,10 +315,11 @@ describe('MapService', () => {
                         tileType: TileCategory.Wall,
                         door: { isDoor: false, isOpen: false },
                         isStartingPoint: true,
-                        item: ItemCategory.Key,
+                        item: ItemCategory.Sword,
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];
@@ -322,7 +327,7 @@ describe('MapService', () => {
             service.generateMapFromEdition(map);
 
             expect(service.map.items.length).toBe(1);
-            expect(service.map.items[0]).toEqual({ coordinate: { x: 0, y: 0 }, category: ItemCategory.Key });
+            expect(service.map.items[0]).toEqual({ coordinate: { x: 0, y: 0 }, category: ItemCategory.Sword });
         });
 
         it('should generate map from edition with correct start tiles', () => {
@@ -335,6 +340,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];

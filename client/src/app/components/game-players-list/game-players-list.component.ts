@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { CharacterService } from '@app/services/character/character.service';
 import { Avatar, Player } from '@common/game';
+import { ItemCategory } from '@common/map.types';
 
 @Component({
     selector: 'app-game-players-list',
@@ -14,14 +15,17 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
     @Input() players: Player[];
     @Input() hostSocketId: string;
     @Input() currentPlayerTurn: string;
-    hoveredPlayerId: string | null = null;
 
-    constructor(private characterService: CharacterService) {
+    constructor(private readonly characterService: CharacterService) {
         this.characterService = characterService;
     }
 
     ngOnInit(): void {
         this.sortPlayersByTurn();
+        this.initializePlayerSpecs();
+    }
+
+    ngOnChanges(): void {
         this.initializePlayerSpecs();
     }
 
@@ -43,6 +47,10 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
         return playerSocketId === this.hostSocketId;
     }
 
+    isPlayerFlagDetentor(player: Player): boolean {
+        return player.inventory.some((item) => item === ItemCategory.Flag);
+    }
+
     initializePlayerSpecs(): void {
         this.players = this.players.map((player) => ({
             ...player,
@@ -50,8 +58,7 @@ export class GamePlayersListComponent implements OnInit, OnChanges {
         }));
     }
 
-    ngOnChanges(): void {
-        this.sortPlayersByTurn();
-        this.initializePlayerSpecs();
+    isVirtualPlayerSocketId(socketId: string): boolean {
+        return !!socketId && socketId.includes('virtualPlayer');
     }
 }

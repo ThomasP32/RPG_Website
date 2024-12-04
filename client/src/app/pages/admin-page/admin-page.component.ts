@@ -1,29 +1,34 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { CreateMapModalComponent } from '@app/components/create-map-modal/create-map-modal.component';
 import { ErrorMessageComponent } from '@app/components/error-message-component/error-message.component';
 import { CommunicationMapService } from '@app/services/communication/communication.map.service';
 import { DetailedMap } from '@common/map.types';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-admin-page',
     standalone: true,
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
-    imports: [RouterLink, ErrorMessageComponent, CreateMapModalComponent],
+    imports: [ErrorMessageComponent, CreateMapModalComponent],
 })
-export class AdminPageComponent implements OnInit {
+export class AdminPageComponent implements OnInit, OnDestroy{
     @Input() mapId: string = '';
+    @Output() importError = new EventEmitter<string>();
     @ViewChild(CreateMapModalComponent, { static: false }) createMapModalComponent!: CreateMapModalComponent;
     @ViewChild(ErrorMessageComponent, { static: false }) errorMessageModal: ErrorMessageComponent;
+
     maps: DetailedMap[] = [];
     currentMapId: string | null = null;
     showDeleteModal = false;
     isCreateMapModalVisible = false;
 
+    private readonly unsubscribe$ = new Subject<void>();
+
     constructor(
-        private router: Router,
-        private communicationMapService: CommunicationMapService,
+        private readonly router: Router,
+        private readonly communicationMapService: CommunicationMapService,
     ) {
         this.router = router;
         this.communicationMapService = communicationMapService;
@@ -34,7 +39,10 @@ export class AdminPageComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
+        this.communicationMapService
+            .basicGet<DetailedMap[]>('admin')
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((maps: DetailedMap[]) => (this.maps = maps));
     }
 
     toggleGameCreationModalVisibility(): void {
@@ -50,14 +58,17 @@ export class AdminPageComponent implements OnInit {
     }
 
     deleteMap(mapId: string): void {
-        this.communicationMapService.basicDelete(`admin/${mapId}`).subscribe({
-            next: () => {
-                this.updateDisplay();
-            },
-            error: (err) => {
-                this.errorMessageModal.open(JSON.parse(err.error).message);
-            },
-        });
+        this.communicationMapService
+            .basicDelete(`admin/${mapId}`)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe({
+                next: () => {
+                    this.updateDisplay();
+                },
+                error: (err) => {
+                    this.errorMessageModal.open(JSON.parse(err.error).message);
+                },
+            });
     }
 
     openConfirmationModal(map: DetailedMap): void {
@@ -76,11 +87,13 @@ export class AdminPageComponent implements OnInit {
     }
 
     updateDisplay(): void {
-        this.communicationMapService.basicGet<DetailedMap[]>('admin').subscribe((maps: DetailedMap[]) => (this.maps = maps));
+        this.communicationMapService.basicGet<DetailedMap[]>('admin').pipe(takeUntil(this.unsubscribe$)).subscribe((maps: DetailedMap[]) => {
+            this.maps = maps;
+        });
     }
 
     toggleVisibility(mapId: string): void {
-        this.communicationMapService.basicPatch(`admin/${mapId}`).subscribe(() => this.updateDisplay());
+        this.communicationMapService.basicPatch(`admin/${mapId}`).pipe(takeUntil(this.unsubscribe$)).subscribe(() => this.updateDisplay());
     }
 
     formatDate(lastModified: Date): string {
@@ -92,5 +105,10 @@ export class AdminPageComponent implements OnInit {
         const minutes = String(date.getMinutes()).padStart(2, '0');
 
         return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
+    ngOnDestroy(): void {
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
     }
 }

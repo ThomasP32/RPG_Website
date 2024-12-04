@@ -9,23 +9,6 @@
         </div>
         <div class="left-side">
             <div class="player-stats">
-                <h2 class="character-name">
-                    @if(!isEditing){ <span (click)="startEditing()"> {{ name || 'Choisis ton nom' }}</span
-                    >} @if(isEditing){
-                    <input
-                        [(ngModel)]="name"
-                        class="character-name-input"
-                        (blur)="stopEditing()"
-                        (keydown.enter)="stopEditing()"
-                        maxlength="25"
-                        #nameInput
-                    />
-                    }
-
-                    <button class="edit-icon" (click)="toggleEditing()">
-                        @if(isEditing) {<i class="fas fa-save"></i>} @else { <i class="fas fa-pencil-alt"></i>}
-                    </button>
-                </h2>
                 <div class="stats">
                     <div class="stat">
                         <label class="stat-label" data-title="Le nombre de points de vie du personnage."> Vie : {{ life }} PV </label>
@@ -58,67 +41,34 @@
                     </div>
                 </div>
                 <div class="bonus-text">
-                    <label>Ajoutes un bonus +2: </label>
+                    <label>Ajoutes un bonus : </label>
                 </div>
                 <div class="bonus-buttons-container">
-                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }">
-                        <input
-                            type="radio"
-                            id="life"
-                            [(ngModel)]="lifeOrSpeedBonus"
-                            name="lifeOrSpeedBonus"
-                            value="life"
-                            (change)="addBonus()"
-                            hidden
-                        />
-                        <label for="life">Vie</label>
+                    <div class="bonus-button-wrapper">
+                        <button class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'life' }" (click)="addBonus('life')">Vie</button>
                     </div>
-                    <div class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }">
-                        <input
-                            type="radio"
-                            id="speed"
-                            [(ngModel)]="lifeOrSpeedBonus"
-                            name="lifeOrSpeedBonus"
-                            value="speed"
-                            (change)="addBonus()"
-                            hidden
-                        />
-                        <label for="speed">Rapidité</label>
+                    <div class="bonus-button-wrapper">
+                        <button class="bonus-button" [ngClass]="{ selected: lifeOrSpeedBonus === 'speed' }" (click)="addBonus('speed')">
+                            Rapidité
+                        </button>
                     </div>
                 </div>
                 <label>Attribues un dé à 6 faces: </label>
                 <div class="dice-buttons-container">
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'attack' }">
-                            <input
-                                type="radio"
-                                id="attack"
-                                [(ngModel)]="attackOrDefenseBonus"
-                                name="attackOrDefenseBonus"
-                                value="attack"
-                                (change)="assignDice()"
-                                hidden
-                            />
-                            <label for="attack"> Attaque </label>
-                        </div>
+                        <button class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'attack' }" (click)="assignDice('attack')">
+                            Attaque
+                        </button>
+
                         <div class="dice-icon">
                             @if (attackOrDefenseBonus) { @if(attackBonus === Bonus.D4) {
                             <i class="fas fa-dice-four"></i>} @else if(attackBonus === Bonus.D6) { <i class="fas fa-dice-six"></i>} }
                         </div>
                     </div>
                     <div class="dice-and-buttons-wrapper">
-                        <div class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'defense' }">
-                            <input
-                                type="radio"
-                                id="defense"
-                                [(ngModel)]="attackOrDefenseBonus"
-                                name="attackOrDefenseBonus"
-                                value="defense"
-                                (change)="assignDice()"
-                                hidden
-                            />
-                            <label for="defense">Defense </label>
-                        </div>
+                        <button class="dice-button" [ngClass]="{ selected: attackOrDefenseBonus === 'defense' }" (click)="assignDice('defense')">
+                            Défense
+                        </button>
                         <div class="dice-icon">
                             @if(attackOrDefenseBonus) { @if(defenseBonus === Bonus.D4) {
                             <i class="fas fa-dice-four"></i>
@@ -138,17 +88,34 @@
             <div class="selected-character">
                 <h1>CHOISIS TON AVATAR</h1>
                 <img [src]="selectedCharacter.image" alt="Selected Character" />
+                <h2 class="character-name">
+                    @if(!isEditing){ <span (click)="startEditing()"> {{ name || 'Choisis ton nom' }}</span
+                    >} @if(isEditing){
+                    <input
+                        [(ngModel)]="name"
+                        class="character-name-input"
+                        (blur)="stopEditing()"
+                        (keydown.enter)="stopEditing()"
+                        maxlength="25"
+                        #nameInput
+                    />
+                    }
+
+                    <button class="edit-icon" (click)="toggleEditing()">
+                        @if(isEditing) {<i class="fas fa-save"></i>} @else { <i class="fas fa-pencil-alt"></i>}
+                    </button>
+                </h2>
                 @if(isJoiningGame) {
                 <button class="start-button" (click)="onSubmit()">Rejoindre la partie</button>
                 }@else {
                 <button class="start-button" (click)="onSubmit()">Créer une partie</button>
-                } @if (showErrorMessage.characterNameError) {
+                } @if (showCharacterNameError) {
                 <div class="error-message">Choisissez votre nom de joueur</div>
-                } @if (showErrorMessage.bonusError) {
+                } @if (showBonusError) {
                 <div class="error-message">Ajoutez le bonus (+2 Vie ou Rapidité)</div>
-                } @if (showErrorMessage.diceError) {
+                } @if (showDiceError) {
                 <div class="error-message">Attribuez un dé (D6 Attaque ou Défense)</div>
-                } @if (showErrorMessage.selectionError) {
+                } @if (showSelectionError) {
                 <div class="error-message">Le joueur selectionné n'est plus disponible.</div>
                 }
             </div>
@@ -165,7 +132,7 @@
                     'selected-character': character === selectedCharacter
                 }"
             >
-                <img [src]="character.preview" alt="{{ character.name }}" />
+                <img [src]="character.preview" alt="{{ character.id }}" />
             </div>
             }
         </div>

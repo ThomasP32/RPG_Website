@@ -1,7 +1,8 @@
-import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -11,7 +12,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './join-game-modal.component.html',
     styleUrl: './join-game-modal.component.scss',
 })
-export class JoinGameModalComponent implements OnInit, AfterViewInit {
+export class JoinGameModalComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef>;
 
     code: string[] = ['', '', '', ''];
@@ -20,8 +21,8 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
     socketSubscription: Subscription = new Subscription();
 
     constructor(
-        private socketService: SocketService,
-        private router: Router,
+        private readonly socketService: SocketService,
+        private readonly router: Router,
     ) {
         this.socketService = socketService;
         this.router = router;
@@ -63,7 +64,7 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
             const gameCode = this.code.join('');
             this.gameId = gameCode;
 
-            this.socketService.sendMessage('accessGame', gameCode);
+            this.socketService.sendMessage(GameCreationEvents.AccessGame, gameCode);
         }
     }
 
@@ -77,27 +78,31 @@ export class JoinGameModalComponent implements OnInit, AfterViewInit {
 
     configureJoinGameSocketFeatures(): void {
         this.socketSubscription.add(
-            this.socketService.listen('gameAccessed').subscribe(() => {
+            this.socketService.listen(GameCreationEvents.GameAccessed).subscribe(() => {
                 this.router.navigate([`join-game/${this.gameId}/create-character`]);
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('gameNotFound').subscribe((data: any) => {
-                if (data && data.reason) {
-                    this.errorMessage = data.reason;
+            this.socketService.listen<string>(GameCreationEvents.GameNotFound).subscribe((reason) => {
+                if (reason) {
+                    this.errorMessage = reason;
                     this.resetCodeAndFocus();
                 }
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('gameLocked').subscribe((data: any) => {
-                if (data && data.reason) {
-                    this.errorMessage = data.reason;
+            this.socketService.listen<string>(GameCreationEvents.GameLocked).subscribe((reason) => {
+                if (reason) {
+                    this.errorMessage = reason;
                     this.resetCodeAndFocus();
                 }
             }),
         );
+    }
+
+    ngOnDestroy(): void {
+        this.socketSubscription.unsubscribe();
     }
 }
