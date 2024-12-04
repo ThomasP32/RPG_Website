@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CharacterService } from '@app/services/character/character.service';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { ProfileType } from '@common/constants';
+import { GameCreationEvents } from '@common/events/game-creation.events';
 import { Avatar, Bonus, Player } from '@common/game';
 import { ItemCategory } from '@common/map.types';
 import { PlayersListComponent } from './players-list.component';
@@ -44,12 +46,14 @@ describe('PlayersListComponent', () => {
                 nEvasions: 1,
                 nLifeTaken: 50,
                 nLifeLost: 30,
+                nItemsUsed: 0,
             },
-            inventory: [ItemCategory.Hat, ItemCategory.Key],
+            inventory: [ItemCategory.Armor, ItemCategory.Sword],
             position: { x: 1, y: 2 },
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         },
         {
             socketId: 'player1Id',
@@ -72,12 +76,14 @@ describe('PlayersListComponent', () => {
                 nEvasions: 1,
                 nLifeTaken: 50,
                 nLifeLost: 30,
+                nItemsUsed: 0,
             },
-            inventory: [ItemCategory.Hat, ItemCategory.Key],
+            inventory: [ItemCategory.Armor, ItemCategory.Sword],
             position: { x: 1, y: 2 },
             initialPosition: { x: 1, y: 2 },
             turn: 1,
             visitedTiles: [],
+            profile: ProfileType.NORMAL,
         },
     ];
 
@@ -95,6 +101,7 @@ describe('PlayersListComponent', () => {
         fixture = TestBed.createComponent(PlayersListComponent);
         component = fixture.componentInstance;
         characterService = TestBed.inject(CharacterService);
+
         component.players = mockPlayers;
         component.isHost = true;
         fixture.detectChanges();
@@ -132,13 +139,36 @@ describe('PlayersListComponent', () => {
             component.checkHostPlayerId();
             expect(component.hostPlayerId).toBe('');
         });
+
+        it("should set hostPlayerId to the first player's socketId if it is empty", () => {
+            component.hostPlayerId = '';
+            component.hoveredPlayerId = 'hostId';
+            component.checkHostPlayerId();
+            expect(component.hostPlayerId).toBe('hostId');
+        });
     });
 
     describe('kickPlayer', () => {
-        it('should call sendMessage with the player ID to kick', () => {
+        it('should call sendMessage with the correct player ID and game ID', () => {
             const playerId = 'player1Id';
+            component.gameId = 'game123';
             component.kickPlayer(playerId);
-            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith('kickPlayer', playerId);
+            expect(socketServiceSpy.sendMessage).toHaveBeenCalledWith(GameCreationEvents.KickPlayer, { playerId: playerId, gameId: 'game123' });
         });
+
+        it('should not call sendMessage if playerId is empty', () => {
+            component.gameId = 'game123';
+            expect(socketServiceSpy.sendMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should return true if socketId contains "virtualPlayer"', () => {
+        const socketId = 'virtualPlayer123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeTrue();
+    });
+
+    it('should return false if socketId does not contain "virtualPlayer"', () => {
+        const socketId = 'player123';
+        expect(component.isVirtualPlayerSocketId(socketId)).toBeFalse();
     });
 });

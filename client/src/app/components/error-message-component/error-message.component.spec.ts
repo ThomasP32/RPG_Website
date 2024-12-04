@@ -32,7 +32,7 @@ describe('ErrorMessageComponent', () => {
     });
 
     it('should close modal', () => {
-        component.showModal = true; // Set to true to test closing
+        component.showModal = true;
         component.closeModal();
         expect(component.showModal).toBe(false);
     });

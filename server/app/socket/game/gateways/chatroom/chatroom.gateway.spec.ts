@@ -1,4 +1,4 @@
-import { ChatroomService } from '@app/socket/game/service/chatroom/chatroom.service';
+import { ChatroomService } from '@app/services/chatroom/chatroom.service';
 import { Message } from '@common/message';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance, stub } from 'sinon';
@@ -37,10 +37,10 @@ describe('ChatRoomGateway', () => {
         const existingMessages: Message[] = [{ text: 'Hello', author: 'user1', timestamp: new Date(), gameId: '1234' }];
         chatroomService.getMessages.withArgs(roomId).returns(existingMessages);
 
-        gateway.handleJoinRoom(roomId, socket);
+        gateway.handleJoinRoom(socket, roomId);
 
         expect(socket.join.calledWith('1234')).toBeTruthy();
-        expect(socket.emit.calledWith('previousMessages', existingMessages)).toBeTruthy();
+        expect(serverStub.to.calledWith(roomId)).toBeTruthy();
     });
 
     it('should broadcast message to the room', () => {

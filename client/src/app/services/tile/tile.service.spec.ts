@@ -9,7 +9,7 @@ describe('TileService', () => {
     let mapCounterServiceSpy: jasmine.SpyObj<MapCounterService>;
 
     beforeEach(() => {
-        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['updateCounters']);
+        mapCounterServiceSpy = jasmine.createSpyObj('MapCounterService', ['updateCounters', 'releaseItem', 'useItem']);
         TestBed.configureTestingModule({
             providers: [TileService, { provide: MapCounterService, useValue: mapCounterServiceSpy }],
         });
@@ -30,6 +30,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -47,11 +48,12 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
         service.placeTile(mockMap, 0, 0, TileCategory.Wall);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, 'add');
         expect(mockMap[0][0].tileType).toBe(TileCategory.Wall);
         expect(mockMap[0][0].item).toBeUndefined();
     });
@@ -66,6 +68,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -85,12 +88,13 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    alternateCoordinates: { x: 0, y: 0 },
+                    item: ItemCategory.Armor,
                 },
             ],
         ];
         service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(false, ItemCategory.Hat, 'add');
+        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledOnceWith(ItemCategory.Armor);
         expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
         expect(mockMap[0][0].item).toBeUndefined();
     });
@@ -105,7 +109,8 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    alternateCoordinates: { x: 0, y: 0 },
+                    item: ItemCategory.Armor,
                 },
             ],
             [
@@ -116,12 +121,13 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
         service.moveItem(mockMap, { rowIndex: 0, colIndex: 0 }, { rowIndex: 1, colIndex: 0 });
         expect(mockMap[0][0].item).toBeUndefined();
-        expect(mockMap[1][0].item).toBe(ItemCategory.Hat);
+        expect(mockMap[1][0].item).toBe(ItemCategory.Armor);
     });
 
     it('should set an item', () => {
@@ -134,7 +140,8 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
-                    item: ItemCategory.Hat,
+                    alternateCoordinates: { x: 0, y: 0 },
+                    item: ItemCategory.Armor,
                 },
             ],
             [
@@ -145,6 +152,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -162,6 +170,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
             [
@@ -172,6 +181,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 1, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -195,17 +205,18 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
 
         service.setStartingPoint(mockMap, 0, 0);
         expect(mockMap[0][0].isStartingPoint).toBe(true);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'remove');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'remove');
 
         service.setStartingPoint(mockMap, 0, 0);
         expect(mockMap[0][0].isStartingPoint).toBe(false);
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
     });
 
     it('should handle placing each tile type correctly', () => {
@@ -218,6 +229,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -238,13 +250,14 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                     item: ItemCategory.Flag,
                 },
             ],
         ];
 
         service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, ItemCategory.Flag, 'add');
+        expect(mapCounterServiceSpy.releaseItem).toHaveBeenCalledWith(ItemCategory.Flag);
         expect(mockMap[0][0].item).toBeUndefined();
     });
 
@@ -258,6 +271,7 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
@@ -276,12 +290,13 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
 
         service.placeTile(mockMap, 0, 0, 'wall');
-        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, undefined, 'add');
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
         expect(mockMap[0][0].isStartingPoint).toBeFalse();
     });
 
@@ -295,11 +310,93 @@ describe('TileService', () => {
                     isHovered: false,
                     isOccupied: false,
                     coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
                 },
             ],
         ];
 
         service.placeTile(mockMap, 0, 0, 'wall');
         expect(mapCounterServiceSpy.updateCounters).not.toHaveBeenCalled();
+    });
+
+    it('should erase a tile and update counters if cell is a starting point', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Wall,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: true,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
+                },
+            ],
+        ];
+        service.eraseTile(mockMap, 0, 0, TileCategory.Floor);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledOnceWith(true, 'add');
+        expect(mockMap[0][0].tileType).toBe(TileCategory.Floor);
+        expect(mockMap[0][0].isStartingPoint).toBeFalse();
+    });
+    it('should remove starting point and update counters', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: true,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
+                },
+            ],
+        ];
+
+        service.removeStartingPoint(mockMap, 0, 0);
+        expect(mockMap[0][0].isStartingPoint).toBe(false);
+        expect(mapCounterServiceSpy.updateCounters).toHaveBeenCalledWith(true, 'add');
+    });
+    it('should set an item and update counters if item is Random', () => {
+        mapCounterServiceSpy.itemsCounter = 1;
+        mapCounterServiceSpy.randomItemCounter = 1;
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
+                },
+            ],
+        ];
+
+        service.setItem(mockMap, ItemCategory.Random, { rowIndex: 0, colIndex: 0 });
+        expect(mockMap[0][0].item).toBe(ItemCategory.Random);
+        expect(mapCounterServiceSpy.itemsCounter).toBe(0);
+        expect(mapCounterServiceSpy.randomItemCounter).toBe(0);
+    });
+
+    it('should set an item and call useItem if item is not Random', () => {
+        const mockMap: Cell[][] = [
+            [
+                {
+                    tileType: TileCategory.Floor,
+                    door: { isOpen: false, isDoor: false },
+                    isStartingPoint: false,
+                    isHovered: false,
+                    isOccupied: false,
+                    coordinate: { x: 0, y: 0 },
+                    alternateCoordinates: { x: 0, y: 0 },
+                },
+            ],
+        ];
+
+        service.setItem(mockMap, ItemCategory.Armor, { rowIndex: 0, colIndex: 0 });
+        expect(mockMap[0][0].item).toBe(ItemCategory.Armor);
+        expect(mapCounterServiceSpy.useItem).toHaveBeenCalledWith(ItemCategory.Armor);
     });
 });

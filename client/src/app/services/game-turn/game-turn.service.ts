@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { MovesMap } from '@app/interfaces/moves';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
 import { GameService } from '@app/services/game/game.service';
 import { PlayerService } from '@app/services/player-service/player.service';
 import { TIME_LIMIT_DELAY } from '@common/constants';
+import { MovesMap } from '@common/directions';
+import { CombatEvents, CombatFinishedByEvasionData, CombatFinishedData } from '@common/events/combat.events';
+import { GameManagerEvents } from '@common/events/game-manager.events';
+import { GameTurnEvents } from '@common/events/game-turn.events';
+import { ItemsEvents } from '@common/events/items.events';
 import { Game, Player } from '@common/game';
-import { Coordinate, DoorTile } from '@common/map.types';
+import { Coordinate, DoorTile, ItemCategory, Tile } from '@common/map.types';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
@@ -15,30 +19,32 @@ export class GameTurnService {
     socketSubscription: Subscription = new Subscription();
     moves: MovesMap = new Map();
 
-    private playerTurn = new BehaviorSubject<string>('');
+    private readonly playerTurn = new BehaviorSubject<string>('');
     public playerTurn$ = this.playerTurn.asObservable();
 
-    private youFell = new BehaviorSubject<boolean>(false);
+    private readonly youFell = new BehaviorSubject<boolean>(false);
     public youFell$ = this.youFell.asObservable();
 
-    private playerWon = new BehaviorSubject<boolean>(false);
+    private readonly playerWon = new BehaviorSubject<boolean>(false);
     public playerWon$ = this.playerWon.asObservable();
 
-    private possibleOpponents = new BehaviorSubject<Player[]>([]);
+    private readonly possibleOpponents = new BehaviorSubject<Player[]>([]);
     public possibleOpponents$ = this.possibleOpponents.asObservable();
 
-    private possibleDoors = new BehaviorSubject<DoorTile[]>([]);
+    private readonly possibleDoors = new BehaviorSubject<DoorTile[]>([]);
     public possibleDoors$ = this.possibleDoors.asObservable();
+
+    private readonly possibleWalls = new BehaviorSubject<Tile[]>([]);
+    public possibleWalls$ = this.possibleWalls.asObservable();
 
     isMoving = false;
 
-    actionsDone = { combat: false, door: false };
-    possibleActions = { combat: false, door: false };
+    possibleActions = { combat: false, door: false, wall: false };
 
     constructor(
-        private gameService: GameService,
-        private playerService: PlayerService,
-        private socketService: SocketService,
+        private readonly gameService: GameService,
+        private readonly playerService: PlayerService,
+        private readonly socketService: SocketService,
     ) {
         this.gameService = gameService;
         this.playerService = playerService;
@@ -53,23 +59,31 @@ export class GameTurnService {
         return this.gameService.game;
     }
 
-    startTurn(): void {
-        this.getMoves();
-        this.getActions();
-    }
-
     resumeTurn(): void {
         if (this.playerTurn.getValue() === this.player.name) {
-            if (!this.actionsDone.door || !this.actionsDone.combat) {
-                this.getActions();
+            this.possibleOpponents.next([]);
+            this.possibleDoors.next([]);
+            this.possibleActions.combat = true;
+            this.possibleActions.door = true;
+
+            if (this.player.specs.actions !== 0) {
+                if (this.player.inventory.includes(ItemCategory.WallBreaker)) {
+                    this.possibleActions.wall = true;
+                    this.getWalls();
+                }
+                this.getCombats();
+                this.getDoors();
+            } else {
+                this.getMoves();
             }
+            this.gameService.setGame(this.game);
         }
     }
 
     endTurn(): void {
         if (!this.youFell.getValue()) {
             this.clearMoves();
-            this.socketService.sendMessage('endTurn', this.game.id);
+            this.socketService.sendMessage(GameTurnEvents.EndTurn, this.game.id);
         }
     }
 
@@ -84,39 +98,46 @@ export class GameTurnService {
 
     listenForTurn() {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('yourTurn').subscribe((yourPlayer) => {
+            this.socketService.listen<Player>(GameTurnEvents.YourTurn).subscribe((yourPlayer) => {
                 this.clearMoves();
-                this.actionsDone.door = false;
-                this.actionsDone.combat = false;
                 this.playerService.player = yourPlayer;
                 this.playerTurn.next(yourPlayer.name);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<string>('playerTurn').subscribe((playerName) => {
+            this.socketService.listen<string>(GameTurnEvents.PlayerTurn).subscribe((playerName) => {
                 this.clearMoves();
                 this.youFell.next(false);
                 this.playerTurn.next(playerName);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen('startTurn').subscribe(() => {
+            this.socketService.listen(GameTurnEvents.StartTurn).subscribe(() => {
                 if (this.playerTurn.getValue() === this.player.name) {
-                    this.getActions();
+                    this.possibleActions.combat = true;
+                    this.possibleActions.door = true;
+                    if (this.player.inventory.includes(ItemCategory.WallBreaker)) {
+                        this.possibleActions.wall = true;
+                    }
+                    this.getCombats();
                 }
             }),
         );
     }
 
-    getActions(): void {
-        this.listenForPossibleCombats();
-        this.listenForDoors();
-        this.socketService.sendMessage('getCombats', this.game.id);
-        this.socketService.sendMessage('getAdjacentDoors', this.game.id);
+    getCombats(): void {
+        this.socketService.sendMessage(CombatEvents.GetCombats, this.game.id);
     }
 
+    getDoors(): void {
+        this.socketService.sendMessage(GameManagerEvents.GetAdjacentDoors, this.game.id);
+    }
+
+    getWalls(): void {
+        this.socketService.sendMessage(GameManagerEvents.GetAdjacentWalls, this.game.id);
+    }
     getMoves(): void {
-        this.socketService.sendMessage('getMovements', this.game.id);
+        this.socketService.sendMessage(GameManagerEvents.GetMovements, this.game.id);
     }
 
     clearMoves(): void {
@@ -124,65 +145,80 @@ export class GameTurnService {
     }
 
     movePlayer(position: Coordinate) {
-        this.socketService.sendMessage('moveToPosition', { playerTurn: this.player.turn, gameId: this.game.id, destination: position });
+        this.socketService.sendMessage(GameManagerEvents.MoveToPosition, {
+            playerTurn: this.player.turn,
+            gameId: this.game.id,
+            destination: position,
+        });
     }
 
     listenMoves(): void {
         this.socketSubscription.add(
-            this.socketService.listen<[string, { path: Coordinate[]; weight: number }][]>('playerPossibleMoves').subscribe((paths) => {
-                this.moves = new Map();
-                this.moves = new Map(paths);
-                if (this.moves.size === 1 && !this.possibleActions.combat) {
-                    this.endTurn();
-                }
-            }),
+            this.socketService
+                .listen<[string, { path: Coordinate[]; weight: number }][]>(GameManagerEvents.PlayerPossibleMoves)
+                .subscribe((paths) => {
+                    this.moves = new Map();
+                    this.moves = new Map(paths);
+                    if (
+                        this.moves.size === 1 &&
+                        (this.playerService.player.specs.actions === 0 ||
+                            (!this.possibleActions.combat && !this.possibleActions.door && !this.possibleActions.wall))
+                    ) {
+                        this.endTurn();
+                    }
+                }),
         );
     }
 
     toggleDoor(door: DoorTile) {
-        if (this.possibleActions.door && !this.actionsDone.door) {
-            this.socketService.sendMessage('toggleDoor', { gameId: this.game.id, door });
+        if (this.possibleActions.door) {
+            this.socketService.sendMessage(ItemsEvents.ToggleDoor, { gameId: this.game.id, door });
+            this.possibleActions.door = false;
+        }
+    }
+
+    breakWall(wall: Tile) {
+        if (this.possibleActions.wall) {
+            this.socketService.sendMessage(ItemsEvents.BreakWall, { gameId: this.game.id, wall });
+            this.possibleActions.wall = false;
         }
     }
 
     listenForPlayerMove(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ game: Game; player: Player }>('positionToUpdate').subscribe(async (data) => {
+            this.socketService.listen<{ game: Game; player: Player }>(GameManagerEvents.PositionToUpdate).subscribe(async (data) => {
                 if (data.player.socketId === this.player.socketId) {
                     this.playerService.setPlayer(data.player);
                 }
                 this.gameService.setGame(data.game);
+                this.resumeTurn();
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('youFinishedMoving').subscribe(() => {
+            this.socketService.listen(GameManagerEvents.YouFinishedMoving).subscribe(() => {
                 this.clearMoves();
                 this.resumeTurn();
             }),
         );
 
         this.socketSubscription.add(
-            this.socketService.listen('youFell').subscribe(() => {
+            this.socketService.listen(GameManagerEvents.YouFell).subscribe(() => {
                 this.clearMoves();
                 this.endTurnBecauseFell();
             }),
         );
+
+        this.socketSubscription.add(
+            this.socketService.listen<Game>(GameManagerEvents.MoveVirtualPlayer).subscribe((game) => {
+                this.gameService.setGame(game);
+            }),
+        );
     }
 
-    listenForDoorUpdates(): void {
-        this.socketService.listen<{ game: Game; player: Player }>('doorToggled').subscribe((data) => {
-            this.actionsDone.door = true;
-            if (data.player && data.player.socketId === this.player.socketId) {
-                this.playerService.setPlayer(data.player);
-            }
-            this.gameService.setGame(data.game);
-            this.resumeTurn();
-        });
-    }
     listenForCombatStarted(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player>('YouStartedCombat').subscribe((player) => {
+            this.socketService.listen<Player>(CombatEvents.YouStartedCombat).subscribe((player) => {
                 if (player.socketId === this.player.socketId) {
                     this.playerService.setPlayer(player);
                 }
@@ -190,53 +226,107 @@ export class GameTurnService {
         );
     }
 
-    listenForPossibleCombats(): void {
+    listenForPossibleActions(): void {
         this.socketSubscription.add(
-            this.socketService.listen<Player[]>('yourCombats').subscribe((possibleOpponents) => {
+            this.socketService.listen<Player[]>(GameManagerEvents.YourCombats).subscribe((possibleOpponents) => {
                 if (possibleOpponents.length === 0) {
                     this.possibleActions.combat = false;
-                } else {
-                    this.possibleActions.combat = true;
                 }
                 this.possibleOpponents.next(possibleOpponents);
+                this.getDoors();
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<DoorTile[]>(GameManagerEvents.YourDoors).subscribe((possibleDoors) => {
+                if (possibleDoors.length === 0) {
+                    this.possibleActions.door = false;
+                }
+                this.possibleDoors.next(possibleDoors);
+                this.getMoves();
+            }),
+        );
+        this.socketSubscription.add(
+            this.socketService.listen<Tile[]>(GameManagerEvents.YourWalls).subscribe((possibleWalls) => {
+                if (possibleWalls.length === 0) {
+                    this.possibleActions.wall = false;
+                }
+                this.possibleWalls.next(possibleWalls);
                 this.getMoves();
             }),
         );
     }
 
-    listenForDoors(): void {
+    listenForWallBreaking(): void {
         this.socketSubscription.add(
-            this.socketService.listen<DoorTile[]>('yourDoors').subscribe((possibleDoors) => {
-                if (possibleDoors.length === 0) {
-                    this.possibleActions.door = false;
-                } else {
-                    this.possibleActions.door = true;
+            this.socketService.listen<{ game: Game; player: Player }>(ItemsEvents.WallBroken).subscribe((data) => {
+                if (data.player && data.player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
+                    this.resumeTurn();
                 }
-                this.possibleDoors.next(possibleDoors);
+                this.gameService.setGame(data.game);
+            }),
+        );
+    }
+
+    listenForDoorUpdates(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<{ game: Game; player: Player }>(ItemsEvents.DoorToggled).subscribe((data) => {
+                if (data.player && data.player.socketId === this.player.socketId) {
+                    this.playerService.setPlayer(data.player);
+                    this.resumeTurn();
+                }
+                this.gameService.setGame(data.game);
             }),
         );
     }
 
     listenForCombatConclusion(): void {
         this.socketSubscription.add(
-            this.socketService.listen<{ updatedGame: Game; evadingPlayer: Player }>('combatFinishedByEvasion').subscribe((data) => {
+            this.socketService.listen<CombatFinishedByEvasionData>(CombatEvents.CombatFinishedByEvasion).subscribe((data) => {
                 if (data.evadingPlayer.socketId === this.player.socketId) {
-                    this.playerService.player = data.evadingPlayer;
+                    this.playerService.setPlayer(data.evadingPlayer);
+                    if (data.updatedGame.currentTurn === this.playerService.player.turn) {
+                        this.clearMoves();
+                        this.resumeTurn();
+                    }
                 } else {
-                    this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
+                    this.playerService.setPlayer(data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0]);
                 }
                 this.gameService.setGame(data.updatedGame);
             }),
         );
         this.socketSubscription.add(
-            this.socketService.listen<{ updatedGame: Game; winner: Player }>('combatFinished').subscribe((data) => {
-                if (data.winner.socketId === this.player.socketId) {
-                    this.playerService.player = data.winner;
+            this.socketService.listen<CombatFinishedData>(CombatEvents.CombatFinished).subscribe((data) => {
+                if (data.winner.socketId === this.playerService.player.socketId) {
+                    this.playerService.setPlayer(data.winner);
                 } else {
-                    this.playerService.player = data.updatedGame.players.filter((player) => (player.socketId = this.player.socketId))[0];
+                    this.playerService.setPlayer(data.loser);
                 }
                 this.gameService.setGame(data.updatedGame);
             }),
         );
+        this.socketSubscription.add(
+            this.socketService.listen(CombatEvents.ResumeTurnAfterCombatWin).subscribe(() => {
+                this.clearMoves();
+                this.resumeTurn();
+            }),
+        );
+    }
+
+    listenForFlagHolder(): void {
+        this.socketSubscription.add(
+            this.socketService.listen<Game>(GameManagerEvents.FlagPickup).subscribe((game) => {
+                this.gameService.setGame(game);
+            }),
+        );
+    }
+
+    listenForEndOfGame() {
+        this.socketSubscription.add(
+            this.socketService.listen<Player>(CombatEvents.GameFinishedPlayerWon).subscribe(() => {
+                this.playerWon.next(true);
+            }),
+        );
+        this.playerWon.next(false);
     }
 }

@@ -1,13 +1,4 @@
 <div class="combat-interface">
-    <!-- <div class="health-bar-container">
-        <div class="player1-health">
-            <div class="health-bar-fill-player" [style.width.%]="(player.specs.life / 6) * 100"></div>
-        </div>
-        <div class="player2-health">
-            <div class="health-bar-fill-opponent" [style.width.%]="(player.specs.life / 6) * 100"></div>
-        </div>
-    </div> -->
-
     <span class="versus">VS</span>
 
     <div class="countdown">{{ countdown }}</div>
@@ -41,7 +32,7 @@
     </div>
 
     <div class="button-container">
-        @if("attacking === true") {
+        @if(attacking) {
         <p class="dice">{{ attackTotal }}</p>
         } @else {
         <p class="dice">{{ defenseTotal }}</p>
@@ -49,7 +40,7 @@
 
         <button class="action-button" [disabled]="isItYourTurn()" (click)="attack()">Attaquer</button>
         <button class="action-button" [disabled]="isItYourTurn()" (click)="evade()">evasion ({{ player.specs.evasions }})</button>
-        @if("attacking === true") {
+        @if(attacking) {
         <p class="dice">{{ defenseTotal }}</p>
         } @else {
         <p class="dice">{{ attackTotal }}</p>
