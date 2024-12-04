@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Item, ItemCategory } from '@common/map.types';
+import { ItemCategory, Map } from '@common/map.types';
 import { Subject } from 'rxjs';
 import { MapConversionService } from '../map-conversion/map-conversion.service';
 @Injectable({
@@ -37,15 +37,19 @@ export class MapCounterService {
         }
     }
 
-    loadMapCounters(usedItems: Item[]) {
+    loadMapCounters(map: Map) {
+        const usedItems = map.items;
         const usedCategories = new Set(usedItems.map((item) => item.category));
 
         this.items = this.items.filter((item) => !usedCategories.has(item));
 
         const randomItemCount = usedItems.filter((item) => item.category === ItemCategory.Random).length;
+        this.startingPointCounter -= map.startTiles.length;
         this.itemsCounter -= usedItems.length;
         this.randomItemCounter -= randomItemCount;
+        if (map.mode === 'ctf') this.itemsCounter++;
     }
+
     setAvailablesItems() {
         this.items = [
             ItemCategory.Armor,

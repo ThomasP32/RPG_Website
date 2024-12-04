@@ -378,6 +378,46 @@ describe('WaitingRoomPageComponent', () => {
 
         expect(RouterSpy.navigate).not.toHaveBeenCalled();
     });
+    it('should navigate to main menu if socket is not alive', async () => {
+        SocketServiceSpy.isSocketAlive.and.returnValue(false);
+        spyOn(component, 'ngOnDestroy').and.callThrough();
+        spyOn(SocketServiceSpy, 'disconnect').and.callThrough();
+        spyOn(RouterSpy, 'navigate').and.callThrough();
+
+        await component.ngOnInit();
+
+        expect(component.ngOnDestroy).toHaveBeenCalled();
+        expect(characterServiceSpy.resetCharacterAvailability).toHaveBeenCalled();
+        expect(SocketServiceSpy.disconnect).toHaveBeenCalled();
+        expect(RouterSpy.navigate).toHaveBeenCalledWith(['/main-menu']);
+    });
+
+    it('should initialize player preview and name on ngOnInit', async () => {
+        SocketServiceSpy.isSocketAlive.and.returnValue(true);
+        spyOn(component, 'listenToSocketMessages').and.callThrough();
+        playerServiceSpy.player = mockPlayer;
+        characterServiceSpy.getAvatarPreview.and.returnValue('avatarUrl');
+
+        await component.ngOnInit();
+
+        expect(component.playerPreview).toBe('avatarUrl');
+        expect(component.playerName).toBe(mockPlayer.name);
+    });
+
+    it('should set isHost to true and create a new game if URL contains "host"', async () => {
+        SocketServiceSpy.isSocketAlive.and.returnValue(true);
+        RouterSpy = jasmine.createSpyObj('Router', ['navigate'], { url: '/waiting-room/host' });
+        spyOn(component, 'getMapName').and.callThrough();
+        spyOn(component, 'generateRandomNumber').and.callThrough();
+        spyOn(component, 'createNewGame').and.callThrough();
+
+        await component.ngOnInit();
+
+        expect(component.isHost).toBeTrue();
+        expect(component.getMapName).toHaveBeenCalled();
+        expect(component.generateRandomNumber).toHaveBeenCalled();
+        expect(component.createNewGame).toHaveBeenCalledWith(component.mapName);
+    });
 
     afterEach(() => {
         gameStartedSubject.complete();
