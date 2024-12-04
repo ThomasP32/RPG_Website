@@ -1,7 +1,4 @@
 <div class="journal-container">
-    <!-- <div class="journal-header">
-        <p>Journal de jeu</p>
-    </div> -->
     <div class="journal-filter">
         <label for="dropdown">Filtre: </label>
         <select [(ngModel)]="filter" (change)="toggleShowAll()" id="dropdown">
@@ -9,12 +6,13 @@
             <option value="involved-only">Mes événements</option>
         </select>
     </div>
-    <div class="journal-body"></div>
-    <ul id="journalList">
-        @for (entry of filteredJournalEntries; track entry) {
-        <li>
-            {{ entry.message }} <span class="timestamp">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
-        </li>
-        }
-    </ul>
+    <div class="journal-body">
+        <ul id="journalList">
+            @for (entry of filteredJournalEntries; track entry) {
+            <li>
+                {{ entry.message }} <span class="timestamp">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
+            </li>
+            }
+        </ul>
+    </div>
 </div>
