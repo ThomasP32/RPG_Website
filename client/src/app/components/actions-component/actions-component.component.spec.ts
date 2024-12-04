@@ -229,39 +229,4 @@ describe('ActionsComponentComponent', () => {
         expect(component.breakWallActionAvailable).toBeFalse();
         expect(component.possibleWalls).toEqual([]);
     });
-    // it('should set showCombatModal to the new value when onShowCombatModalChange is called', () => {
-    //     component.onShowCombatModalChange(true);
-    //     expect(component.showCombatModal).toBeTrue();
-
-    //     component.onShowCombatModalChange(false);
-    //     expect(component.showCombatModal).toBeFalse();
-    // });
-
-    // it('should set actionDescription when showDescription is called', () => {
-    //     component.showDescription('Test Description');
-    //     expect(component.actionDescription).toBe('Test Description');
-    // });
-
-    // it('should set actionDescription to null when hideDescription is called', () => {
-    //     component.hideDescription();
-    //     expect(component.actionDescription).toBeNull();
-    // });
-
-    // it('should call listenForPossibleOpponents on ngOnInit', () => {
-    //     spyOn(component as any, 'listenForPossibleOpponents');
-    //     component.ngOnInit();
-    //     expect(component['listenForPossibleOpponents']).toHaveBeenCalled();
-    // });
-
-    // it('should call listenForDoorOpening on ngOnInit', () => {
-    //     spyOn(component as any, 'listenForDoorOpening');
-    //     component.ngOnInit();
-    //     expect(component['listenForDoorOpening']).toHaveBeenCalled();
-    // });
-
-    // it('should call listenForWallBreaking on ngOnInit', () => {
-    //     spyOn(component as any, 'listenForWallBreaking');
-    //     component.ngOnInit();
-    //     expect(component['listenForWallBreaking']).toHaveBeenCalled();
-    // });
 });
