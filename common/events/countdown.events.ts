@@ -3,5 +3,5 @@ export enum CountdownEvents {
     SecondPassed = 'secondPassed',
     CombatSecondPassed = 'combatSecondPassed',
     Timeout = 'timeout',
-    PauseCountDown = 'pauseCountDown',
+    PauseCountDown = 'pausedCountDown',
 }
