@@ -1,4 +1,10 @@
-<div class="chat-container" [class.retracted]="isChatRetracted" [class.waiting-room-chat]="isWaitingRoom" [class.game-page-chat]="isGamePage">
+<div
+    class="chat-container"
+    [class.retracted]="isChatRetracted"
+    [class.waiting-room-chat]="isWaitingRoom"
+    [class.game-page-chat]="isGamePage"
+    [class.endgame-chat]="isEndGame"
+>
     @if (isWaitingRoom) {
     <div class="chat-header" (click)="toggleChat()">
         <strong>Clavardage</strong>

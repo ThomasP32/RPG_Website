@@ -53,6 +53,36 @@
     margin-top: 8px;
 }
 
+.endgame-chat {
+    display: flex;
+    flex-direction: column;
+}
+
+.endgame-chat .chat-container.retracted {
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.endgame-chat .input-container {
+    bottom: 11px;
+    display: flex;
+    width: 15vw;
+    height: 4vh;
+    align-items: center;
+    justify-content: space-evenly;
+    border-top: 1px solid #202020;
+    z-index: 10;
+}
+.endgame-chat #messageInput {
+    margin-top: auto;
+}
+.endgame-chat #messageArea {
+    // max-height: 40vh;
+    margin-top: 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
 .chat-header {
     font-size: 1.2em;
     font-weight: bold;
