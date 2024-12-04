@@ -14,7 +14,10 @@ import {
 } from '@common/constants';
 import { CombatEvents } from '@common/events/combat.events';
 import { GameCreationEvents } from '@common/events/game-creation.events';
+import { GameManagerEvents } from '@common/events/game-manager.events';
+import { GameTurnEvents } from '@common/events/game-turn.events';
 import { DropItemData, ItemDroppedData, ItemsEvents } from '@common/events/items.events';
+import { VirtualPlayerEvents } from '@common/events/virtualPlayer.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Tile } from '@common/map.types';
 import { Inject } from '@nestjs/common';
@@ -56,7 +59,7 @@ export class GameManagerGateway implements OnGatewayInit {
             return;
         }
         const moves = this.gameManagerService.getMoves(gameId, client.id);
-        client.emit('playerPossibleMoves', moves);
+        client.emit(GameManagerEvents.PlayerPossibleMoves, moves);
     }
 
     @SubscribeMessage('moveToPosition')
@@ -77,22 +80,22 @@ export class GameManagerGateway implements OnGatewayInit {
 
         if (!gameFinished) {
             if (this.gameManagerService.hasPickedUpFlag(beforeMoveInventory, player.inventory)) {
-                this.server.to(data.gameId).emit('flagPickedUp', game);
-                this.server.to(client.id).emit('youFinishedMoving');
+                this.server.to(data.gameId).emit(GameManagerEvents.FlagPickup, game);
+                this.server.to(client.id).emit(GameManagerEvents.YouFinishedMoving);
                 this.journalService.logMessage(
                     data.gameId,
                     `Le drapeau a été récupéré par ${player.name}.`,
                     game.players.map((player) => player.name),
                 );
             } else if (this.gameManagerService.hasFallen) {
-                this.server.to(client.id).emit('youFell');
+                this.server.to(client.id).emit(GameManagerEvents.YouFell);
                 this.gameManagerService.hasFallen = false;
                 if (player.socketId.includes('virtualPlayer')) {
-                    this.server.to(data.gameId).emit('virtualPlayerFinishedMoving', data.gameId);
+                    this.server.to(data.gameId).emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, data.gameId);
                     this.gameManagerService.hasFallen = false;
                 }
             } else {
-                this.server.to(client.id).emit('youFinishedMoving');
+                this.server.to(client.id).emit(GameManagerEvents.YouFinishedMoving);
             }
         }
     }
@@ -108,7 +111,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const action = doorTile.isOpened ? 'ouverte' : 'fermée';
         const involvedPlayers = game.players.map((player) => player.name);
         this.journalService.logMessage(data.gameId, `Une porte a été ${action} par ${player.name}.`, involvedPlayers);
-        this.server.to(data.gameId).emit('doorToggled', { game: game, player: player });
+        this.server.to(data.gameId).emit(ItemsEvents.DoorToggled, { game: game, player: player });
     }
 
     @SubscribeMessage('breakWall')
@@ -127,7 +130,7 @@ export class GameManagerGateway implements OnGatewayInit {
         this.gameManagerService.updatePlayerActions(game.id, player.socketId);
         const involvedPlayers = game.players.map((player) => player.name);
         this.journalService.logMessage(data.gameId, `${player.name}. a brisé un mur !`, involvedPlayers);
-        this.server.to(data.gameId).emit('wallBroken', { game: game, player: player });
+        this.server.to(data.gameId).emit(ItemsEvents.WallBroken, { game: game, player: player });
     }
 
     @SubscribeMessage('getCombats')
@@ -135,7 +138,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const adjacentPlayers = this.gameManagerService.getAdjacentPlayers(player, gameId);
-        this.server.to(client.id).emit('yourCombats', adjacentPlayers);
+        this.server.to(client.id).emit(GameManagerEvents.YourCombats, adjacentPlayers);
     }
 
     @SubscribeMessage('getAdjacentDoors')
@@ -143,7 +146,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const adjacentDoors = this.gameManagerService.getAdjacentDoors(player, gameId);
-        this.server.to(client.id).emit('yourDoors', adjacentDoors);
+        this.server.to(client.id).emit(GameManagerEvents.YourDoors, adjacentDoors);
     }
 
     @SubscribeMessage('getAdjacentWalls')
@@ -151,7 +154,7 @@ export class GameManagerGateway implements OnGatewayInit {
         const game = this.gameCreationService.getGameById(gameId);
         const player = game.players.find((player) => player.socketId === client.id);
         const adjacentWalls = this.gameManagerService.getAdjacentWalls(player, gameId);
-        this.server.to(client.id).emit('yourWalls', adjacentWalls);
+        this.server.to(client.id).emit(GameManagerEvents.YourWalls, adjacentWalls);
     }
 
     @SubscribeMessage(ItemsEvents.dropItem)
@@ -214,17 +217,17 @@ export class GameManagerGateway implements OnGatewayInit {
             const delay = Math.floor(Math.random() * VIRTUAL_PLAYER_DELAY) + VIRTUAL_DELAY_CONSTANT;
             setTimeout(async () => {
                 await this.virtualGameManagerService.executeVirtualPlayerBehavior(activePlayer, game);
-                this.server.to(game.id).emit('positionToUpdate', { game: game, player: activePlayer });
+                this.server.to(game.id).emit(GameManagerEvents.PositionToUpdate, { game: game, player: activePlayer });
             }, delay);
         } else {
-            this.server.to(activePlayer.socketId).emit('yourTurn', activePlayer);
+            this.server.to(activePlayer.socketId).emit(GameTurnEvents.YourTurn, activePlayer);
         }
 
         game.players
             .filter((player) => player.socketId !== activePlayer.socketId)
             .forEach((player) => {
                 if (player.socketId !== activePlayer.socketId) {
-                    this.server.to(player.socketId).emit('playerTurn', activePlayer.name);
+                    this.server.to(player.socketId).emit(GameTurnEvents.PlayerTurn, activePlayer.name);
                     if (player.inventory.length > INVENTORY_SIZE) {
                         const coordinates = player.position;
                         this.itemsManagerService.dropItem(player.inventory[INVENTORY_SIZE], game.id, player, coordinates);
@@ -246,7 +249,7 @@ export class GameManagerGateway implements OnGatewayInit {
                 }
             }
             wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, game.id, wasOnIceTile);
-            this.server.to(game.id).emit('positionToUpdate', { game: game, player: player });
+            this.server.to(game.id).emit(GameManagerEvents.PositionToUpdate, { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
                 this.server.to(game.id).emit(CombatEvents.GameFinishedPlayerWon, player);

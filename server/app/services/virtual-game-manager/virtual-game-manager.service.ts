@@ -11,7 +11,9 @@ import {
     TIME_FOR_POSITION_UPDATE,
 } from '@common/constants';
 import { CombatEvents, CombatStartedData } from '@common/events/combat.events';
+import { GameManagerEvents } from '@common/events/game-manager.events';
 import { ItemsEvents } from '@common/events/items.events';
+import { VirtualPlayerEvents } from '@common/events/virtualPlayer.events';
 import { Game, Player } from '@common/game';
 import { Coordinate, Item, ItemCategory } from '@common/map.types';
 import { Injectable } from '@nestjs/common';
@@ -56,7 +58,7 @@ export class VirtualGameManagerService extends EventEmitter {
         const hasSkates = player.inventory.includes(ItemCategory.IceSkates);
         const finalPath: Coordinate[] = [];
         if (possibleMoves.length === MINIMUM_MOVES) {
-            this.emit('virtualPlayerFinishedMoving', game.id);
+            this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id);
             return [];
         }
         const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
@@ -97,7 +99,7 @@ export class VirtualGameManagerService extends EventEmitter {
                 }
             }
             wasOnIceTile = this.gameManagerService.adaptSpecsForIceTileMove(player, gameId, wasOnIceTile);
-            this.server.to(gameId).emit('positionToUpdate', { game: game, player: player });
+            this.server.to(gameId).emit(GameManagerEvents.PositionToUpdate, { game: game, player: player });
             await new Promise((resolve) => setTimeout(resolve, TIME_FOR_POSITION_UPDATE));
             if (this.gameManagerService.checkForWinnerCtf(player, game.id)) {
                 this.server.to(game.id).emit(CombatEvents.GameFinishedPlayerWon, player);
@@ -121,15 +123,15 @@ export class VirtualGameManagerService extends EventEmitter {
             this.itemsManagerService.pickUpItem(sword.coordinate, game.id, activePlayer);
             activePlayer.specs.movePoints > 0
                 ? await this.executeAggressiveBehavior(activePlayer, game)
-                : this.emit('virtualPlayerFinishedMoving', game.id);
+                : this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
             moved &&
                 (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
-                    ? this.emit('virtualPlayerFinishedMoving', game.id)
+                    ? this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id)
                     : Math.random() < CONTINUE_ODDS
                     ? await this.executeAggressiveBehavior(activePlayer, game)
-                    : this.emit('virtualPlayerFinishedMoving', game.id));
+                    : this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id));
         }
     }
 
@@ -146,17 +148,17 @@ export class VirtualGameManagerService extends EventEmitter {
             this.itemsManagerService.pickUpItem(armor.coordinate, game.id, activePlayer);
             activePlayer.specs.movePoints > 0
                 ? await this.executeDefensiveBehavior(activePlayer, game)
-                : this.emit('virtualPlayerFinishedMoving', game.id);
+                : this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id);
         } else if (visiblePlayers.length > 0 && activePlayer.specs.actions > 0) {
             await this.moveToTargetPlayer(activePlayer, visiblePlayers, wasOnIceTile, game, possibleMoves);
         } else {
             const moved = await this.updateVirtualPlayerPosition(activePlayer, game.id);
             moved &&
                 (activePlayer.specs.actions < 0 || activePlayer.specs.movePoints < 0
-                    ? this.emit('virtualPlayerFinishedMoving', game.id)
+                    ? this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id)
                     : Math.random() < CONTINUE_ODDS
                     ? await this.executeDefensiveBehavior(activePlayer, game)
-                    : this.emit('virtualPlayerFinishedMoving', game.id));
+                    : this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id));
         }
     }
 
@@ -316,7 +318,7 @@ export class VirtualGameManagerService extends EventEmitter {
         );
         const pathToTargetPlayer = this.gameManagerService.getMove(game.id, activePlayer.socketId, validMove);
         await this.updatePosition(activePlayer, pathToTargetPlayer, game.id, wasOnIceTile);
-        if (this.gameManagerService.hasFallen) this.emit('virtualPlayerFinishedMoving', game.id);
+        if (this.gameManagerService.hasFallen) this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id);
         const possibleOpponents = this.gameManagerService.getAdjacentPlayers(activePlayer, game.id);
         if (possibleOpponents.length > 0 && activePlayer.specs.actions > 0) {
             const opponent = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)];
@@ -331,7 +333,7 @@ export class VirtualGameManagerService extends EventEmitter {
         const targetItem = visibleItems[randomItemIndex];
         const pathToTargetItem = this.gameManagerService.getMove(game.id, activePlayer.socketId, targetItem.coordinate);
         await this.updatePosition(activePlayer, pathToTargetItem, game.id, wasOnIceTile);
-        if (this.gameManagerService.hasFallen) this.emit('virtualPlayerFinishedMoving', game.id);
+        if (this.gameManagerService.hasFallen) this.emit(VirtualPlayerEvents.VirtualPlayerFinishedMoving, game.id);
     }
 
     checkAndToggleDoor(player: Player, game: Game): void {
@@ -344,7 +346,7 @@ export class VirtualGameManagerService extends EventEmitter {
             const selectedDoor = adjacentDoors[Math.floor(Math.random() * adjacentDoors.length)];
             selectedDoor.isOpened = !selectedDoor.isOpened;
             const playerInGame = game.players.find((p) => p.socketId === player.socketId);
-            this.server.to(game.id).emit('doorToggled', { game, player: playerInGame });
+            this.server.to(game.id).emit(ItemsEvents.DoorToggled, { game, player: playerInGame });
             this.journalService.logMessage(game.id, `Une porte a été ouverte par ${player.name}.`, [player.name]);
         }
     }
