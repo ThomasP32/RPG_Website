@@ -83,3 +83,8 @@ export interface DetailedMap extends Map {
     isVisible: boolean;
     lastModified: Date;
 }
+
+export interface CurrentDraggedItem {
+    rowIndex: number;
+    colIndex: number;
+}

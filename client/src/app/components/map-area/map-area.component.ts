@@ -7,7 +7,7 @@ import { MapService } from '@app/services/map/map.service';
 import { ScreenShotService } from '@app/services/screenshot/screenshot.service';
 import { TileService } from '@app/services/tile/tile.service';
 import { Cell } from '@common/map-cell';
-import { ItemCategory, Map, TileCategory } from '@common/map.types';
+import { CurrentDraggedItem, ItemCategory, Map, TileCategory } from '@common/map.types';
 @Component({
     selector: 'app-map-area',
     standalone: true,
@@ -19,7 +19,7 @@ export class MapAreaComponent implements OnInit {
     selectedTile: string;
     map: Cell[][];
 
-    currentDraggedItem: { rowIndex: number; colIndex: number } | null = null;
+    currentDraggedItem: CurrentDraggedItem | null = null;
 
     isPlacing: boolean = false;
     isMouseDown: boolean = false;
