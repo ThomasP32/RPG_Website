@@ -1,18 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { SocketService } from '@app/services/communication-socket/communication-socket.service';
+import { GameDataService } from '@app/services/game-data/game-data.service';
 import { GameTurnService } from '@app/services/game-turn/game-turn.service';
 import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/image/image.service';
 import { CombatEvents, StartCombatData } from '@common/events/combat.events';
 import { Player } from '@common/game';
+import { Cell } from '@common/map-cell';
 import { DoorTile, ItemCategory, Tile } from '@common/map.types';
 import { CombatListComponent } from '../combat-list/combat-list.component';
+import { DoorSelectorComponent } from '../door-selector/door-selector.component';
 
 @Component({
     selector: 'app-actions-component',
     standalone: true,
-    imports: [CommonModule, CombatListComponent],
+    imports: [CommonModule, CombatListComponent, DoorSelectorComponent],
     templateUrl: './actions-component.component.html',
     styleUrl: './actions-component.component.scss',
 })
@@ -21,6 +24,7 @@ export class ActionsComponentComponent implements OnInit {
     @Input() currentPlayerTurn: string;
     @Output() showExitModalChange = new EventEmitter<boolean>();
 
+    surroundingMap: Cell[][] = [];
     possibleDoors: DoorTile[] = [];
     possibleOpponents: Player[] = [];
     possibleWalls: Tile[] = [];
@@ -31,7 +35,7 @@ export class ActionsComponentComponent implements OnInit {
 
     showExitModal: boolean = false;
     showCombatModal: boolean = false;
-    showDoorModal: boolean = false;
+    showDoorSelector: boolean = false;
     actionDescription: string | null = null;
 
     doorMessage: string = 'Ouvrir la porte';
@@ -41,17 +45,22 @@ export class ActionsComponentComponent implements OnInit {
         private readonly socketService: SocketService,
         private readonly gameService: GameService,
         protected readonly imageService: ImageService,
+        private readonly gameDataService: GameDataService,
     ) {
         this.gameTurnService = gameTurnService;
         this.socketService = socketService;
         this.gameService = gameService;
         this.imageService = imageService;
+        this.gameDataService = gameDataService;
     }
 
     ngOnInit(): void {
         this.listenForPossibleOpponents();
         this.listenForDoorOpening();
         this.listenForWallBreaking();
+        this.gameDataService.surroundingMap$.subscribe((map) => {
+            this.surroundingMap = map;
+        });
     }
 
     showDescription(description: string) {
@@ -77,7 +86,7 @@ export class ActionsComponentComponent implements OnInit {
             if (this.possibleDoors.length === 1) {
                 this.gameTurnService.toggleDoor(this.possibleDoors[0]);
             } else {
-                this.showDoorModal = true;
+                this.showDoorSelector = true;
             }
         }
     }
@@ -140,5 +149,9 @@ export class ActionsComponentComponent implements OnInit {
 
     onShowCombatModalChange(newValue: boolean) {
         this.showCombatModal = newValue;
+    }
+
+    onShowDoorSelectorChange(newValue: boolean) {
+        this.showDoorSelector = newValue;
     }
 }

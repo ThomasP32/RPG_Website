@@ -253,6 +253,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
                 [
@@ -263,6 +264,7 @@ describe('MapService', () => {
                         coordinate: { x: 1, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 1, y: 0 },
                     },
                 ],
             ];
@@ -283,6 +285,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
                 [
@@ -293,6 +296,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];
@@ -315,6 +319,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];
@@ -335,6 +340,7 @@ describe('MapService', () => {
                         coordinate: { x: 0, y: 0 },
                         isOccupied: false,
                         isHovered: false,
+                        alternateCoordinates: { x: 0, y: 0 },
                     },
                 ],
             ];

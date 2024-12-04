@@ -66,10 +66,17 @@
         </div>
     </div>
 </div>
-@if(showCombatModal) {
+@if(showCombatModal && thisPlayerTurn()) {
 <app-combat-list
     class="combat-list"
     [possibleOpponents]="possibleOpponents"
     (showCombatModalChange)="onShowCombatModalChange($event)"
 ></app-combat-list>
+} @if(showDoorSelector&& thisPlayerTurn()) {
+<app-door-selector
+    [surroundingMap]="surroundingMap"
+    [possibleDoors]="possibleDoors"
+    [playerPosition]="player.position"
+    (showDoorSelectorChange)="onShowDoorSelectorChange($event)"
+></app-door-selector>
 }
