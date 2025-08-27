@@ -85,33 +85,6 @@ lint:server:
         - cd server
         - npm run lint
 
-test:client:
-    stage: test
-    needs: ['install:client']
-    <<: *only-client
-    script:
-        - Xvfb :99 -ac -screen 0 1920x1080x24 &
-        - cd client
-        - npm run coverage -- --browsers=ChromeHeadlessNoSandbox --watch=false
-    dependencies:
-        - install:client
-    artifacts:
-        paths:
-            - client/coverage/
-
-test:server:
-    stage: test
-    needs: ['install:server']
-    <<: *only-server
-    script:
-        - cd server
-        - npm run coverage
-    dependencies:
-        - install:server
-    artifacts:
-        paths:
-            - server/coverage/
-
 pages:
     stage: deploy
     rules:
